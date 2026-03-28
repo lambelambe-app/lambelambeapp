@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>GeoLive | Eventos Ao Vivo - Arte & Entretenimento</title>
+    <title>Vaamos! | Eventos Ao Vivo - Música & Artes</title>
     <!-- Font Awesome 6 (ícones) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
@@ -316,10 +316,10 @@
 <div class="container">
     <!-- cabeçalho com geolocalização automática -->
     <div class="geo-header">
-        <h1><i class="fas fa-map-marker-alt"></i> GeoLive · Eventos ao vivo <span style="font-weight:thin">Arte & Entretenimento</span></h1>
+        <h1><i class="fas fa-map-marker-alt"></i> Vaamos! · Eventos ao vivo <span style="font-weight:thin">Música & Artes</span></h1>
         <div class="location-box" id="locationBox">
             <i class="fas fa-globe-americas"></i>
-            <span id="locationText">Detectando localização...</span>
+            <span id="locationText">Detectando sua localização...</span>
             <button class="refresh-loc" id="refreshGeoBtn"><i class="fas fa-sync-alt"></i> Atualizar</button>
         </div>
         <p style="margin-top: 0.8rem; font-size: 0.85rem; opacity:0.9"><i class="fas fa-ticket-alt"></i> Eventos locais em destaque com base na sua cidade + transmissões ao vivo do YouTube</p>
@@ -327,7 +327,7 @@
 
     <!-- SEÇÃO EVENTOS CADASTRADOS (MANUAIS) -->
     <div class="section-title">
-        <i class="fas fa-calendar-check"></i> Eventos cadastrados (Arte & Entretenimento)
+        <i class="fas fa-calendar-check"></i> Eventos sugeridos por terceiros
         <span style="font-size: 0.8rem; background:#e9ecef; padding: 0.2rem 0.8rem; border-radius: 2rem;" id="eventCountBadge">0</span>
     </div>
     <div id="manualEventsContainer" class="cards-grid">
@@ -336,7 +336,7 @@
 
     <!-- SEÇÃO EVENTOS AO VIVO DO YOUTUBE (ARTE + ENTRETENIMENTO) -->
     <div class="section-title">
-        <i class="fab fa-youtube"></i> Ao vivo agora no YouTube · Arte & Entretenimento
+        <i class="fab fa-youtube"></i> Ao vivo agora no YouTube
         <i class="fas fa-broadcast-tower" style="color:#e63946"></i>
     </div>
     <div id="youtubeEventsContainer" class="cards-grid">
@@ -529,14 +529,14 @@
             youtubeContainer.innerHTML = `<div class="alert-info"><i class="fas fa-key"></i> ⚠️ Chave de API do YouTube não configurada. Obtenha uma chave no Google Cloud e substitua no código (YOUTUBE_API_KEY).</div>`;
             return;
         }
-        youtubeContainer.innerHTML = `<div class="alert-info"><i class="fas fa-spinner fa-pulse"></i> Buscando transmissões ao vivo de Arte e Entretenimento...</div>`;
+        youtubeContainer.innerHTML = `<div class="alert-info"><i class="fas fa-spinner fa-pulse"></i> Buscando transmissões ao vivo de Música e Arte...</div>`;
         try {
             // 1. Buscar vídeos ao vivo nas categorias
             const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&eventType=live&type=video&maxResults=${MAX_YOUTUBE_RESULTS}&videoCategoryId=${YOUTUBE_CATEGORIES}&key=${YOUTUBE_API_KEY}`;
             const searchRes = await fetch(searchUrl);
             const searchData = await searchRes.json();
             if (!searchData.items || searchData.items.length === 0) {
-                youtubeContainer.innerHTML = `<div class="alert-info"><i class="fas fa-info-circle"></i> Nenhuma live de arte/entretenimento no momento. Tente novamente mais tarde.</div>`;
+                youtubeContainer.innerHTML = `<div class="alert-info"><i class="fas fa-info-circle"></i> Nenhuma live de música/arte no momento. Tente novamente mais tarde.</div>`;
                 return;
             }
             const videoIds = searchData.items.map(item => item.id.videoId).join(',');
