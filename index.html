@@ -654,11 +654,55 @@
     });
     
     // Expor deleteManualEvent globalmente para o onclick do botão
-    window.deleteManualEvent = (id) => {
-        if (confirm("Remover este evento da lista?")) {
-            deleteManualEvent(id);
+window.deleteManualEvent = (id) => {
+    // Usando um modal personalizado em vez de confirm() para evitar exibição do endereço
+    const modalConfirm = document.createElement('div');
+    modalConfirm.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        font-family: 'Segoe UI', sans-serif;
+    `;
+    
+    modalConfirm.innerHTML = `
+        <div style="background: white; padding: 1.5rem; border-radius: 1rem; max-width: 320px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+            <i class="fas fa-trash-alt" style="font-size: 2rem; color: #e63946; margin-bottom: 1rem; display: block;"></i>
+            <p style="margin-bottom: 1.5rem; font-size: 1rem;">Remover este evento da lista?</p>
+            <div style="display: flex; gap: 0.8rem; justify-content: center;">
+                <button id="modalConfirmBtn" style="background: #e63946; color: white; border: none; padding: 0.5rem 1.2rem; border-radius: 2rem; cursor: pointer; font-weight: bold;">Remover</button>
+                <button id="modalCancelBtn" style="background: #6c757d; color: white; border: none; padding: 0.5rem 1.2rem; border-radius: 2rem; cursor: pointer;">Cancelar</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modalConfirm);
+    
+    const confirmBtn = modalConfirm.querySelector('#modalConfirmBtn');
+    const cancelBtn = modalConfirm.querySelector('#modalCancelBtn');
+    
+    confirmBtn.onclick = () => {
+        deleteManualEvent(id);
+        modalConfirm.remove();
+    };
+    
+    cancelBtn.onclick = () => {
+        modalConfirm.remove();
+    };
+    
+    // Clicar fora do modal também fecha
+    modalConfirm.onclick = (e) => {
+        if (e.target === modalConfirm) {
+            modalConfirm.remove();
         }
     };
+};
     
     // Inicializar tudo
     init();
