@@ -684,13 +684,13 @@ window.deleteManualEvent = (id) => {
     
     document.body.appendChild(modalConfirm);
     
-    //const confirmBtn = modalConfirm.querySelector('#modalConfirmBtn');
+    const confirmBtn = modalConfirm.querySelector('#modalConfirmBtn');
     const cancelBtn = modalConfirm.querySelector('#modalCancelBtn');
     
-    confirmBtn.onclick = () => {
-        deleteManualEvent(id);
-        modalConfirm.remove();
-    };
+    //confirmBtn.onclick = () => {
+        //deleteManualEvent(id);
+        //modalConfirm.remove();
+    //};
     
     cancelBtn.onclick = () => {
         modalConfirm.remove();
