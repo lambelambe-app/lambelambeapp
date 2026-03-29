@@ -476,6 +476,110 @@
     function deleteManualEvent(id) {
         manualEvents = manualEvents.filter(ev => ev.id !== id);
         saveManualEvents();
+        // Função para verificar e remover eventos expirados (3h após o horário)
+function removerEventosExpirados() {
+    const agora = new Date();
+    let houveRemocao = false;
+    
+    manualEvents = manualEvents.filter(evento => {
+        const horarioEvento = new Date(evento.datetime);
+        const diferencaHoras = (agora - horarioEvento) / (1000 * 60 * 60);
+        
+        // Mantém apenas eventos que ainda não passaram do horário + 3 horas
+        if (diferencaHoras <= 3) {
+            return true;
+        } else {
+            houveRemocao = true;
+            return false;
+        }
+    });
+    
+    if (houveRemocao) {
+        saveManualEvents();
+        // Opcional: mostrar notificação discreta
+        mostrarNotificacaoRemocao();
+    }
+}
+
+// Função para mostrar notificação quando eventos são removidos
+function mostrarNotificacaoRemocao() {
+    const notificacao = document.createElement('div');
+    notificacao.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: #2c3e50;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        z-index: 10000;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        animation: fadeInOut 3s ease-in-out;
+    `;
+    notificacao.innerHTML = '<i class="fas fa-clock"></i> Eventos expirados foram removidos automaticamente';
+    
+    // Adicionar animação CSS
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateY(20px); }
+            15% { opacity: 1; transform: translateY(0); }
+            85% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(20px); }
+        }
+    `;
+    document.head.appendChild(style);
+    
+    document.body.appendChild(notificacao);
+    
+    setTimeout(() => {
+        notificacao.remove();
+    }, 3000);
+}
+
+// Função para verificar expiração periodicamente (a cada 5 minutos)
+function iniciarVerificacaoExpiracao() {
+    // Verificar imediatamente ao carregar
+    removerEventosExpirados();
+    
+    // Verificar a cada 5 minutos
+    setInterval(removerEventosExpirados, 5 * 60 * 1000);
+}
+
+// Função modificada de saveManualEvents para incluir verificação de expiração
+function saveManualEvents() {
+    localStorage.setItem("geolive_manual_events", JSON.stringify(manualEvents));
+    renderManualEvents();
+}
+
+// Função modificada de addManualEvent para garantir que eventos expirados não sejam adicionados
+function addManualEvent(eventData) {
+    const horarioEvento = new Date(eventData.datetime);
+    const agora = new Date();
+    const diferencaHoras = (agora - horarioEvento) / (1000 * 60 * 60);
+    
+    // Verificar se o evento já está expirado (mais de 3h após o horário)
+    if (diferencaHoras > 3) {
+        alert("Não é possível adicionar um evento que já ocorreu há mais de 3 horas!");
+        return false;
+    }
+    
+    const newEvent = {
+        id: Date.now(),
+        title: eventData.title,
+        bannerUrl: eventData.bannerUrl,
+        datetime: eventData.datetime,
+        city: eventData.city || "",
+        description: eventData.description,
+        link: eventData.link
+    };
+    manualEvents.push(newEvent);
+    // ordenar por horário (mais próximo primeiro)
+    manualEvents.sort((a,b) => new Date(a.datetime) - new Date(b.datetime));
+    saveManualEvents();
+    return true;
+}
     }
     
     // Formatar data/hora para exibição com ênfase
@@ -597,6 +701,19 @@
             const city = document.getElementById("eventCity").value.trim();
             const description = document.getElementById("eventDesc").value.trim();
             const link = document.getElementById("eventLink").value.trim();
+            const adicionado = addManualEvent({
+    title,
+    bannerUrl,
+    datetime,
+    city,
+    description,
+    link
+});
+
+if (adicionado) {
+    eventForm.reset();
+    document.querySelector(".section-title").scrollIntoView({ behavior: "smooth" });
+}
             
             if (!title || !bannerUrl || !datetime || !description || !link) {
                 alert("Por favor, preencha todos os campos obrigatórios.");
@@ -640,13 +757,15 @@
     
     // função para atualizar tudo (geolocalização + youtube + eventos)
     async function init() {
-        setupForm();
-        loadManualEvents();
-        await detectUserLocation();    // geolocalizador automático
-        await fetchYouTubeLiveEvents(); // carrega transmissões ao vivo
-        // Se a permissão de localização falhar, ainda sim renderiza normalmente
-    }
+    setupForm();
+    loadManualEvents();
+    await detectUserLocation();
+    await fetchYouTubeLiveEvents();
     
+    // Iniciar verificação automática de eventos expirados
+    iniciarVerificacaoExpiracao();
+}
+
     // Botão refresh geo
     document.getElementById("refreshGeoBtn").addEventListener("click", async () => {
         await detectUserLocation();
