@@ -2,22 +2,23 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Vaamos! | Eventos Ao Vivo - Música & Artes</title>
-    <!-- Font Awesome 6 (ícones) -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <meta name="theme-color" content="#0f2027">
+    <title>GeoLive | Eventos Ao Vivo - Arte & Entretenimento</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            font-family: system-ui, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
         }
 
         body {
-            background: #f8f9fc;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e9edf2 100%);
             color: #1a2c3e;
-            padding: 1.5rem;
+            padding: 1rem;
+            min-height: 100vh;
         }
 
         .container {
@@ -25,18 +26,19 @@
             margin: 0 auto;
         }
 
-        /* cabeçalho e geolocalização */
+        /* Header com gradiente animado */
         .geo-header {
             background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
             color: white;
-            border-radius: 2rem;
-            padding: 1.5rem 2rem;
+            border-radius: 1.5rem;
+            padding: 1.5rem;
             margin-bottom: 2rem;
-            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.2);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
         }
 
         .geo-header h1 {
-            font-size: 1.8rem;
+            font-size: 1.6rem;
             display: flex;
             align-items: center;
             gap: 0.75rem;
@@ -46,23 +48,26 @@
         .geo-header h1 i {
             font-size: 2rem;
             color: #ffd966;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
         }
 
         .location-box {
-            background: rgba(255,255,255,0.15);
-            backdrop-filter: blur(6px);
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
             border-radius: 2rem;
-            padding: 0.75rem 1.25rem;
+            padding: 0.7rem 1.2rem;
             margin-top: 1rem;
             display: inline-flex;
             align-items: center;
             gap: 0.8rem;
             flex-wrap: wrap;
             font-weight: 500;
-        }
-
-        .location-box i {
-            font-size: 1.3rem;
+            border: 1px solid rgba(255,255,255,0.3);
         }
 
         .badge-city {
@@ -74,82 +79,88 @@
         }
 
         .refresh-loc {
-            background: none;
-            border: 1px solid rgba(255,255,255,0.6);
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.5);
             color: white;
             border-radius: 2rem;
-            padding: 0.3rem 0.9rem;
+            padding: 0.3rem 1rem;
             cursor: pointer;
             transition: 0.2s;
-            font-size: 0.8rem;
         }
 
         .refresh-loc:hover {
-            background: rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.4);
+            transform: scale(1.02);
         }
 
-        /* seções */
         .section-title {
-            font-size: 1.7rem;
-            margin: 2rem 0 1rem 0;
-            padding-left: 0.5rem;
-            border-left: 8px solid #e63946;
+            font-size: 1.5rem;
+            margin: 1.5rem 0 1rem;
+            padding-left: 0.8rem;
+            border-left: 6px solid #e63946;
             font-weight: 700;
             display: flex;
             align-items: center;
-            gap: 12px;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.5rem;
         }
 
         .cards-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
-            gap: 1.8rem;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
             margin-top: 0.5rem;
         }
 
-        /* cartão de evento */
         .event-card {
             background: white;
-            border-radius: 1.5rem;
+            border-radius: 1.2rem;
             overflow: hidden;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
-            transition: transform 0.2s ease, box-shadow 0.2s;
-            display: flex;
-            flex-direction: column;
-            border: 1px solid #eef2f6;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(0,0,0,0.05);
         }
 
         .event-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 20px 30px -12px rgba(0,0,0,0.15);
+            box-shadow: 0 20px 35px rgba(0,0,0,0.15);
         }
 
         .card-banner {
             width: 100%;
-            height: 170px;
+            height: 160px;
             object-fit: cover;
-            background: #e2e8f0;
-            display: block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transition: transform 0.3s ease;
+        }
+
+        .event-card:hover .card-banner {
+            transform: scale(1.02);
         }
 
         .card-content {
-            padding: 1.2rem 1.2rem 1rem;
-            flex: 1;
+            padding: 1rem;
         }
 
         .card-title {
-            font-size: 1.25rem;
+            font-size: 1.1rem;
             font-weight: 700;
             margin-bottom: 0.5rem;
             display: flex;
             justify-content: space-between;
-            align-items: start;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+
+        .card-title span {
+            flex: 1;
         }
 
         .desc {
             color: #4a5568;
             font-size: 0.85rem;
-            margin: 0.6rem 0;
+            margin: 0.5rem 0;
             line-height: 1.4;
             display: -webkit-box;
             -webkit-line-clamp: 2;
@@ -158,43 +169,17 @@
         }
 
         .datetime-highlight {
-            background: #fff1e0;
+            background: linear-gradient(135deg, #fff5e6, #ffe8d6);
             border-left: 4px solid #f97316;
-            padding: 0.5rem 0.6rem;
-            border-radius: 0.8rem;
-            margin: 0.7rem 0;
+            padding: 0.5rem;
+            border-radius: 0.6rem;
+            margin: 0.6rem 0;
             font-weight: 600;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             display: flex;
             align-items: center;
             gap: 8px;
             flex-wrap: wrap;
-        }
-
-        .datetime-highlight i {
-            color: #e67e22;
-            font-size: 1rem;
-        }
-
-        .event-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: #e63946;
-            color: white;
-            text-decoration: none;
-            padding: 0.5rem 1rem;
-            border-radius: 2rem;
-            font-weight: 500;
-            font-size: 0.8rem;
-            transition: 0.2s;
-            margin-top: 0.6rem;
-            width: fit-content;
-        }
-
-        .event-link:hover {
-            background: #c1121f;
-            transform: scale(0.98);
         }
 
         .local-badge {
@@ -206,36 +191,84 @@
             display: inline-flex;
             align-items: center;
             gap: 5px;
-            margin-bottom: 8px;
+            width: fit-content;
         }
 
-        .delete-btn {
+        .event-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, #e63946, #c1121f);
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            font-weight: 500;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+            margin-top: 0.5rem;
+        }
+
+        .event-link:hover {
+            transform: scale(0.98);
+            box-shadow: 0 4px 12px rgba(230,57,70,0.4);
+        }
+
+        .admin-buttons {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .btn-icon {
             background: none;
             border: none;
-            color: #9ca3af;
             cursor: pointer;
-            font-size: 1.1rem;
+            font-size: 1rem;
+            padding: 5px;
+            border-radius: 50%;
             transition: 0.2s;
+            width: 30px;
+            height: 30px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .delete-btn:hover {
+        .btn-delete {
             color: #e63946;
         }
 
-        /* formulário */
+        .btn-delete:hover {
+            background: #ffe5e5;
+            transform: scale(1.1);
+        }
+
+        .btn-pin {
+            color: #f4a261;
+        }
+
+        .btn-pin:hover {
+            background: #fff0e6;
+            transform: scale(1.1);
+        }
+
+        .btn-pin.active {
+            color: #27ae60;
+        }
+
+        /* Formulário */
         .form-section {
             background: white;
             border-radius: 1.5rem;
             padding: 1.5rem;
-            margin: 2rem 0 1rem;
-            box-shadow: 0 5px 12px rgba(0,0,0,0.05);
+            margin: 1.5rem 0;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
             border: 1px solid #e2edf2;
         }
 
         .form-group {
             margin-bottom: 1rem;
-            display: flex;
-            flex-direction: column;
         }
 
         .form-row {
@@ -247,12 +280,14 @@
         label {
             font-weight: 600;
             margin-bottom: 0.3rem;
+            display: block;
             font-size: 0.85rem;
         }
 
         input, textarea {
+            width: 100%;
             padding: 0.7rem;
-            border: 1px solid #cbd5e1;
+            border: 2px solid #e2e8f0;
             border-radius: 1rem;
             font-size: 0.9rem;
             transition: 0.2s;
@@ -261,194 +296,188 @@
         input:focus, textarea:focus {
             outline: none;
             border-color: #e63946;
-            box-shadow: 0 0 0 2px rgba(230,57,70,0.2);
+            box-shadow: 0 0 0 3px rgba(230,57,70,0.1);
         }
 
         .btn-primary {
-            background: #1e2f3e;
+            background: linear-gradient(135deg, #1e2f3e, #2c3e50);
             color: white;
             border: none;
-            padding: 0.7rem 1.5rem;
+            padding: 0.8rem 1.8rem;
             border-radius: 2rem;
             font-weight: bold;
             cursor: pointer;
             transition: 0.2s;
-            margin-top: 0.5rem;
-            width: fit-content;
+            width: 100%;
+            font-size: 1rem;
         }
 
         .btn-primary:hover {
-            background: #e63946;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
 
-        .alert-info {
-            background: #d9e8fb;
-            padding: 0.8rem;
-            border-radius: 1rem;
-            margin: 1rem 0;
-            font-size: 0.9rem;
-            display: flex;
-            gap: 10px;
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            background: white;
+            border-radius: 1.5rem;
+            color: #6c757d;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #2c3e50;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 12px;
+            z-index: 10000;
+            animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            max-width: 300px;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes fadeOut {
+            to { opacity: 0; visibility: hidden; }
+        }
+
+        .badge-fixed {
+            background: #27ae60;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            display: inline-flex;
             align-items: center;
+            gap: 4px;
         }
 
         footer {
             text-align: center;
-            margin-top: 3rem;
+            margin-top: 2rem;
+            padding: 1rem;
             font-size: 0.75rem;
             color: #6c757d;
         }
 
         @media (max-width: 640px) {
-            body {
-                padding: 1rem;
-            }
-            .form-row {
-                grid-template-columns: 1fr;
-            }
-            .section-title {
-                font-size: 1.4rem;
-            }
+            body { padding: 0.8rem; }
+            .form-row { grid-template-columns: 1fr; }
+            .section-title { font-size: 1.3rem; }
         }
     </style>
 </head>
 <body>
 <div class="container">
-    <!-- cabeçalho com geolocalização automática -->
     <div class="geo-header">
-        <h1><i class="fas fa-map-marker-alt"></i> Vaamos! · Eventos ao vivo <span style="font-weight:thin">Música & Artes</span></h1>
-        <div class="location-box" id="locationBox">
+        <h1><i class="fas fa-map-marker-alt"></i> GeoLive · Eventos ao Vivo</h1>
+        <p style="opacity:0.9; margin-top: 0.3rem;">🎭 Arte & Entretenimento · Transmissões ao vivo</p>
+        <div class="location-box">
             <i class="fas fa-globe-americas"></i>
-            <span id="locationText">Detectando sua localização...</span>
+            <span id="locationText">Detectando localização...</span>
             <button class="refresh-loc" id="refreshGeoBtn"><i class="fas fa-sync-alt"></i> Atualizar</button>
         </div>
-        <p style="margin-top: 0.8rem; font-size: 0.85rem; opacity:0.9"><i class="fas fa-ticket-alt"></i> Eventos locais em destaque com base na sua cidade + transmissões ao vivo do YouTube</p>
     </div>
 
-    <!-- SEÇÃO EVENTOS CADASTRADOS (MANUAIS) -->
     <div class="section-title">
-        <i class="fas fa-calendar-check"></i> Eventos sugeridos por terceiros
-        <span style="font-size: 0.8rem; background:#e9ecef; padding: 0.2rem 0.8rem; border-radius: 2rem;" id="eventCountBadge">0</span>
+        <span><i class="fas fa-calendar-check"></i> Eventos Cadastrados</span>
+        <span id="eventCountBadge" style="background:#e9ecef; padding:0.2rem 0.8rem; border-radius:2rem; font-size:0.9rem;">0</span>
     </div>
-    <div id="manualEventsContainer" class="cards-grid">
-        <div class="alert-info"><i class="fas fa-info-circle"></i> Nenhum evento adicionado ainda. Use o formulário abaixo.</div>
-    </div>
+    <div id="manualEventsContainer" class="cards-grid"></div>
 
-    <!-- SEÇÃO EVENTOS AO VIVO DO YOUTUBE (ARTE + ENTRETENIMENTO) -->
     <div class="section-title">
-        <i class="fab fa-youtube"></i> Ao vivo agora no YouTube
+        <span><i class="fab fa-youtube"></i> Ao Vivo Agora · Arte & Entretenimento</span>
         <i class="fas fa-broadcast-tower" style="color:#e63946"></i>
     </div>
-    <div id="youtubeEventsContainer" class="cards-grid">
-        <div class="alert-info"><i class="fas fa-spinner fa-pulse"></i> Carregando transmissões ao vivo...</div>
-    </div>
+    <div id="youtubeEventsContainer" class="cards-grid"></div>
 
-    <!-- FORMULÁRIO PARA INFORMAR NOVO EVENTO: banner, descrição, horário, link -->
     <div class="form-section">
-        <h3 style="margin-bottom: 1rem;"><i class="fas fa-plus-circle"></i> Informar novo evento ao vivo</h3>
+        <h3 style="margin-bottom: 1rem;"><i class="fas fa-plus-circle"></i> Informar Novo Evento</h3>
         <form id="eventForm">
             <div class="form-group">
-                <label>Título do evento *</label>
+                <label>Título *</label>
                 <input type="text" id="eventTitle" placeholder="Ex: Festival de Teatro Online" required>
             </div>
             <div class="form-group">
-                <label>URL do Banner (imagem) *</label>
+                <label>URL do Banner *</label>
                 <input type="url" id="eventBanner" placeholder="https://exemplo.com/banner.jpg" required>
             </div>
             <div class="form-row">
                 <div class="form-group">
-                    <label>Data e Horário * (ênfase)</label>
+                    <label>Data e Horário *</label>
                     <input type="datetime-local" id="eventDatetime" required>
                 </div>
                 <div class="form-group">
-                    <label>Cidade / Local (para geolocalização)</label>
+                    <label>Cidade (para geolocalização)</label>
                     <input type="text" id="eventCity" placeholder="Ex: São Paulo, Rio de Janeiro">
                 </div>
             </div>
             <div class="form-group">
                 <label>Descrição *</label>
-                <textarea rows="2" id="eventDesc" placeholder="Detalhes do evento, atrações..." required></textarea>
+                <textarea rows="2" id="eventDesc" placeholder="Detalhes do evento..." required></textarea>
             </div>
             <div class="form-group">
-                <label>Link da Live (YouTube, etc) *</label>
+                <label>Link da Live *</label>
                 <input type="url" id="eventLink" placeholder="https://youtube.com/live/..." required>
             </div>
-            <button type="submit" class="btn-primary"><i class="fas fa-save"></i> Adicionar evento</button>
+            <button type="submit" class="btn-primary"><i class="fas fa-save"></i> Adicionar Evento</button>
         </form>
-        <small style="display:block; margin-top: 0.8rem;"><i class="fas fa-location-dot"></i> Dica: se a cidade coincidir com sua localização atual, o evento será destacado!</small>
     </div>
     <footer>
-        <i class="fas fa-video"></i> Eventos com geolocalização automática • As transmissões ao vivo do YouTube usam a API oficial (categorias Música e Arte)
+        <i class="fas fa-map-pin"></i> Eventos próximos a você são destacados · Exclusão automática após 3h do término
     </footer>
 </div>
 
 <script>
-    // ======================= CONFIGURAÇÕES ========================
-    // Substitua pela sua chave de API do YouTube Data v3 (obtenha em https://console.cloud.google.com/)
-    const YOUTUBE_API_KEY = "AIzaSyCrIJtzHeEeAPGxHI2ZNQlHdNyBd4mkmGQ";  // <-- COLOQUE SUA CHAVE AQUI
-    // Categorias: 20 = Arte, 24 = Entretenimento
+    // ==================== CONFIGURAÇÕES ====================
+    const YOUTUBE_API_KEY = "AIzaSyDummyKeyPlaceholder"; // Substitua pela sua chave
     const YOUTUBE_CATEGORIES = "20,24";
-    const MAX_YOUTUBE_RESULTS = 12;
+    const MAX_YOUTUBE_RESULTS = 8;
     
-    // ========== Variáveis globais ==========
-    let userCity = null;           // cidade detectada
-    let manualEvents = [];         // array de eventos cadastrados
+    let userCity = null;
+    let manualEvents = [];
     
-    // Elementos DOM
-    const manualContainer = document.getElementById("manualEventsContainer");
-    const youtubeContainer = document.getElementById("youtubeEventsContainer");
-    const locationTextSpan = document.getElementById("locationText");
-    const eventCountBadge = document.getElementById("eventCountBadge");
-    const eventForm = document.getElementById("eventForm");
-    
-    // ========== FUNÇÕES DE GEOLOCALIZAÇÃO (automática + reverse geocoding) ==========
+    // ==================== GEOLOCALIZAÇÃO ====================
     async function detectUserLocation() {
         if (!navigator.geolocation) {
-            locationTextSpan.innerHTML = "<i class='fas fa-exclamation-triangle'></i> Geolocalização não suportada";
-            userCity = null;
-            renderManualEvents();
+            document.getElementById("locationText").innerHTML = "<i class='fas fa-exclamation-triangle'></i> Geolocalização não suportada";
             return;
         }
-        locationTextSpan.innerHTML = "<i class='fas fa-spinner fa-pulse'></i> Obtendo localização...";
+        document.getElementById("locationText").innerHTML = "<i class='fas fa-spinner fa-pulse'></i> Obtendo localização...";
         try {
             const position = await new Promise((resolve, reject) => {
                 navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 10000 });
             });
-            const { latitude, longitude } = position.coords;
-            // Reverse geocoding com Nominatim (OpenStreetMap)
-            const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=10&addressdetails=1&accept-language=pt-BR`);
+            const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.coords.latitude}&lon=${position.coords.longitude}&zoom=10&addressdetails=1&accept-language=pt-BR`);
             const data = await response.json();
-            let city = "";
-            if (data.address) {
-                city = data.address.city || data.address.town || data.address.municipality || data.address.state_district || "";
-                if (!city && data.address.county) city = data.address.county;
-                if (!city && data.address.state) city = data.address.state;
-            }
+            let city = data.address?.city || data.address?.town || data.address?.municipality || "";
             if (city) {
                 userCity = city.trim();
-                locationTextSpan.innerHTML = `<i class="fas fa-map-pin"></i> Você está em: <span class="badge-city">${userCity}</span>`;
+                document.getElementById("locationText").innerHTML = `<i class="fas fa-map-pin"></i> Você está em: <span class="badge-city">${userCity}</span>`;
             } else {
                 userCity = null;
-                locationTextSpan.innerHTML = `<i class="fas fa-globe"></i> Localização aproximada (cidade não identificada)`;
+                document.getElementById("locationText").innerHTML = `<i class="fas fa-globe"></i> Localização aproximada`;
             }
-            renderManualEvents();  // re-renderiza destacando eventos da cidade
+            renderManualEvents();
         } catch (error) {
-            console.error("Erro geolocalização:", error);
-            locationTextSpan.innerHTML = "<i class='fas fa-map-marker-alt'></i> Localização não permitida ou indisponível";
+            document.getElementById("locationText").innerHTML = "<i class='fas fa-map-marker-alt'></i> Localização não disponível";
             userCity = null;
             renderManualEvents();
         }
     }
     
-    // ========== GERENCIAR EVENTOS MANUAIS (localStorage) ==========
+    // ==================== CRUD EVENTOS ====================
     function loadManualEvents() {
         const stored = localStorage.getItem("geolive_manual_events");
-        if (stored) {
-            manualEvents = JSON.parse(stored);
-        } else {
-            // eventos demo para exemplo (caso queira)
-            manualEvents = [];
-        }
+        manualEvents = stored ? JSON.parse(stored) : [];
+        manualEvents.forEach(ev => { if (ev.keepByAdmin === undefined) ev.keepByAdmin = false; });
         renderManualEvents();
     }
     
@@ -458,372 +487,196 @@
     }
     
     function addManualEvent(eventData) {
-        const newEvent = {
+        const horarioEvento = new Date(eventData.datetime);
+        const agora = new Date();
+        if ((agora - horarioEvento) / (1000 * 60 * 60) > 3) {
+            alert("❌ Não é possível adicionar evento com mais de 3h de atraso!");
+            return false;
+        }
+        manualEvents.push({
             id: Date.now(),
-            title: eventData.title,
-            bannerUrl: eventData.bannerUrl,
-            datetime: eventData.datetime,    // string ISO local
-            city: eventData.city || "",
-            description: eventData.description,
-            link: eventData.link
-        };
-        manualEvents.push(newEvent);
-        // ordenar por horário (mais próximo primeiro)
+            ...eventData,
+            keepByAdmin: false
+        });
         manualEvents.sort((a,b) => new Date(a.datetime) - new Date(b.datetime));
         saveManualEvents();
+        return true;
     }
     
     function deleteManualEvent(id) {
         manualEvents = manualEvents.filter(ev => ev.id !== id);
         saveManualEvents();
-        // Função para verificar e remover eventos expirados (3h após o horário)
-function removerEventosExpirados() {
-    const agora = new Date();
-    let houveRemocao = false;
+        showToast("🗑️ Evento removido com sucesso!", "#e63946");
+    }
     
-    manualEvents = manualEvents.filter(evento => {
-        const horarioEvento = new Date(evento.datetime);
-        const diferencaHoras = (agora - horarioEvento) / (1000 * 60 * 60);
-        
-        // Mantém apenas eventos que ainda não passaram do horário + 3 horas
-        if (diferencaHoras <= 3) {
-            return true;
-        } else {
-            houveRemocao = true;
+    function fixarEventoParaAdmin(id) {
+        const evento = manualEvents.find(ev => ev.id === id);
+        if (evento) {
+            evento.keepByAdmin = !evento.keepByAdmin;
+            saveManualEvents();
+            showToast(evento.keepByAdmin ? "📌 Evento fixado! Não será removido automaticamente." : "🔓 Evento liberado para remoção automática.", evento.keepByAdmin ? "#27ae60" : "#f4a261");
+        }
+    }
+    
+    // ==================== EXCLUSÃO AUTOMÁTICA ====================
+    function removerEventosExpirados() {
+        const agora = new Date();
+        let removidos = 0;
+        const novosEventos = manualEvents.filter(ev => {
+            const diffHoras = (agora - new Date(ev.datetime)) / (1000 * 60 * 60);
+            if (diffHoras <= 3 || ev.keepByAdmin === true) return true;
+            removidos++;
             return false;
+        });
+        if (removidos > 0) {
+            manualEvents = novosEventos;
+            saveManualEvents();
+            showToast(`⏰ ${removidos} evento(s) expirado(s) removido(s) automaticamente`, "#2c3e50");
         }
-    });
-    
-    if (houveRemocao) {
-        saveManualEvents();
-        // Opcional: mostrar notificação discreta
-        mostrarNotificacaoRemocao();
-    }
-}
-
-// Função para mostrar notificação quando eventos são removidos
-function mostrarNotificacaoRemocao() {
-    const notificacao = document.createElement('div');
-    notificacao.style.cssText = `
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        background: #2c3e50;
-        color: white;
-        padding: 12px 20px;
-        border-radius: 8px;
-        font-size: 0.9rem;
-        z-index: 10000;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-        animation: fadeInOut 3s ease-in-out;
-    `;
-    notificacao.innerHTML = '<i class="fas fa-clock"></i> Eventos expirados foram removidos automaticamente';
-    
-    // Adicionar animação CSS
-    const style = document.createElement('style');
-    style.textContent = `
-        @keyframes fadeInOut {
-            0% { opacity: 0; transform: translateY(20px); }
-            15% { opacity: 1; transform: translateY(0); }
-            85% { opacity: 1; transform: translateY(0); }
-            100% { opacity: 0; transform: translateY(20px); }
-        }
-    `;
-    document.head.appendChild(style);
-    
-    document.body.appendChild(notificacao);
-    
-    setTimeout(() => {
-        notificacao.remove();
-    }, 3000);
-}
-
-// Função para verificar expiração periodicamente (a cada 5 minutos)
-function iniciarVerificacaoExpiracao() {
-    // Verificar imediatamente ao carregar
-    removerEventosExpirados();
-    
-    // Verificar a cada 5 minutos
-    setInterval(removerEventosExpirados, 5 * 60 * 1000);
-}
-
-// Função modificada de saveManualEvents para incluir verificação de expiração
-function saveManualEvents() {
-    localStorage.setItem("geolive_manual_events", JSON.stringify(manualEvents));
-    renderManualEvents();
-}
-
-// Função modificada de addManualEvent para garantir que eventos expirados não sejam adicionados
-function addManualEvent(eventData) {
-    const horarioEvento = new Date(eventData.datetime);
-    const agora = new Date();
-    const diferencaHoras = (agora - horarioEvento) / (1000 * 60 * 60);
-    
-    // Verificar se o evento já está expirado (mais de 3h após o horário)
-    if (diferencaHoras > 3) {
-        alert("Não é possível adicionar um evento que já ocorreu há mais de 3 horas!");
-        return false;
     }
     
-    const newEvent = {
-        id: Date.now(),
-        title: eventData.title,
-        bannerUrl: eventData.bannerUrl,
-        datetime: eventData.datetime,
-        city: eventData.city || "",
-        description: eventData.description,
-        link: eventData.link
-    };
-    manualEvents.push(newEvent);
-    // ordenar por horário (mais próximo primeiro)
-    manualEvents.sort((a,b) => new Date(a.datetime) - new Date(b.datetime));
-    saveManualEvents();
-    return true;
-}
+    function iniciarVerificacaoExpiracao() {
+        removerEventosExpirados();
+        setInterval(removerEventosExpirados, 60 * 1000); // verifica a cada 1 minuto
     }
     
-    // Formatar data/hora para exibição com ênfase
+    // ==================== NOTIFICAÇÕES ====================
+    function showToast(message, bgColor = "#2c3e50") {
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.style.background = bgColor;
+        toast.innerHTML = `<i class="fas fa-info-circle"></i> ${message}`;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
+    
+    // ==================== RENDERIZAÇÃO ====================
     function formatDateTime(dateISO) {
         try {
-            const date = new Date(dateISO);
-            return date.toLocaleString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
-        } catch(e) {
-            return dateISO;
-        }
+            return new Date(dateISO).toLocaleString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute:'2-digit' });
+        } catch { return dateISO; }
     }
     
-    // Renderizar eventos manuais (cards)
     function renderManualEvents() {
-        if (!manualContainer) return;
+        const container = document.getElementById("manualEventsContainer");
+        const countBadge = document.getElementById("eventCountBadge");
+        countBadge.innerText = manualEvents.length;
+        
         if (manualEvents.length === 0) {
-            manualContainer.innerHTML = `<div class="alert-info"><i class="fas fa-plus-circle"></i> Nenhum evento cadastrado. Use o formulário acima para adicionar shows, peças, concertos e lives.</div>`;
-            eventCountBadge.innerText = "0";
+            container.innerHTML = `<div class="empty-state"><i class="fas fa-calendar-alt" style="font-size: 3rem; opacity: 0.5;"></i><p style="margin-top: 1rem;">Nenhum evento cadastrado. Use o formulário acima!</p></div>`;
             return;
         }
-        eventCountBadge.innerText = manualEvents.length;
-        let html = "";
-        for (let ev of manualEvents) {
-            const isLocal = (userCity && ev.city && ev.city.toLowerCase().includes(userCity.toLowerCase())) || (userCity && ev.city && userCity.toLowerCase().includes(ev.city.toLowerCase()));
-            const datetimeFormatted = formatDateTime(ev.datetime);
-            html += `
-                <div class="event-card" style="${isLocal ? 'border-left: 6px solid #f4a261; box-shadow: 0 8px 20px rgba(244,162,97,0.2);' : ''}">
-                    <img class="card-banner" src="${ev.bannerUrl}" alt="banner" onerror="this.src='https://placehold.co/600x400/2c3e50/white?text=Banner+Indisponível'">
+        
+        container.innerHTML = manualEvents.map(ev => {
+            const isLocal = userCity && ev.city && (ev.city.toLowerCase().includes(userCity.toLowerCase()) || userCity.toLowerCase().includes(ev.city.toLowerCase()));
+            return `
+                <div class="event-card" style="${isLocal ? 'border-left: 4px solid #f4a261;' : ''}">
+                    <img class="card-banner" src="${ev.bannerUrl}" alt="banner" onerror="this.src='https://placehold.co/600x400/667eea/white?text=GeoLive'">
                     <div class="card-content">
                         <div class="card-title">
                             <span>${escapeHtml(ev.title)}</span>
-                            <button class="delete-btn" onclick="deleteManualEvent(${ev.id})" title="Remover evento"><i class="fas fa-trash-alt"></i></button>
+                            <div class="admin-buttons">
+                                ${ev.keepByAdmin ? '<span class="badge-fixed"><i class="fas fa-thumbtack"></i> Fixado</span>' : ''}
+                                <button class="btn-icon btn-delete" onclick="window.deleteManualEvent(${ev.id})" title="Excluir evento"><i class="fas fa-trash-alt"></i></button>
+                                <button class="btn-icon btn-pin ${ev.keepByAdmin ? 'active' : ''}" onclick="window.fixarEventoParaAdmin(${ev.id})" title="${ev.keepByAdmin ? 'Liberar exclusão automática' : 'Fixar evento (evitar exclusão)'}"><i class="fas fa-thumbtack"></i></button>
+                            </div>
                         </div>
                         ${ev.city ? `<div class="local-badge"><i class="fas fa-city"></i> ${escapeHtml(ev.city)}</div>` : ''}
                         <div class="datetime-highlight">
-                            <i class="far fa-clock"></i> <strong>${datetimeFormatted}</strong> 
+                            <i class="far fa-clock"></i> <strong>${formatDateTime(ev.datetime)}</strong>
                             ${isLocal ? '<span style="background:#f4a261; color:#1e2f3e; padding:2px 8px; border-radius:30px; margin-left:8px;"><i class="fas fa-location-dot"></i> Perto de você</span>' : ''}
                         </div>
                         <div class="desc">${escapeHtml(ev.description)}</div>
-                        <a href="${ev.link}" target="_blank" rel="noopener noreferrer" class="event-link"><i class="fab fa-youtube"></i> Assistir live</a>
+                        <a href="${ev.link}" target="_blank" rel="noopener" class="event-link"><i class="fab fa-youtube"></i> Assistir live</a>
                     </div>
                 </div>
             `;
-        }
-        manualContainer.innerHTML = html;
+        }).join('');
     }
     
-    // ========== YOUTUBE API: buscar eventos ao vivo (categorias Arte e Entretenimento) ==========
+    // ==================== YOUTUBE API ====================
     async function fetchYouTubeLiveEvents() {
+        const container = document.getElementById("youtubeEventsContainer");
         if (!YOUTUBE_API_KEY || YOUTUBE_API_KEY === "AIzaSyDummyKeyPlaceholder") {
-            youtubeContainer.innerHTML = `<div class="alert-info"><i class="fas fa-key"></i> ⚠️ Chave de API do YouTube não configurada. Obtenha uma chave no Google Cloud e substitua no código (YOUTUBE_API_KEY).</div>`;
+            container.innerHTML = `<div class="empty-state"><i class="fas fa-key"></i><p>Configure sua chave de API do YouTube</p></div>`;
             return;
         }
-        youtubeContainer.innerHTML = `<div class="alert-info"><i class="fas fa-spinner fa-pulse"></i> Buscando transmissões ao vivo de Música e Arte...</div>`;
+        container.innerHTML = `<div class="empty-state"><i class="fas fa-spinner fa-pulse"></i><p>Buscando transmissões ao vivo...</p></div>`;
         try {
-            // 1. Buscar vídeos ao vivo nas categorias
-            const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&eventType=live&type=video&maxResults=${MAX_YOUTUBE_RESULTS}&videoCategoryId=${YOUTUBE_CATEGORIES}&key=${YOUTUBE_API_KEY}`;
-            const searchRes = await fetch(searchUrl);
+            const searchRes = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&eventType=live&type=video&maxResults=${MAX_YOUTUBE_RESULTS}&videoCategoryId=${YOUTUBE_CATEGORIES}&key=${YOUTUBE_API_KEY}`);
             const searchData = await searchRes.json();
-            if (!searchData.items || searchData.items.length === 0) {
-                youtubeContainer.innerHTML = `<div class="alert-info"><i class="fas fa-info-circle"></i> Nenhuma live de música/arte no momento. Tente novamente mais tarde.</div>`;
+            if (!searchData.items?.length) {
+                container.innerHTML = `<div class="empty-state"><i class="fas fa-video-slash"></i><p>Nenhuma live no momento</p></div>`;
                 return;
             }
             const videoIds = searchData.items.map(item => item.id.videoId).join(',');
-            // 2. Buscar detalhes adicionais (liveStreamingDetails e mais snippet)
-            const detailsUrl = `https://www.googleapis.com/youtube/v3/videos?part=snippet,liveStreamingDetails&id=${videoIds}&key=${YOUTUBE_API_KEY}`;
-            const detailsRes = await fetch(detailsUrl);
+            const detailsRes = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet,liveStreamingDetails&id=${videoIds}&key=${YOUTUBE_API_KEY}`);
             const detailsData = await detailsRes.json();
-            if (!detailsData.items) {
-                youtubeContainer.innerHTML = `<div class="alert-info"><i class="fas fa-exclamation-triangle"></i> Erro ao carregar detalhes das lives.</div>`;
-                return;
-            }
-            // Montar cards
-            let cardsHtml = "";
-            for (let video of detailsData.items) {
+            
+            container.innerHTML = detailsData.items.map(video => {
                 const snippet = video.snippet;
                 const liveDetails = video.liveStreamingDetails || {};
-                let scheduledTime = liveDetails.scheduledStartTime || liveDetails.actualStartTime || null;
-                let displayTime = "🔴 AO VIVO AGORA";
-                if (scheduledTime) {
-                    const startDate = new Date(scheduledTime);
-                    displayTime = startDate.toLocaleString('pt-BR', { day: 'numeric', month: 'short', hour: '2-digit', minute:'2-digit' });
-                    displayTime = `📅 Início: ${displayTime}`;
-                }
-                const thumbnail = snippet.thumbnails?.maxres?.url || snippet.thumbnails?.high?.url || snippet.thumbnails?.medium?.url;
-                const title = snippet.title;
-                const description = snippet.description.substring(0, 100) + (snippet.description.length > 100 ? "..." : "");
-                const videoUrl = `https://www.youtube.com/watch?v=${video.id}`;
-                const channelName = snippet.channelTitle;
-                cardsHtml += `
+                const scheduledTime = liveDetails.scheduledStartTime || liveDetails.actualStartTime;
+                const displayTime = scheduledTime ? `📅 ${new Date(scheduledTime).toLocaleString('pt-BR')}` : "🔴 AO VIVO AGORA";
+                const thumb = snippet.thumbnails?.maxres?.url || snippet.thumbnails?.high?.url || snippet.thumbnails?.medium?.url;
+                return `
                     <div class="event-card">
-                        <img class="card-banner" src="${thumbnail}" alt="thumbnail" onerror="this.src='https://placehold.co/600x400/0a0a2a/white?text=YouTube+Live'">
+                        <img class="card-banner" src="${thumb}" onerror="this.src='https://placehold.co/600x400/e63946/white?text=YouTube+Live'">
                         <div class="card-content">
-                            <div class="card-title">${escapeHtml(title)}</div>
-                            <div style="font-size:0.7rem; color:#2c7da0; margin-bottom:6px;"><i class="fab fa-youtube"></i> ${escapeHtml(channelName)}</div>
-                            <div class="datetime-highlight">
-                                <i class="fas fa-calendar-alt"></i> ${displayTime}
-                            </div>
-                            <div class="desc">${escapeHtml(description)}</div>
-                            <a href="${videoUrl}" target="_blank" rel="noopener noreferrer" class="event-link"><i class="fab fa-youtube"></i> Assistir transmissão</a>
+                            <div class="card-title"><span>${escapeHtml(snippet.title)}</span></div>
+                            <div style="font-size:0.7rem; color:#2c7da0;"><i class="fab fa-youtube"></i> ${escapeHtml(snippet.channelTitle)}</div>
+                            <div class="datetime-highlight"><i class="fas fa-calendar-alt"></i> ${displayTime}</div>
+                            <div class="desc">${escapeHtml(snippet.description?.substring(0, 100) || '')}</div>
+                            <a href="https://www.youtube.com/watch?v=${video.id}" target="_blank" class="event-link"><i class="fab fa-youtube"></i> Assistir</a>
                         </div>
                     </div>
                 `;
-            }
-            youtubeContainer.innerHTML = cardsHtml || `<div class="alert-info"><i class="fas fa-video-slash"></i> Nenhuma live ativa encontrada agora.</div>`;
+            }).join('');
         } catch (error) {
-            console.error("Erro YouTube API:", error);
-            youtubeContainer.innerHTML = `<div class="alert-info"><i class="fas fa-plug"></i> Erro na conexão com YouTube API. Verifique sua chave e internet.</div>`;
+            container.innerHTML = `<div class="empty-state"><i class="fas fa-plug"></i><p>Erro ao carregar transmissões</p></div>`;
         }
     }
     
-    // ========== FORMULÁRIO: capturar banner, descrição, horário, link ==========
-    function setupForm() {
-        eventForm.addEventListener("submit", (e) => {
-            e.preventDefault();
-            const title = document.getElementById("eventTitle").value.trim();
-            const bannerUrl = document.getElementById("eventBanner").value.trim();
-            const datetime = document.getElementById("eventDatetime").value;
-            const city = document.getElementById("eventCity").value.trim();
-            const description = document.getElementById("eventDesc").value.trim();
-            const link = document.getElementById("eventLink").value.trim();
-            const adicionado = addManualEvent({
-    title,
-    bannerUrl,
-    datetime,
-    city,
-    description,
-    link
-});
-
-if (adicionado) {
-    eventForm.reset();
-    document.querySelector(".section-title").scrollIntoView({ behavior: "smooth" });
-}
-            
-            if (!title || !bannerUrl || !datetime || !description || !link) {
-                alert("Por favor, preencha todos os campos obrigatórios.");
-                return;
-            }
-            // validar URL minimamente
-            if (!bannerUrl.startsWith("http")) {
-                alert("O banner precisa ser uma URL válida (http/https).");
-                return;
-            }
-            if (!link.startsWith("http")) {
-                alert("Link da live inválido.");
-                return;
-            }
-            addManualEvent({
-                title,
-                bannerUrl,
-                datetime,
-                city,
-                description,
-                link
-            });
-            eventForm.reset();
-            // Scroll suave para ver os novos eventos
-            document.querySelector(".section-title").scrollIntoView({ behavior: "smooth" });
-        });
-    }
-    
-    // helper escape html
+    // ==================== HELPERS ====================
     function escapeHtml(str) {
         if (!str) return "";
-        return str.replace(/[&<>]/g, function(m) {
-            if (m === '&') return '&amp;';
-            if (m === '<') return '&lt;';
-            if (m === '>') return '&gt;';
-            return m;
-        }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
-            return c;
-        });
+        return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m] || m));
     }
     
-    // função para atualizar tudo (geolocalização + youtube + eventos)
-    async function init() {
-    setupForm();
-    loadManualEvents();
-    await detectUserLocation();
-    await fetchYouTubeLiveEvents();
-    
-    // Iniciar verificação automática de eventos expirados
-    iniciarVerificacaoExpiracao();
-}
-
-    // Botão refresh geo
-    document.getElementById("refreshGeoBtn").addEventListener("click", async () => {
-        await detectUserLocation();
-        renderManualEvents();
+    // ==================== EVENTOS E INICIALIZAÇÃO ====================
+    document.getElementById("eventForm").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const title = document.getElementById("eventTitle").value.trim();
+        const bannerUrl = document.getElementById("eventBanner").value.trim();
+        const datetime = document.getElementById("eventDatetime").value;
+        const city = document.getElementById("eventCity").value.trim();
+        const description = document.getElementById("eventDesc").value.trim();
+        const link = document.getElementById("eventLink").value.trim();
+        
+        if (!title || !bannerUrl || !datetime || !description || !link) {
+            alert("Preencha todos os campos obrigatórios!");
+            return;
+        }
+        
+        if (addManualEvent({ title, bannerUrl, datetime, city, description, link })) {
+            e.target.reset();
+            showToast("✅ Evento adicionado com sucesso!", "#27ae60");
+            document.querySelector(".section-title").scrollIntoView({ behavior: "smooth" });
+        }
     });
     
-    // Expor deleteManualEvent globalmente para o onclick do botão
-window.deleteManualEvent = (id) => {
-    // Usando um modal personalizado em vez de confirm() para evitar exibição do endereço
-    const modalConfirm = document.createElement('div');
-    modalConfirm.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0,0,0,0.5);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 9999;
-        font-family: 'Segoe UI', sans-serif;
-    `;
+    document.getElementById("refreshGeoBtn").addEventListener("click", () => detectUserLocation());
     
-    modalConfirm.innerHTML = `
-        <div style="background: white; padding: 1.5rem; border-radius: 1rem; max-width: 320px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
-            <i class="fas fa-trash-alt" style="font-size: 2rem; color: #e63946; margin-bottom: 1rem; display: block;"></i>
-            <p style="margin-bottom: 1.5rem; font-size: 1rem;">Apenas adms podem excluir.</p>
-            <div style="display: flex; gap: 0.8rem; justify-content: center;">
-                <button id="modalConfirmBtn" style="background: #e63946; color: white; border: none; padding: 0.5rem 1.2rem; border-radius: 2rem; cursor: pointer; font-weight: bold;">Remover</button>
-                <button id="modalCancelBtn" style="background: #6c757d; color: white; border: none; padding: 0.5rem 1.2rem; border-radius: 2rem; cursor: pointer;">Cancelar</button>
-            </div>
-        </div>
-    `;
+    window.deleteManualEvent = deleteManualEvent;
+    window.fixarEventoParaAdmin = fixarEventoParaAdmin;
     
-    document.body.appendChild(modalConfirm);
+    async function init() {
+        loadManualEvents();
+        await detectUserLocation();
+        fetchYouTubeLiveEvents();
+        iniciarVerificacaoExpiracao();
+    }
     
-    const confirmBtn = modalConfirm.querySelector('#modalConfirmBtn');
-    const cancelBtn = modalConfirm.querySelector('#modalCancelBtn');
-    
-    confirmBtn.onclick = () => {
-        //deleteManualEvent(id);
-        //modalConfirm.remove();
-    };
-    
-    cancelBtn.onclick = () => {
-        //modalConfirm.remove();
-    };
-    
-    // Clicar fora do modal também fecha
-    modalConfirm.onclick = (e) => {
-        if (e.target === modalConfirm) {
-            modalConfirm.remove();
-        }
-    };
-};
-    
-    // Inicializar tudo
     init();
 </script>
 </body>
