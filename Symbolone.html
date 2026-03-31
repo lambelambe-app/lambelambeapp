@@ -2,224 +2,176 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>Symbolone - Sudoku de Símbolos</title>
     <style>
         * {
             user-select: none;
-            -webkit-tap-highlight-color: transparent;
             box-sizing: border-box;
         }
 
+        /* Fundo transparente, sem estilo de celular */
         body {
-            background: linear-gradient(145deg, #1a2a3a 0%, #0f1a24 100%);
-            min-height: 100vh;
+            background: transparent;
+            margin: 0;
+            padding: 20px;
+            font-family: 'Segoe UI', 'Poppins', 'Courier New', monospace;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-family: 'Segoe UI', 'Poppins', 'Courier New', monospace;
-            margin: 0;
-            padding: 16px;
+            min-height: 100vh;
         }
 
+        /* Container principal sem decoração */
         .game-container {
-            background: rgba(255,255,255,0.1);
-            backdrop-filter: blur(8px);
-            border-radius: 48px;
-            padding: 20px 16px 20px 16px;
-            box-shadow: 0 20px 35px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.2);
-            border: 1px solid rgba(255,255,255,0.3);
+            background: transparent;
+            padding: 0;
+            margin: 0;
             width: 100%;
-            max-width: 600px;
-            margin: auto;
+            max-width: none;
         }
 
         .game-panel {
-            background: #2c3e2f;
-            border-radius: 32px;
-            padding: 18px;
-            box-shadow: inset 0 0 12px rgba(0,0,0,0.5), 0 10px 20px rgba(0,0,0,0.3);
+            background: transparent;
+            padding: 0;
+            box-shadow: none;
+            border-radius: 0;
         }
 
         h1 {
             text-align: center;
-            margin: 0 0 12px 0;
-            font-size: 1.8rem;
-            letter-spacing: 2px;
-            background: linear-gradient(135deg, #FFE6B0, #FFB347);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
-            font-weight: 800;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            flex-wrap: wrap;
+            margin: 0 0 15px 0;
+            font-size: 2rem;
+            color: #2c3e2f;
+            text-shadow: none;
+            background: none;
+            -webkit-background-clip: unset;
+            background-clip: unset;
+            color: #2c3e2f;
         }
 
         h1 span {
-            font-size: 1.8rem;
-            background: none;
-            color: #FFD966;
-            text-shadow: 0 0 6px #ff9900;
+            font-size: 2rem;
+            color: #2c3e2f;
+            text-shadow: none;
         }
 
+        /* Grid do Sudoku */
         .sudoku-grid {
             display: grid;
             grid-template-columns: repeat(9, 1fr);
-            background-color: #1e2a22;
-            border: 3px solid #c9a87b;
-            border-radius: 12px;
-            overflow: hidden;
-            width: 100%;
+            background-color: #ddd;
+            border: 2px solid #333;
+            width: min(70vh, 70vw, 500px);
             aspect-ratio: 1 / 1;
-            margin: 0 auto;
-            box-shadow: 0 8px 18px black;
+            margin: 0 auto 20px auto;
+            box-shadow: none;
         }
 
         .cell {
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: clamp(1rem, 6vw, 2rem);
+            font-size: clamp(1rem, 5vw, 1.6rem);
             font-weight: bold;
-            font-family: 'Courier New', 'Fira Code', monospace;
-            background-color: #fef7e0;
-            border: 1px solid #bbaa82;
+            font-family: 'Courier New', monospace;
+            background-color: #fff;
+            border: 1px solid #aaa;
             cursor: pointer;
-            transition: 0.07s linear;
             color: #2c3e2f;
-            text-shadow: 0 0 2px white;
-            touch-action: manipulation;
         }
 
         .cell.preset {
-            background-color: #e6d5b8;
+            background-color: #e8e0d0;
             color: #3b2a1f;
-            font-weight: 800;
             cursor: default;
         }
 
         .cell.selected {
-            background-color: #ffe5a3;
-            box-shadow: inset 0 0 0 3px #f39c12, 0 0 0 2px #f1c40f;
+            background-color: #ffe0a3;
+            box-shadow: inset 0 0 0 2px #f39c12;
             transform: scale(1.01);
-            z-index: 2;
-            position: relative;
+            z-index: 1;
         }
 
         .cell.error {
             background-color: #f8d7da;
             color: #c0392b;
             text-decoration: line-through;
-            text-decoration-thickness: 2px;
         }
 
-        /* Paleta de símbolos */
+        /* Paleta de símbolos - horizontal, ícones reduzidos à metade */
         .symbol-palette {
-            margin-top: 24px;
             display: flex;
-            flex-wrap: wrap;
+            flex-direction: row;
             justify-content: center;
-            gap: 10px;
-            background: #2b3b2e;
-            padding: 12px 16px;
-            border-radius: 60px;
-            backdrop-filter: blur(4px);
+            align-items: center;
+            gap: 6px;
+            padding: 8px 0;
+            background: transparent;
+            overflow-x: auto;
+            white-space: nowrap;
+            margin: 10px 0;
         }
 
         .symbol-btn {
-            background: #f4e5c2;
-            border: none;
-            font-size: 1.8rem;
+            background: #f0e6d2;
+            border: 1px solid #b0a07c;
+            font-size: 1rem;
             font-weight: bold;
-            width: 60px;
-            height: 60px;
-            border-radius: 40px;
+            width: 28px;
+            height: 28px;
+            border-radius: 14px;
             cursor: pointer;
             font-family: monospace;
-            transition: all 0.1s ease;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            transition: 0.05s linear;
             color: #2d3e2b;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             touch-action: manipulation;
+            box-shadow: none;
         }
 
-        /* Botões responsivos para smartphones */
-        @media (max-width: 550px) {
+        /* Ajuste para telas muito pequenas: manter tamanho reduzido */
+        @media (max-width: 500px) {
             .symbol-btn {
-                width: 52px;
-                height: 52px;
-                font-size: 1.6rem;
-            }
-            .game-container {
-                padding: 12px;
-            }
-            .game-panel {
-                padding: 12px;
-            }
-            .controls {
-                gap: 12px;
-            }
-            .action {
-                padding: 10px 18px;
-                font-size: 1rem;
-            }
-        }
-
-        @media (max-width: 450px) {
-            .symbol-btn {
-                width: 44px;
-                height: 44px;
-                font-size: 1.4rem;
-            }
-            .action {
-                padding: 8px 14px;
+                width: 26px;
+                height: 26px;
                 font-size: 0.9rem;
-            }
-            h1 {
-                font-size: 1.5rem;
             }
         }
 
         .symbol-btn:active {
-            transform: scale(0.94);
+            transform: scale(0.92);
             background: #ffd966;
         }
 
         .symbol-btn.active-tool {
             background: #ffb347;
-            box-shadow: 0 0 0 3px white, 0 0 0 6px #ff9900;
-            color: black;
+            box-shadow: 0 0 0 2px #ff9900;
         }
 
         .controls {
             margin-top: 20px;
             display: flex;
             justify-content: center;
-            gap: 16px;
+            gap: 15px;
             flex-wrap: wrap;
         }
 
         button.action {
             background: #4a6741;
             border: none;
-            font-size: 1.1rem;
+            font-size: 0.9rem;
             font-weight: bold;
-            padding: 10px 20px;
-            border-radius: 40px;
+            padding: 6px 14px;
+            border-radius: 30px;
             color: white;
             cursor: pointer;
             font-family: 'Segoe UI', monospace;
             transition: 0.1s;
-            letter-spacing: 1px;
-            box-shadow: 0 2px 6px black;
-            touch-action: manipulation;
-            flex: 0 0 auto;
+            box-shadow: none;
         }
 
         button.action:active {
@@ -229,17 +181,16 @@
 
         .status {
             text-align: center;
-            margin-top: 18px;
-            font-size: 1.1rem;
+            margin-top: 15px;
+            font-size: 0.9rem;
             font-weight: bold;
-            background: #1f2c1bcc;
-            border-radius: 30px;
-            padding: 8px;
-            color: #FFE484;
-            backdrop-filter: blur(8px);
+            background: rgba(0,0,0,0.05);
+            padding: 5px;
+            color: #2c3e2f;
+            border-radius: 20px;
         }
 
-        /* Camada de confetes */
+        /* Confetes */
         .confetti-canvas {
             position: fixed;
             top: 0;
@@ -252,22 +203,19 @@
 
         .symbol-confetti {
             position: absolute;
-            font-size: 1.5rem;
+            font-size: 1rem;
             font-weight: bold;
             font-family: monospace;
             opacity: 0.9;
             animation: fall linear forwards;
             pointer-events: none;
-            text-shadow: 0 0 3px gold;
+            text-shadow: 0 0 2px gold;
         }
 
         @keyframes fall {
             0% {
                 transform: translateY(-10vh) rotate(0deg);
                 opacity: 1;
-            }
-            80% {
-                opacity: 0.7;
             }
             100% {
                 transform: translateY(100vh) rotate(360deg);
@@ -277,33 +225,29 @@
     </style>
 </head>
 <body>
-<div>
-    <div class="game-container">
-        <div class="game-panel">
-            <h1>
-                <span>⌨️</span> SYMBOLONE <span>🔣</span>
-            </h1>
-            <div class="sudoku-grid" id="sudokuGrid"></div>
+<div class="game-container">
+    <div class="game-panel">
+        <h1>
+            <span>⌨️</span> SYMBOLONE <span>🔣</span>
+        </h1>
+        <div class="sudoku-grid" id="sudokuGrid"></div>
 
-            <div class="symbol-palette" id="symbolPalette">
-                <!-- símbolos gerados via js -->
-            </div>
-
-            <div class="controls">
-                <button class="action" id="clearBtn">🗑️ LIMPAR</button>
-                <button class="action" id="newGameBtn">🔄 NOVO JOGO</button>
-                <button class="action" id="checkBtn">✅ VERIFICAR</button>
-            </div>
-            <div class="status" id="statusMsg">Clique em uma célula e depois num símbolo</div>
+        <div class="symbol-palette" id="symbolPalette">
+            <!-- preenchido via js -->
         </div>
+
+        <div class="controls">
+            <button class="action" id="clearBtn">🗑️ LIMPAR</button>
+            <button class="action" id="newGameBtn">🔄 NOVO</button>
+            <button class="action" id="checkBtn">✅ VERIFICAR</button>
+        </div>
+        <div class="status" id="statusMsg">Clique em uma célula e depois num símbolo</div>
     </div>
 </div>
 
 <script>
-    // ---------- CONJUNTO DE 9 SÍMBOLOS NÃO NUMÉRICOS ----------
+    // ---------- JOGO ----------
     const SYMBOLS = ["@", "#", "$", "%", "&", "?", "*", "+", "~"];
-    const SYMBOL_SET = new Set(SYMBOLS);
-
     const SIZE = 9;
     const BOX_SIZE = 3;
 
@@ -422,9 +366,8 @@
         return true;
     }
     
-    // EFEITO DE CONFETE COM SÍMBOLOS
+    // Efeito de confetes com símbolos
     function launchSymbolConfetti() {
-        // remove qualquer efeito anterior
         const existingCanvas = document.querySelector('.confetti-canvas');
         if (existingCanvas) existingCanvas.remove();
         
@@ -432,8 +375,8 @@
         container.className = 'confetti-canvas';
         document.body.appendChild(container);
         
-        const symbols = [...SYMBOLS]; // usa os 9 símbolos do jogo
-        const numberOfConfetti = 120; // quantidade de partículas
+        const symbols = [...SYMBOLS];
+        const numberOfConfetti = 80;
         
         for (let i = 0; i < numberOfConfetti; i++) {
             const symbol = symbols[Math.floor(Math.random() * symbols.length)];
@@ -441,10 +384,9 @@
             el.className = 'symbol-confetti';
             el.textContent = symbol;
             
-            // Estilos aleatórios
-            const size = 1 + Math.random() * 2; // rem
-            const left = Math.random() * 100; // % da largura
-            const duration = 2 + Math.random() * 3; // segundos
+            const size = 0.8 + Math.random() * 1.2;
+            const left = Math.random() * 100;
+            const duration = 2 + Math.random() * 2;
             const delay = Math.random() * 0.5;
             const rotateStart = Math.random() * 360;
             
@@ -456,44 +398,38 @@
             el.style.position = 'absolute';
             el.style.top = '-10vh';
             
-            // cores variadas
             const hue = Math.random() * 360;
             el.style.color = `hsl(${hue}, 80%, 60%)`;
-            el.style.textShadow = `0 0 4px hsl(${hue}, 100%, 50%)`;
+            el.style.textShadow = `0 0 3px hsl(${hue}, 100%, 50%)`;
             
             container.appendChild(el);
             
-            // remover após animação
             setTimeout(() => {
                 if (el.parentNode) el.remove();
             }, (duration + delay) * 1000);
         }
         
-        // remover o container após alguns segundos
         setTimeout(() => {
             if (container.parentNode) container.remove();
-        }, 6000);
+        }, 5000);
     }
     
     function updateGameStatus() {
         if (checkVictory()) {
             currentGameOver = true;
             statusDiv.innerHTML = "🎉✨ VITÓRIA! ✨🎉  Você completou todos os símbolos!";
-            statusDiv.style.color = "#f9e45b";
-            statusDiv.style.fontSize = "1.2rem";
+            statusDiv.style.color = "#b8860b";
             renderGrid();
-            // Lançar confetes com símbolos
             launchSymbolConfetti();
         } else {
-            statusDiv.style.color = "#FFE484";
-            statusDiv.style.fontSize = "1.1rem";
+            statusDiv.style.color = "#2c3e2f";
             if (!currentGameOver) statusDiv.innerHTML = "📌 Jogo em andamento. Clique célula + símbolo.";
         }
     }
     
     function updateStatusMessage(msg) {
         if (!currentGameOver) statusDiv.innerHTML = msg;
-        else statusDiv.innerHTML = "🎉 Vitória! Clique em 'Novo Jogo' para continuar desafiando! 🎉";
+        else statusDiv.innerHTML = "🎉 Vitória! Clique em 'NOVO' para continuar! 🎉";
     }
 
     function placeSymbol(symbol) {
@@ -572,7 +508,7 @@
                 
                 if (selectedRow !== -1 && selectedCol !== -1) {
                     if (i === selectedRow || j === selectedCol) {
-                        if (!isSelected) cellDiv.style.backgroundColor = "#faf0cf";
+                        if (!isSelected) cellDiv.style.backgroundColor = "#f9f0df";
                     }
                     const sRowBlock = Math.floor(selectedRow / BOX_SIZE) * BOX_SIZE;
                     const sColBlock = Math.floor(selectedCol / BOX_SIZE) * BOX_SIZE;
@@ -635,7 +571,7 @@
         const eraseBtn = document.createElement("button");
         eraseBtn.textContent = "⌫";
         eraseBtn.classList.add("symbol-btn");
-        eraseBtn.style.background = "#c9ab85";
+        eraseBtn.style.background = "#d9c8aa";
         eraseBtn.addEventListener("click", () => {
             clearSelectedCell();
         });
@@ -670,7 +606,7 @@
         if (conflictCount === 0 && !hasAnyEmpty) {
             statusDiv.innerHTML = "🎉✨ Perfeito! Você completou corretamente! Vitória! ✨🎉";
             currentGameOver = true;
-            launchSymbolConfetti(); // confetes também aqui
+            launchSymbolConfetti();
             renderGrid();
         } else if (conflictCount === 0 && hasAnyEmpty) {
             statusDiv.innerHTML = "✅ Nenhum conflito encontrado! Continue preenchendo.";
