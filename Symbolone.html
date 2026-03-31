@@ -2,12 +2,13 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Symbol One - Jogo com Símbolos do Teclado</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Symbolone - Sudoku de Símbolos</title>
     <style>
         * {
             user-select: none;
             -webkit-tap-highlight-color: transparent;
+            box-sizing: border-box;
         }
 
         body {
@@ -18,30 +19,33 @@
             align-items: center;
             font-family: 'Segoe UI', 'Poppins', 'Courier New', monospace;
             margin: 0;
-            padding: 20px;
+            padding: 16px;
         }
 
         .game-container {
             background: rgba(255,255,255,0.1);
             backdrop-filter: blur(8px);
             border-radius: 48px;
-            padding: 25px 20px 20px 20px;
+            padding: 20px 16px 20px 16px;
             box-shadow: 0 20px 35px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.2);
             border: 1px solid rgba(255,255,255,0.3);
+            width: 100%;
+            max-width: 600px;
+            margin: auto;
         }
 
         .game-panel {
             background: #2c3e2f;
             border-radius: 32px;
-            padding: 20px;
+            padding: 18px;
             box-shadow: inset 0 0 12px rgba(0,0,0,0.5), 0 10px 20px rgba(0,0,0,0.3);
         }
 
         h1 {
             text-align: center;
-            margin: 0 0 15px 0;
-            font-size: 1.9rem;
-            letter-spacing: 3px;
+            margin: 0 0 12px 0;
+            font-size: 1.8rem;
+            letter-spacing: 2px;
             background: linear-gradient(135deg, #FFE6B0, #FFB347);
             -webkit-background-clip: text;
             background-clip: text;
@@ -51,11 +55,12 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 12px;
+            gap: 8px;
+            flex-wrap: wrap;
         }
 
         h1 span {
-            font-size: 2rem;
+            font-size: 1.8rem;
             background: none;
             color: #FFD966;
             text-shadow: 0 0 6px #ff9900;
@@ -68,8 +73,8 @@
             border: 3px solid #c9a87b;
             border-radius: 12px;
             overflow: hidden;
-            width: min(65vw, 65vh, 550px);
-            height: min(65vw, 65vh, 550px);
+            width: 100%;
+            aspect-ratio: 1 / 1;
             margin: 0 auto;
             box-shadow: 0 8px 18px black;
         }
@@ -78,7 +83,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: clamp(1.4rem, 5vw, 2.2rem);
+            font-size: clamp(1rem, 6vw, 2rem);
             font-weight: bold;
             font-family: 'Courier New', 'Fira Code', monospace;
             background-color: #fef7e0;
@@ -87,6 +92,7 @@
             transition: 0.07s linear;
             color: #2c3e2f;
             text-shadow: 0 0 2px white;
+            touch-action: manipulation;
         }
 
         .cell.preset {
@@ -104,10 +110,6 @@
             position: relative;
         }
 
-        .cell.highlight {
-            background-color: #ffecb3;
-        }
-
         .cell.error {
             background-color: #f8d7da;
             color: #c0392b;
@@ -115,14 +117,15 @@
             text-decoration-thickness: 2px;
         }
 
+        /* Paleta de símbolos */
         .symbol-palette {
-            margin-top: 28px;
+            margin-top: 24px;
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
-            gap: 12px;
+            gap: 10px;
             background: #2b3b2e;
-            padding: 15px 20px;
+            padding: 12px 16px;
             border-radius: 60px;
             backdrop-filter: blur(4px);
         }
@@ -137,17 +140,55 @@
             border-radius: 40px;
             cursor: pointer;
             font-family: monospace;
-            transition: 0.1s;
+            transition: all 0.1s ease;
             box-shadow: 0 4px 8px rgba(0,0,0,0.3);
             color: #2d3e2b;
             display: inline-flex;
             align-items: center;
             justify-content: center;
+            touch-action: manipulation;
         }
 
-        .symbol-btn:hover {
-            transform: scale(1.08);
-            background: #ffde9c;
+        /* Botões responsivos para smartphones */
+        @media (max-width: 550px) {
+            .symbol-btn {
+                width: 52px;
+                height: 52px;
+                font-size: 1.6rem;
+            }
+            .game-container {
+                padding: 12px;
+            }
+            .game-panel {
+                padding: 12px;
+            }
+            .controls {
+                gap: 12px;
+            }
+            .action {
+                padding: 10px 18px;
+                font-size: 1rem;
+            }
+        }
+
+        @media (max-width: 450px) {
+            .symbol-btn {
+                width: 44px;
+                height: 44px;
+                font-size: 1.4rem;
+            }
+            .action {
+                padding: 8px 14px;
+                font-size: 0.9rem;
+            }
+            h1 {
+                font-size: 1.5rem;
+            }
+        }
+
+        .symbol-btn:active {
+            transform: scale(0.94);
+            background: #ffd966;
         }
 
         .symbol-btn.active-tool {
@@ -160,15 +201,16 @@
             margin-top: 20px;
             display: flex;
             justify-content: center;
-            gap: 20px;
+            gap: 16px;
+            flex-wrap: wrap;
         }
 
         button.action {
             background: #4a6741;
             border: none;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             font-weight: bold;
-            padding: 8px 22px;
+            padding: 10px 20px;
             border-radius: 40px;
             color: white;
             cursor: pointer;
@@ -176,16 +218,19 @@
             transition: 0.1s;
             letter-spacing: 1px;
             box-shadow: 0 2px 6px black;
+            touch-action: manipulation;
+            flex: 0 0 auto;
         }
 
         button.action:active {
             transform: scale(0.96);
+            background: #5d7e52;
         }
 
         .status {
             text-align: center;
-            margin-top: 20px;
-            font-size: 1.2rem;
+            margin-top: 18px;
+            font-size: 1.1rem;
             font-weight: bold;
             background: #1f2c1bcc;
             border-radius: 30px;
@@ -194,18 +239,39 @@
             backdrop-filter: blur(8px);
         }
 
-        @media (max-width: 550px) {
-            .symbol-btn {
-                width: 48px;
-                height: 48px;
-                font-size: 1.6rem;
+        /* Camada de confetes */
+        .confetti-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        .symbol-confetti {
+            position: absolute;
+            font-size: 1.5rem;
+            font-weight: bold;
+            font-family: monospace;
+            opacity: 0.9;
+            animation: fall linear forwards;
+            pointer-events: none;
+            text-shadow: 0 0 3px gold;
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(-10vh) rotate(0deg);
+                opacity: 1;
             }
-            .sudoku-grid {
-                width: 85vw;
-                height: 85vw;
+            80% {
+                opacity: 0.7;
             }
-            .cell {
-                font-size: 1.3rem;
+            100% {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
             }
         }
     </style>
@@ -215,7 +281,7 @@
     <div class="game-container">
         <div class="game-panel">
             <h1>
-                <span>⌨️</span> SYMBOL ONE <span>⚙️</span>
+                <span>⌨️</span> SYMBOLONE <span>🔣</span>
             </h1>
             <div class="sudoku-grid" id="sudokuGrid"></div>
 
@@ -234,19 +300,16 @@
 </div>
 
 <script>
-    // ---------- CONJUNTO DE 9 SÍMBOLOS NÃO NUMÉRICOS (TECLADO/SÍMBOLOS) ----------
+    // ---------- CONJUNTO DE 9 SÍMBOLOS NÃO NUMÉRICOS ----------
     const SYMBOLS = ["@", "#", "$", "%", "&", "?", "*", "+", "~"];
-    // Mapeamento reverso para checagem
     const SYMBOL_SET = new Set(SYMBOLS);
 
-    // Tamanho do grid
     const SIZE = 9;
     const BOX_SIZE = 3;
 
-    // Estruturas do jogo
-    let board = Array(SIZE).fill().map(() => Array(SIZE).fill(""));   // estado atual (preenchido pelo jogador)
-    let solution = Array(SIZE).fill().map(() => Array(SIZE).fill("")); // solução completa
-    let fixedCells = Array(SIZE).fill().map(() => Array(SIZE).fill(false)); // células pré-definidas (imutáveis)
+    let board = Array(SIZE).fill().map(() => Array(SIZE).fill(""));
+    let solution = Array(SIZE).fill().map(() => Array(SIZE).fill(""));
+    let fixedCells = Array(SIZE).fill().map(() => Array(SIZE).fill(false));
     
     let selectedRow = -1, selectedCol = -1;
     let currentGameOver = false;
@@ -254,17 +317,14 @@
     let statusDiv = document.getElementById("statusMsg");
     let symbolPalette = document.getElementById("symbolPalette");
 
-    // ---------- FUNÇÕES AUXILIARES DE VALIDAÇÃO DE SUDOKU (COM SÍMBOLOS) ----------
+    // ---------- FUNÇÕES DE VALIDAÇÃO ----------
     function isValidPlacement(boardTemp, row, col, symbol) {
-        // Verifica linha
         for (let c = 0; c < SIZE; c++) {
             if (c !== col && boardTemp[row][c] === symbol) return false;
         }
-        // Verifica coluna
         for (let r = 0; r < SIZE; r++) {
             if (r !== row && boardTemp[r][col] === symbol) return false;
         }
-        // Verifica quadrante 3x3
         const startRow = Math.floor(row / BOX_SIZE) * BOX_SIZE;
         const startCol = Math.floor(col / BOX_SIZE) * BOX_SIZE;
         for (let r = startRow; r < startRow + BOX_SIZE; r++) {
@@ -275,12 +335,19 @@
         return true;
     }
 
-    // Algoritmo de backtracking para gerar uma solução completa aleatória (preenche grid)
+    function findEmpty(boardArr) {
+        for (let i = 0; i < SIZE; i++) {
+            for (let j = 0; j < SIZE; j++) {
+                if (boardArr[i][j] === "") return [i, j];
+            }
+        }
+        return null;
+    }
+
     function solveSudoku(boardArr) {
         const emptySpot = findEmpty(boardArr);
         if (!emptySpot) return true;
         const [row, col] = emptySpot;
-        // Embaralhar símbolos para gerar grids diferentes
         const shuffledSymbols = [...SYMBOLS];
         for (let i = shuffledSymbols.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
@@ -296,22 +363,9 @@
         return false;
     }
 
-    function findEmpty(boardArr) {
-        for (let i = 0; i < SIZE; i++) {
-            for (let j = 0; j < SIZE; j++) {
-                if (boardArr[i][j] === "") return [i, j];
-            }
-        }
-        return null;
-    }
-
-    // Gera um novo puzzle baseado em solução completa, removendo células conforme dificuldade
     function generateNewPuzzle() {
-        // 1. Criar um grid vazio
         let fullSolution = Array(SIZE).fill().map(() => Array(SIZE).fill(""));
-        // Preencher com backtracking para ter uma solução válida completa
         if (!solveSudoku(fullSolution)) {
-            // fallback manual: caso raro de falha, reinicializar com símbolos fixos
             for (let i = 0; i < SIZE; i++) {
                 for (let j = 0; j < SIZE; j++) {
                     fullSolution[i][j] = SYMBOLS[(i * 3 + j) % SYMBOLS.length];
@@ -319,14 +373,12 @@
             }
             solveSudoku(fullSolution);
         }
-        // Copiar solução
         for (let i = 0; i < SIZE; i++) {
             for (let j = 0; j < SIZE; j++) {
                 solution[i][j] = fullSolution[i][j];
             }
         }
         
-        // Inicializar board com a solução completa e depois remover células
         let puzzleBoard = Array(SIZE).fill().map(() => Array(SIZE).fill(""));
         for (let i = 0; i < SIZE; i++) {
             for (let j = 0; j < SIZE; j++) {
@@ -334,8 +386,7 @@
             }
         }
         
-        // Quantidade de células a remover (entre 40 e 55 para desafio médio/difícil)
-        const cellsToRemove = 48 + Math.floor(Math.random() * 12); // 48~59 remoções
+        const cellsToRemove = 48 + Math.floor(Math.random() * 12);
         let removed = 0;
         while (removed < cellsToRemove) {
             const row = Math.floor(Math.random() * SIZE);
@@ -346,7 +397,6 @@
             }
         }
         
-        // Atualizar board e fixedCells
         for (let i = 0; i < SIZE; i++) {
             for (let j = 0; j < SIZE; j++) {
                 board[i][j] = puzzleBoard[i][j];
@@ -361,33 +411,82 @@
         renderGrid();
     }
 
-    // Verifica se o board atual está completamente preenchido e válido (vitória)
     function checkVictory() {
         for (let i = 0; i < SIZE; i++) {
             for (let j = 0; j < SIZE; j++) {
                 const val = board[i][j];
                 if (val === "") return false;
-                // Verificar se na posição atual, o símbolo é válido considerando o tabuleiro completo
-                // Mas podemos fazer checagem de conflito total: se algum símbolo repete na linha/coluna/bloco
-                if (!isValidPlacement(board, i, j, val)) {
-                    return false;
-                }
+                if (!isValidPlacement(board, i, j, val)) return false;
             }
         }
         return true;
     }
     
-    // Atualizar mensagem e verificar vitória
+    // EFEITO DE CONFETE COM SÍMBOLOS
+    function launchSymbolConfetti() {
+        // remove qualquer efeito anterior
+        const existingCanvas = document.querySelector('.confetti-canvas');
+        if (existingCanvas) existingCanvas.remove();
+        
+        const container = document.createElement('div');
+        container.className = 'confetti-canvas';
+        document.body.appendChild(container);
+        
+        const symbols = [...SYMBOLS]; // usa os 9 símbolos do jogo
+        const numberOfConfetti = 120; // quantidade de partículas
+        
+        for (let i = 0; i < numberOfConfetti; i++) {
+            const symbol = symbols[Math.floor(Math.random() * symbols.length)];
+            const el = document.createElement('div');
+            el.className = 'symbol-confetti';
+            el.textContent = symbol;
+            
+            // Estilos aleatórios
+            const size = 1 + Math.random() * 2; // rem
+            const left = Math.random() * 100; // % da largura
+            const duration = 2 + Math.random() * 3; // segundos
+            const delay = Math.random() * 0.5;
+            const rotateStart = Math.random() * 360;
+            
+            el.style.fontSize = `${size}rem`;
+            el.style.left = `${left}%`;
+            el.style.animationDuration = `${duration}s`;
+            el.style.animationDelay = `${delay}s`;
+            el.style.transform = `rotate(${rotateStart}deg)`;
+            el.style.position = 'absolute';
+            el.style.top = '-10vh';
+            
+            // cores variadas
+            const hue = Math.random() * 360;
+            el.style.color = `hsl(${hue}, 80%, 60%)`;
+            el.style.textShadow = `0 0 4px hsl(${hue}, 100%, 50%)`;
+            
+            container.appendChild(el);
+            
+            // remover após animação
+            setTimeout(() => {
+                if (el.parentNode) el.remove();
+            }, (duration + delay) * 1000);
+        }
+        
+        // remover o container após alguns segundos
+        setTimeout(() => {
+            if (container.parentNode) container.remove();
+        }, 6000);
+    }
+    
     function updateGameStatus() {
         if (checkVictory()) {
             currentGameOver = true;
             statusDiv.innerHTML = "🎉✨ VITÓRIA! ✨🎉  Você completou todos os símbolos!";
             statusDiv.style.color = "#f9e45b";
-            statusDiv.style.fontSize = "1.3rem";
-            renderGrid(); // re-render para possivelmente desabilitar interações extras? mas manterá.
+            statusDiv.style.fontSize = "1.2rem";
+            renderGrid();
+            // Lançar confetes com símbolos
+            launchSymbolConfetti();
         } else {
             statusDiv.style.color = "#FFE484";
-            statusDiv.style.fontSize = "1.2rem";
+            statusDiv.style.fontSize = "1.1rem";
             if (!currentGameOver) statusDiv.innerHTML = "📌 Jogo em andamento. Clique célula + símbolo.";
         }
     }
@@ -397,7 +496,6 @@
         else statusDiv.innerHTML = "🎉 Vitória! Clique em 'Novo Jogo' para continuar desafiando! 🎉";
     }
 
-    // Colocar símbolo na célula selecionada
     function placeSymbol(symbol) {
         if (currentGameOver) {
             updateStatusMessage("Jogo finalizado! Clique em NOVO JOGO.");
@@ -414,29 +512,21 @@
             return;
         }
         
-        // Colocar símbolo
         board[row][col] = symbol;
-        
-        // Verificar se isso viola regras para feedback visual
         const isValidMove = isValidPlacement(board, row, col, symbol);
         if (!isValidMove) {
-            // Não impede o jogador, mas mostra aviso de conflito (estilo de erro visual)
-            updateStatusMessage(`⚠️ Conflito! O símbolo ${symbol} está em conflito na linha/coluna/bloco.`);
+            updateStatusMessage(`⚠️ Conflito! O símbolo ${symbol} está em conflito.`);
         } else {
             updateStatusMessage(`Símbolo ${symbol} inserido na posição (${row+1},${col+1})`);
         }
         
-        // Checar vitória depois da jogada
         renderGrid();
         if (checkVictory()) {
             updateGameStatus();
-            renderGrid(); // para aplicar estilo de vitória
-        } else {
-            // apenas manter
+            renderGrid();
         }
     }
     
-    // Limpar célula selecionada (remover símbolo)
     function clearSelectedCell() {
         if (currentGameOver) {
             updateStatusMessage("Jogo já vencido, inicie um novo!");
@@ -460,7 +550,6 @@
         }
     }
     
-    // renderização completa do grid com highlights e erros
     function renderGrid() {
         gameGridElement.innerHTML = "";
         for (let i = 0; i < SIZE; i++) {
@@ -468,10 +557,8 @@
                 const cellValue = board[i][j];
                 const isFixed = fixedCells[i][j];
                 const isSelected = (selectedRow === i && selectedCol === j);
-                // Detectar se célula tem conflito (para dar borda de erro)
                 let hasConflict = false;
                 if (cellValue !== "") {
-                    // Teste temporário de conflito
                     if (!isValidPlacement(board, i, j, cellValue)) {
                         hasConflict = true;
                     }
@@ -482,12 +569,11 @@
                 if (isFixed) cellDiv.classList.add("preset");
                 if (isSelected) cellDiv.classList.add("selected");
                 if (hasConflict && !isFixed && cellValue !== "") cellDiv.classList.add("error");
-                // adicional highlight para linha/coluna da selecionada
+                
                 if (selectedRow !== -1 && selectedCol !== -1) {
                     if (i === selectedRow || j === selectedCol) {
                         if (!isSelected) cellDiv.style.backgroundColor = "#faf0cf";
                     }
-                    // também destaque do bloco 3x3 do selecionado
                     const sRowBlock = Math.floor(selectedRow / BOX_SIZE) * BOX_SIZE;
                     const sColBlock = Math.floor(selectedCol / BOX_SIZE) * BOX_SIZE;
                     if (i >= sRowBlock && i < sRowBlock+BOX_SIZE && j >= sColBlock && j < sColBlock+BOX_SIZE) {
@@ -507,7 +593,6 @@
                             updateStatusMessage("Jogo concluído! Comece uma nova partida.");
                             return;
                         }
-                        // Se for célula fixa, não selecionamos para edição? podemos permitir selecionar mas não editar
                         if (fixedCells[row][col]) {
                             selectedRow = row;
                             selectedCol = col;
@@ -516,7 +601,7 @@
                         } else {
                             selectedRow = row;
                             selectedCol = col;
-                            updateStatusMessage(`Célula (${row+1},${col+1}) selecionada. Clique num símbolo para inserir.`);
+                            updateStatusMessage(`Célula (${row+1},${col+1}) selecionada. Clique num símbolo.`);
                             renderGrid();
                         }
                     };
@@ -525,13 +610,11 @@
                 gameGridElement.appendChild(cellDiv);
             }
         }
-        // Após render, se vitória, aplica efeito visual extra
         if (currentGameOver) {
             statusDiv.innerHTML = "🏆 VITÓRIA ABSOLUTA! Parabéns! 🏆";
         }
     }
     
-    // Cria a paleta de símbolos interativos
     function buildSymbolPalette() {
         symbolPalette.innerHTML = "";
         SYMBOLS.forEach(sym => {
@@ -540,17 +623,15 @@
             btn.classList.add("symbol-btn");
             btn.addEventListener("click", () => {
                 if (currentGameOver) {
-                    updateStatusMessage("O jogo já acabou. Clique em NOVO JOGO para continuar.");
+                    updateStatusMessage("O jogo já acabou. Clique em NOVO JOGO.");
                     return;
                 }
                 placeSymbol(sym);
-                // efeito visual de clique ativo temporário
                 btn.classList.add("active-tool");
                 setTimeout(() => btn.classList.remove("active-tool"), 200);
             });
             symbolPalette.appendChild(btn);
         });
-        // botão de apagar célula na paleta? já temos no controle, mas pode adicionar ícone de borracha
         const eraseBtn = document.createElement("button");
         eraseBtn.textContent = "⌫";
         eraseBtn.classList.add("symbol-btn");
@@ -561,17 +642,15 @@
         symbolPalette.appendChild(eraseBtn);
     }
     
-    // Reiniciar novo jogo
     function newGame() {
         generateNewPuzzle();
         selectedRow = -1;
         selectedCol = -1;
         currentGameOver = false;
         renderGrid();
-        updateStatusMessage("Novo desafio gerado! Use os símbolos para preencher.");
+        updateStatusMessage("Novo desafio gerado! Use os símbolos.");
     }
     
-    // Verificar se há conflitos e destacar células problemáticas (modo verificação)
     function checkBoardAndHighlightErrors() {
         if (currentGameOver) {
             updateStatusMessage("Já venceu! Reinicie para testar outro.");
@@ -591,16 +670,16 @@
         if (conflictCount === 0 && !hasAnyEmpty) {
             statusDiv.innerHTML = "🎉✨ Perfeito! Você completou corretamente! Vitória! ✨🎉";
             currentGameOver = true;
+            launchSymbolConfetti(); // confetes também aqui
             renderGrid();
         } else if (conflictCount === 0 && hasAnyEmpty) {
-            statusDiv.innerHTML = "✅ Nenhum conflito encontrado! Continue preenchendo as células vazias.";
+            statusDiv.innerHTML = "✅ Nenhum conflito encontrado! Continue preenchendo.";
         } else {
-            statusDiv.innerHTML = `⚠️ Atenção: ${conflictCount} células em conflito! (linha/coluna/bloco repetido) ⚠️`;
+            statusDiv.innerHTML = `⚠️ Atenção: ${conflictCount} células em conflito! ⚠️`;
         }
-        renderGrid(); // atualiza células com classe .error
+        renderGrid();
     }
     
-    // Event listeners e inicialização
     document.getElementById("newGameBtn").addEventListener("click", () => {
         newGame();
     });
