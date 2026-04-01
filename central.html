@@ -1,1 +1,519 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>GeoLive | Eventos Ao Vivo - Arte & Entretenimento</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <style>
+        /* ========== ESTILOS ========== */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, 'Segoe UI', Roboto, sans-serif; }
+        body { background: linear-gradient(135deg, #f5f7fa 0%, #e9edf2 100%); color: #1a2c3e; padding: 1rem; min-height: 100vh; }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .geo-header { background: linear-gradient(135deg, #0f2027, #203a43, #2c5364); color: white; border-radius: 1.5rem; padding: 1.5rem; margin-bottom: 2rem; box-shadow: 0 15px 35px rgba(0,0,0,0.2); }
+        .geo-header h1 { font-size: 1.6rem; display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+        .location-box { background: rgba(255,255,255,0.2); backdrop-filter: blur(10px); border-radius: 2rem; padding: 0.7rem 1.2rem; margin-top: 1rem; display: inline-flex; align-items: center; gap: 0.8rem; flex-wrap: wrap; }
+        .badge-city { background: #ffb347; color: #2d2f36; border-radius: 2rem; padding: 0.2rem 1rem; font-weight: bold; }
+        .refresh-loc { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.5); color: white; border-radius: 2rem; padding: 0.3rem 1rem; cursor: pointer; transition: 0.2s; }
+        .section-title { font-size: 1.5rem; margin: 1.5rem 0 1rem; padding-left: 0.8rem; border-left: 6px solid #e63946; font-weight: 700; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+        .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; margin-top: 0.5rem; }
+        .event-card { background: white; border-radius: 1.2rem; overflow: hidden; box-shadow: 0 8px 20px rgba(0,0,0,0.08); transition: 0.3s; border: 1px solid rgba(0,0,0,0.05); }
+        .event-card:hover { transform: translateY(-5px); box-shadow: 0 20px 35px rgba(0,0,0,0.15); }
+        .card-banner { width: 100%; height: 160px; object-fit: cover; background: linear-gradient(135deg, #667eea, #764ba2); }
+        .card-content { padding: 1rem; }
+        .card-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem; }
+        .desc { color: #4a5568; font-size: 0.85rem; margin: 0.5rem 0; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .datetime-highlight { background: #fff5e6; border-left: 4px solid #f97316; padding: 0.5rem; border-radius: 0.6rem; margin: 0.6rem 0; font-weight: 600; font-size: 0.8rem; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .local-badge { background: #2c7da0; color: white; font-size: 0.7rem; border-radius: 2rem; padding: 0.2rem 0.7rem; display: inline-flex; align-items: center; gap: 5px; }
+        .event-link { display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(135deg, #e63946, #c1121f); color: white; text-decoration: none; padding: 0.5rem 1rem; border-radius: 2rem; font-weight: 500; font-size: 0.8rem; transition: 0.2s; margin-top: 0.5rem; }
+        .btn-primary { background: linear-gradient(135deg, #1e2f3e, #2c3e50); color: white; border: none; padding: 0.8rem 1.8rem; border-radius: 2rem; font-weight: bold; cursor: pointer; transition: 0.2s; width: 100%; font-size: 1rem; }
+        .form-section { background: white; border-radius: 1.5rem; padding: 1.5rem; margin: 1.5rem 0; box-shadow: 0 8px 20px rgba(0,0,0,0.08); border: 1px solid #e2edf2; }
+        .form-group { margin-bottom: 1rem; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        input, textarea { width: 100%; padding: 0.7rem; border: 2px solid #e2e8f0; border-radius: 1rem; font-size: 0.9rem; transition: 0.2s; }
+        .toast { position: fixed; bottom: 20px; right: 20px; background: #2c3e50; color: white; padding: 12px 20px; border-radius: 12px; z-index: 10000; animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s forwards; max-width: 300px; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes fadeOut { to { opacity: 0; visibility: hidden; } }
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 20000; }
+        .modal-content { background: white; border-radius: 1.5rem; max-width: 400px; width: 90%; padding: 1.5rem; text-align: center; }
+        .btn-icon { background: none; border: none; cursor: pointer; font-size: 1rem; padding: 5px; border-radius: 50%; transition: 0.2s; width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; }
+        .btn-pin { color: #f4a261; }
+        .btn-pin.active { color: #27ae60; }
+        .badge-fixed { background: #27ae60; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; display: inline-flex; align-items: center; gap: 4px; }
+        @media (max-width: 640px) { .form-row { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="geo-header">
+        <h1><i class="fas fa-map-marker-alt"></i> GeoLive · Eventos Ao Vivo</h1>
+        <div class="location-box">
+            <i class="fas fa-globe-americas"></i>
+            <span id="locationText">Detectando localização...</span>
+            <button class="refresh-loc" id="refreshGeoBtn"><i class="fas fa-sync-alt"></i> Atualizar</button>
+        </div>
+    </div>
 
+    <div class="section-title">
+        <span><i class="fas fa-calendar-check"></i> Eventos</span>
+        <span id="eventCountBadge" style="background:#e9ecef; padding:0.2rem 0.8rem; border-radius:2rem;">0</span>
+    </div>
+    <div id="eventsContainer" class="cards-grid"></div>
+
+    <div class="section-title">
+        <span><i class="fab fa-youtube"></i> Ao Vivo · YouTube</span>
+    </div>
+    <div id="youtubeContainer" class="cards-grid"></div>
+
+    <!-- Formulário de novo evento (aparece apenas para quem tem permissão) -->
+    <div id="eventFormSection" class="form-section" style="display: none;">
+        <h3><i class="fas fa-plus-circle"></i> Adicionar Evento</h3>
+        <form id="eventForm">
+            <div class="form-group"><label>Título *</label><input type="text" id="eventTitle" required></div>
+            <div class="form-group"><label>URL do Banner *</label><input type="url" id="eventBanner" required></div>
+            <div class="form-row">
+                <div class="form-group"><label>Data/Hora *</label><input type="datetime-local" id="eventDatetime" required></div>
+                <div class="form-group"><label>Cidade</label><input type="text" id="eventCity"></div>
+            </div>
+            <div class="form-group"><label>Descrição *</label><textarea rows="2" id="eventDesc" required></textarea></div>
+            <div class="form-group"><label>Link da Live *</label><input type="url" id="eventLink" required></div>
+            <button type="submit" class="btn-primary">Publicar Evento</button>
+        </form>
+    </div>
+
+    <!-- Área de usuário / promoter -->
+    <div id="userArea" style="background:#f0f4f8; border-radius:1rem; padding:1rem; margin:1rem 0; text-align:center;">
+        <div id="notLoggedIn">
+            <i class="fas fa-user-circle"></i> Você tem até <strong>3 eventos gratuitos</strong>.<br>
+            <button id="loginBtn" class="refresh-loc" style="margin-top:0.5rem;">Entrar / Cadastrar</button>
+        </div>
+        <div id="loggedIn" style="display:none;">
+            <span id="userEmailDisplay"></span>
+            <div id="subscriptionInfo"></div>
+            <button id="logoutBtn" class="refresh-loc">Sair</button>
+        </div>
+    </div>
+
+    <footer><i class="fas fa-map-pin"></i> Eventos expiram 3h após o horário · Promoter: eventos ilimitados por R$ 19,90/mês</footer>
+</div>
+
+<script>
+    // ==================== CONFIGURAÇÃO FIREBASE ====================
+    const firebaseConfig = {
+        apiKey: "SUA_API_KEY",
+        authDomain: "SEU_PROJETO.firebaseapp.com",
+        projectId: "SEU_PROJETO",
+        storageBucket: "SEU_PROJETO.appspot.com",
+        messagingSenderId: "SEU_ID",
+        appId: "SEU_APP_ID"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    // ==================== VARIÁVEIS GLOBAIS ====================
+    let userCity = null;
+    let currentUser = null;
+    let subscriptionActive = false;
+    let freeEventsCount = 0;
+
+    // ==================== UTILITÁRIOS ====================
+    function showToast(msg, bg = "#2c3e50") {
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.style.background = bg;
+        toast.innerHTML = `<i class="fas fa-info-circle"></i> ${msg}`;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
+
+    function getDeviceId() {
+        let id = localStorage.getItem('deviceId');
+        if (!id) {
+            id = 'device_' + Math.random().toString(36).substr(2, 16) + Date.now();
+            localStorage.setItem('deviceId', id);
+        }
+        return id;
+    }
+
+    // ==================== EXCLUSÃO AUTOMÁTICA DE EVENTOS EXPIRADOS ====================
+    async function cleanExpiredEvents() {
+        const now = new Date();
+        const threeHoursAgo = new Date(now.getTime() - 3 * 60 * 60 * 1000);
+        
+        // Buscar eventos com datetime menor que threeHoursAgo (expirados)
+        const snapshot = await db.collection('events')
+            .where('datetime', '<', threeHoursAgo.toISOString())
+            .get();
+        
+        if (snapshot.empty) return;
+        
+        const batch = db.batch();
+        snapshot.docs.forEach(doc => {
+            const data = doc.data();
+            // Se o evento não está fixado (keepByAdmin = true), deleta
+            if (!data.keepByAdmin) {
+                batch.delete(doc.ref);
+            }
+        });
+        await batch.commit();
+        if (snapshot.size > 0) {
+            showToast(`🗑️ ${snapshot.size} evento(s) expirado(s) removido(s) automaticamente.`, "#2c3e50");
+            loadEvents(); // recarregar após limpeza
+        }
+    }
+
+    // ==================== FIREBASE: EVENTOS ====================
+    async function loadEvents() {
+        const now = new Date();
+        const threeHoursAgo = new Date(now.getTime() - 3 * 60 * 60 * 1000);
+        
+        const snapshot = await db.collection('events')
+            .where('datetime', '>', threeHoursAgo.toISOString())  // só eventos não expirados
+            .orderBy('datetime', 'desc')
+            .limit(50)
+            .get();
+        const events = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderEvents(events);
+        document.getElementById('eventCountBadge').innerText = events.length;
+        
+        // Atualizar contador de eventos gratuitos para este deviceId
+        const deviceId = getDeviceId();
+        const freeSnapshot = await db.collection('events')
+            .where('createdBy', '==', deviceId)
+            .where('isPromoterEvent', '==', false)
+            .where('datetime', '>', threeHoursAgo.toISOString())
+            .get();
+        freeEventsCount = freeSnapshot.size;
+    }
+
+    async function addEventToFirestore(eventData) {
+        const user = auth.currentUser;
+        let isPromoter = false;
+        let createdBy = getDeviceId();
+
+        if (user && subscriptionActive) {
+            isPromoter = true;
+            createdBy = user.uid;
+        }
+
+        await db.collection('events').add({
+            title: eventData.title,
+            bannerUrl: eventData.bannerUrl,
+            datetime: eventData.datetime,
+            city: eventData.city,
+            description: eventData.description,
+            link: eventData.link,
+            createdBy: createdBy,
+            isPromoterEvent: isPromoter,
+            keepByAdmin: false,      // por padrão, não fixado
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        showToast(isPromoter ? "Evento adicionado como promoter!" : "Evento gratuito adicionado!", "#27ae60");
+        loadEvents();
+    }
+
+    async function deleteEvent(eventId, createdBy, isPromoterEvent) {
+        const user = auth.currentUser;
+        const deviceId = getDeviceId();
+        if ( (createdBy === deviceId && !isPromoterEvent) || (user && user.uid === createdBy) ) {
+            await db.collection('events').doc(eventId).delete();
+            showToast("Evento removido!", "#e63946");
+            loadEvents();
+        } else {
+            showToast("Você não tem permissão para deletar este evento.", "#e67e22");
+        }
+    }
+
+    async function toggleKeepEvent(eventId, currentKeep) {
+        const user = auth.currentUser;
+        if (!user) {
+            showToast("Faça login para fixar eventos.", "#e67e22");
+            return;
+        }
+        // Só o criador ou um admin pode fixar. Aqui permitimos qualquer usuário logado fixar seu próprio evento.
+        const doc = await db.collection('events').doc(eventId).get();
+        if (doc.exists && doc.data().createdBy === user.uid) {
+            await db.collection('events').doc(eventId).update({ keepByAdmin: !currentKeep });
+            showToast(!currentKeep ? "Evento fixado! Não será removido automaticamente." : "Evento liberado para remoção automática.", "#f4a261");
+            loadEvents();
+        } else {
+            showToast("Você só pode fixar seus próprios eventos.", "#e67e22");
+        }
+    }
+
+    // ==================== VERIFICAÇÃO DE PERMISSÃO PARA ADICIONAR ====================
+    async function canAddEvent() {
+        const user = auth.currentUser;
+        if (user) {
+            await checkSubscription(user.uid);
+            if (subscriptionActive) return true;
+        }
+        // Visitante: verificar quantos eventos gratuitos já tem (não expirados)
+        const deviceId = getDeviceId();
+        const now = new Date();
+        const threeHoursAgo = new Date(now.getTime() - 3 * 60 * 60 * 1000);
+        const freeSnapshot = await db.collection('events')
+            .where('createdBy', '==', deviceId)
+            .where('isPromoterEvent', '==', false)
+            .where('datetime', '>', threeHoursAgo.toISOString())
+            .get();
+        return freeSnapshot.size < 3;
+    }
+
+    async function checkSubscription(userId) {
+        const doc = await db.collection('subscriptions').doc(userId).get();
+        if (doc.exists) {
+            const expiresAt = doc.data().expiresAt.toDate();
+            subscriptionActive = expiresAt > new Date();
+            return subscriptionActive;
+        }
+        subscriptionActive = false;
+        return false;
+    }
+
+    // ==================== UI: FORMULÁRIO DE EVENTO ====================
+    async function toggleEventForm() {
+        const formDiv = document.getElementById('eventFormSection');
+        if (await canAddEvent()) {
+            formDiv.style.display = 'block';
+        } else {
+            formDiv.style.display = 'none';
+            showLimitPopup();
+        }
+    }
+
+    function showLimitPopup() {
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <i class="fas fa-ban" style="font-size:2.5rem; color:#e63946;"></i>
+                <h3 style="margin:1rem 0">Limite de eventos gratuitos atingido!</h3>
+                <p>Você já utilizou seus 3 eventos gratuitos. Torne-se <strong>Promoter</strong> e adicione eventos ilimitados por 30 dias.</p>
+                <p style="background:#f0f4f8; padding:0.5rem; border-radius:1rem; margin:1rem 0;">Taxa mensal: <strong>R$ 19,90</strong></p>
+                <button id="becomePromoterBtn" class="btn-primary" style="margin-bottom:0.5rem;">Quero ser Promoter</button>
+                <button id="closeLimitModal" class="refresh-loc">Fechar</button>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        document.getElementById('becomePromoterBtn').onclick = () => {
+            modal.remove();
+            document.getElementById('loginBtn').click();
+        };
+        document.getElementById('closeLimitModal').onclick = () => modal.remove();
+    }
+
+    // ==================== AUTENTICAÇÃO E ASSINATURA ====================
+    function showLoginModal() {
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <h3>Cadastro / Login</h3>
+                <input type="email" id="loginEmail" placeholder="E-mail" style="width:100%; margin:0.5rem 0; padding:0.5rem;">
+                <input type="password" id="loginPassword" placeholder="Senha" style="width:100%; margin:0.5rem 0; padding:0.5rem;">
+                <button id="loginSubmitBtn" class="btn-primary">Entrar</button>
+                <button id="registerSubmitBtn" class="btn-primary" style="background:#6c757d; margin-top:0.5rem;">Cadastrar</button>
+                <button id="closeLoginModal" class="refresh-loc" style="margin-top:0.5rem;">Cancelar</button>
+                <div id="activationCodeArea" style="margin-top:1rem; border-top:1px solid #ccc; padding-top:1rem;">
+                    <p><small>Já é promoter? Digite seu código de ativação:</small></p>
+                    <input type="text" id="activationCode" placeholder="Código">
+                    <button id="activateCodeBtn" class="refresh-loc" style="margin-top:0.3rem;">Ativar assinatura</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+
+        document.getElementById('loginSubmitBtn').onclick = async () => {
+            const email = document.getElementById('loginEmail').value;
+            const pwd = document.getElementById('loginPassword').value;
+            try {
+                await auth.signInWithEmailAndPassword(email, pwd);
+                modal.remove();
+                showToast("Login realizado!", "#27ae60");
+            } catch(e) { alert("Erro: "+e.message); }
+        };
+        document.getElementById('registerSubmitBtn').onclick = async () => {
+            const email = document.getElementById('loginEmail').value;
+            const pwd = document.getElementById('loginPassword').value;
+            try {
+                await auth.createUserWithEmailAndPassword(email, pwd);
+                modal.remove();
+                showToast("Cadastro realizado! Faça login para usar.", "#27ae60");
+            } catch(e) { alert("Erro: "+e.message); }
+        };
+        document.getElementById('activateCodeBtn').onclick = async () => {
+            const code = document.getElementById('activationCode').value;
+            const user = auth.currentUser;
+            if (!user) { alert("Faça login antes de ativar."); return; }
+            const codeDoc = await db.collection('codes').doc(code).get();
+            if (codeDoc.exists && !codeDoc.data().used) {
+                await db.collection('subscriptions').doc(user.uid).set({
+                    expiresAt: firebase.firestore.Timestamp.fromDate(new Date(Date.now() + 30*24*60*60*1000)),
+                    active: true
+                });
+                await db.collection('codes').doc(code).update({ used: true, usedBy: user.uid });
+                showToast("Assinatura ativada! Agora você pode adicionar eventos ilimitados.", "#27ae60");
+                updateUserUI(user);
+                modal.remove();
+                toggleEventForm();
+            } else {
+                alert("Código inválido ou já utilizado.");
+            }
+        };
+        document.getElementById('closeLoginModal').onclick = () => modal.remove();
+    }
+
+    async function updateUserUI(user) {
+        const loggedInDiv = document.getElementById('loggedIn');
+        const notLoggedInDiv = document.getElementById('notLoggedIn');
+        const userEmailSpan = document.getElementById('userEmailDisplay');
+        const subscriptionDiv = document.getElementById('subscriptionInfo');
+
+        if (user) {
+            currentUser = user;
+            userEmailSpan.innerText = user.email;
+            const subActive = await checkSubscription(user.uid);
+            if (subActive) {
+                subscriptionDiv.innerHTML = '<span style="background:#27ae60; color:white; padding:0.2rem 0.8rem; border-radius:2rem;">✅ Promoter Ativo (30 dias)</span>';
+            } else {
+                subscriptionDiv.innerHTML = '<span style="background:#e67e22; color:white; padding:0.2rem 0.8rem; border-radius:2rem;">⚠️ Assinatura inativa</span>';
+            }
+            loggedInDiv.style.display = 'block';
+            notLoggedInDiv.style.display = 'none';
+        } else {
+            currentUser = null;
+            subscriptionActive = false;
+            loggedInDiv.style.display = 'none';
+            notLoggedInDiv.style.display = 'block';
+        }
+        await toggleEventForm();
+    }
+
+    // ==================== RENDERIZAÇÃO DOS CARDS ====================
+    function renderEvents(events) {
+        const container = document.getElementById('eventsContainer');
+        if (events.length === 0) {
+            container.innerHTML = `<div style="text-align:center; padding:2rem;">Nenhum evento ativo no momento.</div>`;
+            return;
+        }
+        container.innerHTML = events.map(ev => {
+            const isLocal = userCity && ev.city && (ev.city.toLowerCase().includes(userCity.toLowerCase()) || userCity.toLowerCase().includes(ev.city.toLowerCase()));
+            const canDelete = (ev.createdBy === getDeviceId() && !ev.isPromoterEvent) || (currentUser && currentUser.uid === ev.createdBy);
+            const canFix = currentUser && currentUser.uid === ev.createdBy;
+            return `
+                <div class="event-card" style="${isLocal ? 'border-left: 4px solid #f4a261;' : ''}">
+                    <img class="card-banner" src="${ev.bannerUrl}" onerror="this.src='https://placehold.co/600x400/667eea/white?text=GeoLive'">
+                    <div class="card-content">
+                        <div class="card-title">
+                            <span>${escapeHtml(ev.title)}</span>
+                            <div style="display: flex; gap: 5px;">
+                                ${ev.keepByAdmin ? '<span class="badge-fixed"><i class="fas fa-thumbtack"></i> Fixado</span>' : ''}
+                                ${canDelete ? `<button class="btn-icon" onclick="window.deleteEvent('${ev.id}', '${ev.createdBy}', ${ev.isPromoterEvent})" style="background:none; border:none; color:#e63946; cursor:pointer;"><i class="fas fa-trash-alt"></i></button>` : ''}
+                                ${canFix ? `<button class="btn-icon btn-pin ${ev.keepByAdmin ? 'active' : ''}" onclick="window.toggleKeepEvent('${ev.id}', ${ev.keepByAdmin})" title="${ev.keepByAdmin ? 'Liberar exclusão automática' : 'Fixar evento'}"><i class="fas fa-thumbtack"></i></button>` : ''}
+                            </div>
+                        </div>
+                        ${ev.city ? `<div class="local-badge"><i class="fas fa-city"></i> ${escapeHtml(ev.city)}</div>` : ''}
+                        <div class="datetime-highlight"><i class="far fa-clock"></i> <strong>${formatDateTime(ev.datetime)}</strong> ${isLocal ? '<span style="background:#f4a261; color:#1e2f3e; padding:2px 8px; border-radius:30px;"><i class="fas fa-location-dot"></i> Perto de você</span>' : ''}</div>
+                        <div class="desc">${escapeHtml(ev.description)}</div>
+                        <a href="${ev.link}" target="_blank" class="event-link"><i class="fab fa-youtube"></i> Assistir live</a>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function formatDateTime(iso) {
+        try { return new Date(iso).toLocaleString('pt-BR'); } catch { return iso; }
+    }
+    function escapeHtml(str) { return str?.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])) || ''; }
+
+    // ==================== GEOLOCALIZAÇÃO ====================
+    async function detectLocation() {
+        if (!navigator.geolocation) return;
+        try {
+            const pos = await new Promise((res,rej)=> navigator.geolocation.getCurrentPosition(res,rej));
+            const resp = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&accept-language=pt-BR`);
+            const data = await resp.json();
+            userCity = data.address?.city || data.address?.town || data.address?.municipality;
+            document.getElementById('locationText').innerHTML = userCity ? `<i class="fas fa-map-pin"></i> Você está em: <span class="badge-city">${userCity}</span>` : "<i class='fas fa-globe'></i> Localização aproximada";
+            loadEvents();
+        } catch(e) { document.getElementById('locationText').innerHTML = "<i class='fas fa-map-marker-alt'></i> Localização não disponível"; }
+    }
+
+    // ==================== YOUTUBE LIVE ====================
+    const YOUTUBE_API_KEY = "AIzaSyDummyKeyPlaceholder"; // substitua
+    async function fetchYouTube() {
+        const container = document.getElementById('youtubeContainer');
+        if (!YOUTUBE_API_KEY || YOUTUBE_API_KEY === "AIzaSyDummyKeyPlaceholder") {
+            container.innerHTML = '<div style="text-align:center; padding:2rem;">Configure sua chave de API do YouTube</div>';
+            return;
+        }
+        container.innerHTML = '<div style="text-align:center; padding:2rem;"><i class="fas fa-spinner fa-pulse"></i> Carregando...</div>';
+        try {
+            const search = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&eventType=live&type=video&maxResults=6&videoCategoryId=20,24&key=${YOUTUBE_API_KEY}`);
+            const data = await search.json();
+            if (!data.items?.length) { container.innerHTML = '<div style="text-align:center; padding:2rem;">Nenhuma live no momento</div>'; return; }
+            const ids = data.items.map(i=>i.id.videoId).join(',');
+            const details = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet,liveStreamingDetails&id=${ids}&key=${YOUTUBE_API_KEY}`);
+            const vids = await details.json();
+            container.innerHTML = vids.items.map(v => {
+                const thumb = v.snippet.thumbnails?.maxres?.url || v.snippet.thumbnails?.high?.url;
+                const time = v.liveStreamingDetails?.scheduledStartTime ? `📅 ${new Date(v.liveStreamingDetails.scheduledStartTime).toLocaleString('pt-BR')}` : "🔴 AO VIVO";
+                return `
+                    <div class="event-card">
+                        <img class="card-banner" src="${thumb}">
+                        <div class="card-content">
+                            <div class="card-title">${escapeHtml(v.snippet.title)}</div>
+                            <div class="datetime-highlight">${time}</div>
+                            <div class="desc">${escapeHtml(v.snippet.description?.substring(0,100))}</div>
+                            <a href="https://www.youtube.com/watch?v=${v.id}" target="_blank" class="event-link">Assistir</a>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        } catch(e) { container.innerHTML = '<div style="text-align:center; padding:2rem;">Erro ao carregar transmissões</div>'; }
+    }
+
+    // ==================== EVENTOS DE UI E INICIALIZAÇÃO ====================
+    document.getElementById('eventForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!(await canAddEvent())) { showLimitPopup(); return; }
+        const title = document.getElementById('eventTitle').value.trim();
+        const bannerUrl = document.getElementById('eventBanner').value.trim();
+        const datetime = document.getElementById('eventDatetime').value;
+        const city = document.getElementById('eventCity').value.trim();
+        const description = document.getElementById('eventDesc').value.trim();
+        const link = document.getElementById('eventLink').value.trim();
+        if (!title || !bannerUrl || !datetime || !description || !link) { alert("Preencha todos os campos."); return; }
+        if (new Date(datetime) < new Date()) { alert("A data/hora não pode ser no passado."); return; }
+        await addEventToFirestore({ title, bannerUrl, datetime, city, description, link });
+        e.target.reset();
+        await toggleEventForm();
+    });
+    document.getElementById('loginBtn').onclick = showLoginModal;
+    document.getElementById('logoutBtn').onclick = () => auth.signOut();
+    document.getElementById('refreshGeoBtn').onclick = detectLocation;
+
+    auth.onAuthStateChanged(async (user) => {
+        await updateUserUI(user);
+        loadEvents();
+    });
+
+    window.deleteEvent = deleteEvent;
+    window.toggleKeepEvent = toggleKeepEvent;
+
+    // Inicializar exclusão automática e outros
+    detectLocation();
+    fetchYouTube();
+    loadEvents();
+    cleanExpiredEvents();                 // limpeza imediata
+    setInterval(cleanExpiredEvents, 5 * 60 * 1000); // a cada 5 minutos
+</script>
+</body>
+</html>
