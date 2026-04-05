@@ -595,64 +595,23 @@
     }
     
     // ==================== YOUTUBE API ====================
-    async function fetchYouTubeLiveEvents() {
-    const container = document.getElementById("youtubeEventsContainer");
-    if (!YOUTUBE_API_KEY || YOUTUBE_API_KEY === "AIzaSyDVImxhercXIEOg97GfmmJaR180mpnu6YQ") {
-        container.innerHTML = `<div class="empty-state"><i class="fas fa-key"></i><p>Configure sua chave de API do YouTube</p></div>`;
-        return;
-    }
-    container.innerHTML = `<div class="empty-state"><i class="fas fa-spinner fa-pulse"></i><p>Buscando transmissões ao vivo...</p></div>`;
-    try {
-        // Categorias: Musica (10) e Entretenimento (24)
-        const categorias = ["10", "24"];
-        let todosResultados = [];
+async function fetchYouTubeLiveEvents() {  // <<<<< AQUI COMEÇA
+     const container = document.getElementById("youtubeEventsContainer");
+     if (!YOUTUBE_API_KEY || YOUTUBE_API_KEY === "AIzaSyDummyKeyPlaceholder") {
+         container.innerHTML = `<div class="empty-state"><i class="fas fa-key"></i><p>Configure sua chave de API do YouTube</p></div>`;
+         return;
+     }
+     container.innerHTML = `<div class="empty-state"><i class="fas fa-spinner fa-pulse"></i><p>Buscando transmissões ao vivo...</p></div>`;
+     try {
+         // >>> COLOQUE O CÓDIGO NOVO AQUI DENTRO <<<
+     } catch (error) {
+         console.error("Erro API:", error);
+         container.innerHTML = `<div class="empty-state"><i class="fas fa-plug"></i><p>Erro ao carregar transmissões</p></div>`;
+     }
+ } // <<<<< AQUI TERMINA
 
-        // Faz a busca para cada categoria separadamente
-        for (const catId of categorias) {
-            const searchRes = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&eventType=live&type=video&maxResults=${MAX_YOUTUBE_RESULTS}&videoCategoryId=${catId}&key=${YOUTUBE_API_KEY}`);
-            const searchData = await searchRes.json();
-            if (searchData.items) {
-                todosResultados = todosResultados.concat(searchData.items);
-            }
-        }
 
-        if (!todosResultados.length) {
-            container.innerHTML = `<div class="empty-state"><i class="fas fa-video-slash"></i><p>Nenhuma live no momento</p></div>`;
-            return;
-        }
-
-        // Embaralha para ficar variado e pega até 12 resultados
-        todosResultados = todosResultados.sort(() => 0.5 - Math.random()).slice(0, 12);
-
-        const videoIds = todosResultados.map(item => item.id.videoId).join(',');
-        const detailsRes = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet,liveStreamingDetails&id=${videoIds}&key=${YOUTUBE_API_KEY}`);
-        const detailsData = await detailsRes.json();
-        
-        container.innerHTML = detailsData.items.map(video => {
-            const snippet = video.snippet;
-            const liveDetails = video.liveStreamingDetails || {};
-            const scheduledTime = liveDetails.scheduledStartTime || liveDetails.actualStartTime;
-            const displayTime = scheduledTime ? `📅 ${new Date(scheduledTime).toLocaleString('pt-BR')}` : "🔴 AO VIVO AGORA";
-            const thumb = snippet.thumbnails?.maxres?.url || snippet.thumbnails?.high?.url || snippet.thumbnails?.medium?.url;
-            return `
-                <div class="event-card">
-                    <img class="card-banner" src="${thumb}" onerror="this.src='https://placehold.co/600x400/e63946/white?text=YouTube+Live'">
-                    <div class="card-content">
-                        <div class="card-title"><span>${escapeHtml(snippet.title)}</span></div>
-                        <div style="font-size:0.7rem; color:#2c7da0;"><i class="fab fa-youtube"></i> ${escapeHtml(snippet.channelTitle)}</div>
-                        <div class="datetime-highlight"><i class="fas fa-calendar-alt"></i> ${displayTime}</div>
-                        <div class="desc">${escapeHtml(snippet.description?.substring(0, 100) || '')}</div>
-                        <a href="https://www.youtube.com/watch?v=${video.id}" target="_blank" class="event-link"><i class="fab fa-youtube"></i> Assistir</a>
-                    </div>
-                </div>
-            `;
-        }).join('');
-    } catch (error) {
-        console.error("Erro API:", error);
-        container.innerHTML = `<div class="empty-state"><i class="fas fa-plug"></i><p>Erro ao carregar transmissões</p></div>`;
-    }
-}
-
+    
     
     // ==================== EVENTOS E INICIALIZAÇÃO ====================
     document.getElementById("eventForm").addEventListener("submit", (e) => {
