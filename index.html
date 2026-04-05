@@ -597,7 +597,7 @@
     // ==================== YOUTUBE API ====================
     async function fetchYouTubeLiveEvents() {
     const container = document.getElementById("youtubeEventsContainer");
-    if (!YOUTUBE_API_KEY || YOUTUBE_API_KEY === "AIzaSyDummyKeyPlaceholder") {
+    if (!YOUTUBE_API_KEY || YOUTUBE_API_KEY === "AIzaSyDVImxhercXIEOg97GfmmJaR180mpnu6YQ") {
         container.innerHTML = `<div class="empty-state"><i class="fas fa-key"></i><p>Configure sua chave de API do YouTube</p></div>`;
         return;
     }
@@ -653,13 +653,6 @@
     }
 }
 
-    
-    
-    // ==================== HELPERS ====================
-    function escapeHtml(str) {
-        if (!str) return "";
-        return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m] || m));
-    }
     
     // ==================== EVENTOS E INICIALIZAÇÃO ====================
     document.getElementById("eventForm").addEventListener("submit", (e) => {
