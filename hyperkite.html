@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Pipas no Céu - Corte a Linha do Oponente!</title>
+    <style>
+        * {
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: linear-gradient(145deg, #0a2f5a 0%, #0a1f3a 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Segoe UI', 'Comic Neue', 'Comic Neue', 'Comic Sans MS', 'Chalkboard SE', cursive, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .game-container {
+            background: rgba(255,255,240,0.2);
+            border-radius: 72px;
+            padding: 20px 25px 25px 25px;
+            backdrop-filter: blur(3px);
+            box-shadow: 0 20px 35px rgba(0,0,0,0.4), inset 0 1px 4px rgba(255,255,200,0.6);
+        }
+
+        canvas {
+            display: block;
+            margin: 0 auto;
+            border-radius: 48px;
+            box-shadow: 0 12px 28px black;
+            cursor: pointer;
+            background: radial-gradient(circle at 20% 30%, #7ec8ff, #2b6caf);
+        }
+
+        .info-panel {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: 20px;
+            margin-top: 18px;
+            background: #fef7d2;
+            padding: 10px 24px;
+            border-radius: 60px;
+            flex-wrap: wrap;
+            box-shadow: inset 0 1px 5px rgba(0,0,0,0.1), 0 8px 12px rgba(0,0,0,0.2);
+        }
+
+        .score-box {
+            background: #2e1e0f;
+            color: #ffde9c;
+            padding: 8px 24px;
+            border-radius: 40px;
+            font-weight: bold;
+            font-size: 1.8rem;
+            text-shadow: 0 2px 0 #3a280f;
+            letter-spacing: 2px;
+            font-family: monospace;
+        }
+
+        .power-badge {
+            background: #b4641c;
+            padding: 6px 18px;
+            border-radius: 36px;
+            color: #fff1b5;
+            font-weight: bold;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .power-badge span {
+            background: gold;
+            color: #3a2800;
+            padding: 2px 12px;
+            border-radius: 30px;
+            font-size: 1.4rem;
+        }
+
+        button {
+            background: #ffb347;
+            border: none;
+            font-family: inherit;
+            font-weight: bold;
+            font-size: 1.2rem;
+            padding: 8px 28px;
+            border-radius: 3rem;
+            color: #2c1a06;
+            cursor: pointer;
+            transition: 0.1s linear;
+            box-shadow: 0 5px 0 #8b4b1a;
+        }
+
+        button:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #8b4b1a;
+        }
+
+        .message-area {
+            background: #1f2a0ecc;
+            backdrop-filter: blur(8px);
+            padding: 8px 20px;
+            border-radius: 32px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: #f9f3c1;
+            text-align: center;
+            flex: 1;
+            min-width: 160px;
+        }
+
+        .legend {
+            display: flex;
+            gap: 20px;
+            font-size: 0.75rem;
+            background: #e5d5a8;
+            padding: 5px 18px;
+            border-radius: 30px;
+            color: #2a2412;
+        }
+
+        .legend i {
+            font-style: normal;
+            display: inline-block;
+            width: 20px;
+            text-align: center;
+        }
+
+        @media (max-width: 900px) {
+            .info-panel { justify-content: center; }
+            .legend { order: 3; width: 100%; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+<div>
+    <div class="game-container">
+        <canvas id="kiteCanvas" width="900" height="550" style="width:100%; height:auto; max-width:900px; aspect-ratio:900/550"></canvas>
+        <div class="info-panel">
+            <div class="score-box">🏆 PONTOS: <span id="scoreValue">0</span></div>
+            <div class="power-badge">⚡ PODER "POR CIMA" ⚡ <span id="powerThreshold">0/5</span></div>
+            <button id="resetBtn">🪁 NOVO JOGO 🪁</button>
+            <div class="message-area" id="gameMessage">✨ Clique esquerdo = trocar de pipa | Clique direito = cortar linha ✨</div>
+        </div>
+        <div class="legend">
+            <span>🔽 <strong>Linha por baixo</strong> (número MENOR) corta linha por cima!</span>
+            <span>⭐ Com 5 pontos → corta QUALQUER pipa (passa por cima) ⭐</span>
+            <span>🖱️ Clique direito na pipa inimiga para cortar!</span>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function(){
+        // ----- CONFIGURAÇÕES DO CÉU -----
+        const canvas = document.getElementById('kiteCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Dimensões fixas (boa para matemática)
+        canvas.width = 900;
+        canvas.height = 550;
+        const GROUND_Y = canvas.height - 45;    // ponto onde as linhas tocam o chão
+        
+        // ----- ESTRUTURA DAS PIPAS -----
+        let kites = [];           // cada pipa: { id, x, y, lineLevel, color, kiteColor }
+        let currentKiteId = null; // id da pipa controlada pelo jogador
+        let score = 0;
+        let gameActive = true;     // se true, o jogo roda; se false, vitória mostrada mas botão reset
+        
+        // ----- AUXILIARES -----
+        let nextId = 1;
+        
+        // Gerar cor vibrante para cada pipa (cauda e corpo)
+        function randomPastel() {
+            const hue = Math.floor(Math.random() * 360);
+            // saturação viva, leve variação
+            return `hsl(${hue}, 75%, 62%)`;
+        }
+        
+        function randomKiteColor() {
+            const hue = Math.floor(Math.random() * 360);
+            return `hsl(${hue}, 85%, 68%)`;
+        }
+        
+        // Verifica se posição (x,y) não colide com outras pipas (distância mínima 70px)
+        function isOverlap(x, y, ignoreId = null) {
+            for(let k of kites) {
+                if(ignoreId !== null && k.id === ignoreId) continue;
+                const dx = k.x - x;
+                const dy = k.y - y;
+                if(Math.hypot(dx, dy) < 68) return true;
+            }
+            return false;
+        }
+        
+        // Gera posição aleatória dentro da área segura (longe das bordas)
+        function randomPosition() {
+            const margin = 55;
+            const maxAttempts = 200;
+            for(let i=0; i<maxAttempts; i++) {
+                const x = margin + Math.random() * (canvas.width - margin * 2);
+                const y = 60 + Math.random() * (canvas.height - 130); // evitar chão muito baixo
+                if(!isOverlap(x, y)) return {x, y};
+            }
+            // fallback
+            return {x: canvas.width/2 + (Math.random() - 0.5)*100, y: 120 + Math.random() * 200};
+        }
+        
+        // Cria uma nova pipa com parâmetros aleatórios
+        function createKite(id = null) {
+            const pos = randomPosition();
+            return {
+                id: id !== null ? id : nextId++,
+                x: pos.x,
+                y: pos.y,
+                lineLevel: Math.floor(Math.random() * 71) + 15, // 15 a 85 (quanto menor, mais "embaixo")
+                color: randomPastel(),
+                kiteColor: randomKiteColor()
+            };
+        }
+        
+        // Inicializa o jogo com 6 pipas (uma será a controlada)
+        function initGame() {
+            gameActive = true;
+            score = 0;
+            updateScoreUI();
+            updatePowerUI();
+            
+            const initialKites = [];
+            // gerar 6 pipas sem sobreposição
+            for(let i=0; i<6; i++) {
+                let newKite;
+                let attempts = 0;
+                do {
+                    newKite = createKite();
+                    attempts++;
+                    if(attempts > 100) break; // segurança
+                } while(isOverlap(newKite.x, newKite.y, null));
+                initialKites.push(newKite);
+            }
+            kites = initialKites;
+            // escolher aleatoriamente uma pipa como atual (controlada)
+            const randomIndex = Math.floor(Math.random() * kites.length);
+            currentKiteId = kites[randomIndex].id;
+            
+            // garantir que a mensagem padrão apareça
+            document.getElementById('gameMessage').innerHTML = "🎈 Pipa ATIVA: amarela brilhante! Corte as outras! 🎈";
+            drawCanvas();
+        }
+        
+        // Atualiza placar na tela
+        function updateScoreUI() {
+            document.getElementById('scoreValue').innerText = score;
+        }
+        
+        // Atualiza indicador de poder (cortar por cima)
+        function updatePowerUI() {
+            const needed = 5;
+            const current = score;
+            const powerSpan = document.getElementById('powerThreshold');
+            if(current >= needed) {
+                powerSpan.innerHTML = `✅ ATIVO! ✅`;
+                powerSpan.style.background = "#ffd966";
+                powerSpan.style.color = "#3a2800";
+            } else {
+                powerSpan.innerHTML = `${current}/${needed}`;
+                powerSpan.style.background = "#b4641c";
+                powerSpan.style.color = "#fff1b5";
+            }
+        }
+        
+        // Verifica condição de vitória (apenas uma pipa restante = a do jogador)
+        function checkVictory() {
+            if(!gameActive) return true;
+            if(kites.length === 1) {
+                gameActive = false;
+                document.getElementById('gameMessage').innerHTML = "🏆✨ VITÓRIA! Você limpou o céu! ✨🏆  (Clique em NOVO JOGO)";
+                drawCanvas(); // redesenha com mensagem
+                return true;
+            }
+            return false;
+        }
+        
+        // FUNÇÃO PARA TROCAR DE PIPA (clique esquerdo)
+        function switchToKite(kiteId) {
+            if(!gameActive) {
+                document.getElementById('gameMessage').innerHTML = "🏁 O jogo acabou! Clique em NOVO JOGO 🏁";
+                return false;
+            }
+            const targetKite = kites.find(k => k.id === kiteId);
+            if(!targetKite) return false;
+            if(currentKiteId === kiteId) {
+                document.getElementById('gameMessage').innerHTML = "🌀 Você já está nesta pipa! 🌀";
+                return false;
+            }
+            currentKiteId = kiteId;
+            document.getElementById('gameMessage').innerHTML = `🪁 Você voou para a pipa de nível ${targetKite.lineLevel}! Use clique direito para cortar. 🪁`;
+            drawCanvas();
+            return true;
+        }
+        
+        // FUNÇÃO PARA CORTAR LINHA (clique direito em pipa alvo)
+        function attemptCut(targetKiteId) {
+            if(!gameActive) {
+                document.getElementById('gameMessage').innerHTML = "O jogo já acabou. Clique em NOVO JOGO!";
+                return false;
+            }
+            
+            const currentKite = kites.find(k => k.id === currentKiteId);
+            const targetKite = kites.find(k => k.id === targetKiteId);
+            
+            if(!currentKite || !targetKite) {
+                document.getElementById('gameMessage').innerHTML = "Pipa não encontrada...";
+                return false;
+            }
+            
+            if(currentKite.id === targetKite.id) {
+                document.getElementById('gameMessage').innerHTML = "⚠️ Não dá para cortar a própria linha! Mude de pipa primeiro. ⚠️";
+                return false;
+            }
+            
+            // REGRA DE CORTE:
+            let canCut = false;
+            let reason = "";
+            
+            // poder especial: com 5 ou mais pontos, pode cortar qualquer uma (passar por cima)
+            if(score >= 5) {
+                canCut = true;
+                reason = "⭐ PODER POR CIMA ATIVO! Sua linha corta qualquer uma! ⭐";
+            } 
+            // senão, precisa que a linha do jogador esteja POR BAIXO (lineLevel MENOR que a do oponente)
+            else if(currentKite.lineLevel < targetKite.lineLevel) {
+                canCut = true;
+                reason = `✅ Sua linha (${currentKite.lineLevel}) está por BAIXO da linha inimiga (${targetKite.lineLevel})! Corte certeiro! ✅`;
+            } 
+            else {
+                canCut = false;
+                reason = `❌ Sua linha (${currentKite.lineLevel}) NÃO está por baixo da inimiga (${targetKite.lineLevel})! Suba mais ou ganhe poder! ❌`;
+            }
+            
+            if(!canCut) {
+                document.getElementById('gameMessage').innerHTML = reason;
+                drawCanvas();
+                return false;
+            }
+            
+            // --- EFETUA O CORTE ---
+            // remove a pipa alvo do array
+            const index = kites.findIndex(k => k.id === targetKite.id);
+            if(index !== -1) {
+                kites.splice(index, 1);
+            }
+            
+            // aumenta pontuação
+            score++;
+            updateScoreUI();
+            updatePowerUI();
+            
+            // Mensagem de sucesso
+            document.getElementById('gameMessage').innerHTML = `${reason} 🎉 +1 ponto! Restam ${kites.length} pipas.`;
+            
+            // Se depois do corte, a pipa atual não existe mais (nunca vai acontecer pois cortamos outra)
+            // mas por segurança: se a pipa atual foi removida? impossível, pois não cortamos a própria.
+            const stillExists = kites.some(k => k.id === currentKiteId);
+            if(!stillExists) {
+                // Caso bizarro, mas se acontecer, assume primeira pipa
+                if(kites.length > 0) currentKiteId = kites[0].id;
+                else currentKiteId = null;
+            }
+            
+            // verifica vitória depois do corte
+            const victory = checkVictory();
+            if(victory && kites.length === 1) {
+                document.getElementById('gameMessage').innerHTML = "🏆✨ VOCÊ VENCEU! CORTE FINAL PERFEITO ✨🏆";
+            }
+            
+            drawCanvas();
+            return true;
+        }
+        
+        // ----- DESENHO LÚDICO (pipas, linhas, efeitos) -----
+        function drawKite(kite, isActive) {
+            const x = kite.x;
+            const y = kite.y;
+            const level = kite.lineLevel;
+            
+            // Desenha a linha que desce até o chão (como se fosse a linha da pipa)
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(x, GROUND_Y);
+            // grossura da linha varia com nível (mais grossa quando maior? ou apenas estética)
+            ctx.lineWidth = 3.5;
+            // cor da linha: tom baseado no lineLevel (quanto menor, mais avermelhada / "baixo")
+            const lineHue = 20 + (level * 1.2); // tons quentes
+            ctx.strokeStyle = `hsl(${lineHue}, 75%, 55%)`;
+            ctx.setLineDash([8, 8]);
+            ctx.stroke();
+            ctx.setLineDash([]); // reset
+            
+            // Pequeno laço no chão
+            ctx.beginPath();
+            ctx.arc(x, GROUND_Y, 8, 0, Math.PI * 2);
+            ctx.fillStyle = "#a57c4c";
+            ctx.shadowBlur = 0;
+            ctx.fill();
+            ctx.fillStyle = "#6b4c2c";
+            ctx.beginPath();
+            ctx.arc(x, GROUND_Y, 4, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Desenho da pipa (estilo diamante / raia)
+            ctx.shadowBlur = 6;
+            ctx.shadowColor = "rgba(0,0,0,0.3)";
+            const kiteW = 26;
+            const kiteH = 32;
+            ctx.beginPath();
+            ctx.moveTo(x, y - kiteH/1.6);
+            ctx.lineTo(x + kiteW/1.5, y);
+            ctx.lineTo(x, y + kiteH/1.8);
+            ctx.lineTo(x - kiteW/1.5, y);
+            ctx.closePath();
+            ctx.fillStyle = kite.kiteColor;
+            ctx.fill();
+            ctx.strokeStyle = "#4a2a12";
+            ctx.lineWidth = 1.8;
+            ctx.stroke();
+            
+            // Rabo da pipa (fitas)
+            ctx.beginPath();
+            ctx.moveTo(x, y + kiteH/2.2);
+            for(let i=0; i<3; i++) {
+                const offX = (Math.sin(Date.now() * 0.005 + i) * 4);
+                ctx.lineTo(x + offX + (i-1)*4, y + kiteH/1.8 + i*7);
+            }
+            ctx.strokeStyle = kite.color;
+            ctx.lineWidth = 2.5;
+            ctx.stroke();
+            
+            // Olhos divertidos
+            ctx.fillStyle = "#ffffff";
+            ctx.beginPath();
+            ctx.arc(x-8, y-4, 4, 0, Math.PI*2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(x+8, y-4, 4, 0, Math.PI*2);
+            ctx.fill();
+            ctx.fillStyle = "#221c0e";
+            ctx.beginPath();
+            ctx.arc(x-7, y-4, 1.8, 0, Math.PI*2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(x+9, y-4, 1.8, 0, Math.PI*2);
+            ctx.fill();
+            ctx.fillStyle = "#f4c542";
+            ctx.beginPath();
+            ctx.ellipse(x, y+2, 4, 2, 0, 0, Math.PI*2);
+            ctx.fill();
+            
+            // Mostrar o valor "lineLevel" (força/altura da linha) dentro de uma nuvem
+            ctx.font = "bold 14px 'Comic Neue', 'Comic Sans MS'";
+            ctx.fillStyle = "#fff6df";
+            ctx.shadowBlur = 2;
+            ctx.fillText(`⬇️ ${level}`, x-18, y-15);
+            ctx.fillStyle = "#2c2b1f";
+            ctx.fillText(`${level}`, x-17, y-15);
+            
+            // Destaque da pipa ativa (brilho dourado e aura)
+            if(isActive) {
+                ctx.shadowBlur = 14;
+                ctx.shadowColor = "#ffcc44";
+                ctx.beginPath();
+                ctx.arc(x, y, 27, 0, Math.PI*2);
+                ctx.strokeStyle = "#ffdd88";
+                ctx.lineWidth = 3;
+                ctx.stroke();
+                // coroa estrelada
+                for(let ang=0; ang<Math.PI*2; ang+=Math.PI/4) {
+                    const sx = x + Math.cos(ang)*32;
+                    const sy = y + Math.sin(ang)*28;
+                    ctx.beginPath();
+                    ctx.moveTo(sx, sy);
+                    ctx.lineTo(sx-5, sy-7);
+                    ctx.lineTo(sx+5, sy-7);
+                    ctx.fillStyle = "#ffb347";
+                    ctx.fill();
+                }
+            }
+            ctx.shadowBlur = 0;
+        }
+        
+        function drawBackground() {
+            // céu gradiente
+            const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            grad.addColorStop(0, "#9acdff");
+            grad.addColorStop(0.7, "#e0f0ff");
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // nuvens fofas
+            ctx.fillStyle = "rgba(255,255,245,0.85)";
+            ctx.shadowBlur = 12;
+            ctx.shadowColor = "rgba(0,0,0,0.1)";
+            for(let i=0;i<6;i++) {
+                let cloudX = (Date.now() * 0.03 + i * 180) % (canvas.width + 200) - 100;
+                let cloudY = 30 + i * 70;
+                ctx.beginPath();
+                ctx.ellipse(cloudX, cloudY, 45, 35, 0, 0, Math.PI*2);
+                ctx.ellipse(cloudX-30, cloudY-12, 35, 30, 0, 0, Math.PI*2);
+                ctx.ellipse(cloudX+35, cloudY-15, 38, 32, 0, 0, Math.PI*2);
+                ctx.fill();
+            }
+            ctx.shadowBlur = 0;
+            // grama / chão
+            ctx.fillStyle = "#7cb518";
+            ctx.fillRect(0, GROUND_Y+2, canvas.width, canvas.height - GROUND_Y);
+            ctx.fillStyle = "#5a8f2c";
+            for(let i=0;i<30;i++) {
+                ctx.beginPath();
+                ctx.moveTo(i*35, GROUND_Y);
+                ctx.lineTo(i*35+12, GROUND_Y-12);
+                ctx.lineTo(i*35-12, GROUND_Y-12);
+                ctx.fill();
+            }
+            ctx.fillStyle = "#f3c969";
+            ctx.font = "bold 20px 'Segoe UI'";
+            ctx.fillText("⛅", canvas.width-55, 55);
+        }
+        
+        function draw() {
+            drawBackground();
+            // desenha todas as pipas
+            for(let kite of kites) {
+                const isActive = (currentKiteId === kite.id);
+                drawKite(kite, isActive);
+            }
+            // se game over, escreve mensagem na tela
+            if(!gameActive && kites.length <= 1) {
+                ctx.font = "800 28px 'Comic Neue', cursive";
+                ctx.fillStyle = "#ffec80";
+                ctx.shadowBlur = 8;
+                ctx.shadowColor = "black";
+                ctx.fillText("🏆 CAMPEÃO DAS PIPAS! 🏆", canvas.width/2-170, 80);
+                ctx.font = "bold 18px monospace";
+                ctx.fillStyle = "#ffffaa";
+                ctx.fillText("clique em NOVO JOGO para mais desafios", canvas.width/2-190, 130);
+                ctx.shadowBlur = 0;
+            }
+        }
+        
+        function drawCanvas() {
+            draw();
+        }
+        
+        // ----- EVENTOS DE CLIQUE E CORTE -----
+        function handleCanvasClick(e) {
+            if(!gameActive && kites.length <= 1) {
+                // ainda assim permite reset pelo botão, mas não atrapalha
+                return;
+            }
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            let mouseX, mouseY;
+            if(e.touches) {
+                mouseX = (e.touches[0].clientX - rect.left) * scaleX;
+                mouseY = (e.touches[0].clientY - rect.top) * scaleY;
+                e.preventDefault();
+            } else {
+                mouseX = (e.clientX - rect.left) * scaleX;
+                mouseY = (e.clientY - rect.top) * scaleY;
+            }
+            
+            // encontrar pipa clicada (distância centro)
+            let clickedKite = null;
+            for(let kite of kites) {
+                const dx = kite.x - mouseX;
+                const dy = kite.y - mouseY;
+                const dist = Math.hypot(dx, dy);
+                if(dist < 35) {
+                    clickedKite = kite;
+                    break;
+                }
+            }
+            if(clickedKite) {
+                // Clique esquerdo padrão: trocar de pipa
+                switchToKite(clickedKite.id);
+            } else {
+                document.getElementById('gameMessage').innerHTML = "💨 Clique em uma pipa para voar até ela! 💨";
+                drawCanvas();
+            }
+        }
+        
+        function handleContextMenu(e) {
+            e.preventDefault(); // desabilita menu direito
+            if(!gameActive && kites.length <= 1) {
+                document.getElementById('gameMessage').innerHTML = "Jogo finalizado! Reinicie para cortar mais pipas.";
+                return false;
+            }
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            let mouseX = (e.clientX - rect.left) * scaleX;
+            let mouseY = (e.clientY - rect.top) * scaleY;
+            
+            let targetKite = null;
+            for(let kite of kites) {
+                const dx = kite.x - mouseX;
+                const dy = kite.y - mouseY;
+                if(Math.hypot(dx, dy) < 38) {
+                    targetKite = kite;
+                    break;
+                }
+            }
+            if(targetKite) {
+                attemptCut(targetKite.id);
+            } else {
+                document.getElementById('gameMessage').innerHTML = "✂️ Clique com botão DIREITO em cima de uma pipa inimiga para cortar a linha! ✂️";
+                drawCanvas();
+            }
+            return false;
+        }
+        
+        // Suporte touch: Long press para corte? adaptação: para mobile, faremos duplo toque como corte? 
+        // melhor: usar um timer? mas para não complicar, vamos adicionar um botão extra? 
+        // Vamos manter que no mobile o clique longo (contextmenu) funciona? alguns navegadores suportam. 
+        // Como o jogo é infantil e desktop foco, adicionamos aviso. Mas implementaremos evento 'contextmenu' e também 
+        // para touch: diferenciar toque simples e toque longo? Vamos manter apenas o evento de clique direito e no touch, 
+        // o usuário pode usar o botão direito via teclado? Adicionamos uma observação.
+        // Por segurança, faremos também um botão "CORTAR" se necessário? mas já temos a mecânica pura, no celular dá pra usar com toque e segurar.
+        canvas.addEventListener('click', handleCanvasClick);
+        canvas.addEventListener('contextmenu', handleContextMenu);
+        
+        // Botão reset
+        document.getElementById('resetBtn').addEventListener('click', () => {
+            initGame();
+            drawCanvas();
+        });
+        
+        // animação suave (opcional para fazer nuvens e rabos se moverem)
+        let animFrame;
+        function animate() {
+            drawCanvas();
+            animFrame = requestAnimationFrame(animate);
+        }
+        animate();
+        
+        // Iniciar jogo
+        initGame();
+    })();
+</script>
+</body>
+</html>
