@@ -2,19 +2,19 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Oráculo de Lula · Busca Automática na Web</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oráculo de Lula · Busca dinâmica na Wikidata</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            background: linear-gradient(135deg, #eef5e9 0%, #dde8d4 100%);
+            background: linear-gradient(135deg, #eaf5e5 0%, #d9e8d0 100%);
             font-family: 'Inter', system-ui, -apple-system, sans-serif;
             padding: 1.5rem;
             min-height: 100vh;
             color: #1a3a1a;
         }
         .container {
-            max-width: 1100px;
+            max-width: 1000px;
             margin: 0 auto;
             background: rgba(255,255,255,0.96);
             border-radius: 2rem;
@@ -87,6 +87,15 @@
             margin-top: 1rem;
             border: 1px solid #cde2c3;
         }
+        .path {
+            background: #eef4e9;
+            padding: 0.8rem;
+            border-radius: 1rem;
+            font-family: monospace;
+            font-size: 1rem;
+            margin: 1rem 0;
+            word-break: break-word;
+        }
         .loading {
             display: inline-block;
             width: 20px;
@@ -97,26 +106,6 @@
             animation: spin 0.6s linear infinite;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
-        .web-discovery {
-            background: #eef4e9;
-            border-radius: 1rem;
-            padding: 1rem;
-            margin: 1rem 0;
-        }
-        .engine-links {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 1rem;
-        }
-        .engine-link {
-            background: #e2efdc;
-            padding: 0.4rem 1rem;
-            border-radius: 40px;
-            text-decoration: none;
-            color: #1e4620;
-            font-size: 0.8rem;
-        }
         footer {
             text-align: center;
             font-size: 0.7rem;
@@ -124,192 +113,212 @@
             color: #557155;
             border-top: 1px solid #daecce;
         }
-        @media (max-width: 650px) { .content { padding: 1rem; } }
+        .wikidata-note {
+            font-size: 0.75rem;
+            background: #f0f7ea;
+            padding: 0.5rem;
+            border-radius: 0.8rem;
+            margin-top: 1rem;
+        }
     </style>
 </head>
 <body>
 <div class="container">
     <div class="hero">
         <h1>🌿 Oráculo de Lula <span>6º</span></h1>
-        <p>Busca automática na Wikipédia + links para notícias — sem grafo pré-definido</p>
+        <p>Calcula o Número de Lula em tempo real usando a Wikidata (base de conhecimento global)</p>
     </div>
     <div class="content">
         <div class="theory-card">
-            <h2>📡 Teoria dos Seis Graus + Busca em Tempo Real</h2>
-            <p>O Oráculo <strong>não possui nenhuma conexão armazenada</strong>. Ao digitar um nome, ele consulta a <strong>Wikipédia</strong> (API pública) para descobrir se Lula e a pessoa aparecem juntos em algum artigo. Se sim, temos uma relação direta (1º grau). Caso contrário, ele busca aliados de Lula automaticamente e verifica se a pessoa se conecta a eles — tudo ao vivo.</p>
-            <small>🔍 Além disso, abrimos buscas em sites de notícias para você explorar mais fundo.</small>
+            <h2>📡 O verdadeiro Oráculo de Lula</h2>
+            <p>Assim como o Oráculo de Kevin Bacon, este sistema busca em uma enorme base de dados (Wikidata) para encontrar o <strong>menor caminho de conexões</strong> entre Lula e qualquer figura pública. <strong>Não há grafo pré-definido</strong> – tudo é consultado dinamicamente na web.</p>
+            <small>🔍 A Wikidata contém bilhões de declarações sobre pessoas, cargos, eventos, parentescos, etc.</small>
         </div>
 
         <div class="query-area">
             <div class="input-group">
-                <input type="text" id="personInput" placeholder="Ex: Joe Biden, Papa Francisco, Neymar, Elon Musk" value="">
-                <button id="searchBtn">🚀 Consultar + Buscar (sem base fixa)</button>
+                <input type="text" id="personInput" placeholder="Ex: Joe Biden, Papa Francisco, Neymar, Elon Musk, Madonna" value="">
+                <button id="searchBtn">✨ Consultar Número de Lula</button>
             </div>
-            <p style="font-size:0.8rem; color:#2c5e2c;">🔎 O sistema vai vasculhar a Wikipédia em tempo real. Aguarde alguns segundos.</p>
+            <p style="font-size:0.8rem;">🔎 A consulta pode levar alguns segundos (Wikidata é rápida). O sistema descobre automaticamente as conexões.</p>
         </div>
 
         <div id="resultContainer">
-            <div class="result-card">💡 Digite um nome e clique no botão. O Oráculo buscará automaticamente na web as conexões com Lula.</div>
+            <div class="result-card">💡 Digite um nome e clique em "Consultar Número de Lula". O Oráculo buscará na Wikidata o menor caminho até Lula.</div>
         </div>
         <footer>
-            🌐 Busca ativa via Wikipédia (API aberta). As abas de notícias abrem para consulta manual complementar.
+            🌐 Fonte: Wikidata (consulta SPARQL pública). Exibe o caminho e os graus de separação.
         </footer>
     </div>
 </div>
 
 <script>
-    // Função para buscar na Wikipédia se dois termos aparecem juntos em um artigo
-    async function searchWikipediaTogether(term1, term2) {
-        const query = `${term1} ${term2}`;
-        const url = `https://pt.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&format=json&origin=*&srlimit=5`;
+    // ID do Lula na Wikidata
+    const LULA_QID = 'Q234';
+    
+    // Função para buscar o QID (identificador Wikidata) a partir de um nome
+    async function buscarQID(nome) {
+        const url = `https://www.wikidata.org/w/api.php?action=wbsearchentities&search=${encodeURIComponent(nome)}&language=pt&format=json&origin=*&limit=5`;
         try {
-            const response = await fetch(url);
-            const data = await response.json();
-            if (data.query && data.query.search && data.query.search.length > 0) {
-                // Retorna o título do primeiro artigo encontrado
-                return { found: true, article: data.query.search[0].title, snippet: data.query.search[0].snippet };
+            const resp = await fetch(url);
+            const data = await resp.json();
+            if (data.search && data.search.length > 0) {
+                // Retorna o primeiro resultado que for uma pessoa (Q5) ou entidade relevante
+                for (let item of data.search) {
+                    // Verifica se é uma pessoa (opcional, mas ajuda)
+                    const typeUrl = `https://www.wikidata.org/wiki/Special:EntityData/${item.id}.json`;
+                    const typeResp = await fetch(typeUrl);
+                    const typeData = await typeResp.json();
+                    const claims = typeData.entities[item.id].claims;
+                    if (claims.P31 && claims.P31.some(p => p.mainsnak.datavalue.value.id === 'Q5')) {
+                        return item.id;
+                    }
+                }
+                // Se nenhuma for pessoa, retorna o primeiro mesmo assim
+                return data.search[0].id;
             }
-            return { found: false };
+            return null;
         } catch (err) {
-            console.error("Erro na busca da Wikipédia:", err);
-            return { found: false, error: true };
+            console.error(err);
+            return null;
         }
     }
 
-    // Função para obter aliados de Lula dinamicamente (páginas que mais citam Lula)
-    async function getLulaAllies() {
-        // Busca artigos que mencionam "Lula" e extrai os títulos mais relevantes
-        const url = `https://pt.wikipedia.org/w/api.php?action=query&list=search&srsearch=Lula&format=json&origin=*&srlimit=15`;
+    // Função para buscar o caminho mais curto entre duas entidades na Wikidata
+    // Usa a query SPARQL de caminho mínimo (propriedades direcionadas e não direcionadas)
+    async function encontrarCaminho(startQID, targetQID, maxHops = 6) {
+        // Propriedades comuns de conexão entre pessoas: P26 (cônjuge), P40 (filho), P3373 (irmão), P22 (pai), P25 (mãe),
+        // P102 (partido político), P39 (cargo ocupado), P108 (empregador), P463 (membro de), P1416 (associação), P737 (influenciado por)
+        // Além de P31 (instância de) não ajuda muito. Vamos usar uma query que explora qualquer caminho até 6 saltos.
+        // Infelizmente, a Wikidata não suporta "shortest path" diretamente em SPARQL sem recursão pesada.
+        // Mas podemos tentar uma abordagem BFS via múltiplas consultas (mais prático para frontend).
+        // Como isso pode ser lento, vamos usar uma técnica: consultar todos os vizinhos até 2 graus, e assim por diante.
+        // Vou implementar um BFS manual em JavaScript, consultando os vizinhos de cada nó via API.
+        
+        // Função para obter vizinhos (entidades conectadas por qualquer propriedade significativa)
+        async function obterVizinhos(qid) {
+            const query = `
+                SELECT DISTINCT ?vizinho WHERE {
+                  {
+                    wd:${qid} ?prop ?vizinho .
+                    ?vizinho wdt:P31 wd:Q5 .
+                    FILTER(?prop IN (wdt:P26, wdt:P40, wdt:P3373, wdt:P22, wdt:P25, wdt:P102, wdt:P39, wdt:P108, wdt:P463, wdt:P1416, wdt:P737, wdt:P1552, wdt:P171, wdt:P106))
+                  }
+                  UNION
+                  {
+                    ?vizinho ?prop wd:${qid} .
+                    ?vizinho wdt:P31 wd:Q5 .
+                    FILTER(?prop IN (wdt:P26, wdt:P40, wdt:P3373, wdt:P22, wdt:P25, wdt:P102, wdt:P39, wdt:P108, wdt:P463, wdt:P1416, wdt:P737, wdt:P1552, wdt:P171, wdt:P106))
+                  }
+                }
+                LIMIT 200
+            `;
+            const url = `https://query.wikidata.org/sparql?format=json&query=${encodeURIComponent(query)}`;
+            try {
+                const resp = await fetch(url);
+                const data = await resp.json();
+                const vizinhos = data.results.bindings.map(b => b.vizinho.value.split('/').pop());
+                return [...new Set(vizinhos)];
+            } catch (err) {
+                console.error(`Erro ao buscar vizinhos de ${qid}`, err);
+                return [];
+            }
+        }
+
+        // BFS para encontrar caminho
+        const queue = [{ node: startQID, path: [startQID] }];
+        const visited = new Set([startQID]);
+        
+        while (queue.length > 0) {
+            const { node, path } = queue.shift();
+            if (node === targetQID) return path;
+            if (path.length > maxHops) continue;
+            
+            const vizinhos = await obterVizinhos(node);
+            for (let viz of vizinhos) {
+                if (!visited.has(viz)) {
+                    visited.add(viz);
+                    queue.push({ node: viz, path: [...path, viz] });
+                }
+            }
+            // Pequeno delay para não sobrecarregar a API
+            await new Promise(r => setTimeout(r, 50));
+        }
+        return null;
+    }
+
+    // Obter o rótulo (nome) de um QID
+    async function obterRotulo(qid) {
+        const url = `https://www.wikidata.org/wiki/Special:EntityData/${qid}.json`;
         try {
-            const response = await fetch(url);
-            const data = await response.json();
-            if (data.query && data.query.search) {
-                // Extrai os títulos dos artigos como possíveis aliados (pessoas/entidades)
-                let allies = data.query.search.map(item => item.title).filter(title => 
-                    !title.toLowerCase().includes("lula") && 
-                    !title.includes("Arquivo") && 
-                    !title.includes("Usuário") &&
-                    title.length < 40
-                );
-                // Remove duplicatas e pega os 8 primeiros
-                allies = [...new Set(allies)].slice(0, 8);
-                return allies;
-            }
-            return [];
+            const resp = await fetch(url);
+            const data = await resp.json();
+            const entity = data.entities[qid];
+            if (entity && entity.labels && entity.labels.pt) return entity.labels.pt.value;
+            if (entity && entity.labels && entity.labels.en) return entity.labels.en.value;
+            return qid;
         } catch (err) {
-            return [];
+            return qid;
         }
     }
 
-    // Gera links de notícias para abrir em abas
-    function openNewsLinks(personName) {
-        const term = encodeURIComponent(`Lula ${personName}`);
-        const sites = [
-            `https://news.google.com/search?q=${term}&hl=pt-BR`,
-            `https://www.bing.com/news/search?q=${term}`,
-            `https://busca.uol.com.br/search?q=${term}`,
-            `https://search.folha.uol.com.br/search?q=${term}`
-        ];
-        for (let url of sites) {
-            window.open(url, '_blank', 'noopener,noreferrer');
-        }
-    }
-
-    // Função principal de consulta (totalmente dinâmica)
-    async function consultarDinamico() {
+    // Função principal de consulta
+    async function consultarOráculo() {
         const input = document.getElementById("personInput");
-        const person = input.value.trim();
-        if (!person) {
+        const nome = input.value.trim();
+        if (!nome) {
             alert("Digite o nome de uma figura pública.");
             return;
         }
-
+        
         const container = document.getElementById("resultContainer");
-        container.innerHTML = `<div class="result-card">🔍 Buscando na Wikipédia por relações entre Lula e "${person}"... <div class="loading"></div></div>`;
-
-        // 1. Busca direta: Lula + pessoa juntos
-        const direct = await searchWikipediaTogether("Lula", person);
+        container.innerHTML = `<div class="result-card">🔍 Buscando o QID de "${nome}" na Wikidata... <div class="loading"></div></div>`;
         
-        let resultHtml = `<div class="result-card">`;
-        
-        if (direct.found) {
-            resultHtml += `
-                <h3>✅ RELAÇÃO DIRETA ENCONTRADA (1º grau)</h3>
-                <p>Lula e <strong>${person}</strong> aparecem juntos no artigo da Wikipédia: <br>
-                <strong>“${direct.article}”</strong><br>
-                <small>Trecho: ${direct.snippet.substring(0, 200)}...</small></p>
-                <div class="web-discovery">
-                    📌 <strong>Teoria dos Seis Graus:</strong> Essa é uma conexão de <strong>primeiro grau</strong> — Lula e ${person} têm relação direta comprovada por fontes públicas.
-                </div>
-            `;
-        } else {
-            // Busca aliados dinâmicos de Lula
-            resultHtml += `<h3>⚠️ Relação direta não encontrada na Wikipédia</h3>`;
-            resultHtml += `<p>Buscando aliados de Lula para encontrar um caminho indireto...</p>`;
-            const allies = await getLulaAllies();
-            let indirectFound = false;
-            let indirectPath = null;
-            
-            // Para cada aliado, verifica se o aliado + pessoa aparecem juntos
-            for (let ally of allies) {
-                const check = await searchWikipediaTogether(ally, person);
-                if (check.found) {
-                    indirectFound = true;
-                    indirectPath = { ally, article: check.article, snippet: check.snippet };
-                    break;
-                }
-                // Pequeno delay para não sobrecarregar a API
-                await new Promise(r => setTimeout(r, 150));
-            }
-            
-            if (indirectFound) {
-                resultHtml += `
-                    <div class="web-discovery">
-                        <strong>🔗 CONEXÃO INDIRETA ENCONTRADA (2º grau)</strong><br>
-                        Lula ↔ <strong>${indirectPath.ally}</strong> ↔ <strong>${person}</strong><br>
-                        Artigo que liga ${indirectPath.ally} e ${person}: <em>“${indirectPath.article}”</em><br>
-                        <small>${indirectPath.snippet.substring(0, 150)}...</small><br><br>
-                        📐 <strong>Interpretação:</strong> Segundo a Teoria dos Seis Graus, ${person} está a <strong>dois passos</strong> de Lula (Lula → ${indirectPath.ally} → ${person}).
-                    </div>
-                `;
-            } else {
-                resultHtml += `
-                    <div class="web-discovery">
-                        🤖 <strong>Nenhuma conexão automática encontrada na Wikipédia.</strong><br>
-                        A Teoria dos Seis Graus afirma que qualquer pessoa pode estar a até 6 passos de Lula, mas não encontramos evidências diretas ou indiretas nas bases da Wikipédia.<br>
-                        Você pode explorar manualmente os links de notícias abaixo para tentar encontrar relações.
-                    </div>
-                `;
-            }
+        // 1. Buscar QID da pessoa
+        const pessoaQID = await buscarQID(nome);
+        if (!pessoaQID) {
+            container.innerHTML = `<div class="result-card">❌ Não foi possível encontrar "${nome}" na Wikidata. Tente outro nome ou verifique a grafia.</div>`;
+            return;
         }
         
-        // Sempre oferece links para busca em notícias (abre abas)
-        resultHtml += `
-            <div style="margin-top: 1.5rem;">
-                <strong>📰 Buscar em sites de notícias (abrem em novas abas):</strong>
-                <div class="engine-links">
-                    <a href="#" id="openNewsBtn" class="engine-link">🔍 Abrir buscas em Google Notícias, Bing, UOL e Folha</a>
+        container.innerHTML = `<div class="result-card">🕸️ Encontrado QID ${pessoaQID}. Buscando caminho até Lula (Q234) na base de conhecimento...<br>Isso pode levar até 15 segundos.<div class="loading"></div></div>`;
+        
+        // 2. Encontrar caminho mínimo
+        const caminhoQIDs = await encontrarCaminho(LULA_QID, pessoaQID, 6);
+        
+        if (!caminhoQIDs) {
+            container.innerHTML = `<div class="result-card">⚠️ Não foi possível encontrar um caminho entre Lula e ${nome} com até 6 graus de separação na Wikidata. A Teoria dos Seis Graus sugere que um caminho existe, mas a base de conhecimento pode não tê-lo registrado. Tente um nome mais conhecido.</div>`;
+            return;
+        }
+        
+        // 3. Obter rótulos de cada QID no caminho
+        const labels = [];
+        for (let qid of caminhoQIDs) {
+            const label = await obterRotulo(qid);
+            labels.push(label);
+        }
+        
+        const distancia = caminhoQIDs.length - 1;
+        const caminhoStr = labels.join(" → ");
+        
+        let resultadoHtml = `
+            <div class="result-card">
+                <h3>🌟 Número de Lula para <strong>${nome}</strong> = ${distancia}</h3>
+                <div class="path">📌 Caminho: ${caminhoStr}</div>
+                <p>${distancia === 1 ? "✅ Relação direta (1º grau) – Lula e a pessoa possuem uma conexão direta registrada na Wikidata." : 
+                    `🔗 Conexão indireta de ${distancia}º grau – de acordo com a Teoria dos Seis Graus de Separação.`}</p>
+                <div class="wikidata-note">
+                    🌍 Fonte: Wikidata (consulta em tempo real). Os caminhos são baseados em propriedades como cargos ocupados, parentesco, filiação partidária, etc.
                 </div>
-                <small>Clique no link acima para pesquisar "Lula ${person}" em vários portais de notícias e encontrar mais evidências.</small>
             </div>
         `;
-        resultHtml += `</div>`;
-        container.innerHTML = resultHtml;
-        
-        // Adiciona evento ao botão de abrir notícias
-        const newsBtn = document.getElementById("openNewsBtn");
-        if (newsBtn) {
-            newsBtn.addEventListener("click", (e) => {
-                e.preventDefault();
-                openNewsLinks(person);
-            });
-        }
+        container.innerHTML = resultadoHtml;
     }
     
-    // Configurar evento do botão
-    document.getElementById("searchBtn").addEventListener("click", consultarDinamico);
+    // Configurar eventos
+    document.getElementById("searchBtn").addEventListener("click", consultarOráculo);
     document.getElementById("personInput").addEventListener("keypress", (e) => {
-        if (e.key === "Enter") consultarDinamico();
+        if (e.key === "Enter") consultarOráculo();
     });
 </script>
 </body>
