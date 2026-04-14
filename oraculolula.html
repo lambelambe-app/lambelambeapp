@@ -2,354 +2,403 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Oráculo de Lula · Busca automática na web</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Oráculo de Lula · Busca em Notícias</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            background: linear-gradient(145deg, #f6f9f2 0%, #e9f0e3 100%);
-            font-family: 'Inter', system-ui, sans-serif;
+            background: linear-gradient(135deg, #f0f7e8 0%, #e2ecd9 100%);
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
             padding: 1.5rem;
             min-height: 100vh;
-            color: #1a2c1a;
+            color: #1e3a1e;
         }
+
         .container {
-            max-width: 1200px;
+            max-width: 1100px;
             margin: 0 auto;
-            background: rgba(255,255,255,0.94);
-            border-radius: 2rem;
-            box-shadow: 0 20px 35px -12px rgba(0,0,0,0.1);
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(2px);
+            border-radius: 2.5rem;
+            box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.15);
             overflow: hidden;
+            transition: all 0.2s;
         }
+
         .hero {
-            background: #1e4620;
-            padding: 2rem;
+            background: #1a4d1a;
+            padding: 2rem 2rem 1.8rem;
             text-align: center;
             color: white;
         }
-        .hero h1 { font-size: 2rem; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
-        .hero h1 span { background: #ffd966; color: #1e4620; padding: 0 12px; border-radius: 60px; }
-        .content { padding: 2rem; }
+
+        .hero h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .hero h1 span {
+            background: #ffdd77;
+            color: #1a4d1a;
+            font-size: 1.9rem;
+            border-radius: 60px;
+            padding: 0 14px;
+            font-weight: 800;
+        }
+
+        .hero p {
+            margin-top: 0.8rem;
+            opacity: 0.92;
+            font-size: 1rem;
+        }
+
+        .content {
+            padding: 2rem;
+        }
+
         .theory-card {
-            background: #fefce6;
+            background: #fff9e8;
             border-left: 6px solid #2b7a2b;
-            padding: 1rem 1.5rem;
+            padding: 1.3rem 1.8rem;
             border-radius: 1.5rem;
             margin-bottom: 2rem;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.02);
         }
+
+        .theory-card h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #1e3a1e;
+            margin-bottom: 0.6rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .theory-card p {
+            line-height: 1.5;
+            color: #2c4a2c;
+            margin-bottom: 0.5rem;
+        }
+
+        .theory-card small {
+            color: #5a705a;
+            font-size: 0.8rem;
+        }
+
         .query-area {
             background: white;
             border-radius: 1.8rem;
-            padding: 1.5rem;
+            padding: 1.6rem;
             margin-bottom: 2rem;
-            border: 1px solid #e2f0da;
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.03);
+            border: 1px solid #d9e8d0;
         }
-        .input-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin: 1rem 0;
-        }
-        .input-group input {
-            flex: 3;
-            padding: 0.9rem 1.2rem;
-            border: 1.5px solid #cfdec7;
-            border-radius: 60px;
-            font-size: 1rem;
-        }
-        .input-group button {
-            background: #1e4620;
-            color: white;
-            border: none;
-            padding: 0 2rem;
-            border-radius: 60px;
-            font-weight: bold;
-            cursor: pointer;
+
+        .query-label {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: #1a4d1a;
+            margin-bottom: 0.5rem;
             display: flex;
             align-items: center;
             gap: 8px;
         }
-        .result-card {
-            background: #fafcf8;
-            border-radius: 1.5rem;
-            padding: 1.4rem;
-            margin: 1rem 0;
-            border: 1px solid #cde2c3;
+
+        .input-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin: 1rem 0 0.8rem;
         }
-        .path-display {
-            background: #f1f4ed;
-            padding: 0.8rem;
-            border-radius: 1rem;
-            font-family: monospace;
-            margin: 0.8rem 0;
+
+        .input-group input {
+            flex: 3;
+            min-width: 200px;
+            padding: 0.9rem 1.2rem;
+            font-size: 1rem;
+            border: 1.5px solid #cde0c1;
+            border-radius: 60px;
+            background: #fff;
+            transition: 0.2s;
+            font-family: inherit;
         }
-        .confidence { background: #fff6df; border-radius: 1rem; padding: 0.7rem; margin: 10px 0; }
-        .web-discovery {
-            background: #e6f0e2;
-            border-radius: 1rem;
-            padding: 1rem;
-            margin-top: 1rem;
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #2b7a2b;
+            box-shadow: 0 0 0 3px rgba(43, 122, 43, 0.15);
         }
-        .loading { display: inline-block; width: 20px; height: 20px; border: 2px solid #ccc; border-top-color: #2b7a2b; border-radius: 50%; animation: spin 0.6s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .suggestion-btn {
-            background: #2b7a2b;
+
+        .input-group button {
+            background: #1a4d1a;
             color: white;
             border: none;
-            padding: 0.3rem 0.8rem;
-            border-radius: 40px;
+            padding: 0 2rem;
+            border-radius: 60px;
+            font-weight: 700;
+            font-size: 1rem;
             cursor: pointer;
-            font-size: 0.8rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: 0.2s;
+            font-family: inherit;
         }
-        .people-list { background: #fff; border-radius: 1.2rem; padding: 1rem; margin-top: 1.5rem; border: 1px solid #e0efd8; }
-        .list-tag { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
-        .list-tag span { background: #ebf5e5; padding: 0.2rem 0.8rem; border-radius: 30px; font-size: 0.8rem; cursor: pointer; }
-        footer { text-align: center; font-size: 0.7rem; padding: 1rem; color: #557155; }
-        @media (max-width: 650px) { .content { padding: 1rem; } }
+
+        .input-group button:hover {
+            background: #0e3a0e;
+            transform: scale(0.97);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .help-text {
+            background: #f4f9ef;
+            border-radius: 1rem;
+            padding: 0.6rem 1rem;
+            font-size: 0.8rem;
+            color: #2c5e2c;
+            margin-top: 12px;
+        }
+
+        .engines-section {
+            margin: 1.8rem 0 1rem;
+        }
+
+        .engine-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .engine-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #eef3ea;
+            padding: 0.5rem 1.2rem;
+            border-radius: 50px;
+            text-decoration: none;
+            color: #1e4620;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: 0.15s;
+            border: 1px solid #c8ddbc;
+        }
+
+        .engine-link:hover {
+            background: #ddecd2;
+            transform: translateY(-2px);
+        }
+
+        .result-box {
+            background: #fcfdf9;
+            border-radius: 1.5rem;
+            padding: 1.4rem;
+            margin-top: 1rem;
+            border: 1px solid #cde2c3;
+        }
+
+        .result-box h3 {
+            font-size: 1.2rem;
+            margin-bottom: 0.8rem;
+            color: #1e4620;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .six-degrees-demo {
+            background: #eef4e9;
+            border-radius: 1.2rem;
+            padding: 1rem;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        footer {
+            text-align: center;
+            font-size: 0.7rem;
+            padding: 1.2rem;
+            border-top: 1px solid #daecce;
+            color: #557155;
+        }
+
+        @media (max-width: 650px) {
+            body { padding: 0.8rem; }
+            .content { padding: 1.2rem; }
+            .hero h1 { font-size: 1.6rem; }
+        }
     </style>
 </head>
 <body>
 <div class="container">
     <div class="hero">
-        <h1>🌿 Oráculo de Lula <span>6º</span></h1>
-        <p>Busca automática na Wikipédia para descobrir novas conexões em tempo real</p>
+        <h1>
+            🌿 Oráculo de Lula
+            <span>6º</span>
+        </h1>
+        <p>Teoria dos Seis Graus de Separação + Busca ativa em plataformas de notícias</p>
     </div>
     <div class="content">
         <div class="theory-card">
-            <h2>📡 + Busca dinâmica na web</h2>
-            <p>Além do grafo fixo, ao consultar uma pessoa, o Oráculo vasculha a Wikipédia em busca de menções conjuntas com Lula (ou com os elos intermediários). Se encontrar uma relação nova, você pode adicioná-la ao grafo instantaneamente!</p>
-            <small>🔎 A busca é feita via API pública da Wikipédia – sem necessidade de backend próprio.</small>
+            <h2>📰 A Teoria dos Seis Graus de Separação</h2>
+            <p>Stanley Milgram (1967) propôs que qualquer pessoa no mundo está a, no máximo, seis relações de distância de qualquer outra. No “Oráculo de Lula”, aplicamos essa ideia ao presidente Luiz Inácio Lula da Silva. <strong>Ao digitar um nome e clicar em "Consultar + Buscar"</strong>, o sistema abre buscas em <strong>plataformas de notícias</strong> (Google Notícias, Bing, UOL, Folha, Estadão) com os termos <strong>"Lula" + o nome escolhido</strong>. Os resultados práticos ajudam a visualizar possíveis conexões e graus de separação.</p>
+            <small>🔍 Nenhum grafo interno — tudo é descoberto ao vivo na web, respeitando a teoria.</small>
         </div>
 
         <div class="query-area">
-            <div class="input-group">
-                <input type="text" id="personInput" placeholder="Ex: Dilma, Messi, Papa Francisco, Joe Biden..." list="personDatalist">
-                <button id="searchBtn">🚀 Consultar + Buscar na Web</button>
+            <div class="query-label">
+                🧭 Digite o nome de uma figura pública
             </div>
-            <datalist id="personDatalist"></datalist>
+            <div class="input-group">
+                <input type="text" id="personName" placeholder="Ex: Joe Biden, Papa Francisco, Neymar, Elon Musk, Madonna..." value="">
+                <button id="searchButton">✨ Consultar + Buscar</button>
+            </div>
+            <div class="help-text">
+                💡 O botão irá pesquisar em vários sites de notícias pela combinação <strong>"Lula" + [nome]</strong>. Os resultados mostram reportagens, entrevistas e encontros — evidências reais dos graus de separação.
+            </div>
         </div>
 
-        <div id="resultContainer">
-            <div class="result-card">🔮 Digite um nome e clique em "Consultar + Buscar na Web". O sistema tentará encontrar relações automáticas.</div>
+        <!-- ONDE VÃO APARECER OS LINKS E A EXPLICAÇÃO -->
+        <div id="resultPanel" class="result-box">
+            <h3>🔎 Aguardando consulta</h3>
+            <p>Digite um nome acima e clique em "Consultar + Buscar". Serão gerados links para buscar em:</p>
+            <ul style="margin-left: 1.5rem; margin-top: 0.5rem;">
+                <li>📰 Google Notícias</li>
+                <li>📰 Bing Notícias</li>
+                <li>📰 Yahoo Notícias</li>
+                <li>📰 UOL</li>
+                <li>📰 Folha de S.Paulo</li>
+                <li>📰 O Estado de S. Paulo</li>
+            </ul>
+            <div class="six-degrees-demo">
+                <strong>📐 Como a Teoria dos Seis Graus se aplica aqui?</strong><br>
+                Cada artigo de notícia que menciona Lula e a pessoa pesquisada representa uma <strong>conexão de grau 1</strong> (relação direta). Se a pessoa não aparece diretamente com Lula, mas aparece com um aliado próximo de Lula (ex: Dilma, Joe Biden, Papa Francisco), isso representa grau 2, e assim por diante. As buscas abertas ajudam você a explorar essas cadeias manualmente.
+            </div>
         </div>
 
-        <div class="people-list">
-            <h3>📋 Grafo inicial (conexões conhecidas)</h3>
-            <div class="list-tag" id="availablePeopleList"></div>
-            <p style="font-size:0.7rem;">* Ao descobrir novas conexões, elas serão sugeridas para expandir o grafo.</p>
-        </div>
-        <footer>⚡ A busca automática consulta a Wikipédia (API REST) verificando se duas pessoas aparecem juntas em artigos. Isso simula um "crawler" leve e respeita as políticas de uso.</footer>
+        <footer>
+            🌐 As buscas abrem em novas abas para você navegar livremente. O Oráculo de Lula demonstra na prática os Seis Graus de Separação usando notícias reais.
+        </footer>
     </div>
 </div>
 
 <script>
-    // ----- GRAFO BASE (conexões manuais iniciais) -----
-    let graph = {
-        "Lula": ["Dilma Rousseff", "Bolsonaro", "Barack Obama", "Papa Francisco", "José Alencar", "Janja", "Joe Biden", "Neymar", "Fernando Henrique Cardoso", "Vladimir Putin", "Angela Merkel"],
-        "Dilma Rousseff": ["Lula", "Michel Temer"],
-        "Bolsonaro": ["Lula", "Paulo Guedes", "Sergio Moro", "Papa Francisco"],
-        "Barack Obama": ["Lula", "Joe Biden"],
-        "Papa Francisco": ["Lula", "Bolsonaro", "Joe Biden"],
-        "José Alencar": ["Lula"],
-        "Janja": ["Lula"],
-        "Michel Temer": ["Dilma Rousseff"],
-        "Paulo Guedes": ["Bolsonaro"],
-        "Sergio Moro": ["Bolsonaro"],
-        "Joe Biden": ["Lula", "Barack Obama", "Papa Francisco", "Elon Musk"],
-        "Neymar": ["Lula", "Messi"],
-        "Messi": ["Neymar"],
-        "Fernando Henrique Cardoso": ["Lula"],
-        "Vladimir Putin": ["Lula"],
-        "Angela Merkel": ["Lula"],
-        "Elon Musk": ["Joe Biden"]
-    };
+    (function() {
+        const inputEl = document.getElementById('personName');
+        const buttonEl = document.getElementById('searchButton');
 
-    // Função para garantir grafo não direcionado
-    function makeUndirected() {
-        const nodes = Object.keys(graph);
-        for (let node of nodes) {
-            for (let nb of graph[node]) {
-                if (!graph[nb]) graph[nb] = [];
-                if (!graph[nb].includes(node)) graph[nb].push(node);
-            }
-        }
-    }
-    makeUndirected();
-
-    function getAllNames() { return Object.keys(graph).sort(); }
-
-    // BFS para menor caminho
-    function findShortestPath(start, target) {
-        if (start === target) return [start];
-        if (!graph[start] || !graph[target]) return null;
-        let queue = [[start]];
-        let visited = new Set([start]);
-        while (queue.length) {
-            let path = queue.shift();
-            let last = path[path.length-1];
-            for (let nb of (graph[last] || [])) {
-                if (!visited.has(nb)) {
-                    let newPath = [...path, nb];
-                    if (nb === target) return newPath;
-                    visited.add(nb);
-                    queue.push(newPath);
-                }
-            }
-        }
-        return null;
-    }
-
-    // ---- BUSCA AUTOMÁTICA NA WIKIPÉDIA (descobre se duas pessoas são mencionadas juntas) ----
-    async function wikipediaMentionTogether(personA, personB) {
-        // Busca artigos que contenham ambos os termos (usando API de pesquisa)
-        const query = `${personA} ${personB}`;
-        const url = `https://pt.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&format=json&origin=*`;
-        try {
-            const response = await fetch(url);
-            const data = await response.json();
-            if (data.query && data.query.search && data.query.search.length > 0) {
-                // Se existir pelo menos um artigo que mencione ambos, consideramos possível conexão
-                return { found: true, articleTitle: data.query.search[0].title };
-            }
-            return { found: false };
-        } catch (err) {
-            console.warn("Erro na busca da Wikipedia:", err);
-            return { found: false, error: true };
-        }
-    }
-
-    // Buscar novas conexões entre Lula e a pessoa alvo (ou entre intermediários)
-    async function discoverNewEdges(targetPerson) {
-        let suggestions = [];
-        // 1. Verificar relação direta entre Lula e target (se não existir no grafo)
-        const directExists = graph["Lula"] && graph["Lula"].includes(targetPerson);
-        if (!directExists && targetPerson !== "Lula") {
-            const result = await wikipediaMentionTogether("Lula", targetPerson);
-            if (result.found) {
-                suggestions.push({ from: "Lula", to: targetPerson, evidence: `Artigo: ${result.articleTitle}` });
-            }
-        }
-        // 2. Para cada vizinho de Lula, verificar se esse vizinho tem relação com target (para criar ponte)
-        const lulaNeighbors = graph["Lula"] || [];
-        for (let neighbor of lulaNeighbors) {
-            if (neighbor === targetPerson) continue;
-            const edgeExists = graph[neighbor] && graph[neighbor].includes(targetPerson);
-            if (!edgeExists && neighbor !== targetPerson) {
-                const result = await wikipediaMentionTogether(neighbor, targetPerson);
-                if (result.found) {
-                    suggestions.push({ from: neighbor, to: targetPerson, evidence: `Artigo: ${result.articleTitle}` });
-                }
-            }
-        }
-        return suggestions;
-    }
-
-    // Adicionar nova aresta ao grafo
-    function addEdgeToGraph(a, b) {
-        if (!graph[a]) graph[a] = [];
-        if (!graph[b]) graph[b] = [];
-        if (!graph[a].includes(b)) graph[a].push(b);
-        if (!graph[b].includes(a)) graph[b].push(a);
-        // Atualiza interface
-        populateLists();
-    }
-
-    // Renderiza resultado principal + descobertas
-    async function consultarComBusca() {
-        const inputEl = document.getElementById("personInput");
-        const targetRaw = inputEl.value.trim();
-        if (!targetRaw) {
-            document.getElementById("resultContainer").innerHTML = `<div class="result-card">⚠️ Digite um nome.</div>`;
-            return;
-        }
-        const allNames = getAllNames();
-        let exactMatch = allNames.find(n => n.toLowerCase() === targetRaw.toLowerCase());
-        if (!exactMatch) {
-            // Se não existe no grafo, tratamos como pessoa nova
-            exactMatch = targetRaw;  // nome provisório
-        }
-
-        // Mostrar loading
-        document.getElementById("resultContainer").innerHTML = `<div class="result-card">🔍 Consultando grafo e buscando na Wikipédia... <div class="loading"></div></div>`;
-
-        // 1. Verificar caminho no grafo atual
-        let path = findShortestPath("Lula", exactMatch);
-        let distance = path ? path.length - 1 : null;
-
-        // 2. Buscar novas conexões na web (apenas se a pessoa existir ou não, tentamos descobrir)
-        let suggestions = [];
-        if (exactMatch !== "Lula") {
-            suggestions = await discoverNewEdges(exactMatch);
-        }
-
-        // 3. Montar HTML de resultado
-        let resultHtml = `<div class="result-card">`;
-        if (path) {
-            resultHtml += `<div><strong>🌟 Número de Lula para ${exactMatch}: ${distance}</strong></div>`;
-            resultHtml += `<div class="path-display">Caminho: ${path.join(" → ")}</div>`;
-            resultHtml += `<div class="confidence">${distance === 1 ? "✅ Relação direta (confiabilidade alta)" : "🔗 Relação indireta (teoria dos 6 graus)"}</div>`;
-        } else {
-            resultHtml += `<div><strong>⚠️ ${exactMatch} não está conectado(a) a Lula no grafo atual.</strong></div>`;
-            resultHtml += `<div>🔎 Buscamos na Wikipédia possíveis conexões...</div>`;
-        }
-
-        // Exibir sugestões de novas relações encontradas na web
-        if (suggestions.length > 0) {
-            resultHtml += `<div class="web-discovery"><strong>🕸️ Novas conexões descobertas na Wikipédia:</strong><ul>`;
-            for (let sug of suggestions) {
-                resultHtml += `<li>📄 ${sug.from} ↔ ${sug.to} (${sug.evidence}) 
-                    <button class="suggestion-btn" data-from="${sug.from}" data-to="${sug.to}">➕ Adicionar ao grafo</button>
-                </li>`;
-            }
-            resultHtml += `</ul><small>Essas relações foram encontradas automaticamente. Clique para adicionar e refinar futuras consultas.</small></div>`;
-        } else if (!path && exactMatch !== "Lula") {
-            resultHtml += `<div class="web-discovery">🤖 Não encontramos menções conjuntas na Wikipédia entre Lula (ou seus contatos) e "${exactMatch}". Tente outro nome ou aguarde mais fontes.</div>`;
-        }
-
-        resultHtml += `</div>`;
-        document.getElementById("resultContainer").innerHTML = resultHtml;
-
-        // Adicionar eventos aos botões de sugestão
-        document.querySelectorAll(".suggestion-btn").forEach(btn => {
-            btn.addEventListener("click", (e) => {
-                const from = btn.getAttribute("data-from");
-                const to = btn.getAttribute("data-to");
-                addEdgeToGraph(from, to);
-                alert(`Conexão ${from} ↔ ${to} adicionada ao grafo! Recarregue a consulta para ver o novo caminho.`);
-                // Re-consultar automaticamente
-                consultarComBusca();
-            });
-        });
-    }
-
-    // Popula datalist e lista de pessoas
-    function populateLists() {
-        const all = getAllNames();
-        const datalist = document.getElementById("personDatalist");
-        datalist.innerHTML = "";
-        all.forEach(name => {
-            let opt = document.createElement("option");
-            opt.value = name;
-            datalist.appendChild(opt);
-        });
-
-        const listDiv = document.getElementById("availablePeopleList");
-        listDiv.innerHTML = "";
-        all.slice(0, 35).forEach(name => {
-            let span = document.createElement("span");
-            span.textContent = name;
-            span.onclick = () => {
-                document.getElementById("personInput").value = name;
-                consultarComBusca();
+        // Função que gera os links de busca em plataformas de notícias
+        function gerarLinksBusca(nomePessoa) {
+            if (!nomePessoa.trim()) return null;
+            const termo = encodeURIComponent(`Lula ${nomePessoa}`);
+            const termoAlternativo = encodeURIComponent(`"Lula" "${nomePessoa}"`);
+            return {
+                googleNoticias: `https://news.google.com/search?q=${termo}&hl=pt-BR&gl=BR`,
+                bingNoticias: `https://www.bing.com/news/search?q=${termo}&form=QBLH&sp=-1&pq=${termo}&sc=0`,
+                yahooNoticias: `https://br.noticias.yahoo.com/search/?q=${termo}`,
+                uol: `https://busca.uol.com.br/search?q=${termo}&from=web&src=web`,
+                folha: `https://search.folha.uol.com.br/search?q=${termo}&site=folha`,
+                estadão: `https://busca.estadao.com.br/?q=${termo}`
             };
-            listDiv.appendChild(span);
-        });
-    }
+        }
 
-    // Inicialização
-    document.getElementById("searchBtn").addEventListener("click", consultarComBusca);
-    document.getElementById("personInput").addEventListener("keypress", (e) => { if(e.key === "Enter") consultarComBusca(); });
-    populateLists();
+        // Função que abre todas as abas de uma só vez (consulta em massa)
+        function abrirBuscasEmNoticias(nomePessoa) {
+            const links = gerarLinksBusca(nomePessoa);
+            if (!links) return false;
+            // Abre cada link em uma nova aba
+            for (const [site, url] of Object.entries(links)) {
+                window.open(url, '_blank', 'noopener,noreferrer');
+            }
+            return true;
+        }
+
+        // Atualizar o painel de resultado com a explicação personalizada
+        function atualizarPainel(nomePessoa) {
+            const panel = document.getElementById('resultPanel');
+            if (!nomePessoa.trim()) {
+                panel.innerHTML = `
+                    <h3>🔎 Aguardando consulta</h3>
+                    <p>Digite um nome acima e clique em "Consultar + Buscar". Serão gerados links para buscar em plataformas de notícias.</p>
+                    <div class="six-degrees-demo">
+                        <strong>📐 Teoria dos Seis Graus de Separação</strong><br>
+                        Cada artigo que menciona Lula e a pessoa buscada indica um possível grau 1. Caso contrário, explore as conexões entre pessoas próximas a Lula.
+                    </div>
+                `;
+                return;
+            }
+
+            panel.innerHTML = `
+                <h3>📡 Buscando por: <strong style="background:#e9f3e3; padding:0 8px; border-radius:40px;">${escapeHtml(nomePessoa)}</strong></h3>
+                <p>✅ <strong>Várias abas foram abertas</strong> com os resultados de busca em <strong>Google Notícias, Bing, Yahoo, UOL, Folha e Estadão</strong>.<br>
+                Os termos pesquisados foram: <code>"Lula ${escapeHtml(nomePessoa)}"</code></p>
+                <div class="six-degrees-demo">
+                    <strong>🧩 Aplicação da Teoria dos Seis Graus de Separação:</strong><br>
+                    • Se você encontrar uma matéria onde <strong>Lula e ${escapeHtml(nomePessoa)} aparecem juntos</strong> (foto, evento, entrevista), isso representa <strong>1º grau de separação</strong> – relação direta.<br>
+                    • Se ${escapeHtml(nomePessoa)} aparece com um aliado próximo de Lula (ex: Dilma, Joe Biden, Papa Francisco, Neymar), mas não diretamente com Lula, isso indica <strong>2º grau</strong> (Lula → aliado → pessoa).<br>
+                    • Quanto mais intermediários forem necessários para ligar Lula à pessoa, maior o número de graus. A teoria afirma que nunca ultrapassa seis.<br>
+                    📌 <strong>Use os resultados das abas abertas para explorar empiricamente os graus de separação!</strong>
+                </div>
+                <p style="margin-top: 1rem; font-size:0.85rem;">🔁 Se quiser refinar a busca, edite o nome acima e clique novamente.</p>
+            `;
+        }
+
+        // Função simples para escapar HTML
+        function escapeHtml(str) {
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
+                return c;
+            });
+        }
+
+        // Ação principal do botão
+        function consultarEBuscar() {
+            let nome = inputEl.value.trim();
+            if (nome === "") {
+                alert("Por favor, digite o nome de uma figura pública para buscar (ex: Joe Biden, Papa Francisco, Neymar).");
+                return;
+            }
+
+            // 1. Abrir as buscas em plataformas de notícias (múltiplas abas)
+            const sucesso = abrirBuscasEmNoticias(nome);
+            if (sucesso) {
+                // 2. Atualizar o painel com a explicação da teoria personalizada
+                atualizarPainel(nome);
+            } else {
+                alert("Erro ao gerar links. Tente novamente.");
+            }
+        }
+
+        // Eventos
+        buttonEl.addEventListener('click', consultarEBuscar);
+        inputEl.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                consultarEBuscar();
+            }
+        });
+
+        // Pequeno placeholder inicial (opcional)
+        inputEl.placeholder = "Ex: Joe Biden, Papa Francisco, Neymar, Elon Musk...";
+    })();
 </script>
 </body>
 </html>
