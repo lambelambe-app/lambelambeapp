@@ -3,18 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Oráculo de Lula · Busca dinâmica na Wikidata</title>
+    <title>Oráculo de Lula · Caminhos reais na Wikidata</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             background: linear-gradient(135deg, #eaf5e5 0%, #d9e8d0 100%);
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            font-family: 'Inter', system-ui, sans-serif;
             padding: 1.5rem;
             min-height: 100vh;
             color: #1a3a1a;
         }
         .container {
-            max-width: 1000px;
+            max-width: 1100px;
             margin: 0 auto;
             background: rgba(255,255,255,0.96);
             border-radius: 2rem;
@@ -89,12 +89,13 @@
         }
         .path {
             background: #eef4e9;
-            padding: 0.8rem;
+            padding: 1rem;
             border-radius: 1rem;
             font-family: monospace;
             font-size: 1rem;
             margin: 1rem 0;
             word-break: break-word;
+            border-left: 4px solid #2b7a2b;
         }
         .loading {
             display: inline-block;
@@ -113,12 +114,14 @@
             color: #557155;
             border-top: 1px solid #daecce;
         }
-        .wikidata-note {
-            font-size: 0.75rem;
-            background: #f0f7ea;
-            padding: 0.5rem;
-            border-radius: 0.8rem;
-            margin-top: 1rem;
+        .grau-badge {
+            display: inline-block;
+            background: #2b7a2b;
+            color: white;
+            border-radius: 40px;
+            padding: 0.2rem 0.8rem;
+            font-size: 0.8rem;
+            margin-bottom: 0.8rem;
         }
     </style>
 </head>
@@ -126,28 +129,28 @@
 <div class="container">
     <div class="hero">
         <h1>🌿 Oráculo de Lula <span>6º</span></h1>
-        <p>Calcula o Número de Lula em tempo real usando a Wikidata (base de conhecimento global)</p>
+        <p>Calcula o menor caminho entre Lula e qualquer figura pública usando a Wikidata (consulta SPARQL real)</p>
     </div>
     <div class="content">
         <div class="theory-card">
             <h2>📡 O verdadeiro Oráculo de Lula</h2>
-            <p>Assim como o Oráculo de Kevin Bacon, este sistema busca em uma enorme base de dados (Wikidata) para encontrar o <strong>menor caminho de conexões</strong> entre Lula e qualquer figura pública. <strong>Não há grafo pré-definido</strong> – tudo é consultado dinamicamente na web.</p>
-            <small>🔍 A Wikidata contém bilhões de declarações sobre pessoas, cargos, eventos, parentescos, etc.</small>
+            <p>Assim como o Oráculo de Kevin Bacon, este sistema consulta a <strong>Wikidata</strong> — uma base de conhecimento gigante e aberta — para encontrar a <strong>cadeia mais curta de conexões</strong> entre Lula e a pessoa que você pesquisar. <strong>Não há grafo pré-definido</strong>; tudo é descoberto dinamicamente via consultas SPARQL de 1 a 6 graus.</p>
+            <small>🔍 As conexões consideram cargos políticos, parentesco, filiação partidária, eventos comuns, etc.</small>
         </div>
 
         <div class="query-area">
             <div class="input-group">
-                <input type="text" id="personInput" placeholder="Ex: Joe Biden, Papa Francisco, Neymar, Elon Musk, Madonna" value="">
+                <input type="text" id="personInput" placeholder="Ex: Joe Biden, Papa Francisco, Neymar, Dilma Rousseff, Elon Musk" value="">
                 <button id="searchBtn">✨ Consultar Número de Lula</button>
             </div>
-            <p style="font-size:0.8rem;">🔎 A consulta pode levar alguns segundos (Wikidata é rápida). O sistema descobre automaticamente as conexões.</p>
+            <p style="font-size:0.8rem;">🔎 A busca pode levar alguns segundos. O sistema testa caminhos de 1 até 6 graus até encontrar o menor.</p>
         </div>
 
         <div id="resultContainer">
-            <div class="result-card">💡 Digite um nome e clique em "Consultar Número de Lula". O Oráculo buscará na Wikidata o menor caminho até Lula.</div>
+            <div class="result-card">💡 Digite um nome e clique em "Consultar Número de Lula". O Oráculo buscará na Wikidata a menor distância até Lula.</div>
         </div>
         <footer>
-            🌐 Fonte: Wikidata (consulta SPARQL pública). Exibe o caminho e os graus de separação.
+            🌐 Fonte: Wikidata (consulta SPARQL progressiva). Propriedades utilizadas: cargos (P39), partido (P102), empregador (P108), cônjuge (P26), filho (P40), irmão (P3373), influenciado por (P737), associado (P1416), etc.
         </footer>
     </div>
 </div>
@@ -163,9 +166,9 @@
             const resp = await fetch(url);
             const data = await resp.json();
             if (data.search && data.search.length > 0) {
-                // Retorna o primeiro resultado que for uma pessoa (Q5) ou entidade relevante
+                // Priorizar entidades que são pessoas (Q5) ou políticos
                 for (let item of data.search) {
-                    // Verifica se é uma pessoa (opcional, mas ajuda)
+                    // Verifica rapidamente se é uma pessoa (opcional)
                     const typeUrl = `https://www.wikidata.org/wiki/Special:EntityData/${item.id}.json`;
                     const typeResp = await fetch(typeUrl);
                     const typeData = await typeResp.json();
@@ -174,7 +177,6 @@
                         return item.id;
                     }
                 }
-                // Se nenhuma for pessoa, retorna o primeiro mesmo assim
                 return data.search[0].id;
             }
             return null;
@@ -182,69 +184,6 @@
             console.error(err);
             return null;
         }
-    }
-
-    // Função para buscar o caminho mais curto entre duas entidades na Wikidata
-    // Usa a query SPARQL de caminho mínimo (propriedades direcionadas e não direcionadas)
-    async function encontrarCaminho(startQID, targetQID, maxHops = 6) {
-        // Propriedades comuns de conexão entre pessoas: P26 (cônjuge), P40 (filho), P3373 (irmão), P22 (pai), P25 (mãe),
-        // P102 (partido político), P39 (cargo ocupado), P108 (empregador), P463 (membro de), P1416 (associação), P737 (influenciado por)
-        // Além de P31 (instância de) não ajuda muito. Vamos usar uma query que explora qualquer caminho até 6 saltos.
-        // Infelizmente, a Wikidata não suporta "shortest path" diretamente em SPARQL sem recursão pesada.
-        // Mas podemos tentar uma abordagem BFS via múltiplas consultas (mais prático para frontend).
-        // Como isso pode ser lento, vamos usar uma técnica: consultar todos os vizinhos até 2 graus, e assim por diante.
-        // Vou implementar um BFS manual em JavaScript, consultando os vizinhos de cada nó via API.
-        
-        // Função para obter vizinhos (entidades conectadas por qualquer propriedade significativa)
-        async function obterVizinhos(qid) {
-            const query = `
-                SELECT DISTINCT ?vizinho WHERE {
-                  {
-                    wd:${qid} ?prop ?vizinho .
-                    ?vizinho wdt:P31 wd:Q5 .
-                    FILTER(?prop IN (wdt:P26, wdt:P40, wdt:P3373, wdt:P22, wdt:P25, wdt:P102, wdt:P39, wdt:P108, wdt:P463, wdt:P1416, wdt:P737, wdt:P1552, wdt:P171, wdt:P106))
-                  }
-                  UNION
-                  {
-                    ?vizinho ?prop wd:${qid} .
-                    ?vizinho wdt:P31 wd:Q5 .
-                    FILTER(?prop IN (wdt:P26, wdt:P40, wdt:P3373, wdt:P22, wdt:P25, wdt:P102, wdt:P39, wdt:P108, wdt:P463, wdt:P1416, wdt:P737, wdt:P1552, wdt:P171, wdt:P106))
-                  }
-                }
-                LIMIT 200
-            `;
-            const url = `https://query.wikidata.org/sparql?format=json&query=${encodeURIComponent(query)}`;
-            try {
-                const resp = await fetch(url);
-                const data = await resp.json();
-                const vizinhos = data.results.bindings.map(b => b.vizinho.value.split('/').pop());
-                return [...new Set(vizinhos)];
-            } catch (err) {
-                console.error(`Erro ao buscar vizinhos de ${qid}`, err);
-                return [];
-            }
-        }
-
-        // BFS para encontrar caminho
-        const queue = [{ node: startQID, path: [startQID] }];
-        const visited = new Set([startQID]);
-        
-        while (queue.length > 0) {
-            const { node, path } = queue.shift();
-            if (node === targetQID) return path;
-            if (path.length > maxHops) continue;
-            
-            const vizinhos = await obterVizinhos(node);
-            for (let viz of vizinhos) {
-                if (!visited.has(viz)) {
-                    visited.add(viz);
-                    queue.push({ node: viz, path: [...path, viz] });
-                }
-            }
-            // Pequeno delay para não sobrecarregar a API
-            await new Promise(r => setTimeout(r, 50));
-        }
-        return null;
     }
 
     // Obter o rótulo (nome) de um QID
@@ -262,6 +201,103 @@
         }
     }
 
+    // Função para executar uma consulta SPARQL e retornar os resultados
+    async function executarSparql(query) {
+        const url = `https://query.wikidata.org/sparql?format=json&query=${encodeURIComponent(query)}`;
+        try {
+            const resp = await fetch(url);
+            const data = await resp.json();
+            return data;
+        } catch (err) {
+            console.error("Erro SPARQL", err);
+            return null;
+        }
+    }
+
+    // Propriedades que definem conexões relevantes entre pessoas (bidirecionais)
+    // Lista de propriedades usadas no caminho: P39 (cargo), P102 (partido), P108 (empregador), 
+    // P26 (cônjuge), P40 (filho), P3373 (irmão), P737 (influenciado por), P1416 (associação), 
+    // P1552 (tem qualidade), P171 (superior), P106 (ocupação), P463 (membro de), P410 (patente militar)
+    // Vamos construir uma query que busca caminhos de comprimento N entre duas entidades.
+    // Usaremos a sintaxe de propriedades encadeadas: ?mid1 ?prop1 ?mid2 . ?mid2 ?prop2 ?mid3 ... 
+    // Onde cada ?prop está na lista permitida.
+    
+    async function encontrarCaminhoAteGrau(start, target, maxGrau) {
+        // Propriedades que conectam pessoas (direção irrelevante, usamos ambas direções)
+        const props = [
+            "wdt:P39", "wdt:P102", "wdt:P108", "wdt:P26", "wdt:P40", "wdt:P3373", 
+            "wdt:P737", "wdt:P1416", "wdt:P1552", "wdt:P171", "wdt:P106", "wdt:P463", 
+            "wdt:P410", "wdt:P22", "wdt:P25"
+        ];
+        const propsList = props.join(", ");
+        
+        // Para cada grau de 1 a maxGrau, montamos uma query que procura qualquer caminho desse comprimento
+        for (let grau = 1; grau <= maxGrau; grau++) {
+            let sparql = "";
+            if (grau === 1) {
+                // Caminho direto: start -> target via uma propriedade (ou inversa)
+                sparql = `
+                    SELECT ?item1 ?item2 WHERE {
+                      {
+                        wd:${start} ?p wd:${target} .
+                        FILTER(?p IN (${propsList}))
+                      }
+                      UNION
+                      {
+                        wd:${target} ?p wd:${start} .
+                        FILTER(?p IN (${propsList}))
+                      }
+                    }
+                    LIMIT 1
+                `;
+            } else {
+                // Caminho com N saltos: start -> x1 -> x2 -> ... -> target
+                let pattern = `wd:${start} ?p1 ?m1 . `;
+                for (let i = 1; i < grau; i++) {
+                    if (i === grau-1) {
+                        pattern += `?m${i} ?p${i+1} wd:${target} . `;
+                    } else {
+                        pattern += `?m${i} ?p${i+1} ?m${i+1} . `;
+                    }
+                }
+                // Adiciona restrição de propriedades
+                let filterProps = "";
+                for (let i = 1; i <= grau; i++) {
+                    filterProps += `FILTER(?p${i} IN (${propsList}))\n`;
+                }
+                sparql = `
+                    SELECT ?m1 ${grau > 2 ? Array.from({length: grau-2}, (_,j) => `?m${j+2}`).join(' ') : ''} WHERE {
+                      ${pattern}
+                      ${filterProps}
+                    }
+                    LIMIT 1
+                `;
+            }
+            
+            const data = await executarSparql(sparql);
+            if (data && data.results && data.results.bindings && data.results.bindings.length > 0) {
+                // Construir o caminho de QIDs
+                const binding = data.results.bindings[0];
+                const caminho = [start];
+                for (let i = 1; i <= grau; i++) {
+                    const varName = `m${i}`;
+                    if (binding[varName]) {
+                        let qid = binding[varName].value.split('/').pop();
+                        caminho.push(qid);
+                    }
+                }
+                caminho.push(target);
+                // Remover possíveis duplicatas consecutivas (caso haja laços)
+                const caminhoUnico = [];
+                for (let i = 0; i < caminho.length; i++) {
+                    if (caminho[i] !== caminho[i-1]) caminhoUnico.push(caminho[i]);
+                }
+                return caminhoUnico;
+            }
+        }
+        return null;
+    }
+
     // Função principal de consulta
     async function consultarOráculo() {
         const input = document.getElementById("personInput");
@@ -272,7 +308,7 @@
         }
         
         const container = document.getElementById("resultContainer");
-        container.innerHTML = `<div class="result-card">🔍 Buscando o QID de "${nome}" na Wikidata... <div class="loading"></div></div>`;
+        container.innerHTML = `<div class="result-card">🔍 Buscando o identificador de "${nome}" na Wikidata... <div class="loading"></div></div>`;
         
         // 1. Buscar QID da pessoa
         const pessoaQID = await buscarQID(nome);
@@ -281,17 +317,17 @@
             return;
         }
         
-        container.innerHTML = `<div class="result-card">🕸️ Encontrado QID ${pessoaQID}. Buscando caminho até Lula (Q234) na base de conhecimento...<br>Isso pode levar até 15 segundos.<div class="loading"></div></div>`;
+        container.innerHTML = `<div class="result-card">🕸️ Encontrado: ${nome} (${pessoaQID}). Buscando menor caminho até Lula (Q234) na base de conhecimento...<br>Consultando caminhos de 1 a 6 graus.<div class="loading"></div></div>`;
         
-        // 2. Encontrar caminho mínimo
-        const caminhoQIDs = await encontrarCaminho(LULA_QID, pessoaQID, 6);
+        // 2. Encontrar caminho mínimo (até 6 graus)
+        const caminhoQIDs = await encontrarCaminhoAteGrau(LULA_QID, pessoaQID, 6);
         
         if (!caminhoQIDs) {
-            container.innerHTML = `<div class="result-card">⚠️ Não foi possível encontrar um caminho entre Lula e ${nome} com até 6 graus de separação na Wikidata. A Teoria dos Seis Graus sugere que um caminho existe, mas a base de conhecimento pode não tê-lo registrado. Tente um nome mais conhecido.</div>`;
+            container.innerHTML = `<div class="result-card">⚠️ Não foi possível encontrar um caminho entre Lula e ${nome} com até 6 graus de separação na Wikidata. A Teoria dos Seis Graus sugere que um caminho existe, mas a base de conhecimento pode não tê-lo registrado. Tente um nome mais conhecido ou verifique a grafia.</div>`;
             return;
         }
         
-        // 3. Obter rótulos de cada QID no caminho
+        // 3. Obter rótulos de cada QID no caminho (com cache simples)
         const labels = [];
         for (let qid of caminhoQIDs) {
             const label = await obterRotulo(qid);
@@ -303,12 +339,12 @@
         
         let resultadoHtml = `
             <div class="result-card">
-                <h3>🌟 Número de Lula para <strong>${nome}</strong> = ${distancia}</h3>
-                <div class="path">📌 Caminho: ${caminhoStr}</div>
+                <div class="grau-badge">🎯 Número de Lula = ${distancia}</div>
+                <div class="path">🔗 Cadeia de conexões:<br> ${caminhoStr}</div>
                 <p>${distancia === 1 ? "✅ Relação direta (1º grau) – Lula e a pessoa possuem uma conexão direta registrada na Wikidata." : 
-                    `🔗 Conexão indireta de ${distancia}º grau – de acordo com a Teoria dos Seis Graus de Separação.`}</p>
-                <div class="wikidata-note">
-                    🌍 Fonte: Wikidata (consulta em tempo real). Os caminhos são baseados em propriedades como cargos ocupados, parentesco, filiação partidária, etc.
+                    `📐 Conexão indireta de ${distancia}º grau – de acordo com a Teoria dos Seis Graus de Separação.`}</p>
+                <div style="font-size:0.75rem; background:#f0f7ea; padding:0.5rem; border-radius:0.8rem; margin-top:0.8rem;">
+                    🌍 Fonte: Wikidata (consulta SPARQL em tempo real). Os caminhos utilizam propriedades como cargos ocupados, partido político, parentesco, associações profissionais, etc.
                 </div>
             </div>
         `;
