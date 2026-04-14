@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Oráculo de Lula · Teoria dos 6 Graus</title>
+    <title>Oráculo de Lula · Busca em múltiplos sites</title>
     <style>
         * {
             margin: 0;
@@ -19,19 +19,16 @@
             color: #1a2c1a;
         }
 
-        /* container principal */
         .container {
-            max-width: 1100px;
+            max-width: 1200px;
             margin: 0 auto;
-            background: rgba(255, 255, 255, 0.92);
+            background: rgba(255, 255, 255, 0.94);
             backdrop-filter: blur(0px);
             border-radius: 2.5rem;
-            box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.1);
             overflow: hidden;
-            transition: all 0.2s ease;
         }
 
-        /* cabeçalho verde suave */
         .hero {
             background: #1e4620;
             padding: 2rem 2rem 1.8rem;
@@ -42,7 +39,6 @@
         .hero h1 {
             font-size: 2.2rem;
             font-weight: 700;
-            letter-spacing: -0.3px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -56,29 +52,23 @@
             font-size: 1.9rem;
             border-radius: 60px;
             padding: 0 12px;
-            line-height: 1.4;
         }
 
         .hero p {
             margin-top: 0.8rem;
             opacity: 0.9;
-            font-weight: 400;
-            font-size: 1rem;
         }
 
-        /* conteúdo interno */
         .content {
-            padding: 2rem 2rem 2.2rem;
+            padding: 2rem;
         }
 
-        /* cartão da teoria */
         .theory-card {
             background: #fefce6;
             border-left: 6px solid #2b7a2b;
             padding: 1.3rem 1.6rem;
             border-radius: 1.5rem;
-            margin-bottom: 2.2rem;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+            margin-bottom: 2rem;
         }
 
         .theory-card h2 {
@@ -91,35 +81,18 @@
             gap: 0.5rem;
         }
 
-        .theory-card p {
-            line-height: 1.5;
-            color: #2c3e2c;
-            margin-bottom: 0.6rem;
-        }
-
-        .theory-card small {
-            color: #5a6e5a;
-            font-size: 0.8rem;
-            display: block;
-            margin-top: 0.4rem;
-        }
-
-        /* área de consulta */
         .query-area {
             background: white;
             border-radius: 1.8rem;
             padding: 1.5rem;
             margin-bottom: 2rem;
-            box-shadow: 0 5px 14px rgba(0, 0, 0, 0.03), 0 1px 3px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 5px 14px rgba(0, 0, 0, 0.03);
             border: 1px solid #e2f0da;
         }
 
         .query-label {
             font-weight: 600;
             margin-bottom: 0.5rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
             font-size: 1.1rem;
             color: #1e4620;
         }
@@ -138,8 +111,6 @@
             font-size: 1rem;
             border: 1.5px solid #cfdec7;
             border-radius: 60px;
-            background: #fff;
-            transition: 0.2s;
             font-family: inherit;
         }
 
@@ -158,35 +129,26 @@
             font-weight: 600;
             font-size: 1rem;
             cursor: pointer;
-            transition: 0.2s;
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            font-family: inherit;
+            transition: 0.2s;
         }
 
         .input-group button:hover {
             background: #0f2f11;
             transform: scale(0.97);
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
         }
 
-        /* sugestões */
         .suggestions {
             background: #f4f9f0;
             border-radius: 1.2rem;
             padding: 0.8rem 1rem;
             font-size: 0.85rem;
-            color: #2c5e2c;
             display: flex;
             flex-wrap: wrap;
-            align-items: baseline;
             gap: 12px;
-            margin-top: 6px;
-        }
-
-        .suggestions span {
-            font-weight: 500;
+            align-items: baseline;
         }
 
         .badge-list {
@@ -202,7 +164,6 @@
             font-size: 0.8rem;
             cursor: pointer;
             transition: 0.1s;
-            color: #1f4a1f;
         }
 
         .badge:hover {
@@ -210,32 +171,20 @@
             transform: scale(0.96);
         }
 
-        /* resultado */
+        /* Resultado principal */
         .result-card {
             background: #fafcf8;
             border-radius: 1.5rem;
             padding: 1.4rem;
             margin: 1.5rem 0 1rem;
             border: 1px solid #cde2c3;
-            transition: all 0.2s;
-        }
-
-        .result-header {
-            font-weight: 700;
-            font-size: 1.25rem;
-            border-bottom: 2px dashed #bdd6b0;
-            padding-bottom: 0.5rem;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
         }
 
         .path-display {
             background: #f1f4ed;
             padding: 0.9rem;
             border-radius: 1rem;
-            font-family: 'SF Mono', monospace;
+            font-family: monospace;
             font-size: 0.9rem;
             word-break: break-word;
             margin: 0.8rem 0;
@@ -249,40 +198,66 @@
             margin-top: 12px;
             display: flex;
             gap: 12px;
-            align-items: center;
             flex-wrap: wrap;
+            align-items: center;
         }
 
-        .confidence-icon {
-            font-size: 1.4rem;
+        /* NOVO: Motor de busca em diversos sites */
+        .search-engines {
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 2px dashed #bdd6b0;
         }
 
-        .error-message {
-            color: #b13b2d;
-            background: #ffeae6;
-            padding: 0.9rem;
-            border-radius: 1rem;
+        .search-engines h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1e4620;
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        /* lista de pessoas disponíveis */
+        .engine-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .engine-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #eef3ea;
+            padding: 0.5rem 1rem;
+            border-radius: 40px;
+            text-decoration: none;
+            color: #1e4620;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: 0.15s;
+            border: 1px solid #cde0c1;
+        }
+
+        .engine-btn:hover {
+            background: #d9e8d1;
+            transform: translateY(-2px);
+        }
+
         .people-list {
             background: #ffffffdd;
             border-radius: 1.2rem;
             padding: 1rem 1.3rem;
+            margin-top: 1.5rem;
             border: 1px solid #e0efd8;
-        }
-
-        .people-list h3 {
-            font-size: 1rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            color: #2b5a2b;
         }
 
         .list-tag {
             display: flex;
             flex-wrap: wrap;
             gap: 8px;
+            margin-top: 0.5rem;
         }
 
         .list-tag span {
@@ -290,90 +265,67 @@
             padding: 0.2rem 0.8rem;
             border-radius: 30px;
             font-size: 0.8rem;
-            color: #1e4620;
+            cursor: pointer;
         }
 
         footer {
             text-align: center;
             font-size: 0.7rem;
-            padding: 1.2rem;
+            padding: 1rem;
             border-top: 1px solid #ddecd3;
             color: #557155;
         }
 
         @media (max-width: 650px) {
-            body {
-                padding: 0.8rem;
-            }
-            .content {
-                padding: 1.2rem;
-            }
-            .hero h1 {
-                font-size: 1.6rem;
-            }
-            .input-group button {
-                padding: 0 1.2rem;
-            }
+            body { padding: 0.8rem; }
+            .content { padding: 1.2rem; }
+            .hero h1 { font-size: 1.6rem; }
         }
     </style>
 </head>
 <body>
 <div class="container">
     <div class="hero">
-        <h1>
-            🌿 Oráculo de Lula
-            <span>6º</span>
-        </h1>
-        <p>Quantos passos separam Lula de qualquer figura pública? <br>Baseado na Teoria dos Seis Graus de Separação.</p>
+        <h1>🌿 Oráculo de Lula <span>6º</span></h1>
+        <p>Quantos passos separam Lula de qualquer figura pública? + Busca em múltiplos sites</p>
     </div>
-
     <div class="content">
-        <!-- TEORIA DOS 6 GRAUS -->
         <div class="theory-card">
             <h2>📡 Teoria dos Seis Graus de Separação</h2>
-            <p>Proposta por Stanley Milgram nos anos 1960, a teoria sugere que qualquer pessoa no mundo está a, no máximo, seis relações de distância de qualquer outra. No cinema, o “Oráculo de Kevin Bacon” popularizou o conceito. Aqui aplicamos a mesma lógica a <strong>Lula</strong>, conectando-o a personalidades da política, esportes, religião e cultura através de encontros reais, eventos ou parcerias documentadas.</p>
-            <small>🔍 Cada aresta representa uma relação direta comprovada (encontro oficial, trabalho conjunto, entrevista conjunta, fotografia pública, etc).</small>
+            <p>Qualquer pessoa está a, no máximo, seis conexões de distância de outra. No Oráculo de Lula, você descobre o "Número de Lula" e ainda pode pesquisar o nome em diversos mecanismos de busca (Google, Bing, Wikipedia, YouTube, notícias) para verificar relações e notícias.</p>
+            <small>🔍 Cada aresta = relação direta comprovada (eventos, fotos, parcerias).</small>
         </div>
 
-        <!-- CONSULTA PRINCIPAL -->
         <div class="query-area">
-            <div class="query-label">
-                🧭 Descubra o "Número de Lula"
-            </div>
+            <div class="query-label">🧭 Descubra o "Número de Lula" e busque em vários sites</div>
             <div class="input-group">
-                <input type="text" id="personInput" placeholder="Ex: Dilma, Messi, Joe Biden, Papa Francisco..." list="personDatalist" autocomplete="off">
-                <button id="searchBtn">✨ Consultar</button>
+                <input type="text" id="personInput" placeholder="Ex: Dilma, Messi, Joe Biden, Papa Francisco..." list="personDatalist">
+                <button id="searchBtn">✨ Consultar + Buscar</button>
             </div>
             <div class="suggestions">
-                <span>💡 Sugestões rápidas:</span>
-                <div class="badge-list" id="quickSuggestions">
-                    <!-- preenchido via js com nomes principais -->
-                </div>
+                <span>💡 Sugestões:</span>
+                <div class="badge-list" id="quickSuggestions"></div>
             </div>
             <datalist id="personDatalist"></datalist>
         </div>
 
-        <!-- ÁREA DE RESULTADO -->
         <div id="resultContainer"></div>
 
-        <!-- BASE DE DADOS DISPONÍVEL -->
         <div class="people-list">
-            <h3>📋 Pessoas conectadas no grafo (relações diretas ou indiretas com Lula)</h3>
+            <h3>📋 Pessoas conectadas no grafo (com Lula)</h3>
             <div class="list-tag" id="availablePeopleList"></div>
-            <p style="font-size: 0.7rem; margin-top: 8px;">✔️ As relações são baseadas em encontros públicos, atos oficiais, ou eventos amplamente noticiados. Atualizado em 2025.</p>
+            <p style="font-size:0.7rem; margin-top:8px;">✔️ Relações diretas/indiretas baseadas em fatos públicos. Ao consultar, aparecerão links de busca externa.</p>
         </div>
-        <footer>
-            🌱 O “Número de Lula” é o menor número de conexões entre Lula e a figura consultada. Relações diretas (Grau 1) possuem confiabilidade máxima; graus maiores seguem a premissa dos seis graus.
-        </footer>
+        <footer>🔎 O botão "Consultar + Buscar" mostra o grau de separação e gera links para pesquisar o nome em Google, Bing, Wikipedia, YouTube e Google Notícias.</footer>
     </div>
 </div>
 
 <script>
-    // --------------------------------------------------------------
-    // GRAFO DE CONEXÕES (NÃO DIRECIONADO) - BASEADO EM EVENTOS REAIS
-    // --------------------------------------------------------------
+    // ----------------------------------------------
+    // GRAFO DE CONEXÕES (baseado em eventos reais)
+    // ----------------------------------------------
     const graph = {
-        "Lula": ["Dilma Rousseff", "Bolsonaro", "Barack Obama", "Papa Francisco", "José Alencar", "Janja", "Joe Biden", "Neymar", "Fernando Henrique Cardoso", "Vladimir Putin"],
+        "Lula": ["Dilma Rousseff", "Bolsonaro", "Barack Obama", "Papa Francisco", "José Alencar", "Janja", "Joe Biden", "Neymar", "Fernando Henrique Cardoso", "Vladimir Putin", "Angela Merkel"],
         "Dilma Rousseff": ["Lula", "Michel Temer"],
         "Bolsonaro": ["Lula", "Paulo Guedes", "Sergio Moro", "Papa Francisco"],
         "Barack Obama": ["Lula", "Joe Biden"],
@@ -383,57 +335,47 @@
         "Michel Temer": ["Dilma Rousseff"],
         "Paulo Guedes": ["Bolsonaro"],
         "Sergio Moro": ["Bolsonaro"],
-        "Joe Biden": ["Lula", "Barack Obama", "Papa Francisco"],
+        "Joe Biden": ["Lula", "Barack Obama", "Papa Francisco", "Elon Musk"],
         "Neymar": ["Lula", "Messi"],
         "Messi": ["Neymar"],
         "Fernando Henrique Cardoso": ["Lula"],
         "Vladimir Putin": ["Lula"],
-        // extensão para tornar o grafo mais interessante (alguns conectados indiretamente)
-        "Angela Merkel": ["Lula"],  // encontros como presidentes
-        "Cristiano Ronaldo": ["Neymar"], // conexão via Neymar -> Lula
-        "Elon Musk": ["Joe Biden"], // reunião com Biden, que conecta a Lula
-        "Joe Biden": ["Elon Musk"]  // bidirecional
+        "Angela Merkel": ["Lula"],
+        "Elon Musk": ["Joe Biden"],
+        "Cristiano Ronaldo": ["Neymar"]
     };
 
-    // garantir simetria (grafo não direcionado)
+    // Tornar grafo não direcionado
     function makeUndirected() {
         const nodes = Object.keys(graph);
         for (let node of nodes) {
             const neighbors = graph[node];
             for (let nb of neighbors) {
                 if (!graph[nb]) graph[nb] = [];
-                if (!graph[nb].includes(node)) {
-                    graph[nb].push(node);
-                }
+                if (!graph[nb].includes(node)) graph[nb].push(node);
             }
         }
     }
     makeUndirected();
 
-    // Lista de todos os nomes disponíveis no grafo
     function getAllNames() {
         return Object.keys(graph).sort();
     }
 
-    // Algoritmo BFS para encontrar menor caminho entre "Lula" e o alvo
+    // BFS para menor caminho entre Lula e alvo
     function findShortestPath(start, target) {
         if (start === target) return [start];
         if (!graph[start] || !graph[target]) return null;
-
         const queue = [[start]];
         const visited = new Set([start]);
-
-        while (queue.length > 0) {
+        while (queue.length) {
             const path = queue.shift();
-            const lastNode = path[path.length - 1];
-
-            for (let neighbor of (graph[lastNode] || [])) {
-                if (!visited.has(neighbor)) {
-                    const newPath = [...path, neighbor];
-                    if (neighbor === target) {
-                        return newPath;
-                    }
-                    visited.add(neighbor);
+            const last = path[path.length - 1];
+            for (let nb of (graph[last] || [])) {
+                if (!visited.has(nb)) {
+                    const newPath = [...path, nb];
+                    if (nb === target) return newPath;
+                    visited.add(nb);
                     queue.push(newPath);
                 }
             }
@@ -441,158 +383,148 @@
         return null;
     }
 
-    // Validar e exibir resultado com confiabilidade (relação direta/indireta)
-    function renderResult(targetName) {
-        const container = document.getElementById("resultContainer");
-        const start = "Lula";
-        const normalizedTarget = targetName.trim();
+    // Gerar links de busca em múltiplos sites
+    function getSearchLinks(personName) {
+        const encoded = encodeURIComponent(personName);
+        return {
+            google: `https://www.google.com/search?q=${encoded}+Lula+encontro`,
+            bing: `https://www.bing.com/search?q=${encoded}+Lula`,
+            wikipedia: `https://pt.wikipedia.org/wiki/${encoded.replace(/ /g, '_')}`,
+            youtube: `https://www.youtube.com/results?search_query=${encoded}+Lula`,
+            news: `https://news.google.com/search?q=${encoded}+Lula&hl=pt-BR`
+        };
+    }
 
-        if (normalizedTarget === "") {
-            container.innerHTML = `<div class="result-card error-message">⚠️ Digite o nome de uma figura pública para consultar.</div>`;
+    // Renderizar resultado + motores de busca
+    function renderResultWithSearch(targetName) {
+        const container = document.getElementById("resultContainer");
+        const normalized = targetName.trim();
+        if (normalized === "") {
+            container.innerHTML = `<div class="result-card error-message">⚠️ Digite um nome para consultar e buscar.</div>`;
             return;
         }
 
-        // verificar se o nome existe no grafo
         const allNames = getAllNames();
-        const exactMatch = allNames.find(name => name.toLowerCase() === normalizedTarget.toLowerCase());
+        const exactMatch = allNames.find(n => n.toLowerCase() === normalized.toLowerCase());
         if (!exactMatch) {
             container.innerHTML = `
                 <div class="result-card error-message">
-                    🕵️‍♂️ "${normalizedTarget}" não está na base de conexões do Oráculo.<br>
-                    <strong>Pessoas disponíveis:</strong> ${allNames.slice(0, 20).join(", ")}${allNames.length > 20 ? " ..." : ""}.
+                    🕵️‍♂️ "${normalized}" não está na base de conexões.<br>
+                    <strong>Disponíveis:</strong> ${allNames.slice(0, 22).join(", ")}...
                 </div>`;
             return;
         }
 
-        const path = findShortestPath(start, exactMatch);
+        const path = findShortestPath("Lula", exactMatch);
         if (!path) {
-            container.innerHTML = `<div class="result-card error-message">🔗 Infelizmente não encontramos nenhuma cadeia de conexões entre Lula e ${exactMatch} no grafo atual. A teoria dos seis graus ainda pode conectá-los por relações não mapeadas.</div>`;
+            container.innerHTML = `<div class="result-card error-message">🔗 Nenhuma cadeia encontrada entre Lula e ${exactMatch} no grafo atual.</div>`;
             return;
         }
 
-        const distance = path.length - 1;  // número de arestas (grau de separação)
-        const isDirect = (distance === 1);
-        const isZero = (distance === 0 && exactMatch === "Lula");
+        const distance = path.length - 1;
+        const isDirect = distance === 1;
+        const isZero = exactMatch === "Lula";
 
-        // Montar visual do caminho
         let pathHtml = `<div class="path-display">🔗 ${path.join('  →  ')}</div>`;
-
         let confidenceHtml = "";
         if (isZero) {
-            confidenceHtml = `<div class="confidence"><span class="confidence-icon">🪄</span> <strong>Você consultou o próprio Lula!</strong> Grau 0 — relação consigo mesmo, perfeita confiabilidade.</div>`;
+            confidenceHtml = `<div class="confidence"><span>🪄</span> <strong>Lula (Grau 0)</strong> — relação consigo mesmo.</div>`;
         } else if (isDirect) {
-            confidenceHtml = `<div class="confidence"><span class="confidence-icon">✅</span> <strong>RELAÇÃO DIRETA COM LULA (Grau 1)</strong> — Confiabilidade altíssima! Existe pelo menos um encontro, parceria ou evento público registrado entre Lula e ${exactMatch}. A conexão é sólida e validada.</div>`;
+            confidenceHtml = `<div class="confidence"><span>✅</span> <strong>RELAÇÃO DIRETA (Grau 1)</strong> — confiabilidade máxima! Lula e ${exactMatch} possuem vínculo comprovado.</div>`;
         } else {
-            let reliabilityMsg = "";
-            if (distance === 2) reliabilityMsg = "Confiabilidade média-alta: dois graus de separação, ainda bastante verossímil conforme a teoria dos seis graus.";
-            else if (distance === 3) reliabilityMsg = "Confiabilidade moderada: três graus de separação, a cadeia é plausível mas a verificação empírica pode ser mais frágil.";
-            else reliabilityMsg = "Confiabilidade reduzida: com mais de três graus, a relação é teoricamente possível, mas depende da qualidade das conexões intermediárias. Ainda assim, dentro da Teoria dos 6 Graus.";
-            confidenceHtml = `<div class="confidence"><span class="confidence-icon">🔗</span> <strong>Conexão INDIRETA (Grau ${distance})</strong><br> ${reliabilityMsg} Caminho encontrado com ${distance} intermediário(s).</div>`;
+            confidenceHtml = `<div class="confidence"><span>🔗</span> <strong>Conexão INDIRETA (Grau ${distance})</strong> — cadeia plausível segundo a Teoria dos Seis Graus.</div>`;
         }
 
-        // Determinar mensagem especial se for caminho longo e mostrar aviso sobre confiabilidade
-        let extraValidation = "";
-        if (!isDirect && !isZero) {
-            extraValidation = `<div style="margin-top: 8px; font-size:0.85rem;">📌 <em>Validação:</em> A relação é indireta. A confiabilidade decai com cada salto, mas o Oráculo garante que cada aresta representa uma relação factual documentada (reuniões, fotos, eventos oficiais).</div>`;
-        } else if (isDirect) {
-            extraValidation = `<div style="margin-top: 8px; font-size:0.85rem;">📌 <strong>Relação validada como direta</strong> — confiabilidade máxima, baseada em evidência concreta de proximidade entre Lula e ${exactMatch}.</div>`;
-        }
+        // Links de busca (motor em diversos sites)
+        const links = getSearchLinks(exactMatch);
+        const searchSection = `
+            <div class="search-engines">
+                <h3>🔎 Buscar "${exactMatch}" em múltiplos sites</h3>
+                <div class="engine-buttons">
+                    <a href="${links.google}" target="_blank" rel="noopener noreferrer" class="engine-btn">📘 Google</a>
+                    <a href="${links.bing}" target="_blank" rel="noopener noreferrer" class="engine-btn">🔍 Bing</a>
+                    <a href="${links.wikipedia}" target="_blank" rel="noopener noreferrer" class="engine-btn">📖 Wikipédia</a>
+                    <a href="${links.youtube}" target="_blank" rel="noopener noreferrer" class="engine-btn">📺 YouTube</a>
+                    <a href="${links.news}" target="_blank" rel="noopener noreferrer" class="engine-btn">📰 Google Notícias</a>
+                </div>
+                <p style="font-size:0.75rem; margin-top:10px;">* Os links abrem em nova aba e já incluem termos relacionados a Lula para facilitar a validação da conexão.</p>
+            </div>
+        `;
 
-        const degreeMessage = (distance === 0) ? "Número de Lula: 0" : `Número de Lula: ${distance}`;
-
+        const degreeMsg = (distance === 0) ? "Número de Lula: 0" : `Número de Lula: ${distance}`;
         const finalHtml = `
             <div class="result-card">
-                <div class="result-header">
-                    🌟 ${degreeMessage} para <strong>${exactMatch}</strong>
-                </div>
+                <div class="result-header">🌟 ${degreeMsg} para <strong>${exactMatch}</strong></div>
                 ${pathHtml}
                 ${confidenceHtml}
-                ${extraValidation}
+                ${searchSection}
             </div>
         `;
         container.innerHTML = finalHtml;
     }
 
-    // popular datalist e sugestões visuais
+    // Popula datalist, sugestões e lista de pessoas
     function populateUI() {
         const all = getAllNames();
         const datalist = document.getElementById("personDatalist");
         datalist.innerHTML = "";
         all.forEach(name => {
-            const option = document.createElement("option");
-            option.value = name;
-            datalist.appendChild(option);
+            const opt = document.createElement("option");
+            opt.value = name;
+            datalist.appendChild(opt);
         });
 
-        // lista de tags "pessoas disponíveis"
         const availableDiv = document.getElementById("availablePeopleList");
         availableDiv.innerHTML = "";
-        all.slice(0, 28).forEach(name => {
-            const badge = document.createElement("span");
-            badge.textContent = name;
-            badge.style.cursor = "pointer";
-            badge.addEventListener("click", () => {
+        all.slice(0, 30).forEach(name => {
+            const span = document.createElement("span");
+            span.textContent = name;
+            span.onclick = () => {
                 document.getElementById("personInput").value = name;
-                renderResult(name);
-            });
-            availableDiv.appendChild(badge);
+                renderResultWithSearch(name);
+            };
+            availableDiv.appendChild(span);
         });
-        if (all.length > 28) {
-            const more = document.createElement("span");
-            more.textContent = `+${all.length - 28} outros...`;
-            more.style.opacity = "0.7";
-            availableDiv.appendChild(more);
-        }
 
-        // preencher badges de sugestões rápidas (5 principais)
         const quickDiv = document.getElementById("quickSuggestions");
-        const topSugestoes = ["Dilma Rousseff", "Messi", "Joe Biden", "Papa Francisco", "Neymar", "Bolsonaro", "Elon Musk"];
+        const topList = ["Dilma Rousseff", "Messi", "Joe Biden", "Papa Francisco", "Neymar", "Bolsonaro", "Elon Musk"];
         quickDiv.innerHTML = "";
-        topSugestoes.forEach(sug => {
+        topList.forEach(sug => {
             if (graph[sug]) {
-                const badgeQuick = document.createElement("div");
-                badgeQuick.className = "badge";
-                badgeQuick.textContent = sug;
-                badgeQuick.addEventListener("click", () => {
+                const badge = document.createElement("div");
+                badge.className = "badge";
+                badge.textContent = sug;
+                badge.onclick = () => {
                     document.getElementById("personInput").value = sug;
-                    renderResult(sug);
-                });
-                quickDiv.appendChild(badgeQuick);
+                    renderResultWithSearch(sug);
+                };
+                quickDiv.appendChild(badge);
             }
         });
     }
 
-    // evento de busca
-    function setupEvent() {
+    // Eventos
+    function setupEvents() {
         const btn = document.getElementById("searchBtn");
         const input = document.getElementById("personInput");
-        btn.addEventListener("click", () => {
-            renderResult(input.value);
-        });
+        btn.addEventListener("click", () => renderResultWithSearch(input.value));
         input.addEventListener("keypress", (e) => {
-            if (e.key === "Enter") {
-                e.preventDefault();
-                renderResult(input.value);
-            }
+            if (e.key === "Enter") renderResultWithSearch(input.value);
         });
     }
 
-    // inicializar página
     function init() {
         populateUI();
-        setupEvent();
-        // Mensagem inicial amigável (exemplo)
+        setupEvents();
         const container = document.getElementById("resultContainer");
         container.innerHTML = `
-            <div class="result-card" style="background:#eef7e9;">
-                <div class="result-header">🔮 Aguardando consulta</div>
-                <p>Digite um nome acima ou clique em uma sugestão para saber o "Número de Lula" (menor distância).<br>
-                ✅ <strong>Relações diretas</strong> são validadas como altamente confiáveis. Conexões indiretas seguem a lógica dos seis graus.</p>
-                <div style="font-size:0.8rem; margin-top:8px;">💡 Exemplo: "Messi" → caminho Lula → Neymar → Messi (Grau 2).</div>
+            <div class="result-card">
+                <div class="result-header">🔮 Pronto para consultar</div>
+                <p>Digite um nome e clique em <strong>"Consultar + Buscar"</strong>. Além do grau de separação, serão exibidos botões para pesquisar em <strong>Google, Bing, Wikipedia, YouTube e Google Notícias</strong>.</p>
+                <div style="font-size:0.85rem; margin-top:8px;">✨ Exemplo: "Messi" → Lula → Neymar → Messi (Grau 2) + links externos.</div>
             </div>
         `;
     }
-
     init();
 </script>
 </body>
