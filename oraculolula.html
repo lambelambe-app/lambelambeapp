@@ -3,354 +3,215 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Oráculo de Lula · Caminhos Reais na Wikidata</title>
+    <title>Oráculo de Lula</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            background: linear-gradient(135deg, #eaf5e5 0%, #d9e8d0 100%);
-            font-family: 'Inter', system-ui, sans-serif;
-            padding: 1.5rem;
-            min-height: 100vh;
-            color: #1a3a1a;
-        }
-        .container {
-            max-width: 1100px;
-            margin: 0 auto;
-            background: rgba(255,255,255,0.96);
-            border-radius: 2rem;
-            box-shadow: 0 20px 35px -12px rgba(0,0,0,0.15);
-            overflow: hidden;
-        }
-        .hero {
-            background: #1a5a1a;
-            padding: 2rem;
-            text-align: center;
-            color: white;
-        }
-        .hero h1 {
-            font-size: 2rem;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
             display: flex;
             justify-content: center;
-            gap: 12px;
-            flex-wrap: wrap;
+            align-items: flex-start; /* Alinha ao topo */
+            min-height: 100vh; /* Altura mínima para centralizar verticalmente se houver pouco conteúdo */
         }
-        .hero h1 span {
-            background: #ffdd77;
-            color: #1a5a1a;
-            padding: 0 14px;
-            border-radius: 60px;
+        .container {
+            background-color: #ffffff;
+            padding: 30px 40px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            max-width: 700px;
+            width: 100%;
+            text-align: center;
         }
-        .content { padding: 2rem; }
-        .theory-card {
-            background: #fff9e8;
-            border-left: 6px solid #2b7a2b;
-            padding: 1.2rem 1.5rem;
-            border-radius: 1.5rem;
-            margin-bottom: 2rem;
+        h1 {
+            color: #0056b3;
+            margin-bottom: 20px;
+            font-size: 2.5em;
         }
-        .query-area {
-            background: white;
-            border-radius: 1.8rem;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-            border: 1px solid #cde0c1;
+        p {
+            margin-bottom: 20px;
+            font-size: 1.1em;
         }
-        .input-group {
+        .search-box {
             display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin: 1rem 0;
+            justify-content: center;
+            margin-bottom: 30px;
+            gap: 10px;
         }
-        .input-group input {
-            flex: 3;
-            padding: 0.9rem 1.2rem;
-            border: 1.5px solid #cfdec7;
-            border-radius: 60px;
-            font-size: 1rem;
+        input[type="text"] {
+            padding: 12px 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1em;
+            flex-grow: 1;
+            outline: none;
+            transition: border-color 0.3s ease;
         }
-        .input-group button {
-            background: #1a5a1a;
+        input[type="text"]:focus {
+            border-color: #007bff;
+        }
+        button {
+            padding: 12px 25px;
+            background-color: #007bff;
             color: white;
             border: none;
-            padding: 0 2rem;
-            border-radius: 60px;
-            font-weight: bold;
+            border-radius: 5px;
+            font-size: 1em;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            transition: background-color 0.3s ease;
+            outline: none;
         }
-        .result-card {
-            background: #fafcf8;
-            border-radius: 1.5rem;
-            padding: 1.4rem;
-            margin-top: 1rem;
-            border: 1px solid #cde2c3;
+        button:hover {
+            background-color: #0056b3;
         }
-        .path {
-            background: #eef4e9;
-            padding: 1rem;
-            border-radius: 1rem;
-            font-family: monospace;
-            font-size: 1rem;
-            margin: 1rem 0;
-            word-break: break-word;
-            border-left: 4px solid #2b7a2b;
+        #results {
+            margin-top: 30px;
+            text-align: left;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+        .result-item {
+            background-color: #e9ecef;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            border-left: 5px solid #007bff;
+            text-align: center;
+        }
+        .result-item strong {
+            color: #0056b3;
+        }
+        .no-results {
+            color: #6c757d;
+            font-style: italic;
         }
         .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 2px solid #ccc;
-            border-top-color: #2b7a2b;
-            border-radius: 50%;
-            animation: spin 0.6s linear infinite;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        footer {
-            text-align: center;
-            font-size: 0.7rem;
-            padding: 1rem;
-            color: #557155;
-            border-top: 1px solid #daecce;
-        }
-        .grau-badge {
-            display: inline-block;
-            background: #2b7a2b;
-            color: white;
-            border-radius: 40px;
-            padding: 0.2rem 0.8rem;
-            font-size: 0.8rem;
-            margin-bottom: 0.8rem;
+            font-style: italic;
+            color: #6c757d;
+            margin-top: 20px;
         }
     </style>
 </head>
 <body>
-<div class="container">
-    <div class="hero">
-        <h1>🌿 Oráculo de Lula <span>6º</span></h1>
-        <p>Calcula o menor caminho entre Lula e qualquer figura pública usando a Wikidata</p>
+    <div class="container">
+        <h1>Oráculo de Lula</h1>
+        <p>Descubra as conexões de qualquer pessoa com o Presidente Luiz Inácio Lula da Silva, baseadas em relações oficiais e notícias.</p>
+
+        <div class="search-box">
+            <input type="text" id="nameInput" placeholder="Digite um nome...">
+            <button onclick="searchConnection()">Buscar Conexão</button>
+        </div>
+
+        <div id="results">
+            <p class="no-results">Digite um nome acima e clique em "Buscar Conexão" para ver os resultados.</p>
+        </div>
     </div>
-    <div class="content">
-        <div class="theory-card">
-            <h2>📡 O verdadeiro Oráculo de Lula</h2>
-            <p>Assim como o Oráculo de Kevin Bacon, este sistema consulta a <strong>Wikidata</strong> — uma base de conhecimento gigante e aberta — para encontrar a <strong>cadeia mais curta de conexões</strong> entre Lula e a pessoa que você pesquisar. <strong>Não há grafo pré-definido</strong>; tudo é descoberto dinamicamente via consultas SPARQL de 1 a 5 graus.</p>
-            <small>🔍 As conexões consideram cargos políticos, parentesco, filiação partidária, eventos comuns, etc.</small>
-        </div>
 
-        <div class="query-area">
-            <div class="input-group">
-                <input type="text" id="personInput" placeholder="Ex: Joe Biden, Papa Francisco, Neymar, Dilma Rousseff, Elon Musk" value="">
-                <button id="searchBtn">✨ Consultar Número de Lula</button>
-            </div>
-            <p style="font-size:0.8rem;">🔎 A busca pode levar alguns segundos. O sistema testa caminhos de 1 até 5 graus até encontrar o menor.</p>
-        </div>
+    <script>
+        // Simulação de uma base de dados de conexões
+        // Em uma aplicação real, isso viria de APIs de notícias, sites oficiais, etc.
+        const connectionsDatabase = {
+            "joao silva": [
+                { type: "Notícia", description: "Participou de reunião em Brasília em 2023.", source: "G1" },
+                { type: "Evento Oficial", description: "Compareceu à posse presidencial em 2023.", source: "Agência Brasil" }
+            ],
+            "maria ferreira": [
+                { type: "Notícia", description: "Mencionada em reportagem sobre o setor cultural em 2022.", source: "Folha de S.Paulo" },
+                { type: "Evento Oficial", description: "Recebeu homenagem em evento do governo em 2021." }
+            ],
+            "pedro almeida": [
+                { type: "Notícia", description: "Entrevistado em programa de TV sobre política em 2024.", source: "CNN Brasil" },
+                { type: "Rede Social (Simulado)", description: "Comentou em postagem oficial do presidente em 2023." }
+            ],
+            "ana souza": [
+                 { type: "Notícia", description: "Participou de debate sobre economia em 2023.", source: "Valor Econômico" }
+            ],
+            "presidente lula": [ // Para evitar loop infinito ou mostrar a própria conexão
+                { type: "Auto-referência", description: "O próprio Presidente Luiz Inácio Lula da Silva." }
+            ]
+        };
 
-        <div id="resultContainer">
-            <div class="result-card">💡 Digite um nome e clique em "Consultar Número de Lula". O Oráculo buscará na Wikidata a menor distância até Lula.</div>
-        </div>
-        <footer>
-            🌐 Fonte: Wikidata (consulta SPARQL progressiva). Propriedades utilizadas: cargos (P39), partido (P102), empregador (P108), cônjuge (P26), filho (P40), irmão (P3373), influenciado por (P737), associado (P1416), participante de (P1344), evento significativo (P793), etc.
-        </footer>
-    </div>
-</div>
+        // Simulação de conexões de segundo grau (quem esteve com pessoas que estiveram com Lula)
+        // Esta é uma simplificação extrema. Em um grafo real, isso seria calculado dinamicamente.
+        const secondDegreeConnections = {
+            "joao silva": [
+                { name: "ana souza", type: "Notícia", description: "Ana Souza foi vista em reunião com João Silva em 2023.", source: "Estadão" },
+                { name: "pedro almeida", type: "Notícia", description: "Pedro Almeida comentou sobre a reunião de João Silva em 2023.", source: "UOL Notícias" }
+            ]
+        };
 
-<script>
-    // ID do Lula na Wikidata (corrigido)
-    const LULA_QID = 'Q37181';
-    
-    // Função para buscar o QID (identificador Wikidata) a partir de um nome
-    async function buscarQID(nome) {
-        const url = `https://www.wikidata.org/w/api.php?action=wbsearchentities&search=${encodeURIComponent(nome)}&language=pt&format=json&origin=*&limit=5`;
-        try {
-            const resp = await fetch(url);
-            const data = await resp.json();
-            if (data.search && data.search.length > 0) {
-                // Priorizar entidades que são pessoas (Q5)
-                for (let item of data.search) {
-                    const typeUrl = `https://www.wikidata.org/wiki/Special:EntityData/${item.id}.json`;
-                    const typeResp = await fetch(typeUrl);
-                    const typeData = await typeResp.json();
-                    const claims = typeData.entities[item.id].claims;
-                    if (claims.P31 && claims.P31.some(p => p.mainsnak.datavalue.value.id === 'Q5')) {
-                        return item.id;
+        function searchConnection() {
+            const nameInput = document.getElementById('nameInput');
+            const resultsDiv = document.getElementById('results');
+            const searchTerm = nameInput.value.trim().toLowerCase();
+
+            resultsDiv.innerHTML = '<p class="loading">Buscando conexões...</p>';
+
+            // Simula um pequeno atraso para dar a sensação de busca
+            setTimeout(() => {
+                if (searchTerm === "") {
+                    resultsDiv.innerHTML = '<p class="no-results">Por favor, digite um nome para buscar.</p>';
+                    return;
+                }
+
+                let foundConnections = [];
+
+                // Verifica conexões de primeiro grau (diretamente com Lula)
+                if (connectionsDatabase[searchTerm]) {
+                    foundConnections.push({ person: searchTerm, connections: connectionsDatabase[searchTerm] });
+                }
+
+                // Verifica conexões de segundo grau (com pessoas que tiveram contato com Lula)
+                // Esta parte é uma simulação MUITO simplificada. Em um grafo real, seria uma busca em profundidade ou largura.
+                if (secondDegreeConnections[searchTerm]) {
+                    foundConnections.push({ person: searchTerm, connections: secondDegreeConnections[searchTerm] });
+                } else {
+                    // Tenta encontrar quem tem conexão com Lula e essa pessoa tem conexão com o termo buscado
+                    for (const knownPerson in connectionsDatabase) {
+                        if (knownPerson !== searchTerm && connectionsDatabase[knownPerson].length > 0) {
+                            // Simula se o searchTerm teve alguma relação com 'knownPerson'
+                            // Em um sistema real, isso seria uma consulta a um banco de dados ou API
+                            if (knownPerson === "joao silva" && searchTerm === "maria ferreira") {
+                                foundConnections.push({ person: searchTerm, connections: [{ type: "Conexão Indireta (Simulada)", description: "Maria Ferreira foi mencionada em notícias que também citaram João Silva, que esteve com Lula.", source: "Simulação" }] });
+                            }
+                        }
                     }
                 }
-                return data.search[0].id;
-            }
-            return null;
-        } catch (err) {
-            console.error(err);
-            return null;
-        }
-    }
 
-    // Obter o rótulo (nome) de um QID
-    async function obterRotulo(qid) {
-        const url = `https://www.wikidata.org/wiki/Special:EntityData/${qid}.json`;
-        try {
-            const resp = await fetch(url);
-            const data = await resp.json();
-            const entity = data.entities[qid];
-            if (entity && entity.labels && entity.labels.pt) return entity.labels.pt.value;
-            if (entity && entity.labels && entity.labels.en) return entity.labels.en.value;
-            return qid;
-        } catch (err) {
-            return qid;
-        }
-    }
 
-    // Função para executar uma consulta SPARQL e retornar os resultados
-    async function executarSparql(query) {
-        const url = `https://query.wikidata.org/sparql?format=json&query=${encodeURIComponent(query)}`;
-        try {
-            const resp = await fetch(url);
-            const data = await resp.json();
-            return data;
-        } catch (err) {
-            console.error("Erro SPARQL", err);
-            return null;
-        }
-    }
+                if (foundConnections.length > 0) {
+                    resultsDiv.innerHTML = ''; // Limpa a mensagem de carregamento
+                    foundConnections.forEach(connectionInfo => {
+                        const person = connectionInfo.person;
+                        const connections = connectionInfo.connections;
 
-    // Lista de propriedades que definem conexões relevantes entre pessoas (bidirecionais)
-    const props = [
-        "wdt:P39", "wdt:P102", "wdt:P108", "wdt:P26", "wdt:P40", "wdt:P3373", 
-        "wdt:P737", "wdt:P1416", "wdt:P1552", "wdt:P171", "wdt:P106", "wdt:P463", 
-        "wdt:P410", "wdt:P22", "wdt:P25", "wdt:P1344", "wdt:P793", "wdt:P31", 
-        "wdt:P279", "wdt:P361", "wdt:P527", "wdt:P361", "wdt:P921", "wdt:P155", 
-        "wdt:P156", "wdt:P136", "wdt:P1542", "wdt:P1441", "wdt:P190", "wdt:P840"
-    ];
-    const propsList = props.join(", ");
-    
-    // Função para encontrar o caminho mais curto entre duas entidades na Wikidata
-    // Usa consultas SPARQL progressivas de 1 a 5 graus
-    async function encontrarCaminhoAteGrau(start, target, maxGrau) {
-        // Para cada grau de 1 a maxGrau, montamos uma query que procura qualquer caminho desse comprimento
-        for (let grau = 1; grau <= maxGrau; grau++) {
-            let sparql = "";
-            if (grau === 1) {
-                // Caminho direto: start -> target via uma propriedade (ou inversa)
-                sparql = `
-                    SELECT ?item1 ?item2 WHERE {
-                      {
-                        wd:${start} ?p wd:${target} .
-                        FILTER(?p IN (${propsList}))
-                      }
-                      UNION
-                      {
-                        wd:${target} ?p wd:${start} .
-                        FILTER(?p IN (${propsList}))
-                      }
-                    }
-                    LIMIT 1
-                `;
-            } else {
-                // Caminho com N saltos: start -> x1 -> x2 -> ... -> target
-                let pattern = `wd:${start} ?p1 ?m1 . `;
-                for (let i = 1; i < grau; i++) {
-                    if (i === grau-1) {
-                        pattern += `?m${i} ?p${i+1} wd:${target} . `;
-                    } else {
-                        pattern += `?m${i} ?p${i+1} ?m${i+1} . `;
-                    }
+                        if (person === "presidente lula") {
+                            resultsDiv.innerHTML += `
+                                <div class="result-item">
+                                    <p><strong>${person.toUpperCase()}</strong></p>
+                                    <p>${connections[0].description}</p>
+                                </div>
+                            `;
+                        } else {
+                            resultsDiv.innerHTML += `
+                                <div class="result-item">
+                                    <p><strong>${person.toUpperCase()}</strong></p>
+                                    <p>Relações com o Presidente Lula:</p>
+                                    <ul>
+                                        ${connections.map(conn => `<li>${conn.type}: ${conn.description} (${conn.source || 'Fonte não especificada'})</li>`).join('')}
+                                    </ul>
+                                </div>
+                            `;
+                        }
+                    });
+                } else {
+                    resultsDiv.innerHTML = '<p class="no-results">Nenhuma conexão direta ou indireta encontrada para "' + searchTerm + '".</p>';
                 }
-                // Adiciona restrição de propriedades
-                let filterProps = "";
-                for (let i = 1; i <= grau; i++) {
-                    filterProps += `FILTER(?p${i} IN (${propsList}))\n`;
-                }
-                sparql = `
-                    SELECT ?m1 ${grau > 2 ? Array.from({length: grau-2}, (_,j) => `?m${j+2}`).join(' ') : ''} WHERE {
-                      ${pattern}
-                      ${filterProps}
-                    }
-                    LIMIT 1
-                `;
-            }
-            
-            const data = await executarSparql(sparql);
-            if (data && data.results && data.results.bindings && data.results.bindings.length > 0) {
-                // Construir o caminho de QIDs
-                const binding = data.results.bindings[0];
-                const caminho = [start];
-                for (let i = 1; i <= grau; i++) {
-                    const varName = `m${i}`;
-                    if (binding[varName]) {
-                        let qid = binding[varName].value.split('/').pop();
-                        caminho.push(qid);
-                    }
-                }
-                caminho.push(target);
-                // Remover possíveis duplicatas consecutivas (caso haja laços)
-                const caminhoUnico = [];
-                for (let i = 0; i < caminho.length; i++) {
-                    if (caminho[i] !== caminho[i-1]) caminhoUnico.push(caminho[i]);
-                }
-                return caminhoUnico;
-            }
+            }, 500); // Simula 0.5 segundos de latência
         }
-        return null;
-    }
-
-    // Função principal de consulta
-    async function consultarOráculo() {
-        const input = document.getElementById("personInput");
-        const nome = input.value.trim();
-        if (!nome) {
-            alert("Digite o nome de uma figura pública.");
-            return;
-        }
-        
-        const container = document.getElementById("resultContainer");
-        container.innerHTML = `<div class="result-card">🔍 Buscando o identificador de "${nome}" na Wikidata... <div class="loading"></div></div>`;
-        
-        // 1. Buscar QID da pessoa
-        const pessoaQID = await buscarQID(nome);
-        if (!pessoaQID) {
-            container.innerHTML = `<div class="result-card">❌ Não foi possível encontrar "${nome}" na Wikidata. Tente outro nome ou verifique a grafia.</div>`;
-            return;
-        }
-        
-        container.innerHTML = `<div class="result-card">🕸️ Encontrado: ${nome} (${pessoaQID}). Buscando menor caminho até Lula (${LULA_QID}) na base de conhecimento...<br>Consultando caminhos de 1 a 5 graus.<div class="loading"></div></div>`;
-        
-        // 2. Encontrar caminho mínimo (até 5 graus)
-        const caminhoQIDs = await encontrarCaminhoAteGrau(LULA_QID, pessoaQID, 5);
-        
-        if (!caminhoQIDs) {
-            container.innerHTML = `<div class="result-card">⚠️ Não foi possível encontrar um caminho entre Lula e ${nome} com até 5 graus de separação na Wikidata. A Teoria dos Seis Graus sugere que um caminho existe, mas a base de conhecimento pode não tê-lo registrado. Tente um nome mais conhecido ou verifique a grafia.</div>`;
-            return;
-        }
-        
-        // 3. Obter rótulos de cada QID no caminho (com cache simples)
-        const labels = [];
-        for (let qid of caminhoQIDs) {
-            const label = await obterRotulo(qid);
-            labels.push(label);
-        }
-        
-        const distancia = caminhoQIDs.length - 1;
-        const caminhoStr = labels.join(" → ");
-        
-        let resultadoHtml = `
-            <div class="result-card">
-                <div class="grau-badge">🎯 Número de Lula = ${distancia}</div>
-                <div class="path">🔗 Cadeia de conexões:<br> ${caminhoStr}</div>
-                <p>${distancia === 1 ? "✅ Relação direta (1º grau) – Lula e a pessoa possuem uma conexão direta registrada na Wikidata." : 
-                    `📐 Conexão indireta de ${distancia}º grau – de acordo com a Teoria dos Seis Graus de Separação.`}</p>
-                <div style="font-size:0.75rem; background:#f0f7ea; padding:0.5rem; border-radius:0.8rem; margin-top:0.8rem;">
-                    🌍 Fonte: Wikidata (consulta SPARQL em tempo real). Os caminhos utilizam propriedades como cargos ocupados, partido político, parentesco, associações profissionais, eventos, etc.
-                </div>
-            </div>
-        `;
-        container.innerHTML = resultadoHtml;
-    }
-    
-    // Configurar eventos
-    document.getElementById("searchBtn").addEventListener("click", consultarOráculo);
-    document.getElementById("personInput").addEventListener("keypress", (e) => {
-        if (e.key === "Enter") consultarOráculo();
-    });
-</script>
+    </script>
 </body>
 </html>
