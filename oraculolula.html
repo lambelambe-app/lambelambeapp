@@ -2,329 +2,149 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Oráculo de Lula · Busca em múltiplos sites</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oráculo de Lula · Busca automática na web</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             background: linear-gradient(145deg, #f6f9f2 0%, #e9f0e3 100%);
-            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            font-family: 'Inter', system-ui, sans-serif;
             padding: 1.5rem;
             min-height: 100vh;
             color: #1a2c1a;
         }
-
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            background: rgba(255, 255, 255, 0.94);
-            backdrop-filter: blur(0px);
-            border-radius: 2.5rem;
-            box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.1);
+            background: rgba(255,255,255,0.94);
+            border-radius: 2rem;
+            box-shadow: 0 20px 35px -12px rgba(0,0,0,0.1);
             overflow: hidden;
         }
-
         .hero {
             background: #1e4620;
-            padding: 2rem 2rem 1.8rem;
+            padding: 2rem;
             text-align: center;
             color: white;
         }
-
-        .hero h1 {
-            font-size: 2.2rem;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-
-        .hero h1 span {
-            background: #ffd966;
-            color: #1e4620;
-            font-size: 1.9rem;
-            border-radius: 60px;
-            padding: 0 12px;
-        }
-
-        .hero p {
-            margin-top: 0.8rem;
-            opacity: 0.9;
-        }
-
-        .content {
-            padding: 2rem;
-        }
-
+        .hero h1 { font-size: 2rem; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+        .hero h1 span { background: #ffd966; color: #1e4620; padding: 0 12px; border-radius: 60px; }
+        .content { padding: 2rem; }
         .theory-card {
             background: #fefce6;
             border-left: 6px solid #2b7a2b;
-            padding: 1.3rem 1.6rem;
+            padding: 1rem 1.5rem;
             border-radius: 1.5rem;
             margin-bottom: 2rem;
         }
-
-        .theory-card h2 {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: #1a3c1a;
-            margin-bottom: 0.6rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
         .query-area {
             background: white;
             border-radius: 1.8rem;
             padding: 1.5rem;
             margin-bottom: 2rem;
-            box-shadow: 0 5px 14px rgba(0, 0, 0, 0.03);
             border: 1px solid #e2f0da;
         }
-
-        .query-label {
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            font-size: 1.1rem;
-            color: #1e4620;
-        }
-
         .input-group {
             display: flex;
             flex-wrap: wrap;
             gap: 12px;
-            margin: 0.8rem 0 1rem;
+            margin: 1rem 0;
         }
-
         .input-group input {
             flex: 3;
-            min-width: 180px;
             padding: 0.9rem 1.2rem;
-            font-size: 1rem;
             border: 1.5px solid #cfdec7;
             border-radius: 60px;
-            font-family: inherit;
+            font-size: 1rem;
         }
-
-        .input-group input:focus {
-            outline: none;
-            border-color: #2b7a2b;
-            box-shadow: 0 0 0 3px rgba(43, 122, 43, 0.2);
-        }
-
         .input-group button {
             background: #1e4620;
             color: white;
             border: none;
             padding: 0 2rem;
             border-radius: 60px;
-            font-weight: 600;
-            font-size: 1rem;
+            font-weight: bold;
             cursor: pointer;
-            display: inline-flex;
+            display: flex;
             align-items: center;
             gap: 8px;
-            transition: 0.2s;
         }
-
-        .input-group button:hover {
-            background: #0f2f11;
-            transform: scale(0.97);
-        }
-
-        .suggestions {
-            background: #f4f9f0;
-            border-radius: 1.2rem;
-            padding: 0.8rem 1rem;
-            font-size: 0.85rem;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            align-items: baseline;
-        }
-
-        .badge-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-
-        .badge {
-            background: #e2efdc;
-            padding: 0.2rem 0.9rem;
-            border-radius: 40px;
-            font-size: 0.8rem;
-            cursor: pointer;
-            transition: 0.1s;
-        }
-
-        .badge:hover {
-            background: #c8e0bd;
-            transform: scale(0.96);
-        }
-
-        /* Resultado principal */
         .result-card {
             background: #fafcf8;
             border-radius: 1.5rem;
             padding: 1.4rem;
-            margin: 1.5rem 0 1rem;
+            margin: 1rem 0;
             border: 1px solid #cde2c3;
         }
-
         .path-display {
             background: #f1f4ed;
-            padding: 0.9rem;
+            padding: 0.8rem;
             border-radius: 1rem;
             font-family: monospace;
-            font-size: 0.9rem;
-            word-break: break-word;
             margin: 0.8rem 0;
         }
-
-        .confidence {
-            background: #fff6df;
+        .confidence { background: #fff6df; border-radius: 1rem; padding: 0.7rem; margin: 10px 0; }
+        .web-discovery {
+            background: #e6f0e2;
             border-radius: 1rem;
-            padding: 0.7rem 1rem;
-            font-size: 0.9rem;
-            margin-top: 12px;
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-
-        /* NOVO: Motor de busca em diversos sites */
-        .search-engines {
-            margin-top: 1.5rem;
-            padding-top: 1rem;
-            border-top: 2px dashed #bdd6b0;
-        }
-
-        .search-engines h3 {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: #1e4620;
-            margin-bottom: 0.8rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .engine-buttons {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-        }
-
-        .engine-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            background: #eef3ea;
-            padding: 0.5rem 1rem;
-            border-radius: 40px;
-            text-decoration: none;
-            color: #1e4620;
-            font-size: 0.85rem;
-            font-weight: 500;
-            transition: 0.15s;
-            border: 1px solid #cde0c1;
-        }
-
-        .engine-btn:hover {
-            background: #d9e8d1;
-            transform: translateY(-2px);
-        }
-
-        .people-list {
-            background: #ffffffdd;
-            border-radius: 1.2rem;
-            padding: 1rem 1.3rem;
-            margin-top: 1.5rem;
-            border: 1px solid #e0efd8;
-        }
-
-        .list-tag {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 0.5rem;
-        }
-
-        .list-tag span {
-            background: #ebf5e5;
-            padding: 0.2rem 0.8rem;
-            border-radius: 30px;
-            font-size: 0.8rem;
-            cursor: pointer;
-        }
-
-        footer {
-            text-align: center;
-            font-size: 0.7rem;
             padding: 1rem;
-            border-top: 1px solid #ddecd3;
-            color: #557155;
+            margin-top: 1rem;
         }
-
-        @media (max-width: 650px) {
-            body { padding: 0.8rem; }
-            .content { padding: 1.2rem; }
-            .hero h1 { font-size: 1.6rem; }
+        .loading { display: inline-block; width: 20px; height: 20px; border: 2px solid #ccc; border-top-color: #2b7a2b; border-radius: 50%; animation: spin 0.6s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .suggestion-btn {
+            background: #2b7a2b;
+            color: white;
+            border: none;
+            padding: 0.3rem 0.8rem;
+            border-radius: 40px;
+            cursor: pointer;
+            font-size: 0.8rem;
         }
+        .people-list { background: #fff; border-radius: 1.2rem; padding: 1rem; margin-top: 1.5rem; border: 1px solid #e0efd8; }
+        .list-tag { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+        .list-tag span { background: #ebf5e5; padding: 0.2rem 0.8rem; border-radius: 30px; font-size: 0.8rem; cursor: pointer; }
+        footer { text-align: center; font-size: 0.7rem; padding: 1rem; color: #557155; }
+        @media (max-width: 650px) { .content { padding: 1rem; } }
     </style>
 </head>
 <body>
 <div class="container">
     <div class="hero">
         <h1>🌿 Oráculo de Lula <span>6º</span></h1>
-        <p>Quantos passos separam Lula de qualquer figura pública? + Busca em múltiplos sites</p>
+        <p>Busca automática na Wikipédia para descobrir novas conexões em tempo real</p>
     </div>
     <div class="content">
         <div class="theory-card">
-            <h2>📡 Teoria dos Seis Graus de Separação</h2>
-            <p>Qualquer pessoa está a, no máximo, seis conexões de distância de outra. No Oráculo de Lula, você descobre o "Número de Lula" e ainda pode pesquisar o nome em diversos mecanismos de busca (Google, Bing, Wikipedia, YouTube, notícias) para verificar relações e notícias.</p>
-            <small>🔍 Cada aresta = relação direta comprovada (eventos, fotos, parcerias).</small>
+            <h2>📡 + Busca dinâmica na web</h2>
+            <p>Além do grafo fixo, ao consultar uma pessoa, o Oráculo vasculha a Wikipédia em busca de menções conjuntas com Lula (ou com os elos intermediários). Se encontrar uma relação nova, você pode adicioná-la ao grafo instantaneamente!</p>
+            <small>🔎 A busca é feita via API pública da Wikipédia – sem necessidade de backend próprio.</small>
         </div>
 
         <div class="query-area">
-            <div class="query-label">🧭 Descubra o "Número de Lula" e busque em vários sites</div>
             <div class="input-group">
-                <input type="text" id="personInput" placeholder="Ex: Dilma, Messi, Joe Biden, Papa Francisco..." list="personDatalist">
-                <button id="searchBtn">✨ Consultar + Buscar</button>
-            </div>
-            <div class="suggestions">
-                <span>💡 Sugestões:</span>
-                <div class="badge-list" id="quickSuggestions"></div>
+                <input type="text" id="personInput" placeholder="Ex: Dilma, Messi, Papa Francisco, Joe Biden..." list="personDatalist">
+                <button id="searchBtn">🚀 Consultar + Buscar na Web</button>
             </div>
             <datalist id="personDatalist"></datalist>
         </div>
 
-        <div id="resultContainer"></div>
+        <div id="resultContainer">
+            <div class="result-card">🔮 Digite um nome e clique em "Consultar + Buscar na Web". O sistema tentará encontrar relações automáticas.</div>
+        </div>
 
         <div class="people-list">
-            <h3>📋 Pessoas conectadas no grafo (com Lula)</h3>
+            <h3>📋 Grafo inicial (conexões conhecidas)</h3>
             <div class="list-tag" id="availablePeopleList"></div>
-            <p style="font-size:0.7rem; margin-top:8px;">✔️ Relações diretas/indiretas baseadas em fatos públicos. Ao consultar, aparecerão links de busca externa.</p>
+            <p style="font-size:0.7rem;">* Ao descobrir novas conexões, elas serão sugeridas para expandir o grafo.</p>
         </div>
-        <footer>🔎 O botão "Consultar + Buscar" mostra o grau de separação e gera links para pesquisar o nome em Google, Bing, Wikipedia, YouTube e Google Notícias.</footer>
+        <footer>⚡ A busca automática consulta a Wikipédia (API REST) verificando se duas pessoas aparecem juntas em artigos. Isso simula um "crawler" leve e respeita as políticas de uso.</footer>
     </div>
 </div>
 
 <script>
-    // ----------------------------------------------
-    // GRAFO DE CONEXÕES (baseado em eventos reais)
-    // ----------------------------------------------
-    const graph = {
+    // ----- GRAFO BASE (conexões manuais iniciais) -----
+    let graph = {
         "Lula": ["Dilma Rousseff", "Bolsonaro", "Barack Obama", "Papa Francisco", "José Alencar", "Janja", "Joe Biden", "Neymar", "Fernando Henrique Cardoso", "Vladimir Putin", "Angela Merkel"],
         "Dilma Rousseff": ["Lula", "Michel Temer"],
         "Bolsonaro": ["Lula", "Paulo Guedes", "Sergio Moro", "Papa Francisco"],
@@ -341,16 +161,14 @@
         "Fernando Henrique Cardoso": ["Lula"],
         "Vladimir Putin": ["Lula"],
         "Angela Merkel": ["Lula"],
-        "Elon Musk": ["Joe Biden"],
-        "Cristiano Ronaldo": ["Neymar"]
+        "Elon Musk": ["Joe Biden"]
     };
 
-    // Tornar grafo não direcionado
+    // Função para garantir grafo não direcionado
     function makeUndirected() {
         const nodes = Object.keys(graph);
         for (let node of nodes) {
-            const neighbors = graph[node];
-            for (let nb of neighbors) {
+            for (let nb of graph[node]) {
                 if (!graph[nb]) graph[nb] = [];
                 if (!graph[nb].includes(node)) graph[nb].push(node);
             }
@@ -358,22 +176,20 @@
     }
     makeUndirected();
 
-    function getAllNames() {
-        return Object.keys(graph).sort();
-    }
+    function getAllNames() { return Object.keys(graph).sort(); }
 
-    // BFS para menor caminho entre Lula e alvo
+    // BFS para menor caminho
     function findShortestPath(start, target) {
         if (start === target) return [start];
         if (!graph[start] || !graph[target]) return null;
-        const queue = [[start]];
-        const visited = new Set([start]);
+        let queue = [[start]];
+        let visited = new Set([start]);
         while (queue.length) {
-            const path = queue.shift();
-            const last = path[path.length - 1];
+            let path = queue.shift();
+            let last = path[path.length-1];
             for (let nb of (graph[last] || [])) {
                 if (!visited.has(nb)) {
-                    const newPath = [...path, nb];
+                    let newPath = [...path, nb];
                     if (nb === target) return newPath;
                     visited.add(nb);
                     queue.push(newPath);
@@ -383,149 +199,157 @@
         return null;
     }
 
-    // Gerar links de busca em múltiplos sites
-    function getSearchLinks(personName) {
-        const encoded = encodeURIComponent(personName);
-        return {
-            google: `https://www.google.com/search?q=${encoded}+Lula+encontro`,
-            bing: `https://www.bing.com/search?q=${encoded}+Lula`,
-            wikipedia: `https://pt.wikipedia.org/wiki/${encoded.replace(/ /g, '_')}`,
-            youtube: `https://www.youtube.com/results?search_query=${encoded}+Lula`,
-            news: `https://news.google.com/search?q=${encoded}+Lula&hl=pt-BR`
-        };
+    // ---- BUSCA AUTOMÁTICA NA WIKIPÉDIA (descobre se duas pessoas são mencionadas juntas) ----
+    async function wikipediaMentionTogether(personA, personB) {
+        // Busca artigos que contenham ambos os termos (usando API de pesquisa)
+        const query = `${personA} ${personB}`;
+        const url = `https://pt.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&format=json&origin=*`;
+        try {
+            const response = await fetch(url);
+            const data = await response.json();
+            if (data.query && data.query.search && data.query.search.length > 0) {
+                // Se existir pelo menos um artigo que mencione ambos, consideramos possível conexão
+                return { found: true, articleTitle: data.query.search[0].title };
+            }
+            return { found: false };
+        } catch (err) {
+            console.warn("Erro na busca da Wikipedia:", err);
+            return { found: false, error: true };
+        }
     }
 
-    // Renderizar resultado + motores de busca
-    function renderResultWithSearch(targetName) {
-        const container = document.getElementById("resultContainer");
-        const normalized = targetName.trim();
-        if (normalized === "") {
-            container.innerHTML = `<div class="result-card error-message">⚠️ Digite um nome para consultar e buscar.</div>`;
+    // Buscar novas conexões entre Lula e a pessoa alvo (ou entre intermediários)
+    async function discoverNewEdges(targetPerson) {
+        let suggestions = [];
+        // 1. Verificar relação direta entre Lula e target (se não existir no grafo)
+        const directExists = graph["Lula"] && graph["Lula"].includes(targetPerson);
+        if (!directExists && targetPerson !== "Lula") {
+            const result = await wikipediaMentionTogether("Lula", targetPerson);
+            if (result.found) {
+                suggestions.push({ from: "Lula", to: targetPerson, evidence: `Artigo: ${result.articleTitle}` });
+            }
+        }
+        // 2. Para cada vizinho de Lula, verificar se esse vizinho tem relação com target (para criar ponte)
+        const lulaNeighbors = graph["Lula"] || [];
+        for (let neighbor of lulaNeighbors) {
+            if (neighbor === targetPerson) continue;
+            const edgeExists = graph[neighbor] && graph[neighbor].includes(targetPerson);
+            if (!edgeExists && neighbor !== targetPerson) {
+                const result = await wikipediaMentionTogether(neighbor, targetPerson);
+                if (result.found) {
+                    suggestions.push({ from: neighbor, to: targetPerson, evidence: `Artigo: ${result.articleTitle}` });
+                }
+            }
+        }
+        return suggestions;
+    }
+
+    // Adicionar nova aresta ao grafo
+    function addEdgeToGraph(a, b) {
+        if (!graph[a]) graph[a] = [];
+        if (!graph[b]) graph[b] = [];
+        if (!graph[a].includes(b)) graph[a].push(b);
+        if (!graph[b].includes(a)) graph[b].push(a);
+        // Atualiza interface
+        populateLists();
+    }
+
+    // Renderiza resultado principal + descobertas
+    async function consultarComBusca() {
+        const inputEl = document.getElementById("personInput");
+        const targetRaw = inputEl.value.trim();
+        if (!targetRaw) {
+            document.getElementById("resultContainer").innerHTML = `<div class="result-card">⚠️ Digite um nome.</div>`;
             return;
         }
-
         const allNames = getAllNames();
-        const exactMatch = allNames.find(n => n.toLowerCase() === normalized.toLowerCase());
+        let exactMatch = allNames.find(n => n.toLowerCase() === targetRaw.toLowerCase());
         if (!exactMatch) {
-            container.innerHTML = `
-                <div class="result-card error-message">
-                    🕵️‍♂️ "${normalized}" não está na base de conexões.<br>
-                    <strong>Disponíveis:</strong> ${allNames.slice(0, 22).join(", ")}...
-                </div>`;
-            return;
+            // Se não existe no grafo, tratamos como pessoa nova
+            exactMatch = targetRaw;  // nome provisório
         }
 
-        const path = findShortestPath("Lula", exactMatch);
-        if (!path) {
-            container.innerHTML = `<div class="result-card error-message">🔗 Nenhuma cadeia encontrada entre Lula e ${exactMatch} no grafo atual.</div>`;
-            return;
+        // Mostrar loading
+        document.getElementById("resultContainer").innerHTML = `<div class="result-card">🔍 Consultando grafo e buscando na Wikipédia... <div class="loading"></div></div>`;
+
+        // 1. Verificar caminho no grafo atual
+        let path = findShortestPath("Lula", exactMatch);
+        let distance = path ? path.length - 1 : null;
+
+        // 2. Buscar novas conexões na web (apenas se a pessoa existir ou não, tentamos descobrir)
+        let suggestions = [];
+        if (exactMatch !== "Lula") {
+            suggestions = await discoverNewEdges(exactMatch);
         }
 
-        const distance = path.length - 1;
-        const isDirect = distance === 1;
-        const isZero = exactMatch === "Lula";
-
-        let pathHtml = `<div class="path-display">🔗 ${path.join('  →  ')}</div>`;
-        let confidenceHtml = "";
-        if (isZero) {
-            confidenceHtml = `<div class="confidence"><span>🪄</span> <strong>Lula (Grau 0)</strong> — relação consigo mesmo.</div>`;
-        } else if (isDirect) {
-            confidenceHtml = `<div class="confidence"><span>✅</span> <strong>RELAÇÃO DIRETA (Grau 1)</strong> — confiabilidade máxima! Lula e ${exactMatch} possuem vínculo comprovado.</div>`;
+        // 3. Montar HTML de resultado
+        let resultHtml = `<div class="result-card">`;
+        if (path) {
+            resultHtml += `<div><strong>🌟 Número de Lula para ${exactMatch}: ${distance}</strong></div>`;
+            resultHtml += `<div class="path-display">Caminho: ${path.join(" → ")}</div>`;
+            resultHtml += `<div class="confidence">${distance === 1 ? "✅ Relação direta (confiabilidade alta)" : "🔗 Relação indireta (teoria dos 6 graus)"}</div>`;
         } else {
-            confidenceHtml = `<div class="confidence"><span>🔗</span> <strong>Conexão INDIRETA (Grau ${distance})</strong> — cadeia plausível segundo a Teoria dos Seis Graus.</div>`;
+            resultHtml += `<div><strong>⚠️ ${exactMatch} não está conectado(a) a Lula no grafo atual.</strong></div>`;
+            resultHtml += `<div>🔎 Buscamos na Wikipédia possíveis conexões...</div>`;
         }
 
-        // Links de busca (motor em diversos sites)
-        const links = getSearchLinks(exactMatch);
-        const searchSection = `
-            <div class="search-engines">
-                <h3>🔎 Buscar "${exactMatch}" em múltiplos sites</h3>
-                <div class="engine-buttons">
-                    <a href="${links.google}" target="_blank" rel="noopener noreferrer" class="engine-btn">📘 Google</a>
-                    <a href="${links.bing}" target="_blank" rel="noopener noreferrer" class="engine-btn">🔍 Bing</a>
-                    <a href="${links.wikipedia}" target="_blank" rel="noopener noreferrer" class="engine-btn">📖 Wikipédia</a>
-                    <a href="${links.youtube}" target="_blank" rel="noopener noreferrer" class="engine-btn">📺 YouTube</a>
-                    <a href="${links.news}" target="_blank" rel="noopener noreferrer" class="engine-btn">📰 Google Notícias</a>
-                </div>
-                <p style="font-size:0.75rem; margin-top:10px;">* Os links abrem em nova aba e já incluem termos relacionados a Lula para facilitar a validação da conexão.</p>
-            </div>
-        `;
+        // Exibir sugestões de novas relações encontradas na web
+        if (suggestions.length > 0) {
+            resultHtml += `<div class="web-discovery"><strong>🕸️ Novas conexões descobertas na Wikipédia:</strong><ul>`;
+            for (let sug of suggestions) {
+                resultHtml += `<li>📄 ${sug.from} ↔ ${sug.to} (${sug.evidence}) 
+                    <button class="suggestion-btn" data-from="${sug.from}" data-to="${sug.to}">➕ Adicionar ao grafo</button>
+                </li>`;
+            }
+            resultHtml += `</ul><small>Essas relações foram encontradas automaticamente. Clique para adicionar e refinar futuras consultas.</small></div>`;
+        } else if (!path && exactMatch !== "Lula") {
+            resultHtml += `<div class="web-discovery">🤖 Não encontramos menções conjuntas na Wikipédia entre Lula (ou seus contatos) e "${exactMatch}". Tente outro nome ou aguarde mais fontes.</div>`;
+        }
 
-        const degreeMsg = (distance === 0) ? "Número de Lula: 0" : `Número de Lula: ${distance}`;
-        const finalHtml = `
-            <div class="result-card">
-                <div class="result-header">🌟 ${degreeMsg} para <strong>${exactMatch}</strong></div>
-                ${pathHtml}
-                ${confidenceHtml}
-                ${searchSection}
-            </div>
-        `;
-        container.innerHTML = finalHtml;
+        resultHtml += `</div>`;
+        document.getElementById("resultContainer").innerHTML = resultHtml;
+
+        // Adicionar eventos aos botões de sugestão
+        document.querySelectorAll(".suggestion-btn").forEach(btn => {
+            btn.addEventListener("click", (e) => {
+                const from = btn.getAttribute("data-from");
+                const to = btn.getAttribute("data-to");
+                addEdgeToGraph(from, to);
+                alert(`Conexão ${from} ↔ ${to} adicionada ao grafo! Recarregue a consulta para ver o novo caminho.`);
+                // Re-consultar automaticamente
+                consultarComBusca();
+            });
+        });
     }
 
-    // Popula datalist, sugestões e lista de pessoas
-    function populateUI() {
+    // Popula datalist e lista de pessoas
+    function populateLists() {
         const all = getAllNames();
         const datalist = document.getElementById("personDatalist");
         datalist.innerHTML = "";
         all.forEach(name => {
-            const opt = document.createElement("option");
+            let opt = document.createElement("option");
             opt.value = name;
             datalist.appendChild(opt);
         });
 
-        const availableDiv = document.getElementById("availablePeopleList");
-        availableDiv.innerHTML = "";
-        all.slice(0, 30).forEach(name => {
-            const span = document.createElement("span");
+        const listDiv = document.getElementById("availablePeopleList");
+        listDiv.innerHTML = "";
+        all.slice(0, 35).forEach(name => {
+            let span = document.createElement("span");
             span.textContent = name;
             span.onclick = () => {
                 document.getElementById("personInput").value = name;
-                renderResultWithSearch(name);
+                consultarComBusca();
             };
-            availableDiv.appendChild(span);
-        });
-
-        const quickDiv = document.getElementById("quickSuggestions");
-        const topList = ["Dilma Rousseff", "Messi", "Joe Biden", "Papa Francisco", "Neymar", "Bolsonaro", "Elon Musk"];
-        quickDiv.innerHTML = "";
-        topList.forEach(sug => {
-            if (graph[sug]) {
-                const badge = document.createElement("div");
-                badge.className = "badge";
-                badge.textContent = sug;
-                badge.onclick = () => {
-                    document.getElementById("personInput").value = sug;
-                    renderResultWithSearch(sug);
-                };
-                quickDiv.appendChild(badge);
-            }
+            listDiv.appendChild(span);
         });
     }
 
-    // Eventos
-    function setupEvents() {
-        const btn = document.getElementById("searchBtn");
-        const input = document.getElementById("personInput");
-        btn.addEventListener("click", () => renderResultWithSearch(input.value));
-        input.addEventListener("keypress", (e) => {
-            if (e.key === "Enter") renderResultWithSearch(input.value);
-        });
-    }
-
-    function init() {
-        populateUI();
-        setupEvents();
-        const container = document.getElementById("resultContainer");
-        container.innerHTML = `
-            <div class="result-card">
-                <div class="result-header">🔮 Pronto para consultar</div>
-                <p>Digite um nome e clique em <strong>"Consultar + Buscar"</strong>. Além do grau de separação, serão exibidos botões para pesquisar em <strong>Google, Bing, Wikipedia, YouTube e Google Notícias</strong>.</p>
-                <div style="font-size:0.85rem; margin-top:8px;">✨ Exemplo: "Messi" → Lula → Neymar → Messi (Grau 2) + links externos.</div>
-            </div>
-        `;
-    }
-    init();
+    // Inicialização
+    document.getElementById("searchBtn").addEventListener("click", consultarComBusca);
+    document.getElementById("personInput").addEventListener("keypress", (e) => { if(e.key === "Enter") consultarComBusca(); });
+    populateLists();
 </script>
 </body>
 </html>
