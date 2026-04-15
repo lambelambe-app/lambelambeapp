@@ -3,24 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Oráculo Lula · Busca Rápida</title>
+    <title>Oráculo de Lula · Busca Invertida (EBC primeiro)</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             background: linear-gradient(135deg, #f0f7e8 0%, #e0ecd6 100%);
-            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            font-family: 'Segoe UI', Roboto, sans-serif;
             padding: 1rem;
             min-height: 100vh;
             color: #1a3a1a;
         }
-        .container {
-            max-width: 1100px;
-            margin: 0 auto;
-        }
-        .hero {
-            text-align: center;
-            margin-bottom: 1.5rem;
-        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        .hero { text-align: center; margin-bottom: 1.5rem; }
         .hero h1 {
             font-family: 'Playfair Display', serif;
             font-size: 2rem;
@@ -112,7 +106,7 @@
 <div class="container">
     <div class="hero">
         <h1>🌿 Oráculo de Lula <span>6º</span></h1>
-        <p>Busca limitada por eventos (máx. 15 segundos)</p>
+        <p>Busca invertida: a partir de Lula, via EBC (notícias)</p>
     </div>
     <div class="card">
         <div class="search-area">
@@ -121,40 +115,56 @@
         </div>
         <div id="result">🔍 Aguardando consulta...</div>
     </div>
-    <footer>🌍 Wikidata (cargos + eventos) + EBC (notícias). Limite de 100 nós explorados.</footer>
+    <footer>🌍 Fonte primária: EBC (Agência Brasil) – notícias de Lula e outros. Fallback: Wikidata.</footer>
 </div>
 
 <script>
     // ================= CONFIGURAÇÕES =================
     const LULA = "Luiz Inácio Lula da Silva";
-    const MAX_DEG = 4;          // reduzido para 4 graus (mais rápido)
-    const TIMEOUT_GLOBAL = 15000; // 15 segundos no total
-    const MAX_NODES = 100;       // máximo de nós a explorar
-    const MAX_NEIGHBORS = 8;     // máx. vizinhos diretos por pessoa
-    const MAX_EVENTS = 3;        // máx. eventos por pessoa
-    const MAX_PARTICIPANTS = 5;  // máx. participantes por evento
+    const MAX_DEG = 4;
+    const TIMEOUT_GLOBAL = 15000;
+    const MAX_NODES = 40;          // menos nós porque partimos de Lula (mais focado)
+    const MAX_NEIGHBORS = 8;
     
-    // Caches
-    const neighborsCache = new Map();
+    // Cache
+    const ebcCache = new Map();     // nome -> lista de nomes co-ocorrentes
+    const wikiCache = new Map();
     const qidCache = new Map();
     const labelCache = new Map();
     
     let abortController = null;
     let nodesExplored = 0;
     
-    // Propriedades diretas (pessoa-pessoa)
-    const DIRECT_PROPS = [
-        "wdt:P39", "wdt:P102", "wdt:P108", "wdt:P26", "wdt:P40", "wdt:P3373",
-        "wdt:P737", "wdt:P1416", "wdt:P155", "wdt:P156", "wdt:P22", "wdt:P25",
-        "wdt:P106", "wdt:P463", "wdt:P410"
-    ];
-    const DIRECT_PROPS_LIST = DIRECT_PROPS.join(", ");
+    // ========== 1. BUSCA NA EBC (co-ocorrência em notícias) ==========
+    // Dado um nome, busca matérias que o contenham e extrai outros nomes próprios
+    async function getEBCNeighbors(name) {
+        const key = name.toLowerCase();
+        if (ebcCache.has(key)) return ebcCache.get(key);
+        
+        const searchUrl = `https://agenciabrasil.ebc.com.br/search/node?keys=${encodeURIComponent(name)}`;
+        const proxy = `https://api.allorigins.win/raw?url=${encodeURIComponent(searchUrl)}`;
+        try {
+            const controller = new AbortController();
+            const id = setTimeout(() => controller.abort(), 4000);
+            const resp = await fetch(proxy, { signal: controller.signal });
+            clearTimeout(id);
+            const html = await resp.text();
+            
+            // Extrai nomes próprios (duas ou mais palavras com iniciais maiúsculas)
+            const namePattern = /\b[A-ZÀ-Ú][a-zà-ú]+(?:\s+[A-ZÀ-Ú][a-zà-ú]+){1,3}\b/g;
+            const matches = html.match(namePattern) || [];
+            // Filtra nomes muito longos ou curtos
+            const filtered = matches.filter(n => n.length > 4 && n.length < 40);
+            const unique = [...new Set(filtered)].slice(0, MAX_NEIGHBORS);
+            ebcCache.set(key, unique);
+            setTimeout(() => ebcCache.delete(key), 600000);
+            return unique;
+        } catch {
+            return [];
+        }
+    }
     
-    // Propriedades de evento
-    const EVENT_PROPS = ["wdt:P1344", "wdt:P793"];
-    const EVENT_PROPS_LIST = EVENT_PROPS.join(", ");
-    
-    // ========== FUNÇÕES WIKIDATA ==========
+    // ========== 2. WIKIDATA (FALLBACK) – vizinhos diretos (cargos, parentesco, eventos) ==========
     async function sparqlWikidata(query, timeout=3000) {
         const url = `https://query.wikidata.org/sparql?format=json&query=${encodeURIComponent(query)}`;
         const controller = new AbortController();
@@ -177,16 +187,9 @@
             const resp = await fetch(url);
             const data = await resp.json();
             if (data.search && data.search.length) {
-                for (let item of data.search) {
-                    // Tenta verificar se é pessoa (Q5) - opcional para velocidade
-                    if (item.id.match(/^Q\d+$/)) {
-                        qidCache.set(key, item.id);
-                        return item.id;
-                    }
-                }
-                const fallback = data.search[0].id;
-                qidCache.set(key, fallback);
-                return fallback;
+                const qid = data.search[0].id;
+                qidCache.set(key, qid);
+                return qid;
             }
             return null;
         } catch { return null; }
@@ -207,135 +210,82 @@
         } catch { return qid; }
     }
     
-    // Vizinhos via Wikidata (diretos + eventos, com limites)
-    async function getWikidataNeighbors(qid) {
+    async function getWikiNeighbors(qid) {
         const cacheKey = `wiki:${qid}`;
-        if (neighborsCache.has(cacheKey)) return neighborsCache.get(cacheKey);
-        
-        const neighbors = new Set();
-        
-        // 1. Vizinhos diretos (pessoa-pessoa)
-        const directQuery = `
+        if (wikiCache.has(cacheKey)) return wikiCache.get(cacheKey);
+        // Propriedades diretas (pessoa-pessoa)
+        const props = ["wdt:P39", "wdt:P102", "wdt:P108", "wdt:P26", "wdt:P40", "wdt:P3373", "wdt:P737", "wdt:P1416", "wdt:P22", "wdt:P25", "wdt:P106"];
+        const propsList = props.join(", ");
+        const query = `
             SELECT DISTINCT ?neighbor WHERE {
-              { wd:${qid} ?prop ?neighbor . ?neighbor wdt:P31 wd:Q5 . FILTER(?prop IN (${DIRECT_PROPS_LIST})) }
+              { wd:${qid} ?prop ?neighbor . ?neighbor wdt:P31 wd:Q5 . FILTER(?prop IN (${propsList})) }
               UNION
-              { ?neighbor ?prop wd:${qid} . ?neighbor wdt:P31 wd:Q5 . FILTER(?prop IN (${DIRECT_PROPS_LIST})) }
+              { ?neighbor ?prop wd:${qid} . ?neighbor wdt:P31 wd:Q5 . FILTER(?prop IN (${propsList})) }
             }
-            LIMIT ${MAX_NEIGHBORS}
+            LIMIT 10
         `;
-        const directData = await sparqlWikidata(directQuery, 2000);
-        if (directData?.results?.bindings) {
-            directData.results.bindings.forEach(b => {
-                neighbors.add(b.neighbor.value.split('/').pop());
-            });
+        const data = await sparqlWikidata(query, 2500);
+        let neighbors = [];
+        if (data?.results?.bindings) {
+            neighbors = data.results.bindings.map(b => b.neighbor.value.split('/').pop());
         }
-        
-        // 2. Vizinhos via eventos (limitado)
-        const eventQuery = `
-            SELECT DISTINCT ?event WHERE {
-              wd:${qid} ?prop ?event .
-              FILTER(?prop IN (${EVENT_PROPS_LIST}))
-            }
-            LIMIT ${MAX_EVENTS}
-        `;
-        const eventData = await sparqlWikidata(eventQuery, 2000);
-        if (eventData?.results?.bindings) {
-            const events = eventData.results.bindings.map(b => b.event.value.split('/').pop());
-            for (let ev of events) {
-                const participantsQuery = `
-                    SELECT DISTINCT ?participant WHERE {
-                      { wd:${ev} ?prop ?participant . ?participant wdt:P31 wd:Q5 . FILTER(?prop IN (${EVENT_PROPS_LIST})) }
-                      UNION
-                      { ?participant ?prop wd:${ev} . ?participant wdt:P31 wd:Q5 . FILTER(?prop IN (${EVENT_PROPS_LIST})) }
-                    }
-                    LIMIT ${MAX_PARTICIPANTS}
-                `;
-                const partData = await sparqlWikidata(participantsQuery, 2000);
-                if (partData?.results?.bindings) {
-                    partData.results.bindings.forEach(b => {
-                        const p = b.participant.value.split('/').pop();
-                        if (p !== qid) neighbors.add(p);
-                    });
-                }
-                if (neighbors.size >= MAX_NEIGHBORS) break;
-            }
-        }
-        
-        const result = Array.from(neighbors).slice(0, MAX_NEIGHBORS).map(id => ({ id, type: 'wikidata' }));
-        neighborsCache.set(cacheKey, result);
-        setTimeout(() => neighborsCache.delete(cacheKey), 600000); // 10 min
-        return result;
+        const unique = [...new Set(neighbors)].slice(0, MAX_NEIGHBORS);
+        wikiCache.set(cacheKey, unique);
+        setTimeout(() => wikiCache.delete(cacheKey), 600000);
+        return unique;
     }
     
-    // ========== BUSCA NA EBC (com timeout e limite) ==========
-    async function searchEBC(query) {
-        const cacheKey = `ebc:${query}`;
-        if (neighborsCache.has(cacheKey)) return neighborsCache.get(cacheKey);
-        const searchUrl = `https://agenciabrasil.ebc.com.br/search/node?keys=${encodeURIComponent(query)}`;
-        const proxy = `https://api.allorigins.win/raw?url=${encodeURIComponent(searchUrl)}`;
-        try {
-            const controller = new AbortController();
-            const id = setTimeout(() => controller.abort(), 3000);
-            const resp = await fetch(proxy, { signal: controller.signal });
-            clearTimeout(id);
-            const html = await resp.text();
-            // Extrai nomes próprios (simplificado)
-            const namePattern = /\b[A-ZÀ-Ú][a-zà-ú]+(?:\s+[A-ZÀ-Ú][a-zà-ú]+){1,3}\b/g;
-            const matches = html.match(namePattern) || [];
-            const unique = [...new Set(matches)].slice(0, 5);
-            const result = unique.map(name => ({ id: name, type: 'ebc' }));
-            neighborsCache.set(cacheKey, result);
-            setTimeout(() => neighborsCache.delete(cacheKey), 600000);
-            return result;
-        } catch {
-            return [];
-        }
-    }
-    
-    // ========== BFS COM LIMITES ==========
-    async function hybridBFS(startLabel, targetLabel, maxDeg, onProgress) {
+    // ========== 3. BFS INVERTIDO (partindo de Lula) ==========
+    async function bfsFromLula(targetName, maxDeg, onProgress) {
         const visited = new Set();
-        const queue = [{ label: startLabel, path: [startLabel] }];
-        visited.add(startLabel);
+        // Cada elemento: { name, path }
+        const queue = [{ name: LULA, path: [LULA] }];
+        visited.add(LULA);
         nodesExplored = 0;
+        
+        // Mapa de aliases para normalização (ex: "Luiz Inácio Lula da Silva" vs "Lula")
+        const normalize = (s) => s.toLowerCase().replace(/[^a-z]/g, '');
         
         while (queue.length && nodesExplored < MAX_NODES) {
             if (abortController?.signal.aborted) return null;
             const current = queue.shift();
             nodesExplored++;
-            if (onProgress) onProgress(`Visitados: ${nodesExplored} | ${current.label}`);
+            if (onProgress) onProgress(`Visitados: ${nodesExplored} | ${current.name.substring(0, 30)}`);
             
             if (current.path.length > maxDeg) continue;
-            if (current.label === targetLabel) return current.path;
             
-            // Busca vizinhos
-            let neighbors = [];
-            const qid = await getQidFromName(current.label);
-            if (qid) {
-                const wikiNeighbors = await getWikidataNeighbors(qid);
-                for (let nb of wikiNeighbors) {
-                    const label = await getWikidataLabel(nb.id);
-                    neighbors.push(label);
+            // Verifica se atingiu o alvo (comparação flexível)
+            if (normalize(current.name) === normalize(targetName)) {
+                return current.path;
+            }
+            
+            // Obtém vizinhos: primeiro da EBC, depois Wikidata (fallback)
+            let neighbors = await getEBCNeighbors(current.name);
+            // Se EBC não retornou nada, tenta Wikidata
+            if (neighbors.length === 0) {
+                const qid = await getQidFromName(current.name);
+                if (qid) {
+                    const wikiIds = await getWikiNeighbors(qid);
+                    for (let id of wikiIds) {
+                        const label = await getWikidataLabel(id);
+                        neighbors.push(label);
+                    }
                 }
             }
-            // EBC apenas se ainda não encontrou muitos vizinhos
-            if (neighbors.length < 5) {
-                const ebcNeighbors = await searchEBC(current.label);
-                for (let nb of ebcNeighbors) neighbors.push(nb.id);
-            }
             
+            // Remove duplicatas e limites
             const unique = [...new Set(neighbors)].slice(0, MAX_NEIGHBORS);
             for (let nb of unique) {
                 if (!visited.has(nb)) {
                     visited.add(nb);
-                    queue.push({ label: nb, path: [...current.path, nb] });
+                    queue.push({ name: nb, path: [...current.path, nb] });
                 }
             }
         }
         return null;
     }
     
-    // ========== CONSULTA PRINCIPAL COM TIMEOUT ==========
+    // ========== 4. CONSULTA PRINCIPAL ==========
     async function consultar() {
         const input = document.getElementById('personName');
         const nome = input.value.trim();
@@ -345,19 +295,17 @@
         abortController = new AbortController();
         
         const resultDiv = document.getElementById('result');
-        resultDiv.innerHTML = `<div class="result-card"><div class="loading"></div> Buscando ${nome} → Lula (até 15s)<div class="progress"></div></div>`;
+        resultDiv.innerHTML = `<div class="result-card"><div class="loading"></div> Buscando de Lula até "${nome}" (EBC优先)<div class="progress"></div></div>`;
         
         const startTime = Date.now();
-        let timeoutId = setTimeout(() => {
-            if (abortController) abortController.abort();
-        }, TIMEOUT_GLOBAL);
+        const timeoutId = setTimeout(() => abortController.abort(), TIMEOUT_GLOBAL);
         
         let lastMsg = "";
-        const caminho = await hybridBFS(nome, LULA, MAX_DEG, (msg) => {
+        const caminho = await bfsFromLula(nome, MAX_DEG, (msg) => {
             if (msg !== lastMsg) {
                 lastMsg = msg;
-                const progDiv = resultDiv.querySelector('.progress');
-                if (progDiv) progDiv.innerText = msg;
+                const prog = resultDiv.querySelector('.progress');
+                if (prog) prog.innerText = msg;
             }
         });
         
