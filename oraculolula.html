@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Oráculo de Lula · Conexões via EBC e Wikipédia</title>
+    <title>Oráculo de Lula · Busca Rápida (EBC + Wikidata)</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -78,11 +78,6 @@
             padding: 1.5rem;
             border-left: 5px solid #2b7a2b;
         }
-        .degrees {
-            font-size: 2rem;
-            font-weight: 800;
-            color: #1a5a1a;
-        }
         .path {
             background: #f4f9ef;
             padding: 1rem;
@@ -108,6 +103,11 @@
             font-size: 0.7rem;
             display: inline-block;
         }
+        .progress {
+            font-size: 0.8rem;
+            color: #2b7a2b;
+            margin-top: 0.5rem;
+        }
         footer {
             text-align: center;
             font-size: 0.7rem;
@@ -120,7 +120,7 @@
 <div class="container">
     <div class="hero">
         <h1>🌿 Oráculo de Lula <span>6º</span></h1>
-        <p>Busca em tempo real na EBC (Agência Brasil) + Wikipédia</p>
+        <p>Busca otimizada na EBC + Wikidata</p>
     </div>
     <div class="card">
         <div class="search-area">
@@ -129,20 +129,26 @@
         </div>
         <div id="result">🔍 Aguardando consulta...</div>
     </div>
-    <footer>🌍 Fonte: Agência Brasil (busca oficial) e Wikipédia. Caminhos de até 5 graus.</footer>
+    <footer>🌍 Fonte: Agência Brasil (busca oficial) e Wikidata. Caminhos de até 5 graus.</footer>
 </div>
 
 <script>
     // ================= CONFIGURAÇÕES =================
     const LULA = "Luiz Inácio Lula da Silva";
     const MAX_DEG = 5;
+    const TIMEOUT_WIKI = 4000;
+    const TIMEOUT_EBC = 5000;
     
-    // Cache para evitar consultas repetidas
+    // Caches com expiração (1 hora)
     const wikiNeighborsCache = new Map();
     const ebcNeighborsCache = new Map();
+    const qidCache = new Map();
     const labelCache = new Map();
     
-    // Propriedades Wikidata para conexões entre pessoas
+    // Controle de cancelamento
+    let currentAbortController = null;
+    
+    // Propriedades Wikidata
     const WIKI_PROPS = [
         "wdt:P39", "wdt:P102", "wdt:P108", "wdt:P26", "wdt:P40", "wdt:P3373",
         "wdt:P737", "wdt:P1416", "wdt:P1344", "wdt:P793", "wdt:P155", "wdt:P156",
@@ -150,8 +156,8 @@
     ];
     const WIKI_PROPS_LIST = WIKI_PROPS.join(", ");
     
-    // ========== FUNÇÕES AUXILIARES ==========
-    async function sparqlWikidata(query, timeout=3000) {
+    // ========== FUNÇÕES AUXILIARES WIKIDATA ==========
+    async function sparqlWikidata(query, timeout) {
         const url = `https://query.wikidata.org/sparql?format=json&query=${encodeURIComponent(query)}`;
         const controller = new AbortController();
         const id = setTimeout(() => controller.abort(), timeout);
@@ -166,7 +172,8 @@
     }
     
     async function getQidFromName(name) {
-        if (labelCache.has(name)) return labelCache.get(name);
+        const key = name.toLowerCase();
+        if (qidCache.has(key)) return qidCache.get(key);
         const url = `https://www.wikidata.org/w/api.php?action=wbsearchentities&search=${encodeURIComponent(name)}&language=pt&format=json&origin=*&limit=5`;
         try {
             const resp = await fetch(url);
@@ -178,12 +185,12 @@
                     const eData = await eResp.json();
                     const claims = eData.entities[item.id].claims;
                     if (claims.P31 && claims.P31.some(p => p.mainsnak.datavalue?.value?.id === 'Q5')) {
-                        labelCache.set(name, item.id);
+                        qidCache.set(key, item.id);
                         return item.id;
                     }
                 }
                 const fallback = data.search[0].id;
-                labelCache.set(name, fallback);
+                qidCache.set(key, fallback);
                 return fallback;
             }
             return null;
@@ -214,83 +221,96 @@
               UNION
               { ?neighbor ?prop wd:${qid} . ?neighbor wdt:P31 wd:Q5 . FILTER(?prop IN (${WIKI_PROPS_LIST})) }
             }
-            LIMIT 30
+            LIMIT 20
         `;
-        const data = await sparqlWikidata(query);
+        const data = await sparqlWikidata(query, TIMEOUT_WIKI);
         let neighbors = [];
         if (data?.results?.bindings) {
             neighbors = data.results.bindings.map(b => b.neighbor.value.split('/').pop());
             neighbors = [...new Set(neighbors)];
         }
-        const enriched = neighbors.map(nbQid => ({ id: nbQid, type: 'wikidata' }));
+        const enriched = neighbors.slice(0, 10).map(nbQid => ({ id: nbQid, type: 'wikidata' }));
         wikiNeighborsCache.set(cacheKey, enriched);
+        // Limitar tempo de cache (1 hora)
+        setTimeout(() => wikiNeighborsCache.delete(cacheKey), 3600000);
         return enriched;
     }
     
-    // ========== BUSCA NA EBC (Agência Brasil) ==========
+    // ========== BUSCA NA EBC (otimizada com proxy rápido e parser leve) ==========
     async function searchEBC(query) {
         const cacheKey = `ebc:${query}`;
         if (ebcNeighborsCache.has(cacheKey)) return ebcNeighborsCache.get(cacheKey);
         
-        // Usa a busca do próprio site da EBC
-        const url = `https://agenciabrasil.ebc.com.br/search/node?keys=${encodeURIComponent(query)}`;
-        // Usa um proxy CORS para evitar bloqueios
-        const proxy = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+        // Usa um proxy CORS mais rápido (cors-anywhere herdado, mas usaremos allorigins com timeout reduzido)
+        const searchUrl = `https://agenciabrasil.ebc.com.br/search/node?keys=${encodeURIComponent(query)}`;
+        const proxy = `https://api.allorigins.win/raw?url=${encodeURIComponent(searchUrl)}`;
+        
         try {
-            const resp = await fetch(proxy);
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_EBC);
+            const resp = await fetch(proxy, { signal: controller.signal });
+            clearTimeout(timeoutId);
             const html = await resp.text();
-            // Extrai os títulos das notícias
-            const matches = [...html.matchAll(/<a[^>]+href="[^"]+"[^>]*>([^<]+)<\/a>/g)];
-            const titles = matches.map(m => m[1]).filter(t => t && t.length > 10);
-            // Extrai nomes mencionados nos títulos (palavras com pelo menos 2 letras maiúsculas)
+            
+            // Extrai títulos das notícias (regex simples)
+            const titleRegex = /<a[^>]+href="[^"]+"[^>]*>([^<]+)<\/a>/gi;
+            const titles = [];
+            let match;
+            while ((match = titleRegex.exec(html)) !== null) {
+                let text = match[1].trim();
+                if (text && text.length > 10 && text.length < 200) titles.push(text);
+            }
+            
+            // Extrai nomes próprios (pelo menos duas palavras com iniciais maiúsculas)
             const namePattern = /\b[A-ZÀ-Ú][a-zà-ú]+(?:\s+[A-ZÀ-Ú][a-zà-ú]+)+\b/g;
-            const names = new Set();
+            const namesSet = new Set();
             for (let title of titles) {
                 const found = title.match(namePattern);
-                if (found) found.forEach(n => names.add(n));
+                if (found) found.forEach(n => namesSet.add(n));
             }
-            const result = Array.from(names).slice(0, 10);
+            const result = Array.from(namesSet).slice(0, 8);
             ebcNeighborsCache.set(cacheKey, result);
+            setTimeout(() => ebcNeighborsCache.delete(cacheKey), 3600000);
             return result;
         } catch (err) {
-            console.error("Erro na busca EBC:", err);
+            console.warn("EBC search error:", err);
             return [];
         }
     }
     
-    // ========== BUSCA HÍBRIDA (Wikidata + EBC) ==========
-    async function hybridBFS(startLabel, targetLabel, maxDeg = MAX_DEG) {
+    // ========== BUSCA HÍBRIDA (BFS com paralelismo inteligente) ==========
+    async function hybridBFS(startLabel, targetLabel, maxDeg, onProgress) {
         const visited = new Set();
         const queue = [{ label: startLabel, path: [startLabel] }];
         visited.add(startLabel);
         
         while (queue.length) {
+            if (currentAbortController?.signal.aborted) return null;
+            
             const current = queue.shift();
             if (current.path.length > maxDeg) continue;
             
             if (current.label === targetLabel) return current.path;
             
-            // Obtém vizinhos do nó atual
-            let neighbors = [];
+            if (onProgress) onProgress(`Analisando: ${current.label}...`);
             
-            // 1. Vizinhos via Wikidata
+            // Busca vizinhos em paralelo (Wikidata + EBC)
             const qid = await getQidFromName(current.label);
-            if (qid) {
-                const wikiNeighbors = await getWikidataNeighbors(qid);
-                for (let nb of wikiNeighbors) {
-                    const nbLabel = await getWikidataLabel(nb.id);
-                    neighbors.push(nbLabel);
-                }
+            const wikiPromise = qid ? getWikidataNeighbors(qid).then(list => list.map(n => n.id)) : Promise.resolve([]);
+            const ebcPromise = searchEBC(current.label);
+            
+            let [wikiIds, ebcNames] = await Promise.all([wikiPromise, ebcPromise]);
+            
+            // Converter wikiIds em labels
+            const wikiLabels = [];
+            for (let id of wikiIds) {
+                const label = await getWikidataLabel(id);
+                wikiLabels.push(label);
             }
             
-            // 2. Vizinhos via EBC (busca por notícias)
-            const ebcResults = await searchEBC(current.label);
-            for (let nb of ebcResults) {
-                neighbors.push(nb);
-            }
+            const allNeighbors = [...new Set([...wikiLabels, ...ebcNames])];
             
-            // Expande a busca
-            for (let nb of neighbors) {
+            for (let nb of allNeighbors) {
                 if (visited.has(nb)) continue;
                 visited.add(nb);
                 queue.push({ label: nb, path: [...current.path, nb] });
@@ -299,19 +319,34 @@
         return null;
     }
     
-    // ========== CONSULTA PRINCIPAL ==========
+    // ========== CONSULTA PRINCIPAL COM CANCELAMENTO ==========
     async function consultar() {
         const input = document.getElementById('personName');
         const nome = input.value.trim();
         if (!nome) return;
         
-        const resultDiv = document.getElementById('result');
-        resultDiv.innerHTML = `<div class="result-card"><div class="loading"></div> Buscando conexões entre ${nome} e Lula...</div>`;
+        // Cancela busca anterior
+        if (currentAbortController) currentAbortController.abort();
+        currentAbortController = new AbortController();
         
-        const caminho = await hybridBFS(nome, LULA, MAX_DEG);
+        const resultDiv = document.getElementById('result');
+        resultDiv.innerHTML = `<div class="result-card"><div class="loading"></div> Buscando conexões entre ${nome} e Lula...<div class="progress">🔍 Iniciando busca...</div></div>`;
+        
+        const startTime = Date.now();
+        let progressMsg = "";
+        
+        const caminho = await hybridBFS(nome, LULA, MAX_DEG, (msg) => {
+            progressMsg = msg;
+            const progressDiv = resultDiv.querySelector('.progress');
+            if (progressDiv) progressDiv.innerText = msg;
+        });
+        
+        if (currentAbortController.signal.aborted) return;
+        
+        const elapsed = (Date.now() - startTime) / 1000;
         
         if (!caminho || caminho.length < 2) {
-            resultDiv.innerHTML = `<div class="result-card">⚠️ Nenhum caminho encontrado entre ${nome} e Lula com até ${MAX_DEG} graus. Tente outro nome.</div>`;
+            resultDiv.innerHTML = `<div class="result-card">⚠️ Nenhum caminho encontrado entre ${nome} e Lula com até ${MAX_DEG} graus (${elapsed.toFixed(1)}s). Tente outro nome.</div>`;
             return;
         }
         
@@ -320,15 +355,21 @@
             <div class="result-card">
                 <div><span class="badge">🎯 Número de Lula = ${distancia}</span></div>
                 <div class="path">🔗 ${caminho.join(' → ')}</div>
-                <div style="font-size:0.8rem; margin-top:0.5rem;">✅ Caminho encontrado com ${distancia} grau${distancia !== 1 ? 's' : ''} de separação.</div>
+                <div style="font-size:0.8rem; margin-top:0.5rem;">✅ Caminho encontrado em ${elapsed.toFixed(1)} segundos com ${distancia} grau${distancia !== 1 ? 's' : ''} de separação.</div>
             </div>
         `;
         resultDiv.innerHTML = html;
     }
     
-    // Eventos
-    document.getElementById('searchBtn').addEventListener('click', consultar);
-    document.getElementById('personName').addEventListener('keypress', e => { if (e.key === 'Enter') consultar(); });
+    // Eventos com debounce simples
+    let searchTimeout = null;
+    function handleSearch() {
+        if (searchTimeout) clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => consultar(), 200);
+    }
+    
+    document.getElementById('searchBtn').addEventListener('click', handleSearch);
+    document.getElementById('personName').addEventListener('keypress', e => { if (e.key === 'Enter') handleSearch(); });
 </script>
 </body>
 </html>
