@@ -223,6 +223,18 @@
             }
         }
     </style>
+
+    using GoogleMobileAds.Api;
+
+// Coloque isso quando o app iniciar (no método Start() ou Awake())
+RequestConfiguration requestConfiguration = new RequestConfiguration
+{
+    TagForChildDirectedTreatment = TagForChildDirectedTreatment.True,
+    TagForUnderAgeOfConsent = TagForUnderAgeOfConsent.True,
+    MaxAdContentRating = MaxAdContentRating.G
+};
+
+MobileAds.SetRequestConfiguration(requestConfiguration);
 </head>
 <body>
 <div class="game-container">
