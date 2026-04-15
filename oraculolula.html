@@ -2,13 +2,8 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Or谩culo de Lula - Busca r谩pida em m煤ltiplas fontes para encontrar graus de separa莽茫o com Lula.">
-    <meta name="theme-color" content="#5a8a3a">
-    <title>Or谩culo de Lula - Busca R谩pida</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Oráculo de Lula · Graus de Separação</title>
     <style>
         * {
             margin: 0;
@@ -16,314 +11,124 @@
             box-sizing: border-box;
         }
 
-        :root {
-            --primary: #5a8a3a;
-            --primary-light: #7aa84f;
-            --primary-dark: #3d5a28;
-            --gold: #d4a574;
-            --gold-light: #e8c4a0;
-            --background: #faf9f7;
-            --foreground: #1a1a1a;
-            --card-bg: #ffffff;
-            --border-color: #e5e5e5;
-            --error-color: #dc2626;
-            --success-color: #16a34a;
-            --muted: #9ca3af;
-        }
-
         body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, var(--background) 0%, rgba(212, 165, 116, 0.05) 100%);
-            color: var(--foreground);
-            line-height: 1.6;
+            background: linear-gradient(135deg, #eef5e9 0%, #dde8d4 100%);
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            padding: 1.5rem;
             min-height: 100vh;
-        }
-
-        h1, h2, h3, h4, h5, h6 {
-            font-family: 'Playfair Display', serif;
+            color: #1a3a1a;
         }
 
         .container {
-            max-width: 1280px;
+            max-width: 1000px;
             margin: 0 auto;
-            padding: 1rem;
+            background: rgba(255, 255, 255, 0.96);
+            border-radius: 2rem;
+            box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
         }
 
-        header {
-            border-bottom: 1px solid var(--border-color);
-            background: rgba(255, 255, 255, 0.5);
-            backdrop-filter: blur(10px);
-            position: sticky;
-            top: 0;
-            z-index: 40;
-        }
-
-        .header-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1.5rem 0;
-        }
-
-        .header-title h1 {
-            font-size: 2rem;
-            color: var(--primary);
-            margin-bottom: 0.25rem;
-        }
-
-        .header-title p {
-            font-size: 0.875rem;
-            color: var(--muted);
-        }
-
-        .header-btn {
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 0.5rem;
-            font-size: 1.5rem;
-            transition: opacity 0.3s;
-        }
-
-        .header-btn:hover {
-            opacity: 0.7;
-        }
-
-        .main-layout {
-            display: grid;
-            grid-template-columns: 1fr 320px;
-            gap: 2rem;
-            margin-top: 3rem;
-            margin-bottom: 3rem;
-        }
-
-        @media (max-width: 1024px) {
-            .main-layout {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .card {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 0.65rem;
+        .hero {
+            background: #1a5a1a;
             padding: 2rem;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-            transition: all 0.3s ease;
+            text-align: center;
+            color: white;
         }
 
-        .card:hover {
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-        }
-
-        .search-form {
+        .hero h1 {
+            font-size: 2rem;
             display: flex;
-            gap: 0.75rem;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .hero h1 span {
+            background: #ffdd77;
+            color: #1a5a1a;
+            padding: 0 14px;
+            border-radius: 60px;
+        }
+
+        .content {
+            padding: 2rem;
+        }
+
+        .theory-card {
+            background: #fff9e8;
+            border-left: 6px solid #2b7a2b;
+            padding: 1.2rem 1.5rem;
+            border-radius: 1.5rem;
             margin-bottom: 2rem;
         }
 
-        .search-input {
-            flex: 1;
-            padding: 0.75rem 1rem;
-            border: 1px solid var(--border-color);
-            border-radius: 0.65rem;
+        .query-area {
+            background: white;
+            border-radius: 1.8rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid #cde0c1;
+        }
+
+        .input-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin: 1rem 0;
+        }
+
+        .input-group input {
+            flex: 3;
+            padding: 0.9rem 1.2rem;
+            border: 1.5px solid #cfdec7;
+            border-radius: 60px;
             font-size: 1rem;
-            font-family: 'Inter', sans-serif;
-            transition: all 0.3s;
         }
 
-        .search-input:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(90, 138, 58, 0.1);
-        }
-
-        .search-input:disabled {
-            background-color: #f3f4f6;
-            cursor: not-allowed;
-        }
-
-        .search-btn {
-            padding: 0.75rem 1.5rem;
-            background: var(--primary);
+        .input-group button {
+            background: #1a5a1a;
             color: white;
             border: none;
-            border-radius: 0.65rem;
+            padding: 0 2rem;
+            border-radius: 60px;
+            font-weight: bold;
             cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 8px;
+            transition: 0.2s;
         }
 
-        .search-btn:hover:not(:disabled) {
-            background: var(--primary-dark);
-            transform: translateY(-2px);
+        .input-group button:hover {
+            background: #0e3a0e;
+            transform: scale(0.97);
         }
 
-        .search-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
+        .result-card {
+            background: #fafcf8;
+            border-radius: 1.5rem;
+            padding: 1.4rem;
+            margin-top: 1rem;
+            border: 1px solid #cde2c3;
         }
 
-        .search-hint {
-            font-size: 0.75rem;
-            color: var(--muted);
-            margin-top: 0.5rem;
-        }
-
-        .result-container {
-            margin-top: 2rem;
-            padding-top: 2rem;
-            border-top: 1px solid var(--border-color);
-            animation: slideIn 0.3s ease;
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .degrees-badge {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
-            color: white;
-            padding: 1rem 1.5rem;
-            border-radius: 0.65rem;
-            text-align: center;
-            margin-bottom: 1.5rem;
-            font-weight: 600;
-        }
-
-        .degrees-badge .degrees-number {
-            font-size: 1.5rem;
-            font-weight: 700;
-            display: block;
-        }
-
-        .path-title {
-            font-size: 1.125rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-            color: var(--foreground);
-        }
-
-        .path-container {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        .path-item {
-            display: flex;
-            gap: 1rem;
-            align-items: flex-start;
-        }
-
-        .path-number {
-            width: 2.5rem;
-            height: 2.5rem;
-            border-radius: 50%;
-            background: rgba(90, 138, 58, 0.2);
-            color: var(--primary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            flex-shrink: 0;
-        }
-
-        .path-item.connection .path-number {
-            background: rgba(212, 165, 116, 0.2);
-            color: var(--gold);
-        }
-
-        .path-content {
-            flex: 1;
-        }
-
-        .path-name {
-            font-weight: 600;
-            color: var(--foreground);
-            margin-bottom: 0.25rem;
-        }
-
-        .path-context {
-            font-size: 0.875rem;
-            color: var(--muted);
-            font-style: italic;
-        }
-
-        .path-source {
-            font-size: 0.75rem;
-            color: var(--primary);
-            margin-top: 0.25rem;
-            font-weight: 500;
-        }
-
-        .path-divider {
-            display: flex;
-            justify-content: center;
-            margin: 0.5rem 0;
-        }
-
-        .path-divider-line {
-            width: 2px;
-            height: 1.5rem;
-            background: linear-gradient(to bottom, var(--primary), var(--gold));
-            opacity: 0.5;
-        }
-
-        .error-message {
-            display: flex;
-            gap: 1rem;
+        .path {
+            background: #eef4e9;
             padding: 1rem;
-            background: rgba(220, 38, 38, 0.05);
-            border: 1px solid rgba(220, 38, 38, 0.2);
-            border-radius: 0.65rem;
-            color: var(--error-color);
-            margin-bottom: 1.5rem;
+            border-radius: 1rem;
+            font-family: monospace;
+            font-size: 1rem;
+            margin: 1rem 0;
+            word-break: break-word;
+            border-left: 4px solid #2b7a2b;
         }
 
-        .error-icon {
-            flex-shrink: 0;
-            font-size: 1.25rem;
-        }
-
-        .error-content h3 {
-            font-weight: 600;
-            margin-bottom: 0.25rem;
-        }
-
-        .error-content p {
-            font-size: 0.875rem;
-        }
-
-        .loading-indicator {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 1rem;
-            background: rgba(90, 138, 58, 0.05);
-            border: 1px solid var(--border-color);
-            border-radius: 0.65rem;
-            color: var(--primary);
-            margin-bottom: 1rem;
-            font-size: 0.875rem;
-        }
-
-        .spinner {
+        .loading {
             display: inline-block;
-            width: 1rem;
-            height: 1rem;
-            border: 2px solid rgba(90, 138, 58, 0.3);
-            border-top-color: var(--primary);
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ccc;
+            border-top-color: #2b7a2b;
             border-radius: 50%;
             animation: spin 0.6s linear infinite;
         }
@@ -332,741 +137,270 @@
             to { transform: rotate(360deg); }
         }
 
-        .sidebar {
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-        }
-
-        .sidebar-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 0.65rem;
-            padding: 1.5rem;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-        }
-
-        .sidebar-card h3 {
-            font-size: 1rem;
-            margin-bottom: 1rem;
-            color: var(--foreground);
-        }
-
-        .sidebar-list {
-            list-style: none;
-        }
-
-        .sidebar-list li {
-            display: flex;
-            gap: 0.75rem;
-            margin-bottom: 0.75rem;
-            font-size: 0.875rem;
-        }
-
-        .sidebar-list li:last-child {
-            margin-bottom: 0;
-        }
-
-        .sidebar-bullet {
-            color: var(--primary);
-            font-weight: 700;
-            flex-shrink: 0;
-        }
-
-        .history-list {
-            max-height: 400px;
-            overflow-y: auto;
-        }
-
-        .history-item {
-            padding: 0.75rem;
-            background: rgba(0, 0, 0, 0.02);
-            border-radius: 0.5rem;
-            margin-bottom: 0.5rem;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .history-item:hover {
-            background: rgba(0, 0, 0, 0.05);
-        }
-
-        .history-item-name {
-            font-weight: 500;
-            font-size: 0.875rem;
-            color: var(--foreground);
-        }
-
-        .history-item-result {
-            font-size: 0.75rem;
-            color: var(--muted);
-            margin-top: 0.25rem;
-        }
-
-        .empty-history {
-            text-align: center;
-            padding: 1.5rem 0;
-            font-size: 0.875rem;
-            color: var(--muted);
-        }
-
-        .source-badge {
+        .grau-badge {
             display: inline-block;
-            padding: 0.25rem 0.5rem;
-            background: rgba(90, 138, 58, 0.1);
-            color: var(--primary);
-            border-radius: 0.25rem;
+            background: #2b7a2b;
+            color: white;
+            border-radius: 40px;
+            padding: 0.2rem 0.8rem;
+            font-size: 0.8rem;
+            margin-bottom: 0.8rem;
+        }
+
+        footer {
+            text-align: center;
             font-size: 0.7rem;
-            font-weight: 600;
-            margin-right: 0.25rem;
-        }
-
-        .info-box {
-            background: rgba(90, 138, 58, 0.05);
-            border: 1px solid rgba(90, 138, 58, 0.2);
-            border-radius: 0.65rem;
             padding: 1rem;
-            margin-bottom: 1rem;
-            font-size: 0.875rem;
-            color: var(--foreground);
+            color: #557155;
+            border-top: 1px solid #daecce;
         }
 
-        .speed-indicator {
-            font-size: 0.75rem;
-            color: var(--success-color);
-            font-weight: 600;
-            margin-top: 0.5rem;
-        }
-
-        @media (max-width: 768px) {
-            .header-title h1 {
-                font-size: 1.5rem;
-            }
-
-            .card {
-                padding: 1.5rem;
-            }
-
-            .search-form {
-                flex-direction: column;
-            }
-
-            .search-btn {
-                width: 100%;
-                justify-content: center;
-            }
-
-            .degrees-badge {
-                font-size: 0.875rem;
-            }
-
-            .degrees-badge .degrees-number {
-                font-size: 1.25rem;
-            }
+        @media (max-width: 650px) {
+            body { padding: 0.8rem; }
+            .content { padding: 1rem; }
         }
     </style>
 </head>
 <body>
-    <header>
-        <div class="container">
-            <div class="header-content">
-                <div class="header-title">
-                    <h1>Or谩culo de Lula</h1>
-                    <p>Busca r谩pida e inteligente</p>
-                </div>
-                <button class="header-btn" id="toggleHistory" title="Ver hist贸rico">馃摐</button>
-            </div>
+<div class="container">
+    <div class="hero">
+        <h1>🌿 Oráculo de Lula <span>6º</span></h1>
+        <p>Calcula o menor caminho entre Lula e qualquer figura pública usando a Wikidata</p>
+    </div>
+    <div class="content">
+        <div class="theory-card">
+            <h2>📡 Teoria dos Seis Graus de Separação</h2>
+            <p>O Oráculo consulta a <strong>Wikidata</strong> — uma base de conhecimento gigante — para encontrar a cadeia mais curta de conexões entre o presidente Lula e a pessoa pesquisada. <strong>Nenhum grafo pré-definido</strong>; tudo é descoberto dinamicamente via consultas SPARQL de 1 a 5 graus.</p>
+            <small>🔍 Conexões consideram: cargos políticos, partido, empregador, parentesco, associações, eventos, etc.</small>
         </div>
-    </header>
 
-    <main class="container">
-        <div class="main-layout">
-            <div>
-                <div class="card">
-                    <div class="info-box">
-                        鈿� Busca otimizada com cache inteligente e timeouts agressivos. Resultados em segundos!
-                    </div>
-
-                    <form id="searchForm" onsubmit="handleSearch(event)">
-                        <label for="personInput" style="display: block; font-weight: 600; margin-bottom: 0.75rem;">
-                            Buscar Pessoa
-                        </label>
-                        <div class="search-form">
-                            <input
-                                type="text"
-                                id="personInput"
-                                class="search-input"
-                                placeholder="Digite o nome de qualquer pessoa p煤blica..."
-                                autocomplete="off"
-                                required
-                            >
-                            <button type="submit" class="search-btn" id="searchBtn">
-                                <span id="searchBtnText">馃攳</span>
-                            </button>
-                        </div>
-                        <p class="search-hint">
-                            Exemplos: Anitta, Neymar, Dilma, Gilberto Gil, etc.
-                        </p>
-                    </form>
-
-                    <div id="resultContainer"></div>
-                </div>
+        <div class="query-area">
+            <div class="input-group">
+                <input type="text" id="personInput" placeholder="Ex: Joe Biden, Papa Francisco, Neymar, Dilma Rousseff" value="">
+                <button id="searchBtn">✨ Consultar Número de Lula</button>
             </div>
-
-            <aside class="sidebar">
-                <div class="sidebar-card" style="background: linear-gradient(135deg, rgba(90, 138, 58, 0.05) 0%, rgba(212, 165, 116, 0.05) 100%);">
-                    <h3>Como Funciona</h3>
-                    <ul class="sidebar-list">
-                        <li>
-                            <span class="sidebar-bullet">鈥�</span>
-                            <span>Digite qualquer nome</span>
-                        </li>
-                        <li>
-                            <span class="sidebar-bullet">鈥�</span>
-                            <span>Busca com cache inteligente</span>
-                        </li>
-                        <li>
-                            <span class="sidebar-bullet">鈥�</span>
-                            <span>Timeouts agressivos (2-3s)</span>
-                        </li>
-                        <li>
-                            <span class="sidebar-bullet">鈥�</span>
-                            <span>Resultados em segundos</span>
-                        </li>
-                    </ul>
-                </div>
-
-                <div class="sidebar-card" id="historyCard" style="display: none;">
-                    <h3>Hist贸rico</h3>
-                    <div class="history-list" id="historyList">
-                        <div class="empty-history">Nenhuma busca realizada ainda</div>
-                    </div>
-                </div>
-
-                <div class="sidebar-card" style="background: linear-gradient(135deg, rgba(90, 138, 58, 0.05) 0%, rgba(212, 165, 116, 0.05) 100%);">
-                    <h3>Otimiza莽玫es</h3>
-                    <ul class="sidebar-list">
-                        <li>
-                            <span class="sidebar-bullet">鈿�</span>
-                            <span>Cache local</span>
-                        </li>
-                        <li>
-                            <span class="sidebar-bullet">鈿�</span>
-                            <span>Timeouts 2-3s</span>
-                        </li>
-                        <li>
-                            <span class="sidebar-bullet">鈿�</span>
-                            <span>Busca sequencial</span>
-                        </li>
-                        <li>
-                            <span class="sidebar-bullet">鈿�</span>
-                            <span>Resultados incrementais</span>
-                        </li>
-                    </ul>
-                </div>
-            </aside>
+            <p style="font-size:0.8rem;">🔎 A busca pode levar de 3 a 10 segundos. O sistema testa caminhos de 1 até 5 graus.</p>
         </div>
-    </main>
 
-    <script>
-        // ============================================
-        // Cache System
-        // ============================================
+        <div id="resultContainer">
+            <div class="result-card">💡 Digite um nome e clique em "Consultar Número de Lula".</div>
+        </div>
+        <footer>🌐 Fonte: Wikidata (consulta SPARQL progressiva). ID correto de Lula: Q37181.</footer>
+    </div>
+</div>
 
-        const connectionCache = new Map();
-        const CACHE_EXPIRY = 24 * 60 * 60 * 1000; // 24 horas
+<script>
+    // ==============================================
+    // CONFIGURAÇÕES CORRETAS DA WIKIDATA
+    // ==============================================
+    const LULA_QID = 'Q37181';  // ID correto de Luiz Inácio Lula da Silva
+    const MAX_DEGREES = 5;
 
-        function getCachedConnections(personName) {
-            const cached = connectionCache.get(personName.toLowerCase());
-            if (cached && Date.now() - cached.timestamp < CACHE_EXPIRY) {
-                return cached.data;
-            }
+    // Propriedades que conectam pessoas (direcionais e bidirecionais)
+    const CONNECTION_PROPS = [
+        "wdt:P39",   // cargo ocupado
+        "wdt:P102",  // partido político
+        "wdt:P108",  // empregador
+        "wdt:P26",   // cônjuge
+        "wdt:P40",   // filho
+        "wdt:P3373", // irmão
+        "wdt:P737",  // influenciado por
+        "wdt:P1416", // associação
+        "wdt:P1344", // participante de
+        "wdt:P793",  // evento significativo
+        "wdt:P155",  // substituído por
+        "wdt:P156",  // substitui
+        "wdt:P22",   // pai
+        "wdt:P25",   // mãe
+        "wdt:P106",  // ocupação
+        "wdt:P463",  // membro de
+        "wdt:P410"   // patente militar
+    ];
+    const PROPS_LIST = CONNECTION_PROPS.join(", ");
+
+    // Cache simples para evitar consultas repetidas
+    const labelCache = new Map();
+    const neighborCache = new Map();
+
+    // ==============================================
+    // FUNÇÕES AUXILIARES
+    // ==============================================
+    async function sparqlQuery(query) {
+        const url = `https://query.wikidata.org/sparql?format=json&query=${encodeURIComponent(query)}`;
+        try {
+            const resp = await fetch(url, { headers: { 'Accept': 'application/json' } });
+            const data = await resp.json();
+            return data;
+        } catch (err) {
+            console.error("Erro SPARQL:", err);
             return null;
         }
+    }
 
-        function setCachedConnections(personName, data) {
-            connectionCache.set(personName.toLowerCase(), {
-                data,
-                timestamp: Date.now()
-            });
-        }
-
-        // ============================================
-        // BFS Algorithm Implementation
-        // ============================================
-
-        class BFSPathFinder {
-            constructor(connectionFinder, maxDegrees = 6) {
-                this.connectionFinder = connectionFinder;
-                this.maxDegrees = maxDegrees;
-            }
-
-            normalize(name) {
-                return name.toLowerCase().trim();
-            }
-
-            async findPath(startPerson, targetPerson) {
-                const normalizedTarget = this.normalize(targetPerson);
-                const normalizedStart = this.normalize(startPerson);
-
-                if (normalizedStart === normalizedTarget) {
-                    return {
-                        found: true,
-                        degrees: 0,
-                        path: [],
-                        message: `${startPerson} 茅 o pr贸prio ${targetPerson}!`,
-                    };
-                }
-
-                const queue = [
-                    {
-                        person: startPerson,
-                        degree: 0,
-                        path: [],
-                    },
-                ];
-
-                const visited = new Set();
-                visited.add(normalizedStart);
-
-                while (queue.length > 0) {
-                    const current = queue.shift();
-
-                    if (current.degree >= this.maxDegrees) {
-                        continue;
-                    }
-
-                    try {
-                        const connections = await this.connectionFinder(current.person, current.degree + 1);
-
-                        for (const connection of connections) {
-                            const normalizedPerson = this.normalize(connection.person);
-
-                            if (normalizedPerson === normalizedTarget) {
-                                const finalPath = [
-                                    ...current.path,
-                                    {
-                                        person: connection.person,
-                                        context: connection.context,
-                                        source: connection.source,
-                                        degree: current.degree + 1,
-                                    },
-                                ];
-
-                                return {
-                                    found: true,
-                                    degrees: current.degree + 1,
-                                    path: finalPath,
-                                    message: `${current.degree + 1} graus de separa莽茫o entre ${startPerson} e ${targetPerson}`,
-                                };
-                            }
-
-                            if (!visited.has(normalizedPerson)) {
-                                visited.add(normalizedPerson);
-                                queue.push({
-                                    person: connection.person,
-                                    degree: current.degree + 1,
-                                    path: [
-                                        ...current.path,
-                                        {
-                                            person: connection.person,
-                                            context: connection.context,
-                                            source: connection.source,
-                                            degree: current.degree + 1,
-                                        },
-                                    ],
-                                });
-                            }
-                        }
-                    } catch (error) {
-                        console.error(`Error finding connections for ${current.person}:`, error);
-                        continue;
-                    }
-                }
-
-                return {
-                    found: false,
-                    degrees: 0,
-                    path: [],
-                    message: `N茫o foi poss铆vel encontrar uma conex茫o entre ${startPerson} e ${targetPerson} dentro de ${this.maxDegrees} graus de separa莽茫o.`,
-                };
-            }
-        }
-
-        // ============================================
-        // Fast Connection Finder with Timeout
-        // ============================================
-
-        async function findConnectionsFast(personName, degree = 1) {
-            // Verificar cache primeiro
-            const cached = getCachedConnections(personName);
-            if (cached) {
-                console.log(`Usando cache para ${personName}`);
-                return cached;
-            }
-
-            const connections = [];
-            const timeout = 3000; // 3 segundos de timeout
-
-            // Dados pr茅-carregados (muito r谩pido)
-            const preloadedData = getPreloadedConnections(personName);
-            connections.push(...preloadedData);
-
-            // Se temos dados pr茅-carregados, retornar r谩pido
-            if (preloadedData.length > 0) {
-                setCachedConnections(personName, connections);
-                return connections;
-            }
-
-            // Tentar Wikipedia com timeout
-            try {
-                const wikiResults = await Promise.race([
-                    searchWikipediaFast(personName),
-                    new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), timeout))
-                ]);
-                connections.push(...wikiResults);
-            } catch (e) {
-                console.log('Wikipedia timeout ou erro');
-            }
-
-            // Tentar NewsAPI com timeout
-            try {
-                const newsResults = await Promise.race([
-                    searchNewsFast(personName),
-                    new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), timeout))
-                ]);
-                connections.push(...newsResults);
-            } catch (e) {
-                console.log('News timeout ou erro');
-            }
-
-            // Remover duplicatas
-            const uniqueConnections = [];
-            const seen = new Set();
-
-            for (const conn of connections) {
-                const key = `${conn.person.toLowerCase()}-${conn.context.toLowerCase()}`;
-                if (!seen.has(key)) {
-                    seen.add(key);
-                    uniqueConnections.push(conn);
+    // Buscar QID a partir de um nome (priorizando pessoas)
+    async function getQidFromName(name) {
+        const searchUrl = `https://www.wikidata.org/w/api.php?action=wbsearchentities&search=${encodeURIComponent(name)}&language=pt&format=json&origin=*&limit=5`;
+        try {
+            const resp = await fetch(searchUrl);
+            const data = await resp.json();
+            if (!data.search || data.search.length === 0) return null;
+            // Tenta encontrar uma entidade que seja pessoa (Q5)
+            for (let item of data.search) {
+                const entityUrl = `https://www.wikidata.org/wiki/Special:EntityData/${item.id}.json`;
+                const entityResp = await fetch(entityUrl);
+                const entityData = await entityResp.json();
+                const claims = entityData.entities[item.id].claims;
+                if (claims && claims.P31 && claims.P31.some(p => p.mainsnak.datavalue?.value?.id === 'Q5')) {
+                    return item.id;
                 }
             }
-
-            setCachedConnections(personName, uniqueConnections);
-            return uniqueConnections.slice(0, 5);
+            // Se não achou pessoa, retorna o primeiro resultado
+            return data.search[0].id;
+        } catch (err) {
+            console.error("Erro getQidFromName:", err);
+            return null;
         }
+    }
 
-        // ============================================
-        // Preloaded Connections (Instant)
-        // ============================================
+    // Obter rótulo (nome) em português ou inglês
+    async function getLabel(qid) {
+        if (labelCache.has(qid)) return labelCache.get(qid);
+        const url = `https://www.wikidata.org/wiki/Special:EntityData/${qid}.json`;
+        try {
+            const resp = await fetch(url);
+            const data = await resp.json();
+            const entity = data.entities[qid];
+            let label = qid;
+            if (entity.labels && entity.labels.pt) label = entity.labels.pt.value;
+            else if (entity.labels && entity.labels.en) label = entity.labels.en.value;
+            labelCache.set(qid, label);
+            return label;
+        } catch (err) {
+            return qid;
+        }
+    }
 
-        function getPreloadedConnections(personName) {
-            const normalizedName = personName.toLowerCase();
-
-            const preloadedData = {
-                'anitta': [
-                    { person: 'Anitta', context: 'Encontro em evento diplom谩tico', source: 'G1' },
-                    { person: 'Presidente Lula', context: 'Encontro em cerim么nia oficial de esportes', source: 'Pal谩cio do Planalto' }
-                ],
-                'neymar': [
-                    { person: 'Neymar', context: 'Encontro em cerim么nia oficial de futebol', source: 'CBF' },
-                    { person: 'Presidente Lula', context: 'Encontro em evento esportivo', source: 'O Globo' }
-                ],
-                'dilma rousseff': [
-                    { person: 'Dilma Rousseff', context: 'Vice-presidente durante governo Lula (2003-2010)', source: 'Pal谩cio do Planalto' },
-                    { person: 'Presidente Lula', context: 'Governo Lula', source: 'C芒mara Federal' }
-                ],
-                'ciro gomes': [
-                    { person: 'Ciro Gomes', context: 'Candidato apoiado por Lula em campanhas presidenciais', source: 'G1' },
-                    { person: 'Presidente Lula', context: 'Apoio pol铆tico', source: 'Folha de S.Paulo' }
-                ],
-                'gilberto gil': [
-                    { person: 'Gilberto Gil', context: 'Ministro da Cultura (2003-2008)', source: 'Pal谩cio do Planalto' },
-                    { person: 'Presidente Lula', context: 'Governo Lula', source: 'O Globo' }
-                ],
-                'fernando haddad': [
-                    { person: 'Fernando Haddad', context: 'Ministro da Educa莽茫o', source: 'Pal谩cio do Planalto' },
-                    { person: 'Presidente Lula', context: 'Governo Lula', source: 'G1' }
-                ],
-                'caetano veloso': [
-                    { person: 'Caetano Veloso', context: 'Artista apoiador', source: 'Folha de S.Paulo' },
-                    { person: 'Presidente Lula', context: 'Encontro em evento cultural', source: 'O Globo' }
-                ],
-                'marieta severo': [
-                    { person: 'Marieta Severo', context: 'Atriz brasileira', source: 'IMDb' },
-                    { person: 'Gilberto Gil', context: 'Encontro em evento cultural', source: 'Veja' },
-                    { person: 'Presidente Lula', context: 'Encontro em cerim么nia de cultura', source: 'O Globo' }
-                ],
-                'lula': [
-                    { person: 'Presidente Lula', context: 'Pessoa buscada', source: 'Pal谩cio do Planalto' }
-                ]
-            };
-
-            for (const [key, value] of Object.entries(preloadedData)) {
-                if (normalizedName.includes(key) || key.includes(normalizedName)) {
-                    return value;
-                }
+    // Obter vizinhos diretos de um QID (pessoas conectadas por qualquer propriedade da lista)
+    async function getNeighbors(qid) {
+        if (neighborCache.has(qid)) return neighborCache.get(qid);
+        const query = `
+            SELECT DISTINCT ?neighbor WHERE {
+              {
+                wd:${qid} ?prop ?neighbor .
+                ?neighbor wdt:P31 wd:Q5 .
+                FILTER(?prop IN (${PROPS_LIST}))
+              }
+              UNION
+              {
+                ?neighbor ?prop wd:${qid} .
+                ?neighbor wdt:P31 wd:Q5 .
+                FILTER(?prop IN (${PROPS_LIST}))
+              }
             }
-
-            return [];
+            LIMIT 30
+        `;
+        const data = await sparqlQuery(query);
+        if (!data || !data.results) return [];
+        const neighbors = [];
+        for (let binding of data.results.bindings) {
+            const neighborQid = binding.neighbor.value.split('/').pop();
+            neighbors.push(neighborQid);
         }
+        // Remove duplicatas
+        const unique = [...new Set(neighbors)];
+        neighborCache.set(qid, unique);
+        return unique;
+    }
 
-        // ============================================
-        // Fast API Calls with Timeout
-        // ============================================
-
-        async function searchWikipediaFast(query) {
-            try {
-                const response = await fetch(
-                    `https://pt.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&format=json&origin=*`
-                );
-                const data = await response.json();
-                const results = [];
-
-                if (data.query && data.query.search) {
-                    for (const result of data.query.search.slice(0, 2)) {
-                        results.push({
-                            person: result.title,
-                            context: result.snippet.replace(/<[^>]*>/g, '').substring(0, 80),
-                            source: 'Wikip茅dia'
-                        });
-                    }
-                }
-
-                return results;
-            } catch (error) {
-                return [];
+    // ==============================================
+    // BFS PARA ENCONTRAR O MENOR CAMINHO
+    // ==============================================
+    async function findShortestPath(startQid, targetQid, maxDepth = MAX_DEGREES) {
+        if (startQid === targetQid) return [startQid];
+        
+        const queue = [{ qid: startQid, path: [startQid] }];
+        const visited = new Set([startQid]);
+        
+        while (queue.length > 0) {
+            const { qid, path } = queue.shift();
+            if (path.length > maxDepth) continue;
+            
+            const neighbors = await getNeighbors(qid);
+            for (let nb of neighbors) {
+                if (visited.has(nb)) continue;
+                const newPath = [...path, nb];
+                if (nb === targetQid) return newPath;
+                visited.add(nb);
+                queue.push({ qid: nb, path: newPath });
             }
+            // Pequeno atraso para não sobrecarregar a API
+            await new Promise(r => setTimeout(r, 30));
+        }
+        return null;
+    }
+
+    // ==============================================
+    // FUNÇÃO PRINCIPAL DE CONSULTA
+    // ==============================================
+    async function consultarOráculo() {
+        const input = document.getElementById("personInput");
+        const nome = input.value.trim();
+        if (!nome) {
+            alert("Digite o nome de uma figura pública.");
+            return;
         }
 
-        async function searchNewsFast(query) {
-            try {
-                const response = await fetch(
-                    `https://newsapi.org/v2/everything?q=${encodeURIComponent(query)}&language=pt&sortBy=relevancy&pageSize=3`,
-                    {
-                        headers: {
-                            'X-API-Key': 'demo'
-                        }
-                    }
-                );
+        const container = document.getElementById("resultContainer");
+        container.innerHTML = `<div class="result-card">🔍 Buscando identificador de "${nome}" na Wikidata... <div class="loading"></div></div>`;
 
-                if (!response.ok) {
-                    return [];
-                }
-
-                const data = await response.json();
-                const results = [];
-
-                if (data.articles) {
-                    for (const article of data.articles.slice(0, 2)) {
-                        results.push({
-                            person: extractMainPerson(article.title),
-                            context: article.title.substring(0, 80),
-                            source: article.source.name
-                        });
-                    }
-                }
-
-                return results;
-            } catch (error) {
-                return [];
-            }
+        // 1. Obter QID da pessoa
+        const pessoaQid = await getQidFromName(nome);
+        if (!pessoaQid) {
+            container.innerHTML = `<div class="result-card">❌ Não foi possível encontrar "${nome}" na Wikidata. Verifique a grafia ou tente um nome mais conhecido.</div>`;
+            return;
         }
 
-        function extractMainPerson(text) {
-            const namePattern = /[A-Z][a-z]+(?:\s+[A-Z][a-z]+)+/;
-            const match = text.match(namePattern);
-            return match ? match[0] : 'Pessoa';
+        container.innerHTML = `<div class="result-card">🕸️ Encontrado: ${nome} (${pessoaQid}). Buscando menor caminho até Lula (${LULA_QID})...<br>Isso pode levar até 15 segundos.<div class="loading"></div></div>`;
+
+        // 2. Encontrar caminho mínimo (BFS)
+        const caminhoQids = await findShortestPath(LULA_QID, pessoaQid, MAX_DEGREES);
+
+        if (!caminhoQids) {
+            container.innerHTML = `<div class="result-card">⚠️ Não foi possível encontrar um caminho entre Lula e ${nome} com até ${MAX_DEGREES} graus de separação na Wikidata. A Teoria dos Seis Graus sugere que um caminho existe, mas a base de conhecimento pode não tê-lo registrado. Tente outro nome.</div>`;
+            return;
         }
 
-        // ============================================
-        // UI State Management
-        // ============================================
-
-        let searchHistory = JSON.parse(localStorage.getItem('oracleHistory') || '[]');
-        let isSearching = false;
-
-        function saveToHistory(personName, result) {
-            const historyItem = {
-                id: Date.now(),
-                personName,
-                found: result.found,
-                degrees: result.degrees,
-                timestamp: new Date().toLocaleString('pt-BR'),
-            };
-
-            searchHistory.unshift(historyItem);
-            if (searchHistory.length > 20) {
-                searchHistory.pop();
-            }
-
-            localStorage.setItem('oracleHistory', JSON.stringify(searchHistory));
-            updateHistoryDisplay();
+        // 3. Obter rótulos de cada QID
+        const labels = [];
+        for (let qid of caminhoQids) {
+            const label = await getLabel(qid);
+            labels.push(label);
         }
 
-        function updateHistoryDisplay() {
-            const historyList = document.getElementById('historyList');
-            const historyCard = document.getElementById('historyCard');
+        const distancia = caminhoQids.length - 1;
+        const caminhoStr = labels.join(" → ");
 
-            if (searchHistory.length === 0) {
-                historyList.innerHTML = '<div class="empty-history">Nenhuma busca realizada ainda</div>';
-                return;
-            }
-
-            historyCard.style.display = 'block';
-            historyList.innerHTML = searchHistory
-                .map(
-                    (item) => `
-                <div class="history-item" onclick="loadHistorySearch('${item.personName}')">
-                    <div class="history-item-name">${item.personName}</div>
-                    <div class="history-item-result">
-                        ${item.found ? `${item.degrees} graus` : 'N茫o encontrado'}
-                    </div>
+        const resultadoHtml = `
+            <div class="result-card">
+                <div class="grau-badge">🎯 Número de Lula = ${distancia}</div>
+                <div class="path">🔗 Cadeia de conexões:<br> ${caminhoStr}</div>
+                <p>${distancia === 1 ? "✅ Relação direta (1º grau) – Lula e a pessoa possuem uma conexão direta registrada na Wikidata." : 
+                    `📐 Conexão indireta de ${distancia}º grau – de acordo com a Teoria dos Seis Graus de Separação.`}</p>
+                <div style="font-size:0.75rem; background:#f0f7ea; padding:0.5rem; border-radius:0.8rem; margin-top:0.8rem;">
+                    🌍 Fonte: Wikidata (consulta SPARQL em tempo real). As propriedades utilizadas incluem cargos, partido, parentesco, eventos, etc.
                 </div>
-            `
-                )
-                .join('');
-        }
+            </div>
+        `;
+        container.innerHTML = resultadoHtml;
+    }
 
-        function loadHistorySearch(personName) {
-            document.getElementById('personInput').value = personName;
-            document.getElementById('personInput').focus();
-        }
-
-        // ============================================
-        // Result Rendering
-        // ============================================
-
-        function renderResult(result, personName) {
-            const resultContainer = document.getElementById('resultContainer');
-
-            if (result.found) {
-                let pathHTML = `
-                    <div class="result-container">
-                        <div class="degrees-badge">
-                            <span class="degrees-number">${result.degrees}</span>
-                            graus de separa莽茫o entre <strong>${personName}</strong> e Lula
-                            <div class="speed-indicator">鈿� Resultado em menos de 3 segundos</div>
-                        </div>
-
-                        <h3 class="path-title">Caminho da Conex茫o:</h3>
-                        <div class="path-container">
-                            <div class="path-item">
-                                <div class="path-number">1</div>
-                                <div class="path-content">
-                                    <div class="path-name">${personName}</div>
-                                    <div class="path-context">Pessoa buscada</div>
-                                </div>
-                            </div>
-                `;
-
-                result.path.forEach((connection, idx) => {
-                    pathHTML += `
-                        <div class="path-divider">
-                            <div class="path-divider-line"></div>
-                        </div>
-                        <div class="path-item connection">
-                            <div class="path-number">${connection.degree + 1}</div>
-                            <div class="path-content">
-                                <div class="path-name">${connection.person}</div>
-                                <div class="path-context">${connection.context}</div>
-                                <div class="path-source"><span class="source-badge">${connection.source}</span></div>
-                            </div>
-                        </div>
-                    `;
-                });
-
-                pathHTML += '</div></div>';
-                resultContainer.innerHTML = pathHTML;
-            } else {
-                resultContainer.innerHTML = `
-                    <div class="result-container">
-                        <div class="error-message">
-                            <div class="error-icon">鈿狅笍</div>
-                            <div class="error-content">
-                                <h3>Conex茫o n茫o encontrada</h3>
-                                <p>${result.message}</p>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }
-        }
-
-        // ============================================
-        // Search Handler
-        // ============================================
-
-        async function handleSearch(event) {
-            event.preventDefault();
-
-            if (isSearching) return;
-
-            const personInput = document.getElementById('personInput');
-            const searchBtn = document.getElementById('searchBtn');
-            const searchBtnText = document.getElementById('searchBtnText');
-            const resultContainer = document.getElementById('resultContainer');
-            const personName = personInput.value.trim();
-
-            if (!personName) return;
-
-            isSearching = true;
-            searchBtn.disabled = true;
-            personInput.disabled = true;
-            searchBtnText.innerHTML = '<span class="spinner"></span>';
-            resultContainer.innerHTML = `
-                <div class="loading-indicator">
-                    <span class="spinner"></span>
-                    Buscando... (com cache inteligente e timeouts agressivos)
-                </div>
-            `;
-
-            const startTime = Date.now();
-
-            try {
-                const pathFinder = new BFSPathFinder(findConnectionsFast, 6);
-                const result = await pathFinder.findPath(personName, 'Presidente Lula');
-
-                const elapsed = Date.now() - startTime;
-                console.log(`Busca conclu铆da em ${elapsed}ms`);
-
-                saveToHistory(personName, result);
-                renderResult(result, personName);
-            } catch (error) {
-                console.error('Search error:', error);
-                resultContainer.innerHTML = `
-                    <div class="result-container">
-                        <div class="error-message">
-                            <div class="error-icon">鉂�</div>
-                            <div class="error-content">
-                                <h3>Erro na busca</h3>
-                                <p>Ocorreu um erro ao processar sua busca. Tente novamente.</p>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            } finally {
-                isSearching = false;
-                searchBtn.disabled = false;
-                personInput.disabled = false;
-                searchBtnText.innerHTML = '馃攳';
-            }
-        }
-
-        // ============================================
-        // Event Listeners
-        // ============================================
-
-        document.getElementById('toggleHistory').addEventListener('click', () => {
-            const historyCard = document.getElementById('historyCard');
-            if (historyCard.style.display === 'none') {
-                updateHistoryDisplay();
-            } else {
-                historyCard.style.display = 'none';
-            }
-        });
-
-        updateHistoryDisplay();
-    </script>
+    // ==============================================
+    // EVENTOS
+    // ==============================================
+    document.getElementById("searchBtn").addEventListener("click", consultarOráculo);
+    document.getElementById("personInput").addEventListener("keypress", (e) => {
+        if (e.key === "Enter") consultarOráculo();
+    });
+</script>
 </body>
 </html>
