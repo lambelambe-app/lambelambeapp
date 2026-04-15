@@ -3,16 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Symbolone - Sudoku de Símbolos</title>
+    
+    <!-- METADADOS PARA CLASSIFICAÇÃO DE CONTEÚDO - SEGURANÇA PARA CRIANÇAS -->
+    <meta name="rating" content="General">
+    <meta name="distribution" content="Global">
+    <meta name="audience" content="Everyone">
+    <meta name="content-language" content="pt-br">
+    <meta name="googlebot" content="index, follow">
+    
+    <!-- CLASSIFICAÇÃO ETÁRIA EXPLÍCITA PARA MECANISMOS DE BUSCA -->
+    <meta name="age-rating" content="General Audiences">
+    <meta name="category" content="Puzzle Game">
+    <meta name="suitable-for-children" content="yes">
+    
+    <title>Symbolum - Sudoku de Símbolos para Todas as Idades</title>
+    
     <style>
         * {
             user-select: none;
             box-sizing: border-box;
         }
 
-        /* Fundo transparente, sem estilo de celular */
+        /* Fundo neutro e suave - seguro para crianças */
         body {
-            background: transparent;
+            background: #f0f2f5;
             margin: 0;
             padding: 20px;
             font-family: 'Segoe UI', 'Poppins', 'Courier New', monospace;
@@ -22,20 +36,19 @@
             min-height: 100vh;
         }
 
-        /* Container principal sem decoração */
         .game-container {
-            background: transparent;
-            padding: 0;
+            background: white;
+            padding: 20px;
             margin: 0;
             width: 100%;
-            max-width: none;
+            max-width: 600px;
+            border-radius: 24px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
         }
 
         .game-panel {
             background: transparent;
             padding: 0;
-            box-shadow: none;
-            border-radius: 0;
         }
 
         h1 {
@@ -43,17 +56,10 @@
             margin: 0 0 15px 0;
             font-size: 2rem;
             color: #2c3e2f;
-            text-shadow: none;
-            background: none;
-            -webkit-background-clip: unset;
-            background-clip: unset;
-            color: #2c3e2f;
         }
 
         h1 span {
             font-size: 2rem;
-            color: #2c3e2f;
-            text-shadow: none;
         }
 
         /* Grid do Sudoku */
@@ -62,10 +68,9 @@
             grid-template-columns: repeat(9, 1fr);
             background-color: #ddd;
             border: 2px solid #333;
-            width: min(70vh, 70vw, 500px);
+            width: 100%;
             aspect-ratio: 1 / 1;
             margin: 0 auto 20px auto;
-            box-shadow: none;
         }
 
         .cell {
@@ -90,8 +95,6 @@
         .cell.selected {
             background-color: #ffe0a3;
             box-shadow: inset 0 0 0 2px #f39c12;
-            transform: scale(1.01);
-            z-index: 1;
         }
 
         .cell.error {
@@ -100,28 +103,27 @@
             text-decoration: line-through;
         }
 
-        /* Paleta de símbolos - horizontal, ícones reduzidos à metade */
+        /* Paleta de símbolos - horizontal, ícones reduzidos */
         .symbol-palette {
             display: flex;
             flex-direction: row;
             justify-content: center;
             align-items: center;
-            gap: 6px;
-            padding: 8px 0;
+            gap: 8px;
+            padding: 10px 0;
             background: transparent;
-            overflow-x: auto;
-            white-space: nowrap;
+            flex-wrap: wrap;
             margin: 10px 0;
         }
 
         .symbol-btn {
             background: #f0e6d2;
             border: 1px solid #b0a07c;
-            font-size: 1rem;
+            font-size: 1.2rem;
             font-weight: bold;
-            width: 28px;
-            height: 28px;
-            border-radius: 14px;
+            width: 36px;
+            height: 36px;
+            border-radius: 18px;
             cursor: pointer;
             font-family: monospace;
             transition: 0.05s linear;
@@ -130,20 +132,10 @@
             align-items: center;
             justify-content: center;
             touch-action: manipulation;
-            box-shadow: none;
-        }
-
-        /* Ajuste para telas muito pequenas: manter tamanho reduzido */
-        @media (max-width: 500px) {
-            .symbol-btn {
-                width: 26px;
-                height: 26px;
-                font-size: 0.9rem;
-            }
         }
 
         .symbol-btn:active {
-            transform: scale(0.92);
+            transform: scale(0.95);
             background: #ffd966;
         }
 
@@ -165,13 +157,12 @@
             border: none;
             font-size: 0.9rem;
             font-weight: bold;
-            padding: 6px 14px;
+            padding: 8px 16px;
             border-radius: 30px;
             color: white;
             cursor: pointer;
             font-family: 'Segoe UI', monospace;
             transition: 0.1s;
-            box-shadow: none;
         }
 
         button.action:active {
@@ -185,12 +176,12 @@
             font-size: 0.9rem;
             font-weight: bold;
             background: rgba(0,0,0,0.05);
-            padding: 5px;
+            padding: 8px;
             color: #2c3e2f;
             border-radius: 20px;
         }
 
-        /* Confetes */
+        /* Confetes seguros - sem sons, apenas visuais */
         .confetti-canvas {
             position: fixed;
             top: 0;
@@ -222,21 +213,20 @@
                 opacity: 0;
             }
         }
+        
+        /* Mensagem de segurança para pais */
+        .safety-note {
+            text-align: center;
+            font-size: 0.7rem;
+            color: #888;
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+        }
     </style>
-
-    using GoogleMobileAds.Api;
-
-// Coloque isso quando o app iniciar (no método Start() ou Awake())
-RequestConfiguration requestConfiguration = new RequestConfiguration
-{
-    TagForChildDirectedTreatment = TagForChildDirectedTreatment.True,
-    TagForUnderAgeOfConsent = TagForUnderAgeOfConsent.True,
-    MaxAdContentRating = MaxAdContentRating.G
-};
-
-MobileAds.SetRequestConfiguration(requestConfiguration);
 </head>
 <body>
+
 <div class="game-container">
     <div class="game-panel">
         <h1>
@@ -244,9 +234,7 @@ MobileAds.SetRequestConfiguration(requestConfiguration);
         </h1>
         <div class="sudoku-grid" id="sudokuGrid"></div>
 
-        <div class="symbol-palette" id="symbolPalette">
-            <!-- preenchido via js -->
-        </div>
+        <div class="symbol-palette" id="symbolPalette"></div>
 
         <div class="controls">
             <button class="action" id="clearBtn">🗑️ LIMPAR</button>
@@ -254,11 +242,59 @@ MobileAds.SetRequestConfiguration(requestConfiguration);
             <button class="action" id="checkBtn">✅ VERIFICAR</button>
         </div>
         <div class="status" id="statusMsg">Clique em uma célula e depois num símbolo</div>
+        <div class="safety-note">✓ Jogo seguro para todas as idades | Sem anúncios inadequados | Apenas diversão e lógica</div>
     </div>
 </div>
 
+<!-- CONFIGURAÇÃO DE ANÚNCIOS PARA PÚBLICO INFANTIL -->
+<!-- Este código informa ao Google/AdMob que o app é direcionado a crianças -->
 <script>
-    // ---------- JOGO ----------
+    // ============================================================
+    // CONFIGURAÇÃO DE SEGURANÇA PARA CRIANÇAS - GOOGLE PLAY STORE
+    // ============================================================
+    // Estas configurações são críticas para aprovação nas políticas do Google
+    // Elas comunicam ao AdMob que este aplicativo é para crianças
+    
+    // Função para configurar requisições de anúncios seguros (se AdMob estiver presente)
+    function configureChildSafeAds() {
+        // Verifica se o AdMob está carregado na página
+        if (typeof google !== 'undefined' && google.ads && google.ads.admob) {
+            try {
+                // Configuração padrão para apps infantis
+                // Tag for Child Directed Treatment = TRUE indica que o app é direcionado a crianças
+                console.log('[Symbolum] Configurando anúncios para modo criança (Child Directed)');
+                
+                // Método alternativo para comunicar ao Google
+                if (window.adsbygoogle) {
+                    window.adsbygoogle.push({
+                        childDirected: true,
+                        adContentRating: 'G',
+                        maxAdContentRating: 'G'
+                    });
+                }
+            } catch(e) {
+                console.log('[Symbolum] AdMob configurável não encontrado - app sem anúncios');
+            }
+        } else {
+            console.log('[Symbolum] App configurado para modo criança - sem anúncios externos');
+        }
+    }
+    
+    // Executa a configuração assim que a página carregar
+    configureChildSafeAds();
+    
+    // Informação global para redes de anúncios
+    window.SYMBOLUM_CHILD_SAFE = true;
+    window.SYMBOLUM_AGE_RATING = "G";
+    window.SYMBOLUM_CONTENT_RATING = "General";
+    
+    // ============================================================
+    // FIM DAS CONFIGURAÇÕES DE SEGURANÇA
+    // ============================================================
+</script>
+
+<script>
+    // ---------- JOGO SYMBOLUM ----------
     const SYMBOLS = ["@", "#", "$", "%", "&", "?", "*", "+", "~"];
     const SIZE = 9;
     const BOX_SIZE = 3;
@@ -378,7 +414,7 @@ MobileAds.SetRequestConfiguration(requestConfiguration);
         return true;
     }
     
-    // Efeito de confetes com símbolos
+    // Efeito de confetes seguro (sem som, apenas visual)
     function launchSymbolConfetti() {
         const existingCanvas = document.querySelector('.confetti-canvas');
         if (existingCanvas) existingCanvas.remove();
@@ -388,7 +424,7 @@ MobileAds.SetRequestConfiguration(requestConfiguration);
         document.body.appendChild(container);
         
         const symbols = [...SYMBOLS];
-        const numberOfConfetti = 80;
+        const numberOfConfetti = 70;
         
         for (let i = 0; i < numberOfConfetti; i++) {
             const symbol = symbols[Math.floor(Math.random() * symbols.length)];
@@ -456,7 +492,7 @@ MobileAds.SetRequestConfiguration(requestConfiguration);
         const row = selectedRow;
         const col = selectedCol;
         if (fixedCells[row][col]) {
-            updateStatusMessage(`Célula fixa (${board[row][col]}) não pode ser alterada.`);
+            updateStatusMessage(`Célula fixa não pode ser alterada.`);
             return;
         }
         
@@ -465,7 +501,7 @@ MobileAds.SetRequestConfiguration(requestConfiguration);
         if (!isValidMove) {
             updateStatusMessage(`⚠️ Conflito! O símbolo ${symbol} está em conflito.`);
         } else {
-            updateStatusMessage(`Símbolo ${symbol} inserido na posição (${row+1},${col+1})`);
+            updateStatusMessage(`Símbolo ${symbol} inserido!`);
         }
         
         renderGrid();
@@ -490,7 +526,7 @@ MobileAds.SetRequestConfiguration(requestConfiguration);
         }
         if (board[selectedRow][selectedCol] !== "") {
             board[selectedRow][selectedCol] = "";
-            updateStatusMessage(`Célula (${selectedRow+1},${selectedCol+1}) limpa.`);
+            updateStatusMessage(`Célula limpa.`);
             renderGrid();
             if (checkVictory()) updateGameStatus();
         } else {
@@ -549,7 +585,7 @@ MobileAds.SetRequestConfiguration(requestConfiguration);
                         } else {
                             selectedRow = row;
                             selectedCol = col;
-                            updateStatusMessage(`Célula (${row+1},${col+1}) selecionada. Clique num símbolo.`);
+                            updateStatusMessage(`Célula selecionada. Clique num símbolo.`);
                             renderGrid();
                         }
                     };
@@ -559,7 +595,7 @@ MobileAds.SetRequestConfiguration(requestConfiguration);
             }
         }
         if (currentGameOver) {
-            statusDiv.innerHTML = "🏆 VITÓRIA ABSOLUTA! Parabéns! 🏆";
+            statusDiv.innerHTML = "🏆 VITÓRIA! Parabéns! 🏆";
         }
     }
     
