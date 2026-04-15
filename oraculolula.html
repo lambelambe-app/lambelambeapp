@@ -3,863 +3,510 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="description" content="Oráculo de Lula - Descubra os graus de separação entre Lula e qualquer figura pública usando o EventKG">
-    <title>Oráculo Lula · Seis Graus de Separação</title>
+    <title>Oráculo de Lula · Wikidata + EventKG</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        :root {
-            --primary: #1a5a1a;
-            --primary-light: #3a7a3a;
-            --primary-dark: #0e3a0e;
-            --gold: #d4a574;
-            --gold-light: #e8c4a0;
-            --background: #faf9f7;
-            --foreground: #1a1a1a;
-            --card-bg: #ffffff;
-            --border-color: #e5e5e5;
-            --error-color: #dc2626;
-            --success-color: #16a34a;
-            --muted: #9ca3af;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
+            background: linear-gradient(145deg, #f5f9f0 0%, #e2ecd9 100%);
             font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, var(--background) 0%, rgba(212, 165, 116, 0.08) 100%);
-            color: var(--foreground);
-            line-height: 1.6;
+            padding: 1.5rem;
             min-height: 100vh;
+            color: #1a3a1a;
         }
-
-        h1, h2, h3, h4, h5, h6 {
-            font-family: 'Playfair Display', serif;
-        }
-
         .container {
             max-width: 1280px;
             margin: 0 auto;
-            padding: 1rem;
         }
-
         header {
-            border-bottom: 1px solid var(--border-color);
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(10px);
-            position: sticky;
-            top: 0;
-            z-index: 40;
-        }
-
-        .header-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1.5rem 0;
-        }
-
-        .header-title h1 {
-            font-size: 2rem;
-            color: var(--primary);
-            margin-bottom: 0.25rem;
-        }
-
-        .header-title h1 span {
-            background: linear-gradient(135deg, var(--gold), var(--gold-light));
-            padding: 0 0.5rem;
-            border-radius: 40px;
-            font-size: 1.2rem;
-            display: inline-block;
-            margin-left: 0.5rem;
-        }
-
-        .header-title p {
-            font-size: 0.875rem;
-            color: var(--muted);
-        }
-
-        .main-layout {
-            display: grid;
-            grid-template-columns: 1fr 320px;
-            gap: 2rem;
-            margin-top: 3rem;
-            margin-bottom: 3rem;
-        }
-
-        @media (max-width: 1024px) {
-            .main-layout {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .card {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 1rem;
-            padding: 2rem;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-            transition: all 0.3s ease;
-        }
-
-        .card:hover {
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-        }
-
-        .search-form {
-            display: flex;
-            gap: 0.75rem;
+            text-align: center;
             margin-bottom: 2rem;
         }
-
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, #1a5a1a, #3a8a3a);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            display: inline-block;
+        }
+        h1 span {
+            background: #ffdd77;
+            color: #1a5a1a;
+            border-radius: 60px;
+            padding: 0 12px;
+            font-size: 1.5rem;
+            margin-left: 8px;
+        }
+        .sub {
+            color: #4a6a3a;
+            margin-top: 0.25rem;
+        }
+        .card {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(2px);
+            border-radius: 2rem;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(90,138,58,0.2);
+        }
+        .search-area {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin: 1.5rem 0;
+        }
         .search-input {
-            flex: 1;
-            padding: 0.875rem 1.25rem;
-            border: 2px solid var(--border-color);
-            border-radius: 1rem;
+            flex: 3;
+            padding: 1rem 1.2rem;
+            border: 2px solid #cfdec7;
+            border-radius: 60px;
             font-size: 1rem;
-            font-family: 'Inter', sans-serif;
-            transition: all 0.3s;
+            transition: 0.2s;
         }
-
         .search-input:focus {
+            border-color: #2b7a2b;
             outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(26, 90, 26, 0.1);
+            box-shadow: 0 0 0 3px rgba(43,122,43,0.2);
         }
-
         .search-btn {
-            padding: 0.875rem 2rem;
-            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            background: #1a5a1a;
             color: white;
             border: none;
-            border-radius: 1rem;
+            padding: 0 2rem;
+            border-radius: 60px;
+            font-weight: bold;
             cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            font-size: 1rem;
+            gap: 8px;
+            transition: 0.2s;
         }
-
-        .search-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(26, 90, 26, 0.3);
+        .search-btn:hover { background: #0e3a0e; transform: scale(0.97); }
+        .info-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px,1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
         }
-
-        .search-btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .search-hint {
-            font-size: 0.75rem;
-            color: var(--muted);
-            margin-top: 0.5rem;
-        }
-
-        .result-container {
-            margin-top: 2rem;
-            animation: slideIn 0.3s ease;
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .degrees-badge {
-            background: linear-gradient(135deg, var(--primary), var(--primary-light));
-            color: white;
-            padding: 1.2rem;
-            border-radius: 1rem;
+        .info-item {
+            background: #f0f5ea;
+            border-radius: 1.2rem;
+            padding: 0.8rem 1rem;
+            font-size: 0.85rem;
             text-align: center;
-            margin-bottom: 1.5rem;
         }
-
-        .degrees-number {
-            font-size: 3rem;
-            font-weight: 800;
-            display: block;
-            line-height: 1;
+        .result-card {
+            background: white;
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            margin-top: 1rem;
+            border-left: 6px solid #2b7a2b;
         }
-
-        .path-title {
-            font-size: 1.125rem;
-            font-weight: 600;
+        .degrees-badge {
+            background: linear-gradient(135deg, #1a5a1a, #3a7a3a);
+            color: white;
+            border-radius: 60px;
+            padding: 0.4rem 1rem;
+            display: inline-block;
+            font-weight: bold;
             margin-bottom: 1rem;
-            color: var(--foreground);
         }
-
-        .path-container {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        .path-item {
-            display: flex;
-            gap: 1rem;
-            align-items: flex-start;
-            padding: 0.75rem;
-            background: #f9faf8;
-            border-radius: 0.75rem;
-            transition: all 0.2s;
-        }
-
-        .path-item:hover {
-            background: #f0f4ec;
-        }
-
-        .path-number {
-            width: 2.5rem;
-            height: 2.5rem;
-            border-radius: 50%;
-            background: rgba(26, 90, 26, 0.1);
-            color: var(--primary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            flex-shrink: 0;
-        }
-
-        .path-number.start {
-            background: rgba(212, 165, 116, 0.2);
-            color: var(--gold);
-        }
-
-        .path-number.target {
-            background: rgba(26, 90, 26, 0.2);
-            color: var(--primary);
-        }
-
-        .path-content {
-            flex: 1;
-        }
-
-        .path-name {
-            font-weight: 700;
-            color: var(--foreground);
-            margin-bottom: 0.25rem;
-        }
-
-        .path-context {
-            font-size: 0.75rem;
-            color: var(--muted);
-            font-style: italic;
-        }
-
-        .path-source {
-            font-size: 0.7rem;
-            color: var(--primary);
-            margin-top: 0.25rem;
-            font-weight: 500;
-        }
-
-        .source-badge {
-            display: inline-block;
-            padding: 0.2rem 0.5rem;
-            background: rgba(26, 90, 26, 0.1);
-            border-radius: 0.25rem;
-            font-size: 0.65rem;
-            font-weight: 600;
-        }
-
-        .path-arrow {
-            display: flex;
-            justify-content: center;
-            margin: 0.25rem 0;
-            color: var(--gold);
-            font-size: 1.2rem;
-        }
-
-        .error-message {
-            display: flex;
-            gap: 1rem;
+        .path {
+            background: #f4f9ef;
             padding: 1rem;
-            background: rgba(220, 38, 38, 0.05);
-            border: 1px solid rgba(220, 38, 38, 0.2);
-            border-radius: 0.75rem;
-            color: var(--error-color);
+            border-radius: 1rem;
+            font-family: monospace;
+            font-size: 1rem;
+            margin: 1rem 0;
+            word-break: break-word;
+            border-left: 3px solid #ffdd77;
         }
-
-        .loading-indicator {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 1rem;
-            background: rgba(26, 90, 26, 0.05);
-            border-radius: 0.75rem;
-            color: var(--primary);
-        }
-
-        .spinner {
+        .loading {
             display: inline-block;
-            width: 1.2rem;
-            height: 1.2rem;
-            border: 2px solid rgba(26, 90, 26, 0.3);
-            border-top-color: var(--primary);
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ccc;
+            border-top-color: #2b7a2b;
             border-radius: 50%;
             animation: spin 0.6s linear infinite;
         }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .source-badge {
+            font-size: 0.7rem;
+            background: #e9f0e3;
+            padding: 0.2rem 0.6rem;
+            border-radius: 30px;
+            display: inline-block;
+            margin: 0.2rem 0;
         }
-
-        .sidebar {
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-        }
-
-        .sidebar-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 1rem;
-            padding: 1.5rem;
-        }
-
-        .sidebar-card h3 {
-            font-size: 1rem;
-            margin-bottom: 1rem;
-            color: var(--foreground);
-            font-family: 'Inter', sans-serif;
-            font-weight: 700;
-        }
-
-        .sidebar-list {
-            list-style: none;
-        }
-
-        .sidebar-list li {
-            display: flex;
-            gap: 0.75rem;
-            margin-bottom: 0.75rem;
-            font-size: 0.875rem;
-        }
-
-        .sidebar-bullet {
-            color: var(--primary);
-            font-weight: 700;
-        }
-
-        .info-box {
-            background: linear-gradient(135deg, rgba(26, 90, 26, 0.05), rgba(212, 165, 116, 0.05));
-            border-radius: 0.75rem;
-            padding: 1rem;
-            margin-bottom: 1rem;
-            font-size: 0.875rem;
-        }
-
-        .footer {
+        footer {
             text-align: center;
-            padding: 1.5rem;
-            border-top: 1px solid var(--border-color);
-            font-size: 0.75rem;
-            color: var(--muted);
+            font-size: 0.7rem;
+            color: #5a7350;
+            margin-top: 2rem;
         }
-
-        @media (max-width: 768px) {
-            .header-title h1 {
-                font-size: 1.5rem;
-            }
-            .card {
-                padding: 1.25rem;
-            }
-            .search-form {
-                flex-direction: column;
-            }
-            .search-btn {
-                justify-content: center;
-            }
-            .degrees-number {
-                font-size: 2rem;
-            }
+        @media (max-width: 700px) {
+            body { padding: 1rem; }
+            .card { padding: 1.2rem; }
+            h1 { font-size: 1.8rem; }
         }
     </style>
 </head>
 <body>
+<div class="container">
     <header>
-        <div class="container">
-            <div class="header-content">
-                <div class="header-title">
-                    <h1>Oráculo de Lula <span>6º</span></h1>
-                    <p>Descubra os graus de separação entre Lula e qualquer figura pública</p>
-                </div>
-            </div>
-        </div>
+        <h1>🌿 Oráculo de Lula <span>6º</span></h1>
+        <div class="sub">Wikidata + EventKG — menor caminho em tempo real</div>
     </header>
 
-    <main class="container">
-        <div class="main-layout">
-            <div>
-                <div class="card">
-                    <div class="info-box">
-                        📡 <strong>Baseado no EventKG</strong> — Consulta eventos, encontros e relações temporais entre pessoas. Resultados em tempo real!
-                    </div>
-
-                    <form id="searchForm" onsubmit="handleSearch(event)">
-                        <label style="display: block; font-weight: 600; margin-bottom: 0.75rem;">
-                            Buscar pessoa
-                        </label>
-                        <div class="search-form">
-                            <input
-                                type="text"
-                                id="personInput"
-                                class="search-input"
-                                placeholder="Ex: Joe Biden, Papa Francisco, Neymar, Dilma Rousseff"
-                                autocomplete="off"
-                                required
-                            >
-                            <button type="submit" class="search-btn" id="searchBtn">
-                                <span>✨</span> Consultar
-                            </button>
-                        </div>
-                        <p class="search-hint">
-                            💡 O EventKG analisa eventos, reuniões e relações documentadas entre pessoas
-                        </p>
-                    </form>
-
-                    <div id="resultContainer">
-                        <div class="result-container">
-                            <div style="text-align: center; padding: 2rem; color: var(--muted);">
-                                🔮 Digite um nome e clique em Consultar
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <aside class="sidebar">
-                <div class="sidebar-card">
-                    <h3>📖 Como funciona</h3>
-                    <ul class="sidebar-list">
-                        <li><span class="sidebar-bullet">1.</span> Digite qualquer nome</li>
-                        <li><span class="sidebar-bullet">2.</span> O EventKG busca conexões via eventos</li>
-                        <li><span class="sidebar-bullet">3.</span> Calculamos o menor caminho</li>
-                        <li><span class="sidebar-bullet">4.</span> Exibimos os graus de separação</li>
-                    </ul>
-                </div>
-
-                <div class="sidebar-card">
-                    <h3>🎯 Teoria dos 6 Graus</h3>
-                    <ul class="sidebar-list">
-                        <li><span class="sidebar-bullet">•</span> Qualquer pessoa está a até 6 passos</li>
-                        <li><span class="sidebar-bullet">•</span> Cada passo = encontro/evento</li>
-                        <li><span class="sidebar-bullet">•</span> Base no EventKG</li>
-                        <li><span class="sidebar-bullet">•</span> Resultados em tempo real</li>
-                    </ul>
-                </div>
-
-                <div class="sidebar-card">
-                    <h3>🔗 Exemplos</h3>
-                    <ul class="sidebar-list">
-                        <li><span class="sidebar-bullet">→</span> Joe Biden</li>
-                        <li><span class="sidebar-bullet">→</span> Papa Francisco</li>
-                        <li><span class="sidebar-bullet">→</span> Neymar</li>
-                        <li><span class="sidebar-bullet">→</span> Dilma Rousseff</li>
-                    </ul>
-                </div>
-            </aside>
+    <div class="card">
+        <div style="font-weight: 500; margin-bottom: 0.5rem;">🔎 Pesquisar figura pública</div>
+        <div class="search-area">
+            <input type="text" id="personName" class="search-input" placeholder="Ex: Joe Biden, Papa Francisco, Neymar, Dilma Rousseff">
+            <button id="searchBtn" class="search-btn">✨ Consultar</button>
         </div>
-    </main>
-
-    <footer class="footer">
-        🌐 Fonte: EventKG · Consulta SPARQL em tempo real · Relações via eventos e encontros documentados
+        <div class="info-panel">
+            <div class="info-item">⚡ Wikidata: consultas rápidas (1-2s)</div>
+            <div class="info-item">📅 EventKG: conexões por eventos (2-4s)</div>
+            <div class="info-item">🔄 Busca híbrida: primeira resposta que encontrar</div>
+        </div>
+        <div id="resultArea">
+            <div class="result-card" style="text-align: center; color: #6a8a5a;">
+                Digite um nome e veja os graus de separação até Lula
+            </div>
+        </div>
+    </div>
+    <footer>
+        🌍 Fontes: Wikidata (propriedades gerais) + EventKG (eventos, reuniões). Cache inteligente para consultas repetidas.
     </footer>
+</div>
 
-    <script>
-        // ==============================================
-        // CONFIGURAÇÕES
-        // ==============================================
-        
-        // IDs das entidades no EventKG (usando DBpedia URIs)
-        const LULA_URI = 'http://dbpedia.org/resource/Luiz_Inácio_Lula_da_Silva';
-        
-        // Cache para evitar consultas repetidas
-        const neighborCache = new Map();
-        const labelCache = new Map();
-        
-        // Máximo de graus a buscar
-        const MAX_DEGREES = 5;
-        
-        // Timeout para consultas (ms)
-        const QUERY_TIMEOUT = 8000;
-
-        // ==============================================
-        // FUNÇÕES AUXILIARES
-        // ==============================================
-        
-        // Função para executar SPARQL no EventKG com timeout
-        async function sparqlQueryEventKG(query) {
-            const endpoint = 'https://eventkg.l3s.uni-hannover.de/sparql/eventkg';
-            const url = `${endpoint}?format=json&query=${encodeURIComponent(query)}`;
-            
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), QUERY_TIMEOUT);
-            
-            try {
-                const response = await fetch(url, {
-                    signal: controller.signal,
-                    headers: { 'Accept': 'application/json' }
-                });
-                clearTimeout(timeoutId);
-                const data = await response.json();
-                return data;
-            } catch (err) {
-                clearTimeout(timeoutId);
-                console.error("Erro SPARQL EventKG:", err);
-                return null;
-            }
-        }
-
-        // Buscar pessoas relacionadas via eventos no EventKG
-        async function getEventKGNeighbors(uri, depth = 1) {
-            if (neighborCache.has(uri)) return neighborCache.get(uri);
-            
-            // Query para encontrar pessoas conectadas via eventos (participantes, encontros, etc)
-            const query = `
-                PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-                PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-                PREFIX sem: <http://semanticweb.cs.vu.nl/2009/11/sem/>
-                PREFIX eventkg: <http://eventkg.l3s.uni-hannover.de/rdf/>
-                
-                SELECT DISTINCT ?relatedPerson ?label WHERE {
-                  {
-                    # Pessoa participa de evento que outra pessoa também participa
-                    ?event sem:hasParticipant <${uri}> .
-                    ?event sem:hasParticipant ?relatedPerson .
-                    FILTER(?relatedPerson != <${uri}>)
-                  }
-                  UNION
-                  {
-                    # Pessoa é objeto de relação com outra pessoa
-                    ?rel rdf:subject <${uri}> .
-                    ?rel rdf:object ?relatedPerson .
-                    ?rel sem:roleType ?role .
-                    FILTER(?relatedPerson != <${uri}>)
-                  }
-                  UNION
-                  {
-                    # Pessoa é sujeito de relação
-                    ?rel rdf:object <${uri}> .
-                    ?rel rdf:subject ?relatedPerson .
-                    ?rel sem:roleType ?role .
-                    FILTER(?relatedPerson != <${uri}>)
-                  }
-                  SERVICE <https://dbpedia.org/sparql> {
-                    OPTIONAL { ?relatedPerson rdfs:label ?label . FILTER(LANG(?label) = 'pt') }
-                  }
-                }
-                LIMIT 20
-            `;
-            
-            const data = await sparqlQueryEventKG(query);
-            const neighbors = [];
-            
-            if (data && data.results && data.results.bindings) {
-                for (let binding of data.results.bindings) {
-                    const neighborUri = binding.relatedPerson?.value;
-                    let label = binding.label?.value;
-                    
-                    if (neighborUri && neighborUri !== uri) {
-                        // Extrair nome amigável da URI se não tiver label
-                        if (!label) {
-                            const match = neighborUri.match(/\/([^\/]+)$/);
-                            label = match ? decodeURIComponent(match[1].replace(/_/g, ' ')) : neighborUri;
-                        }
-                        
-                        neighbors.push({
-                            uri: neighborUri,
-                            label: label,
-                            context: "Participação em evento ou relação documentada",
-                            source: "EventKG"
-                        });
-                    }
-                }
-            }
-            
-            // Remover duplicatas por URI
-            const unique = [];
-            const seenUris = new Set();
-            for (let n of neighbors) {
-                if (!seenUris.has(n.uri)) {
-                    seenUris.add(n.uri);
-                    unique.push(n);
-                }
-            }
-            
-            neighborCache.set(uri, unique);
-            return unique.slice(0, 15);
-        }
-
-        // Buscar URI da pessoa pelo nome via DBpedia
-        async function getPersonUri(name) {
-            const searchUrl = `https://lookup.dbpedia.org/api/search/KeywordSearch?QueryString=${encodeURIComponent(name)}&MaxHits=3&Format=json`;
-            
-            try {
-                const response = await fetch(searchUrl);
-                const data = await response.json();
-                
-                if (data && data.docs && data.docs.length > 0) {
-                    // Priorizar pessoas
-                    for (let doc of data.docs) {
-                        if (doc.resource && (doc.type?.includes('person') || doc.type?.includes('politician'))) {
-                            return doc.resource;
-                        }
-                    }
-                    return data.docs[0].resource;
-                }
-                return null;
-            } catch (err) {
-                console.error("Erro ao buscar URI:", err);
-                return null;
-            }
-        }
-
-        // Obter label da URI via DBpedia
-        async function getLabelFromUri(uri) {
-            if (labelCache.has(uri)) return labelCache.get(uri);
-            
-            const query = `
-                PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-                SELECT ?label WHERE {
-                    <${uri}> rdfs:label ?label .
-                    FILTER(LANG(?label) = 'pt')
-                }
-                LIMIT 1
-            `;
-            
-            const url = `https://dbpedia.org/sparql?format=json&query=${encodeURIComponent(query)}`;
-            
-            try {
-                const response = await fetch(url);
-                const data = await response.json();
-                let label = uri.split('/').pop().replace(/_/g, ' ');
-                
-                if (data && data.results && data.results.bindings && data.results.bindings[0]) {
-                    label = data.results.bindings[0].label.value;
-                }
-                
-                labelCache.set(uri, label);
-                return label;
-            } catch (err) {
-                return uri.split('/').pop().replace(/_/g, ' ');
-            }
-        }
-
-        // ==============================================
-        // BFS PARA ENCONTRAR MENOR CAMINHO
-        // ==============================================
-        
-        async function findShortestPath(startUri, targetUri, maxDepth = MAX_DEGREES) {
-            if (startUri === targetUri) return [startUri];
-            
-            const queue = [{ uri: startUri, path: [startUri], depth: 0 }];
-            const visited = new Set([startUri]);
-            
-            while (queue.length > 0) {
-                const current = queue.shift();
-                
-                if (current.depth >= maxDepth) continue;
-                
-                const neighbors = await getEventKGNeighbors(current.uri, current.depth + 1);
-                
-                for (let neighbor of neighbors) {
-                    const neighborUri = neighbor.uri;
-                    
-                    if (visited.has(neighborUri)) continue;
-                    
-                    const newPath = [...current.path, neighborUri];
-                    
-                    if (neighborUri === targetUri) {
-                        return newPath;
-                    }
-                    
-                    visited.add(neighborUri);
-                    queue.push({
-                        uri: neighborUri,
-                        path: newPath,
-                        depth: current.depth + 1,
-                        context: neighbor.context,
-                        source: neighbor.source
-                    });
-                }
-                
-                // Pequeno delay para não sobrecarregar a API
-                await new Promise(r => setTimeout(r, 100));
-            }
-            
+<script>
+    // ==============================================
+    // CONFIGURAÇÕES GLOBAIS
+    // ==============================================
+    const LULA_QID = 'Q37181';               // Wikidata ID correto
+    const LULA_URI = 'http://dbpedia.org/resource/Luiz_Inácio_Lula_da_Silva'; // EventKG/DBpedia
+    const MAX_DEGREES = 5;
+    
+    // Caches
+    const wikidataNeighborsCache = new Map();    // QID -> [QIDs]
+    const eventkgNeighborsCache = new Map();     // URI -> [{uri, label}]
+    const labelCache = new Map();                // QID/URI -> nome
+    const qidCache = new Map();                  // nome -> QID
+    const uriCache = new Map();                  // nome -> URI EventKG
+    
+    // Timeouts
+    const WIKI_TIMEOUT = 3000;
+    const EVENTKG_TIMEOUT = 5000;
+    
+    // Propriedades Wikidata para conexões entre pessoas
+    const WIKI_PROPS = [
+        "wdt:P39", "wdt:P102", "wdt:P108", "wdt:P26", "wdt:P40", "wdt:P3373",
+        "wdt:P737", "wdt:P1416", "wdt:P1344", "wdt:P793", "wdt:P155", "wdt:P156",
+        "wdt:P22", "wdt:P25", "wdt:P106", "wdt:P463", "wdt:P410"
+    ];
+    const WIKI_PROPS_LIST = WIKI_PROPS.join(", ");
+    
+    // ==============================================
+    // FUNÇÕES AUXILIARES WIKIDATA
+    // ==============================================
+    async function sparqlWikidata(query) {
+        const url = `https://query.wikidata.org/sparql?format=json&query=${encodeURIComponent(query)}`;
+        const controller = new AbortController();
+        const id = setTimeout(() => controller.abort(), WIKI_TIMEOUT);
+        try {
+            const resp = await fetch(url, { signal: controller.signal });
+            clearTimeout(id);
+            return await resp.json();
+        } catch (err) {
+            clearTimeout(id);
             return null;
         }
-
-        // ==============================================
-        // RENDERIZAÇÃO DO RESULTADO
-        // ==============================================
+    }
+    
+    async function getQidFromNameWikidata(name) {
+        const lower = name.toLowerCase();
+        if (qidCache.has(lower)) return qidCache.get(lower);
+        const url = `https://www.wikidata.org/w/api.php?action=wbsearchentities&search=${encodeURIComponent(name)}&language=pt&format=json&origin=*&limit=5`;
+        try {
+            const resp = await fetch(url);
+            const data = await resp.json();
+            if (data.search && data.search.length) {
+                for (let item of data.search) {
+                    const entityUrl = `https://www.wikidata.org/wiki/Special:EntityData/${item.id}.json`;
+                    const eResp = await fetch(entityUrl);
+                    const eData = await eResp.json();
+                    const claims = eData.entities[item.id].claims;
+                    if (claims.P31 && claims.P31.some(p => p.mainsnak.datavalue?.value?.id === 'Q5')) {
+                        qidCache.set(lower, item.id);
+                        return item.id;
+                    }
+                }
+                const fallback = data.search[0].id;
+                qidCache.set(lower, fallback);
+                return fallback;
+            }
+            return null;
+        } catch (err) {
+            return null;
+        }
+    }
+    
+    async function getWikidataLabel(qid) {
+        if (labelCache.has(qid)) return labelCache.get(qid);
+        const url = `https://www.wikidata.org/wiki/Special:EntityData/${qid}.json`;
+        try {
+            const resp = await fetch(url);
+            const data = await resp.json();
+            const entity = data.entities[qid];
+            let label = qid;
+            if (entity.labels?.pt) label = entity.labels.pt.value;
+            else if (entity.labels?.en) label = entity.labels.en.value;
+            labelCache.set(qid, label);
+            return label;
+        } catch (err) {
+            return qid;
+        }
+    }
+    
+    async function getWikidataNeighbors(qid) {
+        if (wikidataNeighborsCache.has(qid)) return wikidataNeighborsCache.get(qid);
+        const query = `
+            SELECT DISTINCT ?neighbor WHERE {
+              { wd:${qid} ?prop ?neighbor . ?neighbor wdt:P31 wd:Q5 . FILTER(?prop IN (${WIKI_PROPS_LIST})) }
+              UNION
+              { ?neighbor ?prop wd:${qid} . ?neighbor wdt:P31 wd:Q5 . FILTER(?prop IN (${WIKI_PROPS_LIST})) }
+            }
+            LIMIT 25
+        `;
+        const data = await sparqlWikidata(query);
+        let neighbors = [];
+        if (data?.results?.bindings) {
+            neighbors = data.results.bindings.map(b => b.neighbor.value.split('/').pop());
+            neighbors = [...new Set(neighbors)];
+        }
+        wikidataNeighborsCache.set(qid, neighbors);
+        return neighbors;
+    }
+    
+    // ==============================================
+    // FUNÇÕES AUXILIARES EVENTKG
+    // ==============================================
+    async function sparqlEventKG(query) {
+        const endpoint = 'https://eventkg.l3s.uni-hannover.de/sparql/eventkg';
+        const url = `${endpoint}?format=json&query=${encodeURIComponent(query)}`;
+        const controller = new AbortController();
+        const id = setTimeout(() => controller.abort(), EVENTKG_TIMEOUT);
+        try {
+            const resp = await fetch(url, { signal: controller.signal });
+            clearTimeout(id);
+            return await resp.json();
+        } catch (err) {
+            clearTimeout(id);
+            return null;
+        }
+    }
+    
+    async function getPersonUriEventKG(name) {
+        const lower = name.toLowerCase();
+        if (uriCache.has(lower)) return uriCache.get(lower);
+        const searchUrl = `https://lookup.dbpedia.org/api/search/KeywordSearch?QueryString=${encodeURIComponent(name)}&MaxHits=3&Format=json`;
+        try {
+            const resp = await fetch(searchUrl);
+            const data = await resp.json();
+            if (data.docs && data.docs.length) {
+                for (let doc of data.docs) {
+                    if (doc.resource && (doc.type?.includes('person') || doc.type?.includes('politician'))) {
+                        uriCache.set(lower, doc.resource);
+                        return doc.resource;
+                    }
+                }
+                const fallback = data.docs[0].resource;
+                uriCache.set(lower, fallback);
+                return fallback;
+            }
+            return null;
+        } catch (err) {
+            return null;
+        }
+    }
+    
+    async function getEventKGNeighbors(uri) {
+        if (eventkgNeighborsCache.has(uri)) return eventkgNeighborsCache.get(uri);
+        const query = `
+            PREFIX sem: <http://semanticweb.cs.vu.nl/2009/11/sem/>
+            SELECT DISTINCT ?related WHERE {
+              { ?event sem:hasParticipant <${uri}> ; sem:hasParticipant ?related . }
+              UNION
+              { ?rel sem:subject <${uri}> ; sem:object ?related . }
+              UNION
+              { ?rel sem:object <${uri}> ; sem:subject ?related . }
+              FILTER(?related != <${uri}>)
+            }
+            LIMIT 20
+        `;
+        const data = await sparqlEventKG(query);
+        let neighbors = [];
+        if (data?.results?.bindings) {
+            neighbors = data.results.bindings.map(b => b.related.value).filter(v => v && v !== uri);
+            neighbors = [...new Set(neighbors)];
+        }
+        // Obter labels para cada vizinho (usando DBpedia)
+        const enriched = [];
+        for (let nbUri of neighbors.slice(0, 12)) {
+            let label = nbUri.split('/').pop().replace(/_/g, ' ');
+            enriched.push({ uri: nbUri, label: label, source: 'EventKG' });
+        }
+        eventkgNeighborsCache.set(uri, enriched);
+        return enriched;
+    }
+    
+    // ==============================================
+    // BFS HÍBRIDO: PRIORIDADE WIKIDATA, DEPOIS EVENTKG
+    // ==============================================
+    async function hybridBFS(startQid, startUri, targetQid, targetUri) {
+        // Fila para Wikidata (usando QIDs)
+        let queue = [{ type: 'wikidata', id: startQid, path: [startQid], depth: 0 }];
+        let visitedWikidata = new Set([startQid]);
         
-        async function renderResult(caminhoUris, startLabel, targetLabel, startName) {
-            const container = document.getElementById("resultContainer");
-            const labels = [];
-            
-            for (let uri of caminhoUris) {
-                const label = await getLabelFromUri(uri);
-                labels.push(label);
+        // Fila para EventKG (usando URIs)
+        let eventQueue = [{ type: 'eventkg', id: startUri, path: [startUri], depth: 0 }];
+        let visitedEventKG = new Set([startUri]);
+        
+        // Resultados parciais
+        let bestPath = null;
+        
+        // Busca alternada: primeiro 2 passos na Wikidata, depois EventKG, e assim por diante
+        for (let step = 0; step < MAX_DEGREES * 2; step++) {
+            // Expandir um nível na Wikidata
+            if (queue.length) {
+                const nextQueue = [];
+                for (let item of queue) {
+                    if (item.depth >= MAX_DEGREES) continue;
+                    const neighbors = await getWikidataNeighbors(item.id);
+                    for (let nbQid of neighbors) {
+                        if (visitedWikidata.has(nbQid)) continue;
+                        const newPath = [...item.path, nbQid];
+                        if (nbQid === targetQid) {
+                            return { path: newPath, source: 'wikidata' };
+                        }
+                        visitedWikidata.add(nbQid);
+                        nextQueue.push({ type: 'wikidata', id: nbQid, path: newPath, depth: item.depth + 1 });
+                    }
+                }
+                queue = nextQueue;
             }
             
-            const distancia = caminhoUris.length - 1;
-            
-            let pathHTML = `
-                <div class="result-container">
-                    <div class="degrees-badge">
-                        <span class="degrees-number">${distancia}</span>
-                        graus de separação entre <strong>${startName}</strong> e Lula
-                    </div>
-                    <h3 class="path-title">🔗 Cadeia de conexões</h3>
-                    <div class="path-container">
-            `;
-            
-            for (let i = 0; i < labels.length; i++) {
-                const isStart = i === 0;
-                const isTarget = i === labels.length - 1;
-                const degreeNum = i;
-                
-                pathHTML += `
-                    <div class="path-item">
-                        <div class="path-number ${isStart ? 'start' : ''} ${isTarget ? 'target' : ''}">
-                            ${degreeNum}
-                        </div>
-                        <div class="path-content">
-                            <div class="path-name">
-                                ${labels[i]}
-                                ${isTarget ? ' <span style="font-size:0.7rem;">(Lula)</span>' : ''}
-                            </div>
-                            <div class="path-context">
-                                ${i === 0 ? 'Pessoa consultada' : 
-                                  i === labels.length - 1 ? 'Presidente Luiz Inácio Lula da Silva' : 
-                                  `Conexão via evento ou relação documentada`}
-                            </div>
-                            <div class="path-source">
-                                <span class="source-badge">EventKG</span>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                
-                if (i < labels.length - 1) {
-                    pathHTML += `<div class="path-arrow">▼</div>`;
+            // Expandir um nível no EventKG
+            if (eventQueue.length) {
+                const nextEventQueue = [];
+                for (let item of eventQueue) {
+                    if (item.depth >= MAX_DEGREES) continue;
+                    const neighbors = await getEventKGNeighbors(item.id);
+                    for (let nb of neighbors) {
+                        const nbUri = nb.uri;
+                        if (visitedEventKG.has(nbUri)) continue;
+                        const newPath = [...item.path, nbUri];
+                        if (nbUri === targetUri) {
+                            return { path: newPath, source: 'eventkg' };
+                        }
+                        visitedEventKG.add(nbUri);
+                        nextEventQueue.push({ type: 'eventkg', id: nbUri, path: newPath, depth: item.depth + 1 });
+                    }
                 }
+                eventQueue = nextEventQueue;
             }
             
-            pathHTML += `
-                    </div>
-                    <div style="margin-top: 1rem; padding: 0.75rem; background: #f0f4ec; border-radius: 0.5rem; font-size: 0.75rem;">
-                        📐 A Teoria dos Seis Graus de Separação afirma que qualquer pessoa está a no máximo 6 passos de distância.
-                        ${distancia <= 3 ? 'Esta conexão é bastante próxima!' : 'Ainda assim, está dentro da teoria!'}
-                    </div>
-                </div>
-            `;
-            
-            container.innerHTML = pathHTML;
+            if (queue.length === 0 && eventQueue.length === 0) break;
+        }
+        return null;
+    }
+    
+    // ==============================================
+    // OBTENÇÃO DE LABEL (UNIFICADA)
+    // ==============================================
+    async function getLabelFromId(id, type) {
+        if (labelCache.has(id)) return labelCache.get(id);
+        if (type === 'wikidata') {
+            const label = await getWikidataLabel(id);
+            labelCache.set(id, label);
+            return label;
+        } else {
+            // URI: extrai nome amigável
+            let label = id.split('/').pop().replace(/_/g, ' ');
+            labelCache.set(id, label);
+            return label;
+        }
+    }
+    
+    // ==============================================
+    // CONSULTA PRINCIPAL
+    // ==============================================
+    async function consultar() {
+        const input = document.getElementById('personName');
+        const nome = input.value.trim();
+        if (!nome) return;
+        
+        const resultDiv = document.getElementById('resultArea');
+        resultDiv.innerHTML = `<div class="result-card"><div class="loading"></div> Buscando identificadores e conectando fontes... (Wikidata + EventKG)</div>`;
+        
+        // Obter QID e URI simultaneamente
+        const [qid, uri] = await Promise.all([
+            getQidFromNameWikidata(nome),
+            getPersonUriEventKG(nome)
+        ]);
+        
+        if (!qid && !uri) {
+            resultDiv.innerHTML = `<div class="result-card">❌ Não foi possível encontrar "${nome}" nas bases de conhecimento. Tente outro nome.</div>`;
+            return;
         }
         
-        function renderError(message) {
-            const container = document.getElementById("resultContainer");
-            container.innerHTML = `
-                <div class="result-container">
-                    <div class="error-message">
-                        <span>⚠️</span>
-                        <div>${message}</div>
-                    </div>
-                </div>
-            `;
+        resultDiv.innerHTML = `<div class="result-card"><div class="loading"></div> Analisando caminhos (até ${MAX_DEGREES} graus)...</div>`;
+        
+        const caminho = await hybridBFS(qid || LULA_QID, uri || LULA_URI, LULA_QID, LULA_URI);
+        
+        if (!caminho || !caminho.path || caminho.path.length < 2) {
+            resultDiv.innerHTML = `<div class="result-card">⚠️ Nenhum caminho encontrado entre ${nome} e Lula com até ${MAX_DEGREES} graus. A Teoria dos Seis Graus sugere que existe, mas as bases podem não conter essa relação ainda.</div>`;
+            return;
         }
         
-        function renderLoading() {
-            const container = document.getElementById("resultContainer");
-            container.innerHTML = `
-                <div class="result-container">
-                    <div class="loading-indicator">
-                        <span class="spinner"></span>
-                        Consultando EventKG em tempo real... (pode levar alguns segundos)
-                    </div>
-                </div>
-            `;
+        // Converter IDs para labels
+        const labels = [];
+        for (let i = 0; i < caminho.path.length; i++) {
+            const id = caminho.path[i];
+            // Determinar tipo: se começa com Q e número, é Wikidata; senão, EventKG URI
+            const isWikidata = /^Q\d+$/.test(id);
+            const label = await getLabelFromId(id, isWikidata ? 'wikidata' : 'eventkg');
+            labels.push(label);
         }
-
-        // ==============================================
-        // FUNÇÃO PRINCIPAL
-        // ==============================================
         
-        let isSearching = false;
+        const distancia = caminho.path.length - 1;
+        const fonte = caminho.source === 'wikidata' ? 'Wikidata' : 'EventKG';
         
-        async function handleSearch(event) {
-            event.preventDefault();
-            
-            if (isSearching) return;
-            
-            const input = document.getElementById("personInput");
-            const searchBtn = document.getElementById("searchBtn");
-            const personName = input.value.trim();
-            
-            if (!personName) return;
-            
-            isSearching = true;
-            searchBtn.disabled = true;
-            renderLoading();
-            
-            try {
-                // Buscar URI da pessoa
-                const personUri = await getPersonUri(personName);
-                
-                if (!personUri) {
-                    renderError(`Não foi possível encontrar "${personName}" no EventKG. Verifique a grafia ou tente um nome mais conhecido.`);
-                    isSearching = false;
-                    searchBtn.disabled = false;
-                    return;
-                }
-                
-                // Buscar caminho até Lula
-                const caminho = await findShortestPath(personUri, LULA_URI, MAX_DEGREES);
-                
-                if (!caminho || caminho.length < 2) {
-                    renderError(`Não foi possível encontrar um caminho entre ${personName} e Lula com até ${MAX_DEGREES} graus de separação. A Teoria dos Seis Graus sugere que existe, mas o EventKG pode não ter registrado essa conexão.`);
-                } else {
-                    await renderResult(caminho, personName, "Lula", personName);
-                }
-                
-            } catch (error) {
-                console.error("Erro na busca:", error);
-                renderError("Ocorreu um erro ao processar sua busca. Tente novamente.");
-            } finally {
-                isSearching = false;
-                searchBtn.disabled = false;
-            }
-        }
-
-        // ==============================================
-        // EVENTOS
-        // ==============================================
-        
-        document.getElementById("searchForm").addEventListener("submit", handleSearch);
-        
-        // Exemplos rápidos
-        const examples = ['Joe Biden', 'Papa Francisco', 'Neymar', 'Dilma Rousseff'];
-        console.log('🎯 Oráculo de Lula carregado! Exemplos:', examples.join(', '));
-    </script>
+        let html = `
+            <div class="result-card">
+                <div class="degrees-badge">🎯 Número de Lula = ${distancia}</div>
+                <div class="path">🔗 ${labels.join(' → ')}</div>
+                <div><span class="source-badge">✓ Encontrado via ${fonte}</span></div>
+                <p style="margin-top: 0.8rem; font-size:0.85rem;">${distancia === 1 ? 'Relação direta comprovada.' : `${distancia} graus de separação — dentro da Teoria dos Seis Graus.`}</p>
+            </div>
+        `;
+        resultDiv.innerHTML = html;
+    }
+    
+    // ==============================================
+    // EVENTOS
+    // ==============================================
+    document.getElementById('searchBtn').addEventListener('click', consultar);
+    document.getElementById('personName').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') consultar();
+    });
+</script>
 </body>
 </html>
