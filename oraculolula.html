@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Oráculo de Lula · Graus de Separação (Wikidata + EventKG)</title>
+    <title>Oráculo de Lula · Conexões via EBC e Wikipédia</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            background: linear-gradient(145deg, #f0f7e8 0%, #e0ecd6 100%);
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #f0f7e8 0%, #e0ecd6 100%);
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
             padding: 1.5rem;
             min-height: 100vh;
             color: #1a3a1a;
@@ -120,29 +120,27 @@
 <div class="container">
     <div class="hero">
         <h1>🌿 Oráculo de Lula <span>6º</span></h1>
-        <p>Wikidata + EventKG · Caminhos de até 5 graus</p>
+        <p>Busca em tempo real na EBC (Agência Brasil) + Wikipédia</p>
     </div>
     <div class="card">
         <div class="search-area">
-            <input type="text" id="personName" class="search-input" placeholder="Ex: Joe Biden, Papa Francisco, Neymar, Dilma Rousseff">
+            <input type="text" id="personName" class="search-input" placeholder="Ex: Joe Biden, Papa Francisco, Neymar">
             <button id="searchBtn" class="search-btn">✨ Consultar</button>
         </div>
         <div id="result">🔍 Aguardando consulta...</div>
     </div>
-    <footer>Base: Wikidata (cargos, partidos, parentesco) + EventKG (eventos, reuniões). Busca unificada em tempo real.</footer>
+    <footer>🌍 Fonte: Agência Brasil (busca oficial) e Wikipédia. Caminhos de até 5 graus.</footer>
 </div>
 
 <script>
     // ================= CONFIGURAÇÕES =================
-    const LULA_QID = 'Q37181';                // Wikidata ID de Lula
-    const LULA_URI = 'http://dbpedia.org/resource/Luiz_Inácio_Lula_da_Silva'; // EventKG URI
+    const LULA = "Luiz Inácio Lula da Silva";
     const MAX_DEG = 5;
     
-    // Caches
-    const qidCache = new Map();                // nome -> QID
-    const uriCache = new Map();                // nome -> URI (EventKG)
-    const labelCache = new Map();              // QID ou URI -> nome legível
-    const neighborCache = new Map();           // QID ou URI -> lista de {id, type, label?}
+    // Cache para evitar consultas repetidas
+    const wikiNeighborsCache = new Map();
+    const ebcNeighborsCache = new Map();
+    const labelCache = new Map();
     
     // Propriedades Wikidata para conexões entre pessoas
     const WIKI_PROPS = [
@@ -152,7 +150,7 @@
     ];
     const WIKI_PROPS_LIST = WIKI_PROPS.join(", ");
     
-    // ========== FUNÇÕES WIKIDATA ==========
+    // ========== FUNÇÕES AUXILIARES ==========
     async function sparqlWikidata(query, timeout=3000) {
         const url = `https://query.wikidata.org/sparql?format=json&query=${encodeURIComponent(query)}`;
         const controller = new AbortController();
@@ -168,26 +166,24 @@
     }
     
     async function getQidFromName(name) {
-        const key = name.toLowerCase();
-        if (qidCache.has(key)) return qidCache.get(key);
+        if (labelCache.has(name)) return labelCache.get(name);
         const url = `https://www.wikidata.org/w/api.php?action=wbsearchentities&search=${encodeURIComponent(name)}&language=pt&format=json&origin=*&limit=5`;
         try {
             const resp = await fetch(url);
             const data = await resp.json();
             if (data.search && data.search.length) {
                 for (let item of data.search) {
-                    // Verifica se é pessoa (Q5)
                     const entityUrl = `https://www.wikidata.org/wiki/Special:EntityData/${item.id}.json`;
                     const eResp = await fetch(entityUrl);
                     const eData = await eResp.json();
                     const claims = eData.entities[item.id].claims;
                     if (claims.P31 && claims.P31.some(p => p.mainsnak.datavalue?.value?.id === 'Q5')) {
-                        qidCache.set(key, item.id);
+                        labelCache.set(name, item.id);
                         return item.id;
                     }
                 }
                 const fallback = data.search[0].id;
-                qidCache.set(key, fallback);
+                labelCache.set(name, fallback);
                 return fallback;
             }
             return null;
@@ -211,7 +207,7 @@
     
     async function getWikidataNeighbors(qid) {
         const cacheKey = `wiki:${qid}`;
-        if (neighborCache.has(cacheKey)) return neighborCache.get(cacheKey);
+        if (wikiNeighborsCache.has(cacheKey)) return wikiNeighborsCache.get(cacheKey);
         const query = `
             SELECT DISTINCT ?neighbor WHERE {
               { wd:${qid} ?prop ?neighbor . ?neighbor wdt:P31 wd:Q5 . FILTER(?prop IN (${WIKI_PROPS_LIST})) }
@@ -227,132 +223,77 @@
             neighbors = [...new Set(neighbors)];
         }
         const enriched = neighbors.map(nbQid => ({ id: nbQid, type: 'wikidata' }));
-        neighborCache.set(cacheKey, enriched);
+        wikiNeighborsCache.set(cacheKey, enriched);
         return enriched;
     }
     
-    // ========== FUNÇÕES EVENTKG ==========
-    async function sparqlEventKG(query, timeout=5000) {
-        const endpoint = 'https://eventkg.l3s.uni-hannover.de/sparql/eventkg';
-        const url = `${endpoint}?format=json&query=${encodeURIComponent(query)}`;
-        const controller = new AbortController();
-        const id = setTimeout(() => controller.abort(), timeout);
-        try {
-            const resp = await fetch(url, { signal: controller.signal });
-            clearTimeout(id);
-            return await resp.json();
-        } catch {
-            clearTimeout(id);
-            return null;
-        }
-    }
-    
-    async function getPersonUri(name) {
-        const key = name.toLowerCase();
-        if (uriCache.has(key)) return uriCache.get(key);
-        const searchUrl = `https://lookup.dbpedia.org/api/search/KeywordSearch?QueryString=${encodeURIComponent(name)}&MaxHits=3&Format=json`;
-        try {
-            const resp = await fetch(searchUrl);
-            const data = await resp.json();
-            if (data.docs && data.docs.length) {
-                for (let doc of data.docs) {
-                    if (doc.resource && (doc.type?.includes('person') || doc.type?.includes('politician'))) {
-                        uriCache.set(key, doc.resource);
-                        return doc.resource;
-                    }
-                }
-                const fallback = data.docs[0].resource;
-                uriCache.set(key, fallback);
-                return fallback;
-            }
-            return null;
-        } catch { return null; }
-    }
-    
-    async function getEventKGNeighbors(uri) {
-        const cacheKey = `event:${uri}`;
-        if (neighborCache.has(cacheKey)) return neighborCache.get(cacheKey);
-        const query = `
-            PREFIX sem: <http://semanticweb.cs.vu.nl/2009/11/sem/>
-            SELECT DISTINCT ?related WHERE {
-              { ?event sem:hasParticipant <${uri}> ; sem:hasParticipant ?related . }
-              UNION
-              { ?rel sem:subject <${uri}> ; sem:object ?related . }
-              UNION
-              { ?rel sem:object <${uri}> ; sem:subject ?related . }
-              FILTER(?related != <${uri}>)
-            }
-            LIMIT 20
-        `;
-        const data = await sparqlEventKG(query);
-        let neighbors = [];
-        if (data?.results?.bindings) {
-            neighbors = data.results.bindings.map(b => b.related.value).filter(v => v && v !== uri);
-            neighbors = [...new Set(neighbors)];
-        }
-        const enriched = neighbors.map(nbUri => ({ id: nbUri, type: 'eventkg' }));
-        neighborCache.set(cacheKey, enriched);
-        return enriched;
-    }
-    
-    // ========== OBTENÇÃO DE LABEL PARA QUALQUER ID ==========
-    async function getLabel(id, type) {
-        if (labelCache.has(id)) return labelCache.get(id);
-        let label = id;
-        if (type === 'wikidata') {
-            label = await getWikidataLabel(id);
-        } else {
-            // Extrai nome amigável da URI
-            let raw = id.split('/').pop().replace(/_/g, ' ');
-            label = decodeURIComponent(raw);
-        }
-        labelCache.set(id, label);
-        return label;
-    }
-    
-    // ========== BFS UNIFICADO (Wikidata + EventKG) ==========
-    async function unifiedBFS(startQid, startUri, targetQid, targetUri) {
-        // Fila de nós: cada nó tem { id, type, path }
-        const queue = [];
-        const visited = new Set(); // guarda "type:id"
+    // ========== BUSCA NA EBC (Agência Brasil) ==========
+    async function searchEBC(query) {
+        const cacheKey = `ebc:${query}`;
+        if (ebcNeighborsCache.has(cacheKey)) return ebcNeighborsCache.get(cacheKey);
         
-        // Adiciona ponto de partida (Lula) nos dois formatos
-        if (startQid) {
-            queue.push({ id: startQid, type: 'wikidata', path: [startQid] });
-            visited.add(`wikidata:${startQid}`);
+        // Usa a busca do próprio site da EBC
+        const url = `https://agenciabrasil.ebc.com.br/search/node?keys=${encodeURIComponent(query)}`;
+        // Usa um proxy CORS para evitar bloqueios
+        const proxy = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+        try {
+            const resp = await fetch(proxy);
+            const html = await resp.text();
+            // Extrai os títulos das notícias
+            const matches = [...html.matchAll(/<a[^>]+href="[^"]+"[^>]*>([^<]+)<\/a>/g)];
+            const titles = matches.map(m => m[1]).filter(t => t && t.length > 10);
+            // Extrai nomes mencionados nos títulos (palavras com pelo menos 2 letras maiúsculas)
+            const namePattern = /\b[A-ZÀ-Ú][a-zà-ú]+(?:\s+[A-ZÀ-Ú][a-zà-ú]+)+\b/g;
+            const names = new Set();
+            for (let title of titles) {
+                const found = title.match(namePattern);
+                if (found) found.forEach(n => names.add(n));
+            }
+            const result = Array.from(names).slice(0, 10);
+            ebcNeighborsCache.set(cacheKey, result);
+            return result;
+        } catch (err) {
+            console.error("Erro na busca EBC:", err);
+            return [];
         }
-        if (startUri) {
-            queue.push({ id: startUri, type: 'eventkg', path: [startUri] });
-            visited.add(`eventkg:${startUri}`);
-        }
+    }
+    
+    // ========== BUSCA HÍBRIDA (Wikidata + EBC) ==========
+    async function hybridBFS(startLabel, targetLabel, maxDeg = MAX_DEG) {
+        const visited = new Set();
+        const queue = [{ label: startLabel, path: [startLabel] }];
+        visited.add(startLabel);
         
         while (queue.length) {
             const current = queue.shift();
-            if (current.path.length > MAX_DEG) continue;
+            if (current.path.length > maxDeg) continue;
             
-            // Verifica se atingiu o alvo (qualquer formato)
-            if ((current.type === 'wikidata' && current.id === targetQid) ||
-                (current.type === 'eventkg' && current.id === targetUri)) {
-                return current.path;
-            }
+            if (current.label === targetLabel) return current.path;
             
-            // Obtém vizinhos conforme o tipo
+            // Obtém vizinhos do nó atual
             let neighbors = [];
-            if (current.type === 'wikidata') {
-                neighbors = await getWikidataNeighbors(current.id);
-            } else {
-                neighbors = await getEventKGNeighbors(current.id);
+            
+            // 1. Vizinhos via Wikidata
+            const qid = await getQidFromName(current.label);
+            if (qid) {
+                const wikiNeighbors = await getWikidataNeighbors(qid);
+                for (let nb of wikiNeighbors) {
+                    const nbLabel = await getWikidataLabel(nb.id);
+                    neighbors.push(nbLabel);
+                }
             }
             
+            // 2. Vizinhos via EBC (busca por notícias)
+            const ebcResults = await searchEBC(current.label);
+            for (let nb of ebcResults) {
+                neighbors.push(nb);
+            }
+            
+            // Expande a busca
             for (let nb of neighbors) {
-                const visitKey = `${nb.type}:${nb.id}`;
-                if (visited.has(visitKey)) continue;
-                visited.add(visitKey);
-                queue.push({
-                    id: nb.id,
-                    type: nb.type,
-                    path: [...current.path, nb.id]
-                });
+                if (visited.has(nb)) continue;
+                visited.add(nb);
+                queue.push({ label: nb, path: [...current.path, nb] });
             }
         }
         return null;
@@ -365,41 +306,20 @@
         if (!nome) return;
         
         const resultDiv = document.getElementById('result');
-        resultDiv.innerHTML = `<div class="result-card"><div class="loading"></div> Buscando identificadores e conectando Wikidata + EventKG...</div>`;
+        resultDiv.innerHTML = `<div class="result-card"><div class="loading"></div> Buscando conexões entre ${nome} e Lula...</div>`;
         
-        // Obtém QID e URI da pessoa
-        const [qid, uri] = await Promise.all([
-            getQidFromName(nome),
-            getPersonUri(nome)
-        ]);
+        const caminho = await hybridBFS(nome, LULA, MAX_DEG);
         
-        if (!qid && !uri) {
-            resultDiv.innerHTML = `<div class="result-card">❌ Não foi possível encontrar "${nome}" nas bases. Tente outro nome.</div>`;
-            return;
-        }
-        
-        resultDiv.innerHTML = `<div class="result-card"><div class="loading"></div> Buscando caminho de até ${MAX_DEG} graus...</div>`;
-        
-        const caminhoIds = await unifiedBFS(LULA_QID, LULA_URI, qid, uri);
-        
-        if (!caminhoIds || caminhoIds.length < 2) {
+        if (!caminho || caminho.length < 2) {
             resultDiv.innerHTML = `<div class="result-card">⚠️ Nenhum caminho encontrado entre ${nome} e Lula com até ${MAX_DEG} graus. Tente outro nome.</div>`;
             return;
         }
         
-        // Converte IDs para rótulos
-        const labels = [];
-        for (let id of caminhoIds) {
-            const type = /^Q\d+$/.test(id) ? 'wikidata' : 'eventkg';
-            const label = await getLabel(id, type);
-            labels.push(label);
-        }
-        
-        const distancia = caminhoIds.length - 1;
+        const distancia = caminho.length - 1;
         const html = `
             <div class="result-card">
                 <div><span class="badge">🎯 Número de Lula = ${distancia}</span></div>
-                <div class="path">🔗 ${labels.join(' → ')}</div>
+                <div class="path">🔗 ${caminho.join(' → ')}</div>
                 <div style="font-size:0.8rem; margin-top:0.5rem;">✅ Caminho encontrado com ${distancia} grau${distancia !== 1 ? 's' : ''} de separação.</div>
             </div>
         `;
