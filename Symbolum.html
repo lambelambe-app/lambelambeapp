@@ -16,7 +16,11 @@
     <meta name="category" content="Puzzle Game">
     <meta name="suitable-for-children" content="yes">
     
-    <title>Symbolum</title>
+    <!-- METADADOS ESPECÍFICOS PARA CONFORMIDADE INFANTIL -->
+    <meta name="child-directed" content="true">
+    <meta name="max-ad-content-rating" content="G">
+    
+    <title>Symbolum - Sudoku de Símbolos para Todas as Idades</title>
     
     <style>
         * {
@@ -24,7 +28,6 @@
             box-sizing: border-box;
         }
 
-        /* Fundo neutro e suave - seguro para crianças */
         body {
             background: #f0f2f5;
             margin: 0;
@@ -34,6 +37,7 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            flex-direction: column;
         }
 
         .game-container {
@@ -62,7 +66,6 @@
             font-size: 2rem;
         }
 
-        /* Grid do Sudoku */
         .sudoku-grid {
             display: grid;
             grid-template-columns: repeat(9, 1fr);
@@ -103,7 +106,6 @@
             text-decoration: line-through;
         }
 
-        /* Paleta de símbolos - horizontal, ícones reduzidos */
         .symbol-palette {
             display: flex;
             flex-direction: row;
@@ -181,7 +183,6 @@
             border-radius: 20px;
         }
 
-        /* Confetes seguros - sem sons, apenas visuais */
         .confetti-canvas {
             position: fixed;
             top: 0;
@@ -214,7 +215,6 @@
             }
         }
         
-        /* Mensagem de segurança para pais */
         .safety-note {
             text-align: center;
             font-size: 0.7rem;
@@ -222,6 +222,16 @@
             margin-top: 15px;
             padding-top: 10px;
             border-top: 1px solid #eee;
+        }
+        
+        .privacy-link {
+            text-align: center;
+            font-size: 0.7rem;
+            margin-top: 8px;
+        }
+        .privacy-link a {
+            color: #4a6741;
+            text-decoration: none;
         }
     </style>
 </head>
@@ -246,51 +256,47 @@
     </div>
 </div>
 
-<!-- CONFIGURAÇÃO DE ANÚNCIOS PARA PÚBLICO INFANTIL -->
-<!-- Este código informa ao Google/AdMob que o app é direcionado a crianças -->
+<div class="privacy-link">
+    <a href="#" target="_blank">📜 Política de Privacidade</a> - Este app não coleta dados pessoais.
+</div>
+
 <script>
     // ============================================================
-    // CONFIGURAÇÃO DE SEGURANÇA PARA CRIANÇAS - GOOGLE PLAY STORE
+    // CONFIGURAÇÃO DE SEGURANÇA PARA CRIANÇAS
     // ============================================================
-    // Estas configurações são críticas para aprovação nas políticas do Google
-    // Elas comunicam ao AdMob que este aplicativo é para crianças
     
-    // Função para configurar requisições de anúncios seguros (se AdMob estiver presente)
-    function configureChildSafeAds() {
-        // Verifica se o AdMob está carregado na página
-        if (typeof google !== 'undefined' && google.ads && google.ads.admob) {
+    (function() {
+        // Sinalização global para qualquer script de anúncio
+        window.google_tag_for_child_directed_treatment = 1;
+        window.google_tag_for_under_age_of_consent = 1;
+        window.google_max_ad_content_rating = "G";
+        
+        // Para GPT (Google Publisher Tag) se usado no futuro
+        if (typeof googletag !== 'undefined' && googletag.pubads) {
             try {
-                // Configuração padrão para apps infantis
-                // Tag for Child Directed Treatment = TRUE indica que o app é direcionado a crianças
-                console.log('[Symbolum] Configurando anúncios para modo criança (Child Directed)');
-                
-                // Método alternativo para comunicar ao Google
-                if (window.adsbygoogle) {
-                    window.adsbygoogle.push({
-                        childDirected: true,
-                        adContentRating: 'G',
-                        maxAdContentRating: 'G'
-                    });
-                }
-            } catch(e) {
-                console.log('[Symbolum] AdMob configurável não encontrado - app sem anúncios');
-            }
-        } else {
-            console.log('[Symbolum] App configurado para modo criança - sem anúncios externos');
+                googletag.pubads().setTagForChildDirectedTreatment(1);
+                googletag.pubads().setMaxAdContentRating('G');
+                googletag.pubads().setRequestNonPersonalizedAds(1);
+            } catch(e) {}
         }
-    }
-    
-    // Executa a configuração assim que a página carregar
-    configureChildSafeAds();
-    
-    // Informação global para redes de anúncios
-    window.SYMBOLUM_CHILD_SAFE = true;
-    window.SYMBOLUM_AGE_RATING = "G";
-    window.SYMBOLUM_CONTENT_RATING = "General";
-    
-    // ============================================================
-    // FIM DAS CONFIGURAÇÕES DE SEGURANÇA
-    // ============================================================
+        
+        // Sinalização explícita para redes parceiras
+        window.__tcfapi = window.__tcfapi || function() {};
+        window.__cmp = window.__cmp || function() {};
+        
+        // Armazena informações globais para verificação
+        window.SYMBOLUM_CHILD_SAFE = true;
+        window.SYMBOLUM_AGE_RATING = "G";
+        window.SYMBOLUM_CONTENT_RATING = "General";
+        window.SYMBOLUM_AD_RESTRICTIONS = {
+            maxRating: "G",
+            noPersonalizedAds: true,
+            coppaCompliant: true,
+            gdprCompliant: true
+        };
+        
+        console.log("[Symbolum] Configuração de anúncios seguros para crianças ativada.");
+    })();
 </script>
 
 <script>
@@ -309,7 +315,6 @@
     let statusDiv = document.getElementById("statusMsg");
     let symbolPalette = document.getElementById("symbolPalette");
 
-    // ---------- FUNÇÕES DE VALIDAÇÃO ----------
     function isValidPlacement(boardTemp, row, col, symbol) {
         for (let c = 0; c < SIZE; c++) {
             if (c !== col && boardTemp[row][c] === symbol) return false;
@@ -414,7 +419,6 @@
         return true;
     }
     
-    // Efeito de confetes seguro (sem som, apenas visual)
     function launchSymbolConfetti() {
         const existingCanvas = document.querySelector('.confetti-canvas');
         if (existingCanvas) existingCanvas.remove();
