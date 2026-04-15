@@ -2,23 +2,17 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Oráculo de Lula · Graus de Separação</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oráculo Lula · Busca Avançada na Wikidata</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            background: linear-gradient(135deg, #eef5e9 0%, #dde8d4 100%);
+            background: linear-gradient(135deg, #eaf5e5 0%, #d9e8d0 100%);
             font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
             padding: 1.5rem;
             min-height: 100vh;
             color: #1a3a1a;
         }
-
         .container {
             max-width: 1000px;
             margin: 0 auto;
@@ -27,14 +21,12 @@
             box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.15);
             overflow: hidden;
         }
-
         .hero {
             background: #1a5a1a;
             padding: 2rem;
             text-align: center;
             color: white;
         }
-
         .hero h1 {
             font-size: 2rem;
             display: flex;
@@ -42,18 +34,13 @@
             gap: 12px;
             flex-wrap: wrap;
         }
-
         .hero h1 span {
             background: #ffdd77;
             color: #1a5a1a;
             padding: 0 14px;
             border-radius: 60px;
         }
-
-        .content {
-            padding: 2rem;
-        }
-
+        .content { padding: 2rem; }
         .theory-card {
             background: #fff9e8;
             border-left: 6px solid #2b7a2b;
@@ -61,7 +48,6 @@
             border-radius: 1.5rem;
             margin-bottom: 2rem;
         }
-
         .query-area {
             background: white;
             border-radius: 1.8rem;
@@ -69,14 +55,12 @@
             margin-bottom: 2rem;
             border: 1px solid #cde0c1;
         }
-
         .input-group {
             display: flex;
             flex-wrap: wrap;
             gap: 12px;
             margin: 1rem 0;
         }
-
         .input-group input {
             flex: 3;
             padding: 0.9rem 1.2rem;
@@ -84,7 +68,6 @@
             border-radius: 60px;
             font-size: 1rem;
         }
-
         .input-group button {
             background: #1a5a1a;
             color: white;
@@ -98,12 +81,10 @@
             gap: 8px;
             transition: 0.2s;
         }
-
         .input-group button:hover {
             background: #0e3a0e;
             transform: scale(0.97);
         }
-
         .result-card {
             background: #fafcf8;
             border-radius: 1.5rem;
@@ -111,7 +92,6 @@
             margin-top: 1rem;
             border: 1px solid #cde2c3;
         }
-
         .path {
             background: #eef4e9;
             padding: 1rem;
@@ -122,7 +102,6 @@
             word-break: break-word;
             border-left: 4px solid #2b7a2b;
         }
-
         .loading {
             display: inline-block;
             width: 20px;
@@ -132,11 +111,7 @@
             border-radius: 50%;
             animation: spin 0.6s linear infinite;
         }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
+        @keyframes spin { to { transform: rotate(360deg); } }
         .grau-badge {
             display: inline-block;
             background: #2b7a2b;
@@ -146,7 +121,6 @@
             font-size: 0.8rem;
             margin-bottom: 0.8rem;
         }
-
         footer {
             text-align: center;
             font-size: 0.7rem;
@@ -154,7 +128,6 @@
             color: #557155;
             border-top: 1px solid #daecce;
         }
-
         @media (max-width: 650px) {
             body { padding: 0.8rem; }
             .content { padding: 1rem; }
@@ -165,13 +138,13 @@
 <div class="container">
     <div class="hero">
         <h1>🌿 Oráculo de Lula <span>6º</span></h1>
-        <p>Calcula o menor caminho entre Lula e qualquer figura pública usando a Wikidata</p>
+        <p>Encontra o menor caminho entre Lula e qualquer figura pública usando a Wikidata</p>
     </div>
     <div class="content">
         <div class="theory-card">
             <h2>📡 Teoria dos Seis Graus de Separação</h2>
-            <p>O Oráculo consulta a <strong>Wikidata</strong> — uma base de conhecimento gigante — para encontrar a cadeia mais curta de conexões entre o presidente Lula e a pessoa pesquisada. <strong>Nenhum grafo pré-definido</strong>; tudo é descoberto dinamicamente via consultas SPARQL de 1 a 5 graus.</p>
-            <small>🔍 Conexões consideram: cargos políticos, partido, empregador, parentesco, associações, eventos, etc.</small>
+            <p>Este Oráculo consulta a <strong>Wikidata</strong> em tempo real para encontrar a cadeia mais curta de conexões entre o presidente Lula e a pessoa pesquisada. O sistema busca conexões diretas e, se não encontrar, procura por <strong>intermediários em comum</strong> para formar um caminho.</p>
+            <small>🔍 Conexões consideram: cargos, partido, empregador, parentesco, associações e eventos.</small>
         </div>
 
         <div class="query-area">
@@ -179,13 +152,13 @@
                 <input type="text" id="personInput" placeholder="Ex: Joe Biden, Papa Francisco, Neymar, Dilma Rousseff" value="">
                 <button id="searchBtn">✨ Consultar Número de Lula</button>
             </div>
-            <p style="font-size:0.8rem;">🔎 A busca pode levar de 3 a 10 segundos. O sistema testa caminhos de 1 até 5 graus.</p>
+            <p style="font-size:0.8rem;">🔎 A busca pode levar alguns segundos. O sistema testa caminhos de 1 até 5 graus.</p>
         </div>
 
         <div id="resultContainer">
             <div class="result-card">💡 Digite um nome e clique em "Consultar Número de Lula".</div>
         </div>
-        <footer>🌐 Fonte: Wikidata (consulta SPARQL progressiva). ID correto de Lula: Q37181.</footer>
+        <footer>🌐 Fonte: Wikidata (consulta SPARQL progressiva). Inclui busca por intermediários comuns.</footer>
     </div>
 </div>
 
@@ -206,7 +179,7 @@
         "wdt:P3373", // irmão
         "wdt:P737",  // influenciado por
         "wdt:P1416", // associação
-        "wdt:P1344", // participante de
+        "wdt:P1344", // participante de (EVENTOS)
         "wdt:P793",  // evento significativo
         "wdt:P155",  // substituído por
         "wdt:P156",  // substitui
@@ -218,7 +191,7 @@
     ];
     const PROPS_LIST = CONNECTION_PROPS.join(", ");
 
-    // Cache simples para evitar consultas repetidas
+    // Cache para otimização
     const labelCache = new Map();
     const neighborCache = new Map();
 
@@ -306,16 +279,17 @@
             const neighborQid = binding.neighbor.value.split('/').pop();
             neighbors.push(neighborQid);
         }
-        // Remove duplicatas
         const unique = [...new Set(neighbors)];
         neighborCache.set(qid, unique);
         return unique;
     }
 
     // ==============================================
-    // BFS PARA ENCONTRAR O MENOR CAMINHO
+    // ESTRATÉGIA DE BUSCA AVANÇADA (BFS + INTERMEDIÁRIOS)
     // ==============================================
-    async function findShortestPath(startQid, targetQid, maxDepth = MAX_DEGREES) {
+    
+    // 1. Busca caminho direto via BFS
+    async function findDirectPath(startQid, targetQid, maxDepth = MAX_DEGREES) {
         if (startQid === targetQid) return [startQid];
         
         const queue = [{ qid: startQid, path: [startQid] }];
@@ -333,9 +307,35 @@
                 visited.add(nb);
                 queue.push({ qid: nb, path: newPath });
             }
-            // Pequeno atraso para não sobrecarregar a API
             await new Promise(r => setTimeout(r, 30));
         }
+        return null;
+    }
+
+    // 2. Busca por intermediários em comum (caminho de 2 graus indireto)
+    async function findCommonIntermediaryPath(startQid, targetQid) {
+        const startNeighbors = await getNeighbors(startQid);
+        const targetNeighbors = await getNeighbors(targetQid);
+        
+        // Encontra um intermediário que esteja nas duas listas
+        const common = startNeighbors.filter(n => targetNeighbors.includes(n));
+        if (common.length > 0) {
+            return [startQid, common[0], targetQid];
+        }
+        return null;
+    }
+
+    // Função principal que combina as estratégias
+    async function findShortestPath(startQid, targetQid, maxDepth = MAX_DEGREES) {
+        // Tenta caminho direto primeiro
+        let directPath = await findDirectPath(startQid, targetQid, maxDepth);
+        if (directPath) return directPath;
+        
+        // Se falhou, tenta buscar via intermediário comum (2 graus)
+        let intermediaryPath = await findCommonIntermediaryPath(startQid, targetQid);
+        if (intermediaryPath) return intermediaryPath;
+        
+        // Se ainda falhou, retorna null
         return null;
     }
 
@@ -362,7 +362,7 @@
 
         container.innerHTML = `<div class="result-card">🕸️ Encontrado: ${nome} (${pessoaQid}). Buscando menor caminho até Lula (${LULA_QID})...<br>Isso pode levar até 15 segundos.<div class="loading"></div></div>`;
 
-        // 2. Encontrar caminho mínimo (BFS)
+        // 2. Encontrar caminho mínimo (BFS + Intermediários)
         const caminhoQids = await findShortestPath(LULA_QID, pessoaQid, MAX_DEGREES);
 
         if (!caminhoQids) {
