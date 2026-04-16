@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Holografia Flutuante | Símbolos do Brasil</title>
+    <title>Símbolos do Brasil | Geometrias Flutuantes</title>
     <style>
         body {
             margin: 0;
@@ -19,15 +19,15 @@
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
-            gap: 8px;
+            gap: 10px;
             padding: 10px 20px;
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(0, 0, 0, 0.6);
             backdrop-filter: blur(12px);
             border-radius: 50px;
             width: fit-content;
             margin: 0 auto;
             z-index: 30;
-            border: 1px solid rgba(100, 180, 255, 0.4);
+            border: 1px solid rgba(100, 180, 255, 0.3);
             pointer-events: auto;
         }
         .city-btn {
@@ -48,14 +48,14 @@
             color: white;
             box-shadow: 0 0 12px rgba(42, 110, 255, 0.6);
         }
-        .url-panel {
+        .file-panel {
             position: absolute;
             bottom: 20px;
             left: 0;
             right: 0;
             display: flex;
             justify-content: center;
-            gap: 10px;
+            gap: 12px;
             padding: 10px;
             background: rgba(0,0,0,0.7);
             backdrop-filter: blur(10px);
@@ -66,43 +66,45 @@
             border: 1px solid rgba(100,180,255,0.3);
             pointer-events: auto;
         }
-        .url-panel input {
-            background: rgba(20,30,50,0.9);
-            border: 1px solid #2a6eff;
-            padding: 8px 16px;
-            border-radius: 40px;
-            color: white;
-            width: 260px;
-            font-family: monospace;
-            font-size: 12px;
-            outline: none;
-        }
-        .url-panel button {
+        .file-panel label {
             background: #2a6eff;
-            border: none;
             padding: 8px 20px;
             border-radius: 40px;
             color: white;
             cursor: pointer;
             font-weight: bold;
+            font-size: 12px;
             transition: 0.2s;
         }
-        .url-panel button:hover {
+        .file-panel label:hover {
             background: #00aaff;
             box-shadow: 0 0 10px #2a6eff;
         }
+        .file-panel button {
+            background: rgba(50,70,100,0.9);
+            border: 1px solid #2a6eff;
+            padding: 8px 20px;
+            border-radius: 40px;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        .file-panel button:hover {
+            background: #2a6eff;
+        }
         .info-text {
             position: absolute;
-            top: 85px;
+            bottom: 90px;
             left: 0;
             right: 0;
             text-align: center;
             pointer-events: none;
             z-index: 20;
-            color: rgba(180, 220, 255, 0.8);
+            color: rgba(180, 220, 255, 0.7);
             font-size: 11px;
             font-family: monospace;
-            background: rgba(0,0,0,0.4);
+            background: rgba(0,0,0,0.3);
             width: fit-content;
             margin: 0 auto;
             padding: 4px 12px;
@@ -120,26 +122,28 @@
         }
         @media (max-width: 700px) {
             .city-btn { padding: 4px 8px; font-size: 9px; }
-            .url-panel input { width: 160px; font-size: 10px; }
-            .info-text { top: 75px; font-size: 9px; }
+            .file-panel label, .file-panel button { padding: 5px 12px; font-size: 10px; }
+            .info-text { bottom: 80px; font-size: 9px; }
         }
+        input[type="file"] { display: none; }
     </style>
 </head>
 <body>
     <div class="city-menu" id="cityMenu">
-        <button class="city-btn" data-city="rio">RIO ✝️</button>
-        <button class="city-btn" data-city="recife">RECIFE 🏛️</button>
-        <button class="city-btn" data-city="manaus">MANAUS 🎭</button>
-        <button class="city-btn" data-city="saoPaulo">SÃO PAULO 🌉</button>
-        <button class="city-btn" data-city="salvador">SALVADOR ⚓</button>
-        <button class="city-btn" data-city="brasilia">BRASÍLIA ⛪</button>
-        <button class="city-btn" data-city="beloHorizonte">BH 🏞️</button>
-        <button class="city-btn" data-city="fortaleza">FORTALEZA 🌊</button>
+        <button class="city-btn" data-city="rio">✝️ HIPERBOLOIDE</button>
+        <button class="city-btn" data-city="recife">🏛️ PRISMA ESPIRAL</button>
+        <button class="city-btn" data-city="manaus">🎭 CÚPULA GEODÉSICA</button>
+        <button class="city-btn" data-city="saoPaulo">🌉 PARÁBOLA</button>
+        <button class="city-btn" data-city="salvador">⚓ PARALELEPÍPEDO</button>
+        <button class="city-btn" data-city="brasilia">⛪ HIPÉRBOLE</button>
+        <button class="city-btn" data-city="beloHorizonte">🏞️ TORUS</button>
+        <button class="city-btn" data-city="fortaleza">🌊 NÓ TOROIDAL</button>
     </div>
-    <div class="info-text" id="infoText">🌀 HOLOGRAMAS FLUTUANTES | toque para soprar vento | URL personalizada</div>
-    <div class="url-panel">
-        <input type="text" id="imageUrl" placeholder="URL da imagem (png, jpg, gif)" value="">
-        <button id="applyUrl">APLICAR AO SÍMBOLO ATUAL</button>
+    <div class="info-text" id="infoText">✨ toque ou mova o mouse sobre o símbolo | escolha uma imagem local para holografia ✨</div>
+    <div class="file-panel">
+        <label for="imageUpload">📁 CARREGAR IMAGEM</label>
+        <input type="file" id="imageUpload" accept="image/jpeg, image/png, image/gif, image/webp">
+        <button id="restoreModel">🔄 RESTAURAR GEOMETRIA</button>
     </div>
     <div id="touchRipple" class="touch-ripple" style="display: none;"></div>
 
@@ -159,243 +163,427 @@
         import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
         import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 
-        // --- CENA HOLOGRÁFICA ---
+        // --- CENA ---
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0x010118);
-        scene.fog = new THREE.FogExp2(0x010118, 0.006);
+        scene.fog = new THREE.FogExp2(0x010118, 0.008);
 
-        const camera = new THREE.PerspectiveCamera(48, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(1.8, 2.6, 6.2);
-        camera.lookAt(0, 1.5, 0);
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(1.8, 3.0, 6.8);
+        camera.lookAt(0, 1.8, 0);
 
         const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, precision: 'highp' });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         renderer.shadowMap.enabled = true;
         renderer.toneMapping = THREE.ReinhardToneMapping;
-        renderer.toneMappingExposure = 1.4;
+        renderer.toneMappingExposure = 1.35;
         document.body.appendChild(renderer.domElement);
 
-        // Bloom intenso (holografia)
+        // Bloom
         const renderScene = new RenderPass(scene, camera);
-        const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.2, 0.5, 0.35);
-        bloomPass.threshold = 0.05;
-        bloomPass.strength = 1.0;
-        bloomPass.radius = 0.75;
+        const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.0, 0.4, 0.3);
+        bloomPass.threshold = 0.08;
+        bloomPass.strength = 0.85;
+        bloomPass.radius = 0.65;
         const effectComposer = new EffectComposer(renderer);
         effectComposer.addPass(renderScene);
         effectComposer.addPass(bloomPass);
 
+        // Controles
         const controls = new OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
         controls.dampingFactor = 0.06;
-        controls.rotateSpeed = 0.9;
-        controls.zoomSpeed = 1.0;
+        controls.rotateSpeed = 0.8;
+        controls.zoomSpeed = 0.9;
         controls.enablePan = false;
-        controls.target.set(0, 1.6, 0);
+        controls.target.set(0, 1.8, 0);
 
-        // --- LUZES DRAMÁTICAS ---
-        const ambientLight = new THREE.AmbientLight(0x112244, 0.4);
+        // --- ILUMINAÇÃO ---
+        const ambientLight = new THREE.AmbientLight(0x112244, 0.45);
         scene.add(ambientLight);
-        const mainLight = new THREE.DirectionalLight(0xfff0e0, 1.0);
-        mainLight.position.set(2, 4, 3);
+        const mainLight = new THREE.DirectionalLight(0xfff5e0, 1.0);
+        mainLight.position.set(2, 5, 3);
         mainLight.castShadow = true;
         scene.add(mainLight);
         const fillLight = new THREE.PointLight(0x4488ff, 0.6);
         fillLight.position.set(-1.5, 2, 2);
         scene.add(fillLight);
         const backLight = new THREE.PointLight(0x3366cc, 0.5);
-        backLight.position.set(0, 2.5, -3.5);
+        backLight.position.set(0, 2.5, -3.8);
         scene.add(backLight);
-        const danceLight = new THREE.PointLight(0x44aaff, 0.85);
+        const danceLight = new THREE.PointLight(0x44aaff, 0.75);
         danceLight.castShadow = false;
         scene.add(danceLight);
         const groundGlow = new THREE.PointLight(0x0088ff, 0.5);
         groundGlow.position.set(0, -0.3, 0);
         scene.add(groundGlow);
 
-        // Chão sutil
+        // Chão
         const gridHelper = new THREE.GridHelper(10, 20, 0x3366aa, 0x224466);
-        gridHelper.position.y = -0.6;
+        gridHelper.position.y = -0.5;
         gridHelper.material.transparent = true;
         gridHelper.material.opacity = 0.2;
         scene.add(gridHelper);
         const shadowPlane = new THREE.Mesh(
-            new THREE.PlaneGeometry(7, 7),
-            new THREE.ShadowMaterial({ opacity: 0.25, color: 0x000000, transparent: true })
+            new THREE.PlaneGeometry(8, 8),
+            new THREE.ShadowMaterial({ opacity: 0.3, color: 0x000000, transparent: true })
         );
         shadowPlane.rotation.x = -Math.PI / 2;
-        shadowPlane.position.y = -0.58;
+        shadowPlane.position.y = -0.48;
         shadowPlane.receiveShadow = true;
         scene.add(shadowPlane);
 
-        // --- PLANO HOLOGRÁFICO (TECIDO) ---
-        const width = 3.8;
-        const height = 3.8;
-        const segments = 140;
-        const geometry = new THREE.PlaneGeometry(width, height, segments, segments);
-        const positions = geometry.attributes.position.array;
-        const origX = [], origY = [], origZ = [];
-        for (let i = 0; i < positions.length; i += 3) {
-            origX.push(positions[i]);
-            origY.push(positions[i+1]);
-            origZ.push(positions[i+2]);
+        // --- MODELOS 3D DETALHADOS (associados a cada forma matemática) ---
+        function createChristGeometry() {
+            const group = new THREE.Group();
+            const bodyGeo = new THREE.CylinderGeometry(0.5, 0.62, 1.75, 32, 32);
+            const materialBody = new THREE.MeshStandardMaterial({ color: 0xeeddcc, metalness: 0.25, roughness: 0.4, emissive: 0x442200, emissiveIntensity: 0.12 });
+            const body = new THREE.Mesh(bodyGeo, materialBody);
+            body.position.y = 0;
+            group.add(body);
+            const headGeo = new THREE.SphereGeometry(0.46, 48, 48);
+            const headMat = new THREE.MeshStandardMaterial({ color: 0xeeddcc });
+            const head = new THREE.Mesh(headGeo, headMat);
+            head.position.y = 1.05;
+            group.add(head);
+            const armGeo = new THREE.BoxGeometry(1.45, 0.24, 0.38);
+            const armMat = new THREE.MeshStandardMaterial({ color: 0xeeddcc });
+            const leftArm = new THREE.Mesh(armGeo, armMat);
+            leftArm.position.set(-1.0, 0.65, 0);
+            leftArm.rotation.z = 0.28;
+            const rightArm = new THREE.Mesh(armGeo, armMat);
+            rightArm.position.set(1.0, 0.65, 0);
+            rightArm.rotation.z = -0.28;
+            group.add(leftArm);
+            group.add(rightArm);
+            const cloakGeo = new THREE.ConeGeometry(0.8, 0.9, 12);
+            const cloakMat = new THREE.MeshStandardMaterial({ color: 0xaa9977 });
+            const cloak = new THREE.Mesh(cloakGeo, cloakMat);
+            cloak.position.y = -0.22;
+            group.add(cloak);
+            const shoulderGeo = new THREE.SphereGeometry(0.18, 16, 16);
+            const shoulderMat = new THREE.MeshStandardMaterial({ color: 0xeeddcc });
+            const leftShoulder = new THREE.Mesh(shoulderGeo, shoulderMat);
+            leftShoulder.position.set(-0.65, 0.85, 0);
+            const rightShoulder = new THREE.Mesh(shoulderGeo, shoulderMat);
+            rightShoulder.position.set(0.65, 0.85, 0);
+            group.add(leftShoulder);
+            group.add(rightShoulder);
+            return group;
         }
-        geometry.computeVertexNormals();
 
-        const hologramMaterial = new THREE.MeshStandardMaterial({
-            color: 0x88aaff,
-            emissive: 0x2266aa,
-            emissiveIntensity: 0.65,
-            metalness: 0.85,
-            roughness: 0.25,
-            transparent: true,
-            opacity: 0.92,
-            side: THREE.DoubleSide
-        });
+        function createTowerGeometry() {
+            const group = new THREE.Group();
+            const points = [];
+            for (let i = 0; i <= 70; i++) {
+                const t = i / 70;
+                const r = 0.48 * (1 - t * 0.68);
+                points.push(new THREE.Vector3(r, t * 2.6, 0));
+            }
+            const latheGeo = new THREE.LatheGeometry(points, 36);
+            const material = new THREE.MeshStandardMaterial({ color: 0x88ccff, metalness: 0.75, roughness: 0.2, transparent: true, opacity: 0.92, emissive: 0x2288aa, emissiveIntensity: 0.3 });
+            const tower = new THREE.Mesh(latheGeo, material);
+            group.add(tower);
+            for (let i = 0; i < 6; i++) {
+                const ringGeo = new THREE.TorusGeometry(0.6, 0.06, 24, 120);
+                const ringMat = new THREE.MeshStandardMaterial({ color: 0xaaffff });
+                const ring = new THREE.Mesh(ringGeo, ringMat);
+                ring.position.y = 0.35 + i * 0.5;
+                ring.rotation.x = Math.PI / 2;
+                group.add(ring);
+            }
+            const crystalGeo = new THREE.ConeGeometry(0.42, 0.55, 8);
+            const crystalMat = new THREE.MeshStandardMaterial({ color: 0xaaffff, emissive: 0x44aaff, emissiveIntensity: 0.6 });
+            const crystal = new THREE.Mesh(crystalGeo, crystalMat);
+            crystal.position.y = 2.65;
+            group.add(crystal);
+            return group;
+        }
 
-        const fabricMesh = new THREE.Mesh(geometry, hologramMaterial);
-        fabricMesh.castShadow = true;
-        scene.add(fabricMesh);
+        function createTheaterGeometry() {
+            const group = new THREE.Group();
+            const domeGeo = new THREE.SphereGeometry(0.88, 48, 48, 0, Math.PI*2, 0, Math.PI/2);
+            const domeMat = new THREE.MeshStandardMaterial({ color: 0xddbb88, metalness: 0.65 });
+            const dome = new THREE.Mesh(domeGeo, domeMat);
+            dome.position.y = 0.95;
+            group.add(dome);
+            const baseGeo = new THREE.BoxGeometry(1.75, 0.5, 1.75);
+            const baseMat = new THREE.MeshStandardMaterial({ color: 0xaa8866 });
+            const base = new THREE.Mesh(baseGeo, baseMat);
+            base.position.y = 0;
+            group.add(base);
+            for (let i = 0; i < 8; i++) {
+                const colGeo = new THREE.CylinderGeometry(0.13, 0.16, 1.05, 12);
+                const colMat = new THREE.MeshStandardMaterial({ color: 0xccaa88 });
+                const col = new THREE.Mesh(colGeo, colMat);
+                const angle = (i / 8) * Math.PI * 2;
+                col.position.set(Math.cos(angle) * 1.05, 0.52, Math.sin(angle) * 1.05);
+                group.add(col);
+            }
+            return group;
+        }
 
-        // --- SISTEMA DE TEXTURAS COM FALLBACK ---
-        let currentTexture = null;
+        function createBridgeGeometry() {
+            const group = new THREE.Group();
+            const pylonGeo = new THREE.CylinderGeometry(0.38, 0.6, 2.5, 12);
+            const pylonMat = new THREE.MeshStandardMaterial({ color: 0xaaaaaa, metalness: 0.85 });
+            const pylon = new THREE.Mesh(pylonGeo, pylonMat);
+            pylon.position.y = 1.25;
+            group.add(pylon);
+            for (let i = -1.3; i <= 1.3; i+=0.65) {
+                const cableGeo = new THREE.CylinderGeometry(0.07, 0.07, 2.0, 6);
+                const cableMat = new THREE.MeshStandardMaterial({ color: 0xccccdd });
+                const cable = new THREE.Mesh(cableGeo, cableMat);
+                cable.position.set(i, 2.0, 0);
+                cable.rotation.z = 0.38 * Math.sign(i);
+                group.add(cable);
+            }
+            return group;
+        }
+
+        function createElevatorGeometry() {
+            const group = new THREE.Group();
+            const towerGeo = new THREE.BoxGeometry(0.95, 2.8, 0.95);
+            const towerMat = new THREE.MeshStandardMaterial({ color: 0xbbaa99 });
+            const tower = new THREE.Mesh(towerGeo, towerMat);
+            tower.position.y = 1.4;
+            group.add(tower);
+            const cabinGeo = new THREE.BoxGeometry(0.9, 0.7, 0.9);
+            const cabinMat = new THREE.MeshStandardMaterial({ color: 0x88aaff });
+            const leftCabin = new THREE.Mesh(cabinGeo, cabinMat);
+            leftCabin.position.set(-0.9, 0.95, 0);
+            const rightCabin = new THREE.Mesh(cabinGeo, cabinMat);
+            rightCabin.position.set(0.9, 0.95, 0);
+            group.add(leftCabin);
+            group.add(rightCabin);
+            return group;
+        }
+
+        function createCathedralGeometry() {
+            const group = new THREE.Group();
+            for (let i = 0; i < 16; i++) {
+                const angle = (i / 16) * Math.PI * 2;
+                const pillarGeo = new THREE.CylinderGeometry(0.11, 0.14, 1.85, 8);
+                const pillarMat = new THREE.MeshStandardMaterial({ color: 0xeeddcc });
+                const pillar = new THREE.Mesh(pillarGeo, pillarMat);
+                const r = 1.1;
+                pillar.position.set(Math.cos(angle) * r, 0.92, Math.sin(angle) * r);
+                pillar.rotation.z = angle;
+                group.add(pillar);
+            }
+            const roofGeo = new THREE.ConeGeometry(1.1, 0.85, 24);
+            const roofMat = new THREE.MeshStandardMaterial({ color: 0xccaa88 });
+            const roof = new THREE.Mesh(roofGeo, roofMat);
+            roof.position.y = 1.85;
+            group.add(roof);
+            return group;
+        }
+
+        function createPampulhaGeometry() {
+            const group = new THREE.Group();
+            const curveGeo = new THREE.TorusGeometry(0.9, 0.14, 48, 128, Math.PI);
+            const curveMat = new THREE.MeshStandardMaterial({ color: 0x88aaff });
+            const arch = new THREE.Mesh(curveGeo, curveMat);
+            arch.rotation.x = Math.PI / 2;
+            arch.rotation.z = 0.65;
+            group.add(arch);
+            const sphereGeo = new THREE.SphereGeometry(0.52, 48, 48);
+            const sphereMat = new THREE.MeshStandardMaterial({ color: 0xffaa77 });
+            const sphere = new THREE.Mesh(sphereGeo, sphereMat);
+            sphere.position.y = 0.48;
+            group.add(sphere);
+            return group;
+        }
+
+        function createFortalezaGeometry() {
+            const group = new THREE.Group();
+            const knotGeo = new THREE.TorusKnotGeometry(0.75, 0.12, 160, 24, 3, 4);
+            const knotMat = new THREE.MeshStandardMaterial({ color: 0x33ccff, metalness: 0.75 });
+            const knot = new THREE.Mesh(knotGeo, knotMat);
+            knot.scale.set(0.7, 0.7, 0.7);
+            group.add(knot);
+            const baseGeo = new THREE.CylinderGeometry(0.65, 0.85, 0.45, 8);
+            const baseMat = new THREE.MeshStandardMaterial({ color: 0x88aadd });
+            const base = new THREE.Mesh(baseGeo, baseMat);
+            base.position.y = -0.75;
+            group.add(base);
+            return group;
+        }
+
+        // --- SISTEMA DE MOVIMENTO (vento e ondas) ---
+        let currentSymbol = null;
+        let currentMeshes = [];
+        let currentWindVectors = [];
+        let currentPhasesList = [];
+        let originalPositions = [];
         let currentCityId = 'rio';
+        let isHologram = false;
 
-        // Gera uma textura padrão baseada no nome da cidade (Canvas)
-        function generateCityTexture(cityId) {
-            const canvas = document.createElement('canvas');
-            canvas.width = 512;
-            canvas.height = 512;
-            const ctx = canvas.getContext('2d');
-            
-            // Fundo gradiente holográfico
-            const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-            grad.addColorStop(0, '#2266aa');
-            grad.addColorStop(1, '#44aaff');
-            ctx.fillStyle = grad;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            ctx.strokeStyle = '#ffffff';
-            ctx.lineWidth = 8;
-            ctx.strokeRect(20, 20, canvas.width - 40, canvas.height - 40);
-            
-            ctx.fillStyle = '#ffffffcc';
-            ctx.font = `Bold ${Math.floor(canvas.width * 0.08)}px "Segoe UI", monospace`;
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            
-            let label = '';
+        function loadModel(cityId) {
+            if (currentSymbol) scene.remove(currentSymbol);
             switch(cityId) {
-                case 'rio': label = 'CRISTO'; break;
-                case 'recife': label = 'TORRE DE CRISTAL'; break;
-                case 'manaus': label = 'TEATRO AMAZONAS'; break;
-                case 'saoPaulo': label = 'PONTE ESTAIADA'; break;
-                case 'salvador': label = 'ELEVADOR LACERDA'; break;
-                case 'brasilia': label = 'CATEDRAL'; break;
-                case 'beloHorizonte': label = 'PAMPULHA'; break;
-                case 'fortaleza': label = 'DRAGÃO DO MAR'; break;
-                default: label = cityId.toUpperCase();
+                case 'rio': currentSymbol = createChristGeometry(); break;
+                case 'recife': currentSymbol = createTowerGeometry(); break;
+                case 'manaus': currentSymbol = createTheaterGeometry(); break;
+                case 'saoPaulo': currentSymbol = createBridgeGeometry(); break;
+                case 'salvador': currentSymbol = createElevatorGeometry(); break;
+                case 'brasilia': currentSymbol = createCathedralGeometry(); break;
+                case 'beloHorizonte': currentSymbol = createPampulhaGeometry(); break;
+                case 'fortaleza': currentSymbol = createFortalezaGeometry(); break;
+                default: currentSymbol = createChristGeometry();
             }
-            ctx.fillText(label, canvas.width/2, canvas.height/2);
+            scene.add(currentSymbol);
+            currentSymbol.position.y = 0.85;
+            currentSymbol.castShadow = true;
             
-            const texture = new THREE.CanvasTexture(canvas);
-            texture.wrapS = THREE.RepeatWrapping;
-            texture.wrapT = THREE.RepeatWrapping;
-            texture.repeat.set(1.2, 1.2);
-            return texture;
-        }
-
-        function loadTextureFromUrl(url) {
-            if (!url || url.trim() === "") {
-                // Se URL vazia, recarrega o padrão da cidade atual
-                setDefaultTextureForCity(currentCityId);
-                return;
-            }
-            const loader = new THREE.TextureLoader();
-            loader.load(url, 
-                (texture) => {
-                    if (currentTexture) currentTexture.dispose();
-                    currentTexture = texture;
-                    texture.wrapS = THREE.RepeatWrapping;
-                    texture.wrapT = THREE.RepeatWrapping;
-                    texture.repeat.set(1.2, 1.2);
-                    hologramMaterial.map = texture;
-                    hologramMaterial.needsUpdate = true;
-                    hologramMaterial.emissiveIntensity = 0.85;
-                    document.getElementById('infoText').innerHTML = '✅ imagem carregada via URL!';
-                    setTimeout(() => {
-                        document.getElementById('infoText').innerHTML = '🌀 HOLOGRAMAS FLUTUANTES | toque para soprar vento | URL personalizada';
-                    }, 2000);
-                },
-                undefined,
-                (err) => {
-                    console.warn("Erro ao carregar URL:", err);
-                    document.getElementById('infoText').innerHTML = '❌ falha ao carregar imagem, mantendo anterior';
-                    setTimeout(() => {
-                        document.getElementById('infoText').innerHTML = '🌀 HOLOGRAMAS FLUTUANTES | toque para soprar vento | URL personalizada';
-                    }, 2000);
+            currentMeshes = [];
+            currentWindVectors = [];
+            currentPhasesList = [];
+            originalPositions = [];
+            currentSymbol.traverse(child => {
+                if (child.isMesh) {
+                    const geom = child.geometry;
+                    if (geom && geom.attributes.position) {
+                        const posAttr = geom.attributes.position.array;
+                        const count = geom.attributes.position.count;
+                        const origCopy = [];
+                        for (let i = 0; i < count; i++) {
+                            const ix = i*3;
+                            origCopy.push(posAttr[ix], posAttr[ix+1], posAttr[ix+2]);
+                            currentWindVectors.push(0);
+                            currentPhasesList.push(Math.random() * Math.PI * 2);
+                        }
+                        originalPositions.push({ mesh: child, orig: origCopy, count: count });
+                        currentMeshes.push(child);
+                    }
                 }
-            );
+            });
         }
 
-        function setDefaultTextureForCity(cityId) {
-            if (currentTexture) currentTexture.dispose();
-            const defaultTex = generateCityTexture(cityId);
-            currentTexture = defaultTex;
-            hologramMaterial.map = defaultTex;
-            hologramMaterial.needsUpdate = true;
-            hologramMaterial.emissiveIntensity = 0.65;
+        function createHologramFromImage(imageFile) {
+            if (currentSymbol) scene.remove(currentSymbol);
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const imgUrl = e.target.result;
+                const geometry = new THREE.PlaneGeometry(3.2, 3.2, 120, 120);
+                const positions = geometry.attributes.position.array;
+                const origX = [], origY = [], origZ = [];
+                for (let i = 0; i < positions.length; i += 3) {
+                    origX.push(positions[i]);
+                    origY.push(positions[i+1]);
+                    origZ.push(positions[i+2]);
+                }
+                const material = new THREE.MeshStandardMaterial({
+                    color: 0xffffff,
+                    emissive: 0x2266aa,
+                    emissiveIntensity: 0.7,
+                    metalness: 0.85,
+                    roughness: 0.25,
+                    transparent: true,
+                    opacity: 0.92,
+                    side: THREE.DoubleSide
+                });
+                const plane = new THREE.Mesh(geometry, material);
+                plane.position.y = 1.3;
+                plane.castShadow = true;
+                scene.add(plane);
+                currentSymbol = plane;
+                isHologram = true;
+                
+                currentMeshes = [plane];
+                currentWindVectors = new Array(positions.length/3).fill(0);
+                currentPhasesList = Array(positions.length/3).fill(0).map(() => Math.random() * Math.PI * 2);
+                originalPositions = [{ mesh: plane, orig: [...positions], count: positions.length/3 }];
+                
+                const texture = new THREE.TextureLoader().load(imgUrl);
+                material.map = texture;
+                material.needsUpdate = true;
+                document.getElementById('infoText').innerHTML = '✅ imagem holográfica aplicada! Toque para ondular.';
+                setTimeout(() => {
+                    document.getElementById('infoText').innerHTML = '✨ toque ou mova o mouse | escolha uma imagem local para holografia ✨';
+                }, 2500);
+            };
+            reader.readAsDataURL(imageFile);
         }
 
-        // --- MOVIMENTO DO TECIDO (ondulações + vento) ---
-        const vertexCount = geometry.attributes.position.count;
-        let windForce = new Array(vertexCount).fill(0);
-        let phases = new Array(vertexCount);
-        for (let i = 0; i < vertexCount; i++) phases[i] = Math.random() * Math.PI * 2;
-        
+        function restoreModel() {
+            if (!isHologram && currentSymbol && currentCityId) return;
+            isHologram = false;
+            loadModel(currentCityId);
+            document.getElementById('infoText').innerHTML = `🌀 geometria restaurada: ${currentCityId}`;
+            setTimeout(() => {
+                document.getElementById('infoText').innerHTML = '✨ toque ou mova o mouse | escolha uma imagem local para holografia ✨';
+            }, 2000);
+        }
+
+        // --- ANIMAÇÃO DOS VÉRTICES ---
         let globalTime = 0;
-        function updateFabricMovement() {
-            globalTime += 0.018;
-            for (let i = 0; i < vertexCount; i++) {
-                windForce[i] *= 0.99;
-                if (windForce[i] < 0.003) windForce[i] = 0;
+        function updateFloatingSymbol() {
+            if (!currentMeshes.length) return;
+            globalTime += 0.016;
+            for (let i = 0; i < currentWindVectors.length; i++) {
+                currentWindVectors[i] *= 0.992;
+                if (currentWindVectors[i] < 0.002) currentWindVectors[i] = 0;
             }
-            const posAttr = geometry.attributes.position;
-            const posArray = posAttr.array;
-            
-            for (let i = 0; i < vertexCount; i++) {
-                const x = origX[i];
-                const z = origZ[i];
-                const yOrig = origY[i];
-                const wave1 = Math.sin(x * 1.4 + globalTime * 1.1) * Math.cos(z * 1.2 + globalTime * 0.8) * 0.08;
-                const wave2 = Math.sin(x * 2.3 - globalTime * 1.3) * 0.06;
-                const wave3 = Math.cos(z * 2.0 + globalTime * 1.5) * 0.06;
-                const wave4 = Math.sin((x * 1.8 + z * 1.5) + globalTime * 1.7) * 0.07;
-                const individual = Math.sin(globalTime * 1.2 + phases[i]) * 0.04;
-                const windPush = windForce[i] * 0.12;
-                const globalFloat = Math.sin(globalTime * 0.5) * 0.04;
-                let newY = yOrig + wave1 + wave2 + wave3 + wave4 + individual + windPush + globalFloat;
-                if (newY < -0.2) newY = -0.2;
-                if (newY > 1.2) newY = 1.2;
-                posArray[i*3+1] = newY;
+            let idxOffset = 0;
+            for (let m = 0; m < currentMeshes.length; m++) {
+                const mesh = currentMeshes[m];
+                const geom = mesh.geometry;
+                const posAttr = geom.attributes.position;
+                const posArray = posAttr.array;
+                const origData = originalPositions.find(op => op.mesh === mesh);
+                if (!origData) continue;
+                const orig = origData.orig;
+                const count = origData.count;
+                for (let i = 0; i < count; i++) {
+                    const ix = i*3;
+                    const origX = orig[ix];
+                    const origY = orig[ix+1];
+                    const origZ = orig[ix+2];
+                    const wind = currentWindVectors[idxOffset + i];
+                    const wave1 = Math.sin(origX * 1.5 + globalTime * 1.2) * 0.03;
+                    const wave2 = Math.cos(origZ * 1.3 + globalTime * 0.9) * 0.03;
+                    const wave3 = Math.sin(origY * 1.8 + globalTime * 1.5) * 0.04;
+                    const individual = Math.sin(globalTime * 1.1 + currentPhasesList[idxOffset + i]) * 0.025;
+                    const windPush = wind * 0.08;
+                    const floatY = Math.sin(globalTime * 0.6) * 0.03;
+                    let newX = origX + wave1 + individual * 0.5;
+                    let newY = origY + wave2 + wave3 + windPush + floatY;
+                    let newZ = origZ + wave3 * 0.5 + individual;
+                    posArray[ix] = newX;
+                    posArray[ix+1] = newY;
+                    posArray[ix+2] = newZ;
+                }
+                idxOffset += count;
+                posAttr.needsUpdate = true;
+                geom.computeVertexNormals();
             }
-            posAttr.needsUpdate = true;
-            geometry.computeVertexNormals();
         }
 
-        // --- INTERAÇÃO VENTO POR TOQUE ---
-        function applyWindAtPoint(touchX, touchZ, radius, intensity) {
-            const radSq = radius * radius;
-            for (let i = 0; i < vertexCount; i++) {
-                const dx = origX[i] - touchX;
-                const dz = origZ[i] - touchZ;
-                const distSq = dx*dx + dz*dz;
-                if (distSq < radSq) {
-                    const factor = (1 - Math.sqrt(distSq)/radius) * intensity;
-                    windForce[i] += factor * 0.28;
-                    if (windForce[i] > 0.85) windForce[i] = 0.85;
+        // --- INTERAÇÃO VENTO ---
+        function applyWindToSymbol(touchX, touchZ, radius, intensity) {
+            if (!currentMeshes.length) return;
+            let idxOffset = 0;
+            for (let m = 0; m < currentMeshes.length; m++) {
+                const mesh = currentMeshes[m];
+                const posAttr = mesh.geometry.attributes.position;
+                const posArray = posAttr.array;
+                const count = originalPositions.find(op => op.mesh === mesh).count;
+                for (let i = 0; i < count; i++) {
+                    const ix = i*3;
+                    const vx = posArray[ix];
+                    const vz = posArray[ix+2];
+                    const dx = vx - touchX;
+                    const dz = vz - touchZ;
+                    const distSq = dx*dx + dz*dz;
+                    if (distSq < radius*radius) {
+                        const factor = (1 - Math.sqrt(distSq)/radius) * intensity;
+                        currentWindVectors[idxOffset + i] += factor * 0.4;
+                        if (currentWindVectors[idxOffset + i] > 0.9) currentWindVectors[idxOffset + i] = 0.9;
+                    }
                 }
+                idxOffset += count;
             }
         }
 
@@ -406,33 +594,33 @@
                 -(clientY / renderer.domElement.clientHeight) * 2 + 1
             );
             raycaster.setFromCamera(mouseVec, camera);
-            const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0.4);
+            const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 1.2);
             const point = new THREE.Vector3();
             if (raycaster.ray.intersectPlane(plane, point)) {
-                return { x: point.x, z: point.z, valid: Math.abs(point.x) < 2.5 && Math.abs(point.z) < 2.5 };
+                return { x: point.x, z: point.z, valid: Math.abs(point.x) < 3 && Math.abs(point.z) < 3 };
             }
             return { x: 0, z: 0, valid: false };
         }
 
-        let activeTouches = new Map();
-        let pressTimers = new Map();
+        let activePointers = new Map();
+        let timerMap = new Map();
 
         function onPointerMove(clientX, clientY, id) {
             const { x, z, valid } = getTouchPlanePoint(clientX, clientY);
             if (!valid) return;
-            applyWindAtPoint(x, z, 1.0, 0.18);
+            applyWindToSymbol(x, z, 1.1, 0.2);
         }
         function onPointerDown(clientX, clientY, id) {
             const { x, z, valid } = getTouchPlanePoint(clientX, clientY);
             if (!valid) return;
-            applyWindAtPoint(x, z, 1.2, 0.45);
+            applyWindToSymbol(x, z, 1.3, 0.5);
             const timer = setTimeout(() => {
-                applyWindAtPoint(x, z, 1.4, 0.7);
-                groundGlow.intensity = 1.2;
+                applyWindToSymbol(x, z, 1.5, 0.7);
+                groundGlow.intensity = 1.1;
                 setTimeout(() => { groundGlow.intensity = 0.5; }, 400);
             }, 500);
-            pressTimers.set(id, timer);
-            activeTouches.set(id, true);
+            timerMap.set(id, timer);
+            activePointers.set(id, true);
             const ripple = document.getElementById('touchRipple');
             if (ripple) {
                 ripple.style.display = 'block';
@@ -441,10 +629,10 @@
             }
         }
         function onPointerUp(id) {
-            if (pressTimers.has(id)) clearTimeout(pressTimers.get(id));
-            pressTimers.delete(id);
-            activeTouches.delete(id);
-            if (activeTouches.size === 0) {
+            if (timerMap.has(id)) clearTimeout(timerMap.get(id));
+            timerMap.delete(id);
+            activePointers.delete(id);
+            if (activePointers.size === 0) {
                 document.getElementById('touchRipple')?.setAttribute('style', 'display: none');
             }
         }
@@ -471,62 +659,47 @@
             for (let t of e.changedTouches) onPointerUp(t.identifier);
         });
 
-        // --- PARTÍCULAS DE AR ---
-        const particleCount = 2000;
+        // --- PARTÍCULAS E LUZES ---
+        const particleCount = 1800;
         const particleGeo = new THREE.BufferGeometry();
         const particlePositions = new Float32Array(particleCount * 3);
-        const particleSpeeds = [];
         for (let i = 0; i < particleCount; i++) {
-            particlePositions[i*3] = (Math.random() - 0.5) * 6;
-            particlePositions[i*3+1] = Math.random() * 3.5;
-            particlePositions[i*3+2] = (Math.random() - 0.5) * 5;
-            particleSpeeds.push(0.006 + Math.random() * 0.015);
+            particlePositions[i*3] = (Math.random() - 0.5) * 7;
+            particlePositions[i*3+1] = Math.random() * 4;
+            particlePositions[i*3+2] = (Math.random() - 0.5) * 6;
         }
         particleGeo.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
-        const particleMat = new THREE.PointsMaterial({ color: 0x88aaff, size: 0.045, transparent: true, blending: THREE.AdditiveBlending, opacity: 0.55 });
+        const particleMat = new THREE.PointsMaterial({ color: 0x88aaff, size: 0.04, transparent: true, blending: THREE.AdditiveBlending });
         const particles = new THREE.Points(particleGeo, particleMat);
         scene.add(particles);
         
         function updateParticles() {
             const pos = particleGeo.attributes.position.array;
             for (let i = 0; i < particleCount; i++) {
-                pos[i*3+1] += particleSpeeds[i];
-                if (pos[i*3+1] > 3.2) {
-                    pos[i*3+1] = -0.6;
+                pos[i*3+1] += 0.008;
+                if (pos[i*3+1] > 3.8) {
+                    pos[i*3+1] = -0.5;
                     pos[i*3] = (Math.random() - 0.5) * 6;
                     pos[i*3+2] = (Math.random() - 0.5) * 5;
                 }
-                pos[i*3] += Math.sin(globalTime + i) * 0.0006;
-                pos[i*3+2] += Math.cos(globalTime * 0.9 + i) * 0.0006;
             }
             particleGeo.attributes.position.needsUpdate = true;
         }
 
-        // --- LUZES DINÂMICAS ---
         let lightTime = 0;
-        function updateDynamicLights() {
+        function updateLights() {
             lightTime += 0.016;
-            danceLight.position.x = Math.sin(lightTime * 0.7) * 1.6;
-            danceLight.position.z = Math.cos(lightTime * 0.5) * 1.4;
-            danceLight.position.y = 1.2 + Math.sin(lightTime * 1.2) * 0.8;
-            danceLight.intensity = 0.7 + Math.sin(lightTime * 1.5) * 0.3;
-            mainLight.intensity = 0.9 + Math.sin(lightTime * 0.4) * 0.15;
-            hologramMaterial.emissiveIntensity = 0.65 + Math.sin(lightTime * 2.2) * 0.2;
+            danceLight.position.x = Math.sin(lightTime * 0.7) * 1.8;
+            danceLight.position.z = Math.cos(lightTime * 0.5) * 1.5;
+            danceLight.position.y = 1.8 + Math.sin(lightTime * 1.2) * 0.8;
+            danceLight.intensity = 0.7 + Math.sin(lightTime * 1.4) * 0.25;
+            mainLight.intensity = 0.9 + Math.sin(lightTime * 0.5) * 0.1;
         }
 
-        // --- SCANLINE EFFECT (holografia) ---
-        const scanlineDiv = document.createElement('div');
-        scanlineDiv.style.position = 'absolute';
-        scanlineDiv.style.top = 0;
-        scanlineDiv.style.left = 0;
-        scanlineDiv.style.width = '100%';
-        scanlineDiv.style.height = '100%';
-        scanlineDiv.style.pointerEvents = 'none';
-        scanlineDiv.style.background = 'repeating-linear-gradient(0deg, rgba(0,255,255,0.03) 0px, rgba(0,255,255,0.03) 2px, transparent 2px, transparent 6px)';
-        scanlineDiv.style.zIndex = 50;
-        document.body.appendChild(scanlineDiv);
+        // --- INICIALIZAÇÃO E EVENTOS DO MENU ---
+        loadModel('rio');
+        document.querySelector('.city-btn[data-city="rio"]').classList.add('active');
         
-        // --- MENU DE CIDADES ---
         const btns = document.querySelectorAll('.city-btn');
         btns.forEach(btn => {
             btn.addEventListener('click', () => {
@@ -534,41 +707,36 @@
                 currentCityId = city;
                 btns.forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
-                setDefaultTextureForCity(city);
-                for (let i = 0; i < vertexCount; i++) windForce[i] = 0;
-                document.getElementById('infoText').innerHTML = `🌀 ${btn.innerText} | holograma carregado`;
+                isHologram = false;
+                loadModel(city);
+                document.getElementById('infoText').innerHTML = `🌀 geometria: ${btn.innerText}`;
                 setTimeout(() => {
-                    document.getElementById('infoText').innerHTML = '🌀 HOLOGRAMAS FLUTUANTES | toque para soprar vento | URL personalizada';
+                    document.getElementById('infoText').innerHTML = '✨ toque ou mova o mouse | escolha uma imagem local para holografia ✨';
                 }, 2000);
             });
         });
-        // Inicial
-        document.querySelector('.city-btn[data-city="rio"]').classList.add('active');
-        setDefaultTextureForCity('rio');
         
-        // --- BOTÃO URL FUNCIONAL ---
-        const applyBtn = document.getElementById('applyUrl');
-        const urlInput = document.getElementById('imageUrl');
-        applyBtn.addEventListener('click', () => {
-            const url = urlInput.value.trim();
-            if (url) {
-                loadTextureFromUrl(url);
-            } else {
-                alert('Digite uma URL válida (ex: https://exemplo.com/imagem.jpg)');
+        const fileInput = document.getElementById('imageUpload');
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files && e.target.files[0]) {
+                createHologramFromImage(e.target.files[0]);
             }
         });
+        
+        const restoreBtn = document.getElementById('restoreModel');
+        restoreBtn.addEventListener('click', () => restoreModel());
 
         // --- LOOP PRINCIPAL ---
         function animate() {
-            updateFabricMovement();
+            updateFloatingSymbol();
             updateParticles();
-            updateDynamicLights();
+            updateLights();
             controls.update();
             effectComposer.render();
             requestAnimationFrame(animate);
         }
         animate();
-
+        
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
@@ -576,7 +744,7 @@
             effectComposer.setSize(window.innerWidth, window.innerHeight);
         });
         
-        console.log('✅ Holografia Flutuante restaurada | Botão de URL funcional');
+        console.log('✅ Geometrias flutuantes + imagens locais holográficas');
     </script>
 </body>
 </html>
