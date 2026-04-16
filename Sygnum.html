@@ -1,665 +1,533 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    
-    <!-- METADADOS PARA CLASSIFICAÇÃO DE CONTEÚDO - SEGURANÇA PARA CRIANÇAS -->
-    <meta name="rating" content="General">
-    <meta name="distribution" content="Global">
-    <meta name="audience" content="Everyone">
-    <meta name="content-language" content="pt-br">
-    <meta name="age-rating" content="General Audiences">
-    <meta name="category" content="Educational Game">
-    <meta name="suitable-for-children" content="yes">
-    
-    <title>Sygnum - O Jogo dos Sinais e Significados</title>
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Simulação | Tecido Flutuante - Museu do Amanhã</title>
     <style>
-        * {
-            user-select: none;
-            box-sizing: border-box;
-        }
-
         body {
-            background: linear-gradient(135deg, #1a2a3a 0%, #0f1a24 100%);
             margin: 0;
-            padding: 20px;
-            font-family: 'Segoe UI', 'Poppins', 'Courier New', monospace;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-
-        .game-container {
-            background: rgba(255,255,255,0.95);
-            padding: 25px;
-            margin: 0;
-            width: 100%;
-            max-width: 550px;
-            border-radius: 48px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-        }
-
-        h1 {
-            text-align: center;
-            margin: 0 0 5px 0;
-            font-size: 2.2rem;
-            background: linear-gradient(135deg, #1a2a3a, #2c5f2d);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-
-        .subtitle {
-            text-align: center;
-            color: #666;
-            margin-bottom: 25px;
-            font-size: 0.9rem;
-        }
-
-        /* Área do quiz */
-        .quiz-area {
-            background: #f8f9fa;
-            border-radius: 32px;
-            padding: 25px;
-            margin-bottom: 20px;
-        }
-
-        .sign-display {
-            text-align: center;
-            font-size: 6rem;
-            padding: 30px;
-            background: white;
-            border-radius: 40px;
-            margin-bottom: 25px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            border: 2px solid #e0e0e0;
-        }
-
-        .question-text {
-            text-align: center;
-            font-size: 1.1rem;
-            color: #555;
-            margin-bottom: 20px;
-        }
-
-        .options-area {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .option-btn {
-            background: white;
-            border: 2px solid #ddd;
-            padding: 15px 20px;
-            border-radius: 60px;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: all 0.1s;
-            text-align: center;
-            font-weight: 500;
-            color: #333;
-        }
-
-        .option-btn:hover {
-            background: #f0f0f0;
-            transform: scale(1.01);
-        }
-
-        .option-btn.correct {
-            background: #2c5f2d;
-            border-color: #2c5f2d;
-            color: white;
-        }
-
-        .option-btn.wrong {
-            background: #c0392b;
-            border-color: #c0392b;
-            color: white;
-        }
-
-        .option-btn.disabled {
-            cursor: default;
-            opacity: 0.8;
-        }
-
-        /* Feedback */
-        .feedback {
-            text-align: center;
-            margin-top: 20px;
-            padding: 12px;
-            border-radius: 30px;
-            font-weight: bold;
-        }
-
-        .feedback.correct-feedback {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .feedback.wrong-feedback {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
-        /* Progresso */
-        .progress-area {
-            margin-bottom: 20px;
-        }
-
-        .progress-bar-container {
-            background: #e0e0e0;
-            border-radius: 20px;
-            height: 12px;
             overflow: hidden;
+            font-family: 'Segoe UI', 'Poppins', 'Montserrat', sans-serif;
         }
-
-        .progress-bar {
-            background: linear-gradient(90deg, #2c5f2d, #4a9e4b);
-            height: 100%;
-            width: 0%;
-            transition: width 0.3s;
-            border-radius: 20px;
-        }
-
-        .level-info {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 8px;
-            font-size: 0.8rem;
-            color: #666;
-        }
-
-        .score-area {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 20px;
-            padding: 10px 15px;
-            background: #ecf0f1;
-            border-radius: 40px;
-        }
-
-        .score, .level {
-            font-weight: bold;
-            color: #2c5f2d;
-        }
-
-        /* Controles */
-        .controls {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-top: 10px;
-        }
-
-        button.action {
-            background: #34495e;
-            border: none;
-            font-size: 0.9rem;
-            font-weight: bold;
-            padding: 10px 20px;
-            border-radius: 30px;
-            color: white;
-            cursor: pointer;
-            transition: 0.1s;
-        }
-
-        button.action:active {
-            transform: scale(0.95);
-        }
-
-        .next-btn {
-            background: #2c5f2d;
-            width: 100%;
-            margin-top: 15px;
-            padding: 14px;
-            font-size: 1rem;
-        }
-
-        .next-btn:active {
-            transform: scale(0.98);
-        }
-
-        /* Confetes */
-        .confetti-canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 1000;
-        }
-
-        .symbol-confetti {
+        
+        /* Overlay informativo com estilo futurista */
+        .info {
             position: absolute;
-            font-size: 1.2rem;
-            font-weight: bold;
-            font-family: monospace;
-            opacity: 0.9;
-            animation: fall linear forwards;
+            bottom: 20px;
+            left: 20px;
+            z-index: 100;
+            background: rgba(0, 10, 20, 0.65);
+            backdrop-filter: blur(8px);
+            border-radius: 12px;
+            padding: 12px 20px;
+            color: #ccf4ff;
+            border-left: 3px solid #2ad4ff;
             pointer-events: none;
+            font-weight: 400;
+            font-size: 14px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            font-family: monospace;
+            letter-spacing: 0.5px;
         }
-
-        @keyframes fall {
-            0% {
-                transform: translateY(-10vh) rotate(0deg);
-                opacity: 1;
-            }
-            100% {
-                transform: translateY(100vh) rotate(360deg);
-                opacity: 0;
-            }
+        
+        .info h1 {
+            margin: 0 0 5px;
+            font-size: 18px;
+            letter-spacing: 1px;
+            font-weight: 500;
+            color: #a0f0ff;
         }
-
-        .safety-note {
-            text-align: center;
-            font-size: 0.7rem;
-            color: #999;
-            margin-top: 20px;
-            padding-top: 15px;
-            border-top: 1px solid #eee;
+        
+        .info p {
+            margin: 0;
+            font-size: 12px;
+            opacity: 0.9;
         }
-
-        /* Modal de conclusão */
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.7);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
+        
+        .badge {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            z-index: 100;
+            background: rgba(0,0,0,0.5);
+            border-radius: 20px;
+            padding: 5px 12px;
+            font-size: 11px;
+            color: #88aaff;
+            font-family: monospace;
+            pointer-events: none;
+            backdrop-filter: blur(4px);
         }
-
-        .modal-content {
-            background: white;
-            padding: 30px;
-            border-radius: 40px;
-            text-align: center;
-            max-width: 300px;
+        
+        @media (max-width: 600px) {
+            .info { font-size: 10px; padding: 8px 14px; }
+            .info h1 { font-size: 14px; }
+            .badge { font-size: 8px; }
         }
-
-        .modal-content h2 {
-            color: #2c5f2d;
-            margin-bottom: 15px;
-        }
-
-        .modal-content button {
-            background: #2c5f2d;
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 30px;
-            font-size: 1rem;
-            margin-top: 15px;
-            cursor: pointer;
+        
+        /* Pequeno controle de instrução */
+        .controls-note {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.5);
+            padding: 5px 10px;
+            border-radius: 8px;
+            font-size: 11px;
+            color: #aaa;
+            font-family: monospace;
+            pointer-events: none;
+            backdrop-filter: blur(4px);
         }
     </style>
 </head>
 <body>
-
-<div class="game-container">
-    <h1>⚡ SYGNUM ⚡</h1>
-    <div class="subtitle">O Jogo dos Sinais e Significados</div>
-
-    <div class="score-area">
-        <span>🏆 Pontuação: <span class="score" id="scoreValue">0</span></span>
-        <span>⭐ Nível: <span class="level" id="levelValue">1</span></span>
+    <div class="info">
+        <h1>🌀 TECIDO FLUTUANTE | "4 Oceanos Vortex Generator"</h1>
+        <p>Simulação inspirada na obra de Daniel Wurtzel — tecido etéreo suspenso, dançando ao vento. Nunca toca o chão.</p>
+    </div>
+    <div class="badge">
+        ✨ fluxo de ar dinâmico | partículas ascendentes
+    </div>
+    <div class="controls-note">
+        🖱️ Arraste para girar | Scroll para zoom
     </div>
 
-    <div class="progress-area">
-        <div class="progress-bar-container">
-            <div class="progress-bar" id="progressBar"></div>
-        </div>
-        <div class="level-info">
-            <span>📚 Fase <span id="currentQuestion">1</span> de <span id="totalQuestions">10</span></span>
-            <span>🎯 Acertos: <span id="correctCount">0</span></span>
-        </div>
-    </div>
-
-    <div class="quiz-area">
-        <div class="sign-display" id="signDisplay">🚫</div>
-        <div class="question-text">❓ Qual o significado deste sinal? ❓</div>
-        <div class="options-area" id="optionsArea"></div>
-        <div class="feedback" id="feedback"></div>
-        <button class="action next-btn" id="nextBtn" style="display: none;">▶ PRÓXIMO SINAL</button>
-    </div>
-
-    <div class="controls">
-        <button class="action" id="resetBtn">🔄 REINICIAR</button>
-    </div>
-    <div class="safety-note">✓ Jogo educativo para todas as idades | Aprenda sinais e seus significados</div>
-</div>
-
-<script>
-    // ============================================================
-    // CONFIGURAÇÃO DE SEGURANÇA PARA CRIANÇAS
-    // ============================================================
-    window.SYGNUM_CHILD_SAFE = true;
-    window.SYGNUM_AGE_RATING = "G";
-    window.SYGNUM_CONTENT_RATING = "General";
-
-    // ============================================================
-    // BANCO DE DADOS DE SINAIS E SIGNIFICADOS
-    // ============================================================
-    const SIGNS_DATABASE = [
-        { sign: "🚫", correct: "Proibido / Não entre", wrong1: "Permitido", wrong2: "Atenção", wrong3: "Informação" },
-        { sign: "⚠️", correct: "Atenção / Perigo", wrong1: "Proibido", wrong2: "Paz", wrong3: "Reciclagem" },
-        { sign: "☮️", correct: "Paz", wrong1: "Guerra", wrong2: "Perigo", wrong3: "Amor" },
-        { sign: "♻️", correct: "Reciclagem", wrong1: "Lixo", wrong2: "Poluição", wrong3: "Natureza" },
-        { sign: "🔒", correct: "Seguro / Bloqueado", wrong1: "Aberto", wrong2: "Livre", wrong3: "Perigo" },
-        { sign: "🔓", correct: "Aberto / Desbloqueado", wrong1: "Bloqueado", wrong2: "Seguro", wrong3: "Fechado" },
-        { sign: "ℹ️", correct: "Informação", wrong1: "Ajuda", wrong2: "Dúvida", wrong3: "Proibido" },
-        { sign: "©️", correct: "Direitos autorais", wrong1: "Marca registrada", wrong2: "Patente", wrong3: "Cópia" },
-        { sign: "®️", correct: "Marca registrada", wrong1: "Direitos autorais", wrong2: "Patente", wrong3: "Símbolo" },
-        { sign: "™️", correct: "Marca comercial", wrong1: "Direitos autorais", wrong2: "Marca registrada", wrong3: "Logo" },
-        { sign: "✓", correct: "Correto / Aprovado", wrong1: "Errado", wrong2: "Pendente", wrong3: "Atenção" },
-        { sign: "✗", correct: "Errado / Reprovado", wrong1: "Correto", wrong2: "Aprovado", wrong3: "Verificado" },
-        { sign: "❓", correct: "Dúvida / Pergunta", wrong1: "Resposta", wrong2: "Exclamação", wrong3: "Informação" },
-        { sign: "❗", correct: "Urgência / Exclamação", wrong1: "Pergunta", wrong2: "Calma", wrong3: "Informação" },
-        { sign: "♿", correct: "Acessibilidade", wrong1: "Deficiência", wrong2: "Saúde", wrong3: "Cadeira" },
-        { sign: "🚸", correct: "Crianças atravessando", wrong1: "Escola", wrong2: "Parque", wrong3: "Cuidado" },
-        { sign: "🚭", correct: "Proibido fumar", wrong1: "Fumar permitido", wrong2: "Área de fumante", wrong3: "Cuidado" },
-        { sign: "📵", correct: "Proibido celular", wrong1: "Celular liberado", wrong2: "Sinal de telefone", wrong3: "Atenção" },
-        { sign: "🔞", correct: "Conteúdo adulto / 18+", wrong1: "Livre", wrong2: "Infantil", wrong3: "Família" },
-        { sign: "🔄", correct: "Reciclar / Reiniciar", wrong1: "Atualizar", wrong2: "Voltar", wrong3: "Repetir" }
-    ];
-
-    // Configuração do jogo
-    let currentLevel = 1;
-    let currentScore = 0;
-    let currentQuestions = [];
-    let currentQuestionIndex = 0;
-    let correctAnswersInLevel = 0;
-    let answered = false;
-    let totalQuestionsPerLevel = 10;
-
-    // Elementos DOM
-    const signDisplay = document.getElementById("signDisplay");
-    const optionsArea = document.getElementById("optionsArea");
-    const feedbackDiv = document.getElementById("feedback");
-    const nextBtn = document.getElementById("nextBtn");
-    const resetBtn = document.getElementById("resetBtn");
-    const scoreValue = document.getElementById("scoreValue");
-    const levelValue = document.getElementById("levelValue");
-    const currentQuestionSpan = document.getElementById("currentQuestion");
-    const totalQuestionsSpan = document.getElementById("totalQuestions");
-    const correctCountSpan = document.getElementById("correctCount");
-    const progressBar = document.getElementById("progressBar");
-
-    // ============================================================
-    // FUNÇÕES DO JOGO
-    // ============================================================
-
-    function shuffleArray(arr) {
-        for (let i = arr.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [arr[i], arr[j]] = [arr[j], arr[i]];
+    <!-- Importação das bibliotecas Three.js essenciais -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.128.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.128.0/examples/jsm/"
+            }
         }
-        return arr;
-    }
+    </script>
 
-    function getQuestionsForLevel(level) {
-        // Seleciona questões baseado no nível (mais difíceis em níveis mais altos)
-        let availableQuestions = [...SIGNS_DATABASE];
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+        import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+        import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
         
-        // Quanto maior o nível, mais sinais menos comuns aparecem
-        if (level >= 3) {
-            // Todos os sinais, inclusive os mais complexos
-            availableQuestions = shuffleArray([...SIGNS_DATABASE]);
-        } else if (level === 2) {
-            // Sinais mais comuns apenas
-            availableQuestions = shuffleArray(SIGNS_DATABASE.slice(0, 12));
-        } else {
-            // Nível 1: apenas os sinais mais básicos
-            availableQuestions = shuffleArray(SIGNS_DATABASE.slice(0, 8));
-        }
+        // --- INICIALIZAÇÃO DA CENA ---
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x030b1a); // Azul profundo noturno
+        scene.fog = new THREE.FogExp2(0x030b1a, 0.008); // Névoa sutil para profundidade
         
-        return availableQuestions.slice(0, totalQuestionsPerLevel);
-    }
-
-    function shuffleOptions(correct, wrong1, wrong2, wrong3) {
-        let options = [
-            { text: correct, isCorrect: true },
-            { text: wrong1, isCorrect: false },
-            { text: wrong2, isCorrect: false },
-            { text: wrong3, isCorrect: false }
-        ];
-        return shuffleArray(options);
-    }
-
-    function loadQuestion() {
-        if (currentQuestionIndex >= currentQuestions.length) {
-            completeLevel();
-            return;
-        }
-
-        const question = currentQuestions[currentQuestionIndex];
-        signDisplay.textContent = question.sign;
+        // --- CÂMERA (posicionada para enquadrar o tecido suspenso) ---
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(6, 4.5, 7);
+        camera.lookAt(0, 1.5, 0);
         
-        const shuffledOptions = shuffleOptions(
-            question.correct,
-            question.wrong1,
-            question.wrong2,
-            question.wrong3
+        // --- RENDERIZADOR COM EFEITOS DE LUZ E TRANSPARÊNCIA ---
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.shadowMap.enabled = true; // Ativar sombras para dar realismo
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.toneMapping = THREE.ReinhardToneMapping;
+        renderer.toneMappingExposure = 1.2;
+        document.body.appendChild(renderer.domElement);
+        
+        // --- EFEITO PÓS-PROCESSAMENTO (BLOOM para brilho etéreo) ---
+        const renderScene = new RenderPass(scene, camera);
+        const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.85, 0.3, 0.2);
+        bloomPass.threshold = 0.1;
+        bloomPass.strength = 0.65;
+        bloomPass.radius = 0.5;
+        const effectComposer = new EffectComposer(renderer);
+        effectComposer.addPass(renderScene);
+        effectComposer.addPass(bloomPass);
+        
+        // --- CONTROLES DE ÓRBITA (para explorar o tecido de todos os ângulos) ---
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;      // Inércia suave
+        controls.dampingFactor = 0.05;
+        controls.autoRotate = false;
+        controls.enableZoom = true;
+        controls.enablePan = true;
+        controls.zoomSpeed = 1.0;
+        controls.rotateSpeed = 0.8;
+        controls.target.set(0, 1.5, 0);
+        
+        // --- LUZES: criando atmosfera que realça a fluidez do tecido ---
+        
+        // Luz ambiente suave
+        const ambientLight = new THREE.AmbientLight(0x22223b, 0.55);
+        scene.add(ambientLight);
+        
+        // Luz direcional principal (sol artificial)
+        const mainLight = new THREE.DirectionalLight(0xffffff, 1.2);
+        mainLight.position.set(3, 8, 2);
+        mainLight.castShadow = true;
+        mainLight.receiveShadow = false;
+        mainLight.shadow.mapSize.width = 1024;
+        mainLight.shadow.mapSize.height = 1024;
+        mainLight.shadow.camera.near = 0.5;
+        mainLight.shadow.camera.far = 15;
+        mainLight.shadow.camera.left = -5;
+        mainLight.shadow.camera.right = 5;
+        mainLight.shadow.camera.top = 5;
+        mainLight.shadow.camera.bottom = -5;
+        scene.add(mainLight);
+        
+        // Luz de preenchimento quente vindo de baixo (simula reflexo do chão)
+        const fillLight = new THREE.PointLight(0x4466cc, 0.45);
+        fillLight.position.set(0, -1, 0);
+        fillLight.castShadow = false;
+        scene.add(fillLight);
+        
+        // Luz de realce traseira (backlight) para dar contorno ao tecido
+        const backLight = new THREE.PointLight(0x88aaff, 0.6);
+        backLight.position.set(-2, 2.5, -3);
+        scene.add(backLight);
+        
+        // Luz dinâmica colorida que se move (simula o "vento luminoso")
+        const movingLight = new THREE.PointLight(0x33ccff, 0.8);
+        movingLight.castShadow = false;
+        scene.add(movingLight);
+        
+        // Pequena luz ciano no centro abaixo do tecido (efeito de vórtice)
+        const vortexLight = new THREE.PointLight(0x00aaff, 0.9);
+        vortexLight.position.set(0, -0.5, 0);
+        vortexLight.distance = 6;
+        vortexLight.decay = 1.5;
+        scene.add(vortexLight);
+        
+        // --- ELEMENTOS CÊNICOS: Chão com grade e semi-transparência para referência de altura ---
+        const gridHelper = new THREE.GridHelper(15, 20, 0x44aaff, 0x336699);
+        gridHelper.position.y = -0.05;
+        gridHelper.material.transparent = true;
+        gridHelper.material.opacity = 0.35;
+        scene.add(gridHelper);
+        
+        // Plano de chão sutil que recebe sombras (para evidenciar que o tecido não toca)
+        const groundPlane = new THREE.Mesh(
+            new THREE.PlaneGeometry(12, 12),
+            new THREE.ShadowMaterial({ opacity: 0.4, color: 0x000000, transparent: true, side: THREE.DoubleSide })
         );
+        groundPlane.rotation.x = -Math.PI / 2;
+        groundPlane.position.y = -0.08;
+        groundPlane.receiveShadow = true;
+        scene.add(groundPlane);
         
-        optionsArea.innerHTML = "";
-        shuffledOptions.forEach(option => {
-            const btn = document.createElement("div");
-            btn.className = "option-btn";
-            btn.textContent = option.text;
-            btn.dataset.correct = option.isCorrect;
-            btn.addEventListener("click", () => handleAnswer(btn, option.isCorrect));
-            optionsArea.appendChild(btn);
-        });
+        // Círculo decorativo no centro do chão (sugere a fonte do fluxo de ar)
+        const circleGlow = new THREE.Mesh(
+            new THREE.RingGeometry(1.2, 2.2, 32),
+            new THREE.MeshStandardMaterial({ color: 0x2288ff, emissive: 0x004466, side: THREE.DoubleSide, transparent: true, opacity: 0.4 })
+        );
+        circleGlow.rotation.x = -Math.PI / 2;
+        circleGlow.position.y = -0.07;
+        scene.add(circleGlow);
         
-        // Atualiza UI
-        currentQuestionSpan.textContent = currentQuestionIndex + 1;
-        totalQuestionsSpan.textContent = currentQuestions.length;
-        updateProgressBar();
+        // --- CRIAÇÃO DO TECIDO FLUTUANTE (GEOMETRIA PERSONALIZADA) ---
+        // Parâmetros: largura 7.5, profundidade 7.5, segmentos 120x120 para ondulação suave
+        const width = 7.2;
+        const depth = 7.2;
+        const segmentsX = 140;
+        const segmentsZ = 140;
         
-        // Reseta estados
-        answered = false;
-        feedbackDiv.className = "feedback";
-        feedbackDiv.innerHTML = "";
-        nextBtn.style.display = "none";
-    }
-
-    function handleAnswer(btn, isCorrect) {
-        if (answered) return;
-        answered = true;
+        // Geometria base (PlaneGeometry original no plano XY, depois convertemos para XZ)
+        const baseGeo = new THREE.PlaneGeometry(width, depth, segmentsX, segmentsZ);
+        const positions = baseGeo.attributes.position.array;
         
-        // Desabilita todos os botões
-        const allOptions = document.querySelectorAll(".option-btn");
-        allOptions.forEach(opt => {
-            opt.style.pointerEvents = "none";
-        });
+        // Arrays para armazenar coordenadas originais X e Z (após conversão)
+        const origX = [];
+        const origZ = [];
         
-        if (isCorrect) {
-            btn.classList.add("correct");
-            currentScore += 10;
-            correctAnswersInLevel++;
-            scoreValue.textContent = currentScore;
-            correctCountSpan.textContent = correctAnswersInLevel;
-            feedbackDiv.innerHTML = "✅ CORRETO! Muito bem! +10 pontos";
-            feedbackDiv.className = "feedback correct-feedback";
-        } else {
-            btn.classList.add("wrong");
-            feedbackDiv.innerHTML = `❌ ERRADO! A resposta correta é: ${currentQuestions[currentQuestionIndex].correct}`;
-            feedbackDiv.className = "feedback wrong-feedback";
+        // Transformar geometria: original (x, y, 0) -> novo (x, 0, y) para deitar no plano XZ
+        for (let i = 0; i < positions.length; i += 3) {
+            const x = positions[i];
+            const z = positions[i+1];   // antigo Y vira coordenada Z
+            // novo: X = x, Y = 0 (altura base inicial), Z = z
+            positions[i] = x;      // X mantém
+            positions[i+1] = 0;    // Y = 0 (será animado depois)
+            positions[i+2] = z;    // Z = antigo Y
+            origX.push(x);
+            origZ.push(z);
+        }
+        
+        // Atualizar geometria e recalcular normais
+        baseGeo.attributes.position.needsUpdate = true;
+        baseGeo.computeVertexNormals(); // normais iniciais
+        
+        // --- TEXTURA PERSONALIZADA DE TECIDO (aspecto fibroso e translúcido) ---
+        const createFabricTexture = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512;
+            canvas.height = 512;
+            const ctx = canvas.getContext('2d');
             
-            // Destaca a opção correta
-            allOptions.forEach(opt => {
-                if (opt.dataset.correct === "true") {
-                    opt.classList.add("correct");
-                }
+            // Fundo semi-transparente com gradiente azul/ciano
+            ctx.fillStyle = '#1a4a6e';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Padrão de tecido: linhas finas e entrelaçadas
+            ctx.strokeStyle = '#aaf0ff';
+            ctx.lineWidth = 2;
+            for (let i = 0; i < 200; i++) {
+                const x = i * 8;
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x + 15, canvas.height);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(0, x);
+                ctx.lineTo(canvas.width, x + 10);
+                ctx.stroke();
+            }
+            
+            // Micro pontos para simular fibra
+            ctx.fillStyle = '#cceeff';
+            for (let p = 0; p < 1500; p++) {
+                ctx.fillRect(Math.random() * canvas.width, Math.random() * canvas.height, 1.2, 1.2);
+            }
+            
+            // Gradiente de brilho central
+            const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+            grad.addColorStop(0, 'rgba(100, 180, 255, 0.3)');
+            grad.addColorStop(1, 'rgba(30, 100, 180, 0.5)');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.wrapS = THREE.RepeatWrapping;
+            texture.wrapT = THREE.RepeatWrapping;
+            texture.repeat.set(2.5, 2.5);
+            return texture;
+        };
+        
+        const fabricTexture = createFabricTexture();
+        
+        // Material principal do tecido: translúcido, reflexivo e com brilho sutil
+        const fabricMaterial = new THREE.MeshStandardMaterial({
+            map: fabricTexture,
+            color: 0x77bbff,
+            emissive: 0x114466,
+            emissiveIntensity: 0.25,
+            roughness: 0.35,
+            metalness: 0.7,
+            transparent: true,
+            opacity: 0.85,
+            side: THREE.DoubleSide   // Para captar luz por ambos os lados, mais etéreo
+        });
+        
+        const fabricMesh = new THREE.Mesh(baseGeo, fabricMaterial);
+        fabricMesh.castShadow = true;
+        fabricMesh.receiveShadow = false;   // Para manter suavidade
+        fabricMesh.position.y = 0;
+        scene.add(fabricMesh);
+        
+        // --- SISTEMA DE PARTÍCULAS (AR ASCENDENTE / VÓRTICE) ---
+        // Simula o fluxo de ar que mantém o tecido suspenso, subindo do chão
+        
+        const particleCount = 1800;
+        const particleGeometry = new THREE.BufferGeometry();
+        const particlePositions = new Float32Array(particleCount * 3);
+        const particleVelocities = []; // armazenar velocidade e ciclo
+        
+        // Inicializar partículas em uma área circular abaixo do tecido
+        for (let i = 0; i < particleCount; i++) {
+            const radius = Math.random() * 3.8;
+            const angle = Math.random() * Math.PI * 2;
+            const x = Math.cos(angle) * radius;
+            const z = Math.sin(angle) * radius;
+            const y = Math.random() * 2.2; // entre chão e tecido
+            particlePositions[i*3] = x;
+            particlePositions[i*3+1] = y;
+            particlePositions[i*3+2] = z;
+            // Velocidade personalizada: sobe mais rápido no centro (simula vórtice)
+            const speed = 0.008 + Math.random() * 0.012 + (1.2 - radius) * 0.008;
+            particleVelocities.push({
+                speed: Math.min(speed, 0.025),
+                startY: y,
+                radius: radius,
+                angle: angle,
+                drift: (Math.random() - 0.5) * 0.008
             });
         }
+        particleGeometry.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
         
-        nextBtn.style.display = "block";
-    }
-
-    function updateProgressBar() {
-        const progress = ((currentQuestionIndex) / currentQuestions.length) * 100;
-        progressBar.style.width = `${progress}%`;
-    }
-
-    function nextQuestion() {
-        currentQuestionIndex++;
-        if (currentQuestionIndex < currentQuestions.length) {
-            loadQuestion();
-        } else {
-            completeLevel();
+        // Material das partículas: pequenos pontos de luz (efeito "ar energizado")
+        const particleMaterial = new THREE.PointsMaterial({
+            color: 0x88ccff,
+            size: 0.045,
+            transparent: true,
+            blending: THREE.AdditiveBlending,
+            opacity: 0.7
+        });
+        
+        const particleSystem = new THREE.Points(particleGeometry, particleMaterial);
+        particleSystem.castShadow = false;
+        scene.add(particleSystem);
+        
+        // Segundo sistema de partículas mais sutis (espalhadas, como brisa)
+        const dustCount = 800;
+        const dustGeo = new THREE.BufferGeometry();
+        const dustPositions = new Float32Array(dustCount * 3);
+        const dustSpeeds = [];
+        for (let i = 0; i < dustCount; i++) {
+            dustPositions[i*3] = (Math.random() - 0.5) * 9;
+            dustPositions[i*3+1] = Math.random() * 3.5;
+            dustPositions[i*3+2] = (Math.random() - 0.5) * 9;
+            dustSpeeds.push(0.003 + Math.random() * 0.008);
         }
-    }
-
-    function completeLevel() {
-        const passedLevel = correctAnswersInLevel >= (totalQuestionsPerLevel * 0.7); // 70% para passar
+        dustGeo.setAttribute('position', new THREE.BufferAttribute(dustPositions, 3));
+        const dustMaterial = new THREE.PointsMaterial({ color: 0xaaddff, size: 0.02, transparent: true, blending: THREE.AdditiveBlending, opacity: 0.5 });
+        const dustSystem = new THREE.Points(dustGeo, dustMaterial);
+        scene.add(dustSystem);
         
-        if (passedLevel) {
-            // Avança de nível
-            currentLevel++;
-            levelValue.textContent = currentLevel;
-            currentQuestionIndex = 0;
-            correctAnswersInLevel = 0;
-            correctCountSpan.textContent = 0;
+        // --- VARIÁVEIS DE ANIMAÇÃO DAS ONDAS DO TECIDO ---
+        let time = 0;
+        // Guardar referência aos atributos da geometria para animação eficiente
+        const positionAttribute = baseGeo.attributes.position;
+        const arrayPos = positionAttribute.array;
+        const vertexCount = arrayPos.length / 3;
+        
+        // Função que calcula a altura do tecido baseado em x, z e tempo (movimento orgânico e contínuo)
+        // Simula fluxos de ar turbulentos e suaves, garantindo que nunca toque o chão (Y mínimo > 0.3)
+        // A altura base é 1.4, e as ondas variam entre -0.65 e +0.7, resultando em Y entre ~0.75 e 2.1
+        function calculateHeight(x, z, t) {
+            // Ondas principais combinadas com seno/cosseno cruzado
+            const wave1 = Math.sin(x * 0.85 + t) * Math.cos(z * 0.7 + t * 0.9) * 0.32;
+            const wave2 = Math.sin(x * 1.6 - t * 1.2) * 0.2;
+            const wave3 = Math.cos(z * 1.5 + t * 1.1) * 0.18;
+            const wave4 = Math.sin((x * 1.2 + z * 0.9) * 1.1 + t * 1.4) * 0.15;
+            // Ondulação suave de alta frequência nas bordas
+            const edgeEffect = (Math.abs(x) > 2.8 || Math.abs(z) > 2.8) ? 
+                               Math.sin(x * 2.2 + t * 2) * Math.cos(z * 2.1 + t) * 0.08 : 0;
+            // Pequeno movimento de flutuação global (respiração)
+            const breath = Math.sin(t * 0.5) * 0.04;
             
-            // Carrega novas questões para o próximo nível
-            currentQuestions = getQuestionsForLevel(currentLevel);
+            // Altura base (garante que mesmo nos vales, o tecido fique acima do chão)
+            let y = 1.42 + wave1 + wave2 + wave3 + wave4 + edgeEffect + breath;
             
-            if (currentQuestions.length > 0) {
-                loadQuestion();
-                launchConfetti();
-                feedbackDiv.innerHTML = "🎉 PARABÉNS! Você passou de nível! 🎉";
-                feedbackDiv.className = "feedback correct-feedback";
-                setTimeout(() => {
-                    if (feedbackDiv.innerHTML.includes("PARABÉNS")) {
-                        feedbackDiv.innerHTML = "";
-                        feedbackDiv.className = "feedback";
-                    }
-                }, 2000);
-            } else {
-                // Vitória final
-                winGame();
+            // Limitar mínimo de 0.68 para nunca encostar no chão (chão em Y=0)
+            if (y < 0.68) y = 0.68;
+            return y;
+        }
+        
+        // --- ANIMAÇÃO E LOOP PRINCIPAL ---
+        let lastTimestamp = 0;
+        
+        function animate() {
+            const now = performance.now();
+            let delta = Math.min(1/30, (now - lastTimestamp) / 1000);
+            lastTimestamp = now;
+            
+            time += 0.018; // velocidade suave da ondulação
+            
+            // 1. ATUALIZAR VÉRTICES DO TECIDO (efeito de ondulação fluida)
+            for (let i = 0; i < vertexCount; i++) {
+                const ix = i * 3;
+                const origXval = origX[i];
+                const origZval = origZ[i];
+                const newY = calculateHeight(origXval, origZval, time);
+                arrayPos[ix + 1] = newY;
             }
-        } else {
-            // Game Over - reinicia do nível 1
-            feedbackDiv.innerHTML = "😢 Você não conseguiu passar de nível. Reiniciando do nível 1...";
-            feedbackDiv.className = "feedback wrong-feedback";
-            setTimeout(() => {
-                resetGame();
-            }, 2000);
+            // Marcar posição como atualizada e recalcular normais para iluminação correta
+            positionAttribute.needsUpdate = true;
+            baseGeo.computeVertexNormals(); // essencial para os reflexos de luz
+            
+            // 2. ATUALIZAR PARTÍCULAS DE VÓRTICE (movimento ascendente)
+            const positionsAttr = particleGeometry.attributes.position.array;
+            for (let i = 0; i < particleCount; i++) {
+                let idx = i * 3;
+                let y = positionsAttr[idx + 1];
+                let speed = particleVelocities[i].speed;
+                // Movimento ascendente
+                y += speed;
+                // Se ultrapassar a altura máxima (acima do tecido), resetar para o chão
+                if (y > 2.8) {
+                    y = -0.2;
+                    // Leve variação na posição horizontal para simular turbulência
+                    const newRadius = Math.random() * 3.8;
+                    const newAngle = Math.random() * Math.PI * 2;
+                    const newX = Math.cos(newAngle) * newRadius;
+                    const newZ = Math.sin(newAngle) * newRadius;
+                    positionsAttr[idx] = newX;
+                    positionsAttr[idx + 2] = newZ;
+                    // resetar velocidade com pequena variação
+                    particleVelocities[i].speed = 0.008 + Math.random() * 0.014 + (1.6 - newRadius) * 0.007;
+                } else {
+                    // Pequeno drift horizontal para dar sensação de redemoinho
+                    const drift = particleVelocities[i].drift;
+                    positionsAttr[idx] += (Math.sin(time * 1.3 + i) * 0.002);
+                    positionsAttr[idx + 2] += (Math.cos(time * 1.1 + i) * 0.002);
+                    // Manter dentro da área do tecido
+                    let px = positionsAttr[idx];
+                    let pz = positionsAttr[idx+2];
+                    if (Math.abs(px) > 4.2) px *= 0.99;
+                    if (Math.abs(pz) > 4.2) pz *= 0.99;
+                    positionsAttr[idx] = px;
+                    positionsAttr[idx+2] = pz;
+                }
+                positionsAttr[idx + 1] = y;
+            }
+            particleGeometry.attributes.position.needsUpdate = true;
+            
+            // 3. ATUALIZAR PARTÍCULAS DE POEIRA (flutuantes aleatórias)
+            const dustPosAttr = dustGeo.attributes.position.array;
+            for (let i = 0; i < dustCount; i++) {
+                let idx = i * 3;
+                dustPosAttr[idx + 1] += dustSpeeds[i];
+                if (dustPosAttr[idx + 1] > 3.2) {
+                    dustPosAttr[idx + 1] = -0.5;
+                    dustPosAttr[idx] = (Math.random() - 0.5) * 8;
+                    dustPosAttr[idx + 2] = (Math.random() - 0.5) * 8;
+                }
+                // suave movimento lateral
+                dustPosAttr[idx] += Math.sin(time * 0.7 + i) * 0.001;
+                dustPosAttr[idx + 2] += Math.cos(time * 0.5 + i) * 0.001;
+            }
+            dustGeo.attributes.position.needsUpdate = true;
+            
+            // 4. LUZ DINÂMICA EM MOVIMENTO (simula foco de ar ou vórtice luminoso)
+            const lightAngle = time * 0.6;
+            const lightRadius = 3.2;
+            movingLight.position.x = Math.sin(lightAngle) * lightRadius;
+            movingLight.position.z = Math.cos(lightAngle * 1.3) * lightRadius;
+            movingLight.position.y = 1.6 + Math.sin(time * 1.8) * 0.8;
+            
+            // intensidade pulsante da luz central do vórtice
+            vortexLight.intensity = 0.7 + Math.sin(time * 2.2) * 0.3;
+            
+            // 5. ATUALIZAR TEXTURA DO TECIDO (leve animação para simular fluidez)
+            if (fabricTexture) {
+                fabricTexture.offset.x += 0.0008;
+                fabricTexture.offset.y += 0.0004;
+            }
+            
+            // 6. PEQUENA ROTAÇÃO AUTOMÁTICA OPCIONAL (desativada para priorizar orbit, mas podemos dar um leve movimento na câmera? Não, melhor deixar controle total)
+            // Apenas atualizar controles e efeito bloom com resize dinâmico
+            
+            // Atualizar controles de órbita
+            controls.update();
+            
+            // Renderizar via EffectComposer para bloom
+            effectComposer.render();
+            
+            // Requisitar próximo frame
+            requestAnimationFrame(animate);
         }
-    }
-
-    function winGame() {
-        showModal("🏆 VITÓRIA! 🏆", `Parabéns! Você completou todos os níveis com ${currentScore} pontos!`, () => {
-            resetGame();
-        });
-        launchConfetti(true);
-    }
-
-    function launchConfetti(intense = false) {
-        const existingCanvas = document.querySelector('.confetti-canvas');
-        if (existingCanvas) existingCanvas.remove();
         
-        const container = document.createElement('div');
-        container.className = 'confetti-canvas';
-        document.body.appendChild(container);
+        // Iniciar simulação
+        animate();
         
-        const symbols = ["🚫", "⚠️", "☮️", "♻️", "🔒", "✓", "❓", "❗"];
-        const numberOfConfetti = intense ? 150 : 60;
-        
-        for (let i = 0; i < numberOfConfetti; i++) {
-            const symbol = symbols[Math.floor(Math.random() * symbols.length)];
-            const el = document.createElement('div');
-            el.className = 'symbol-confetti';
-            el.textContent = symbol;
-            
-            const size = 0.8 + Math.random() * 1.5;
-            const left = Math.random() * 100;
-            const duration = 2 + Math.random() * 2.5;
-            const delay = Math.random() * 0.5;
-            
-            el.style.fontSize = `${size}rem`;
-            el.style.left = `${left}%`;
-            el.style.animationDuration = `${duration}s`;
-            el.style.animationDelay = `${delay}s`;
-            el.style.position = 'absolute';
-            el.style.top = '-10vh';
-            
-            const hue = Math.random() * 360;
-            el.style.color = `hsl(${hue}, 80%, 60%)`;
-            
-            container.appendChild(el);
-            
-            setTimeout(() => {
-                if (el.parentNode) el.remove();
-            }, (duration + delay) * 1000);
+        // --- AJUSTE DE REDIMENSIONAMENTO DA JANELA ---
+        window.addEventListener('resize', onWindowResize, false);
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            effectComposer.setSize(window.innerWidth, window.innerHeight);
         }
         
-        setTimeout(() => {
-            if (container.parentNode) container.remove();
-        }, 5000);
-    }
-
-    function showModal(title, message, onClose) {
-        const existingModal = document.querySelector('.modal');
-        if (existingModal) existingModal.remove();
-        
-        const modal = document.createElement('div');
-        modal.className = 'modal';
-        modal.innerHTML = `
-            <div class="modal-content">
-                <h2>${title}</h2>
-                <p>${message}</p>
-                <button id="modalCloseBtn">Continuar</button>
-            </div>
-        `;
-        document.body.appendChild(modal);
-        
-        document.getElementById("modalCloseBtn").addEventListener("click", () => {
-            modal.remove();
-            if (onClose) onClose();
-        });
-    }
-
-    function resetGame() {
-        currentLevel = 1;
-        currentScore = 0;
-        currentQuestionIndex = 0;
-        correctAnswersInLevel = 0;
-        answered = false;
-        
-        scoreValue.textContent = currentScore;
-        levelValue.textContent = currentLevel;
-        correctCountSpan.textContent = correctAnswersInLevel;
-        
-        currentQuestions = getQuestionsForLevel(currentLevel);
-        loadQuestion();
-        
-        feedbackDiv.innerHTML = "";
-        feedbackDiv.className = "feedback";
-    }
-
-    // ============================================================
-    // INICIALIZAÇÃO DO JOGO
-    // ============================================================
-    
-    nextBtn.addEventListener("click", nextQuestion);
-    resetBtn.addEventListener("click", resetGame);
-    
-    // Inicia o jogo
-    currentQuestions = getQuestionsForLevel(currentLevel);
-    loadQuestion();
-</script>
+        // Pequeno efeito de brilho adicional: adicionar esferas de luz ambiente invisíveis (opcional, já temos bastante)
+        // Mensagem no console para indicar carregamento completo
+        console.log('Simulação do Tecido Flutuante - Museu do Amanhã | Inspirado em Daniel Wurtzel');
+    </script>
 </body>
 </html>
