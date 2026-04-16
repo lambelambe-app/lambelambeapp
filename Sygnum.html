@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Fluxos | Quatro Oceanos – Museu do Amanhã</title>
+    <title>Fluxos ● Quatro Oceanos – Tecidos em Espiral Eterna</title>
     <style>
         body {
             margin: 0;
@@ -19,26 +19,36 @@
             text-align: center;
             pointer-events: none;
             z-index: 20;
-            color: rgba(150, 200, 255, 0.5);
+            color: rgba(150, 200, 255, 0.7);
             font-size: 12px;
             font-weight: 300;
             letter-spacing: 2px;
             font-family: monospace;
+            background: rgba(0,0,0,0.3);
+            backdrop-filter: blur(4px);
+            width: fit-content;
+            margin: 0 auto;
+            padding: 6px 16px;
+            border-radius: 30px;
         }
         .touch-ripple {
             position: fixed;
-            width: 50px;
-            height: 50px;
+            width: 60px;
+            height: 60px;
             border-radius: 50%;
             background: radial-gradient(circle, rgba(100,200,255,0.5) 0%, rgba(100,200,255,0) 70%);
             pointer-events: none;
             z-index: 1000;
             transform: translate(-50%, -50%);
+            transition: transform 0.05s;
+        }
+        @media (max-width: 700px) {
+            .info-text { font-size: 10px; top: 12px; }
         }
     </style>
 </head>
 <body>
-    <div class="info-text">QUATRO OCEANOS | FOUR OCEANS</div>
+    <div class="info-text">🌀 QUATRO OCEANOS | FOUR OCEANS • toque para sentir o vento 🌀</div>
     <div id="touchRipple" class="touch-ripple" style="display: none;"></div>
 
     <script type="importmap">
@@ -53,15 +63,18 @@
     <script type="module">
         import * as THREE from 'three';
         import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+        import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+        import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 
-        // --- CENA MINIMALISTA E DRAMÁTICA ---
+        // --- CENA IMERSIVA COM FUNDO PRETO E NÉVOA ---
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0x000000);
         scene.fog = new THREE.FogExp2(0x000000, 0.008);
 
-        const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(0, 2, 5.5);
-        camera.lookAt(0, 2, 0);
+        const camera = new THREE.PerspectiveCamera(48, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(0, 3.2, 6.8);
+        camera.lookAt(0, 2.5, 0);
 
         const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, precision: 'highp' });
         renderer.setSize(window.innerWidth, window.innerHeight);
@@ -69,51 +82,83 @@
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         renderer.toneMapping = THREE.ReinhardToneMapping;
-        renderer.toneMappingExposure = 1.4;
+        renderer.toneMappingExposure = 1.3;
         document.body.appendChild(renderer.domElement);
 
-        // Controles orbitais suaves
+        // --- EFEITO BLOOM (BRILHO ETÉREO) ---
+        const renderScene = new RenderPass(scene, camera);
+        const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.1, 0.4, 0.3);
+        bloomPass.threshold = 0.05;
+        bloomPass.strength = 0.85;
+        bloomPass.radius = 0.7;
+        const effectComposer = new EffectComposer(renderer);
+        effectComposer.addPass(renderScene);
+        effectComposer.addPass(bloomPass);
+
+        // --- CONTROLES ORBITAIS (SUAVES) ---
         const controls = new OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
-        controls.dampingFactor = 0.05;
-        controls.rotateSpeed = 0.6;
-        controls.zoomSpeed = 0.8;
+        controls.dampingFactor = 0.06;
+        controls.rotateSpeed = 0.7;
+        controls.zoomSpeed = 0.9;
         controls.enablePan = false;
-        controls.target.set(0, 2, 0);
+        controls.target.set(0, 2.5, 0);
 
-        // --- ILUMINAÇÃO DRAMÁTICA E MINIMALISTA ---
-        const ambientLight = new THREE.AmbientLight(0x0a1a2a, 0.3);
+        // --- ILUMINAÇÃO DRAMÁTICA E DINÂMICA ---
+        const ambientLight = new THREE.AmbientLight(0x0a1a2a, 0.35);
         scene.add(ambientLight);
         
-        // Luz principal frontal
-        const mainLight = new THREE.DirectionalLight(0xffffff, 0.8);
-        mainLight.position.set(2, 4, 3);
+        const mainLight = new THREE.DirectionalLight(0xfff5e0, 0.9);
+        mainLight.position.set(2.5, 5, 3);
         mainLight.castShadow = true;
         mainLight.shadow.mapSize.width = 2048;
         mainLight.shadow.mapSize.height = 2048;
         scene.add(mainLight);
         
-        // Luz de preenchimento azulada
-        const fillLight = new THREE.PointLight(0x4488ff, 0.5);
-        fillLight.position.set(-2, 2, 2);
+        const fillLight = new THREE.PointLight(0x4488ff, 0.55);
+        fillLight.position.set(-1.8, 2.2, 2);
         scene.add(fillLight);
         
-        // Luz de fundo
-        const backLight = new THREE.PointLight(0x2266ff, 0.4);
-        backLight.position.set(0, 3, -3);
+        const backLight = new THREE.PointLight(0x2266ff, 0.5);
+        backLight.position.set(0, 3.5, -3.5);
         scene.add(backLight);
+        
+        // Luz colorida dançante
+        const danceLight = new THREE.PointLight(0x33aaff, 0.7);
+        danceLight.castShadow = false;
+        scene.add(danceLight);
+        
+        // Luz de chão (vórtice)
+        const groundLight = new THREE.PointLight(0x0088ff, 0.6);
+        groundLight.position.set(0, -0.5, 0);
+        scene.add(groundLight);
 
-        // --- CRIAÇÃO DOS DOIS TECIDOS (BRANCO E AZUL) ---
-        function createFabric(color, initialY, xOffset) {
-            // Geometria: fita longa e retangular
-            const width = 1.2;
-            const height = 5.5;
-            const widthSegments = 12;
-            const heightSegments = 120;
+        // --- CHÃO REFERENCIAL (SUTIL) ---
+        const gridHelper = new THREE.GridHelper(12, 20, 0x2266aa, 0x114466);
+        gridHelper.position.y = -0.5;
+        gridHelper.material.transparent = true;
+        gridHelper.material.opacity = 0.25;
+        scene.add(gridHelper);
+        
+        // Plano de sombras (apenas para receber sombras dos tecidos)
+        const shadowPlane = new THREE.Mesh(
+            new THREE.PlaneGeometry(10, 10),
+            new THREE.ShadowMaterial({ opacity: 0.4, color: 0x000000, transparent: true, side: THREE.DoubleSide })
+        );
+        shadowPlane.rotation.x = -Math.PI / 2;
+        shadowPlane.position.y = -0.48;
+        shadowPlane.receiveShadow = true;
+        scene.add(shadowPlane);
+
+        // --- CRIAÇÃO DOS DOIS TECIDOS (FITAS FLUTUANTES) ---
+        // Função aprimorada: geometria com mais segmentos para fluidez, armazenamento de vértices e dados de movimento.
+        function createFabric(color, emissiveColor, initialY, xOffset) {
+            const width = 1.3;
+            const height = 6.0;
+            const widthSegments = 14;
+            const heightSegments = 140; // alta resolução para ondulações suaves
             
             const geometry = new THREE.PlaneGeometry(width, height, widthSegments, heightSegments);
-            
-            // Armazenar posições originais
             const positions = geometry.attributes.position.array;
             const origX = [];
             const origY = [];
@@ -125,17 +170,15 @@
                 origZ.push(positions[i+2]);
             }
             
-            // Material translúcido
             const material = new THREE.MeshStandardMaterial({
                 color: color,
-                emissive: color,
-                emissiveIntensity: 0.4,
-                roughness: 0.3,
-                metalness: 0.1,
+                emissive: emissiveColor,
+                emissiveIntensity: 0.45,
+                roughness: 0.28,
+                metalness: 0.15,
                 transparent: true,
-                opacity: 0.85,
-                side: THREE.DoubleSide,
-                wireframe: false
+                opacity: 0.92,
+                side: THREE.DoubleSide
             });
             
             const mesh = new THREE.Mesh(geometry, material);
@@ -156,81 +199,327 @@
             };
         }
 
-        const fabricWhite = createFabric(0xffffff, 2.5, -0.6);
-        const fabricBlue = createFabric(0x0088ff, 2.5, 0.6);
+        const fabricWhite = createFabric(0xffffff, 0xaaccff, 2.5, -0.75);
+        const fabricBlue = createFabric(0x44aaff, 0x2288ff, 2.5, 0.75);
         
         scene.add(fabricWhite.mesh);
         scene.add(fabricBlue.mesh);
 
-        // --- ANIMAÇÃO DOS TECIDOS ---
-        let time = 0;
+        // --- PARTÍCULAS DE AR (VENTO ASCENDENTE) ---
+        const particleCount = 2200;
+        const particleGeo = new THREE.BufferGeometry();
+        const particlePositions = new Float32Array(particleCount * 3);
+        const particleSpeeds = [];
+        for (let i = 0; i < particleCount; i++) {
+            const radius = Math.random() * 4.5;
+            const angle = Math.random() * Math.PI * 2;
+            const x = Math.cos(angle) * radius;
+            const z = Math.sin(angle) * radius;
+            particlePositions[i*3] = x;
+            particlePositions[i*3+1] = Math.random() * 4.2;
+            particlePositions[i*3+2] = z;
+            particleSpeeds.push(0.005 + Math.random() * 0.018);
+        }
+        particleGeo.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
+        const particleMat = new THREE.PointsMaterial({ 
+            color: 0x88ccff, 
+            size: 0.045, 
+            transparent: true, 
+            blending: THREE.AdditiveBlending, 
+            opacity: 0.6 
+        });
+        const particles = new THREE.Points(particleGeo, particleMat);
+        scene.add(particles);
+
+        // --- INTERATIVIDADE TÁTIL (TOQUE/MOUSE AFETA OS TECIDOS) ---
+        // Armazenamos influências extras (elevação e ondulação) que se somam ao movimento base
+        const whiteInfluence = new Array(fabricWhite.vertexCount).fill(0);
+        const blueInfluence = new Array(fabricBlue.vertexCount).fill(0);
+        let touchPoints = []; // rastro para ondulações suaves
         
-        function animateFabric(fabric, timeOffset, spiralIntensity) {
+        // Função para projetar toque no plano dos tecidos
+        function getTouchPlanePoint(clientX, clientY) {
+            const raycaster = new THREE.Raycaster();
+            const mouseVec = new THREE.Vector2(
+                (clientX / renderer.domElement.clientWidth) * 2 - 1,
+                -(clientY / renderer.domElement.clientHeight) * 2 + 1
+            );
+            raycaster.setFromCamera(mouseVec, camera);
+            const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 2.0);
+            const point = new THREE.Vector3();
+            if (raycaster.ray.intersectPlane(plane, point)) {
+                return { x: point.x, z: point.z, valid: Math.abs(point.x) < 4 && Math.abs(point.z) < 4 };
+            }
+            return { x: 0, z: 0, valid: false };
+        }
+        
+        // Aplicar influência em um tecido específico (por proximidade)
+        function applyInfluenceToFabric(fabric, influenceArray, touchX, touchZ, radius, intensity) {
+            const radSq = radius * radius;
+            for (let i = 0; i < fabric.vertexCount; i++) {
+                const vx = fabric.origX[i] + fabric.mesh.position.x;
+                const vz = fabric.origZ[i] + fabric.mesh.position.z;
+                const dx = vx - touchX;
+                const dz = vz - touchZ;
+                const distSq = dx*dx + dz*dz;
+                if (distSq < radSq) {
+                    const factor = (1 - Math.sqrt(distSq)/radius) * intensity;
+                    influenceArray[i] += factor * 0.18;
+                    if (influenceArray[i] > 0.65) influenceArray[i] = 0.65;
+                }
+            }
+        }
+        
+        // Gerenciar eventos de toque/mouse
+        let activePointers = new Map();
+        let pressTimers = new Map();
+        
+        function onPointerMove(clientX, clientY, id) {
+            const { x, z, valid } = getTouchPlanePoint(clientX, clientY);
+            if (!valid) return;
+            // Aplica influência nos dois tecidos (raio maior para white, menor para blue)
+            applyInfluenceToFabric(fabricWhite, whiteInfluence, x, z, 1.2, 0.28);
+            applyInfluenceToFabric(fabricBlue, blueInfluence, x, z, 1.2, 0.28);
+            // Adiciona rastro visual
+            touchPoints.push({ x, z, life: 1.0 });
+            if (touchPoints.length > 30) touchPoints.shift();
+        }
+        
+        function onPointerDown(clientX, clientY, id) {
+            const { x, z, valid } = getTouchPlanePoint(clientX, clientY);
+            if (!valid) return;
+            // Impacto mais forte no início
+            applyInfluenceToFabric(fabricWhite, whiteInfluence, x, z, 1.4, 0.45);
+            applyInfluenceToFabric(fabricBlue, blueInfluence, x, z, 1.4, 0.45);
+            // Toque sustentado: aumenta a luz e ondulação extra
+            const timer = setTimeout(() => {
+                applyInfluenceToFabric(fabricWhite, whiteInfluence, x, z, 1.5, 0.6);
+                applyInfluenceToFabric(fabricBlue, blueInfluence, x, z, 1.5, 0.6);
+                groundLight.intensity = 1.2;
+                setTimeout(() => { groundLight.intensity = 0.6; }, 500);
+            }, 500);
+            pressTimers.set(id, timer);
+            activePointers.set(id, true);
+            // Mostrar anel de toque
+            const ripple = document.getElementById('touchRipple');
+            if (ripple) {
+                ripple.style.display = 'block';
+                ripple.style.left = clientX + 'px';
+                ripple.style.top = clientY + 'px';
+            }
+        }
+        
+        function onPointerUp(id) {
+            if (pressTimers.has(id)) {
+                clearTimeout(pressTimers.get(id));
+                pressTimers.delete(id);
+            }
+            activePointers.delete(id);
+            if (activePointers.size === 0) {
+                const ripple = document.getElementById('touchRipple');
+                if (ripple) ripple.style.display = 'none';
+            }
+        }
+        
+        // Eventos Mouse
+        renderer.domElement.addEventListener('mousemove', (e) => onPointerMove(e.clientX, e.clientY, 'mouse'));
+        renderer.domElement.addEventListener('mousedown', (e) => onPointerDown(e.clientX, e.clientY, 'mouse'));
+        window.addEventListener('mouseup', () => onPointerUp('mouse'));
+        
+        // Eventos Touch (mobile)
+        renderer.domElement.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            for (let i = 0; i < e.touches.length; i++) {
+                const touch = e.touches[i];
+                onPointerMove(touch.clientX, touch.clientY, touch.identifier);
+            }
+            const ripple = document.getElementById('touchRipple');
+            if (ripple && e.touches.length) {
+                ripple.style.display = 'block';
+                ripple.style.left = e.touches[0].clientX + 'px';
+                ripple.style.top = e.touches[0].clientY + 'px';
+            }
+        });
+        renderer.domElement.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            for (let i = 0; i < e.touches.length; i++) {
+                const touch = e.touches[i];
+                onPointerDown(touch.clientX, touch.clientY, touch.identifier);
+            }
+        });
+        renderer.domElement.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            for (let i = 0; i < e.changedTouches.length; i++) {
+                onPointerUp(e.changedTouches[i].identifier);
+            }
+        });
+        
+        // Atualizar anel tátil no mouse move
+        document.addEventListener('mousemove', (e) => {
+            const ripple = document.getElementById('touchRipple');
+            if (ripple && ripple.style.display === 'block') {
+                ripple.style.left = e.clientX + 'px';
+                ripple.style.top = e.clientY + 'px';
+            }
+        });
+        
+        // --- ANIMAÇÃO PRINCIPAL DOS TECIDOS (ESPIRAL, CIRCULAR, ALEATÓRIO COM FLUIDEZ) ---
+        let globalTime = 0;
+        
+        // Função que calcula o movimento de cada vértice, baseado em:
+        // - Movimento espiral (vórtice) ao longo da altura
+        // - Ondas verticais (sobe e desce)
+        // - Movimento circular/horizontal aleatório
+        // - Influência do toque (interatividade)
+        // - Garantia de nunca tocar o chão (Y mínimo ~0.4)
+        
+        function updateFabric(fabric, influenceArray, timeOffset, colorPulse) {
             const posAttr = fabric.geometry.attributes.position;
             const pos = posAttr.array;
             
+            // Parâmetros que evoluem lentamente para gerar variedade infinita
+            const spiralSpeed = 0.95 + Math.sin(globalTime * 0.13) * 0.2;
+            const verticalSpeed = 0.75 + Math.cos(globalTime * 0.17) * 0.2;
+            const waveSpeed = 1.2 + Math.sin(globalTime * 0.21) * 0.3;
+            const driftSpeed = 0.4 + Math.sin(globalTime * 0.09) * 0.2;
+            
             for (let i = 0; i < fabric.vertexCount; i++) {
-                const x = fabric.origX[i];
-                const y = fabric.origY[i];
-                const z = fabric.origZ[i];
+                const origX = fabric.origX[i];
+                const origY = fabric.origY[i];
+                const origZ = fabric.origZ[i];
                 
-                // Movimento vertical principal (subida/descida)
-                const verticalWave = Math.sin(time * 0.8 + timeOffset) * 1.2;
+                // Coordenada normalizada ao longo da altura (0 a 1)
+                const t = (origY + fabric.mesh.position.y) / 6.0; // altura total ~6
                 
-                // Movimento em espiral (vórtice)
-                const spiralAngle = (y / 5.5) * Math.PI * 4 + time * 1.2 + timeOffset;
-                const spiralRadius = Math.sin(time * 0.6 + timeOffset) * 0.35 + 0.15;
+                // 1. MOVIMENTO ESPIRAL (vórtice): cada ponto gira em torno do eixo Y com raio variável
+                const spiralAngle = t * Math.PI * 4.5 + globalTime * spiralSpeed + timeOffset;
+                const spiralRadiusBase = Math.sin(globalTime * 0.6 + timeOffset) * 0.4 + 0.25;
+                const spiralRadius = spiralRadiusBase * (1 - t * 0.3); // mais estreito no topo
                 const spiralX = Math.cos(spiralAngle) * spiralRadius;
                 const spiralZ = Math.sin(spiralAngle) * spiralRadius;
                 
-                // Ondulações ao longo do comprimento
-                const waveFreq = 3;
-                const waveAmplitude = Math.sin(time * 1.1 + timeOffset) * 0.12;
-                const wave = Math.sin((y / 5.5) * waveFreq * Math.PI + time * 1.5) * waveAmplitude;
+                // 2. ONDULAÇÃO VERTICAL (subida e descida ao longo do tempo)
+                const verticalWave = Math.sin(globalTime * verticalSpeed + t * Math.PI * 2.5 + timeOffset) * 1.1;
                 
-                // Aplicar transformações
-                pos[i*3] = x + spiralX + wave;
-                pos[i*3+1] = y + verticalWave;
-                pos[i*3+2] = z + spiralZ;
+                // 3. MOVIMENTO CIRCULAR/HORIZONTAL ALEATÓRIO (deriva)
+                const driftAngle = globalTime * driftSpeed + t * 2.0;
+                const driftRadius = Math.sin(globalTime * 0.4 + timeOffset) * 0.12;
+                const driftX = Math.cos(driftAngle) * driftRadius;
+                const driftZ = Math.sin(driftAngle * 1.3) * driftRadius;
+                
+                // 4. ONDULAÇÕES DE ALTA FREQUÊNCIA (textura do movimento)
+                const ripple = Math.sin((origY * 2.5 + globalTime * waveSpeed) * 1.8) * 0.08;
+                const rippleX = Math.cos(origY * 3.0 + globalTime * 1.5) * 0.05;
+                const rippleZ = Math.sin(origY * 2.2 + globalTime * 1.2) * 0.05;
+                
+                // 5. INFLUÊNCIA DO TOQUE (elevação extra)
+                const touchExtra = influenceArray[i] * 0.9;
+                
+                // Posição final
+                let newX = origX + spiralX + driftX + rippleX;
+                let newY = origY + verticalWave + touchExtra + ripple;
+                let newZ = origZ + spiralZ + driftZ + rippleZ;
+                
+                // Limites: garantir que o tecido NUNCA toque o chão (chão em Y ~ -0.5)
+                if (newY < 0.4) newY = 0.4;
+                if (newY > 4.2) newY = 4.2;
+                
+                pos[i*3] = newX;
+                pos[i*3+1] = newY;
+                pos[i*3+2] = newZ;
             }
             
             posAttr.needsUpdate = true;
             fabric.geometry.computeVertexNormals();
+            
+            // Piscar a cor e emissividade de acordo com o toque e tempo
+            const heat = influenceArray.reduce((a,b) => a + Math.abs(b), 0) / influenceArray.length;
+            const intensity = 0.45 + heat * 0.6 + Math.sin(globalTime * 1.2) * 0.1;
+            fabric.material.emissiveIntensity = intensity;
+            fabric.material.opacity = 0.88 + Math.sin(globalTime * 0.8) * 0.06;
         }
-
+        
+        // --- ATUALIZAR PARTÍCULAS E LUZES ---
+        function updateParticles() {
+            const posAttr = particleGeo.attributes.position.array;
+            for (let i = 0; i < particleCount; i++) {
+                let y = posAttr[i*3+1];
+                y += particleSpeeds[i];
+                if (y > 4.5) {
+                    y = -0.8;
+                    const newR = Math.random() * 4.8;
+                    const newAng = Math.random() * Math.PI * 2;
+                    posAttr[i*3] = Math.cos(newAng) * newR;
+                    posAttr[i*3+2] = Math.sin(newAng) * newR;
+                    particleSpeeds[i] = 0.006 + Math.random() * 0.02;
+                }
+                posAttr[i*3+1] = y;
+                // movimento espiral suave nas partículas
+                posAttr[i*3] += Math.sin(globalTime * 0.9 + i) * 0.0006;
+                posAttr[i*3+2] += Math.cos(globalTime * 0.8 + i) * 0.0006;
+            }
+            particleGeo.attributes.position.needsUpdate = true;
+        }
+        
+        function updateLights() {
+            // Luz dançante que orbita os tecidos
+            danceLight.position.x = Math.sin(globalTime * 0.7) * 2.2;
+            danceLight.position.z = Math.cos(globalTime * 0.5) * 2.0;
+            danceLight.position.y = 2.5 + Math.sin(globalTime * 1.2) * 1.0;
+            danceLight.intensity = 0.65 + Math.sin(globalTime * 1.4) * 0.25;
+            
+            mainLight.intensity = 0.8 + Math.sin(globalTime * 0.6) * 0.15;
+            fillLight.intensity = 0.5 + Math.sin(globalTime * 0.8) * 0.15;
+            backLight.intensity = 0.45 + Math.sin(globalTime * 0.5) * 0.1;
+            groundLight.intensity = 0.55 + Math.sin(globalTime * 1.1) * 0.2;
+        }
+        
+        function decayInfluences() {
+            for (let i = 0; i < fabricWhite.vertexCount; i++) {
+                whiteInfluence[i] *= 0.99;
+                if (whiteInfluence[i] < 0.002) whiteInfluence[i] = 0;
+            }
+            for (let i = 0; i < fabricBlue.vertexCount; i++) {
+                blueInfluence[i] *= 0.99;
+                if (blueInfluence[i] < 0.002) blueInfluence[i] = 0;
+            }
+            // Decaimento dos pontos de toque (rastro)
+            for (let i = 0; i < touchPoints.length; i++) {
+                touchPoints[i].life *= 0.96;
+            }
+            touchPoints = touchPoints.filter(p => p.life > 0.05);
+        }
+        
         // --- LOOP DE ANIMAÇÃO ---
         function animate() {
-            time += 0.016;
+            globalTime += 0.016;
             
-            // Animar os dois tecidos com defasagem
-            animateFabric(fabricWhite, 0, 1.0);
-            animateFabric(fabricBlue, Math.PI, 0.9);
+            decayInfluences();
+            updateFabric(fabricWhite, whiteInfluence, 0);
+            updateFabric(fabricBlue, blueInfluence, Math.PI);
+            updateParticles();
+            updateLights();
             
-            // Fazer as cores pulsarem levemente
-            const pulse = Math.sin(time * 0.5) * 0.15 + 0.85;
-            fabricWhite.material.opacity = pulse;
-            fabricBlue.material.opacity = pulse;
-            
-            // Fazer as luzes dançarem
-            mainLight.intensity = 0.7 + Math.sin(time * 0.7) * 0.15;
-            fillLight.intensity = 0.4 + Math.sin(time * 0.6 + 1) * 0.15;
-            
+            // Pequena rotação suave da câmera? (opcional, desabilitado para manter controle)
             controls.update();
-            renderer.render(scene, camera);
+            
+            // Render com effect composer (bloom)
+            effectComposer.render();
             
             requestAnimationFrame(animate);
         }
         
         animate();
-
-        // --- RESPONSIVIDADE ---
+        
+        // --- AJUSTE DE REDIMENSIONAMENTO ---
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
+            effectComposer.setSize(window.innerWidth, window.innerHeight);
         });
-
-        console.log('✨ Fluxos | Quatro Oceanos - Simulação fiel da instalação do Museu do Amanhã');
+        
+        console.log('✨ Fluxos | Quatro Oceanos - Tecidos em espiral, dança eterna e toque sensitivo.');
     </script>
 </body>
 </html>
