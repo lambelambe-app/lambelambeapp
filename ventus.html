@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Símbolos do Brasil | Cidades em Movimento</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Segoe UI', 'Montserrat', 'Poppins', sans-serif;
+            background-color: #000000;
+        }
+        /* Menu superior flutuante */
+        .city-menu {
+            position: absolute;
+            top: 20px;
+            left: 0;
+            right: 0;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
+            padding: 12px 20px;
+            background: rgba(0, 0, 0, 0.55);
+            backdrop-filter: blur(12px);
+            border-radius: 50px;
+            width: fit-content;
+            margin: 0 auto;
+            z-index: 30;
+            border: 1px solid rgba(100, 180, 255, 0.3);
+            pointer-events: auto;
+        }
+        .city-btn {
+            background: rgba(20, 30, 50, 0.7);
+            border: none;
+            color: #ccf4ff;
+            font-size: 14px;
+            font-weight: 500;
+            padding: 8px 18px;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: monospace;
+            letter-spacing: 1px;
+            backdrop-filter: blur(4px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        .city-btn:hover {
+            background: rgba(50, 120, 200, 0.8);
+            color: white;
+            transform: scale(1.02);
+        }
+        .city-btn.active {
+            background: #2a6eff;
+            color: white;
+            box-shadow: 0 0 12px rgba(42, 110, 255, 0.5);
+        }
+        @media (max-width: 700px) {
+            .city-btn { padding: 5px 12px; font-size: 10px; gap: 8px; }
+            .city-menu { gap: 8px; top: 12px; }
+        }
+        .info-text {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            pointer-events: none;
+            z-index: 20;
+            color: rgba(180, 220, 255, 0.6);
+            font-size: 11px;
+            font-weight: 300;
+            letter-spacing: 1px;
+            font-family: monospace;
+            background: rgba(0,0,0,0.3);
+            backdrop-filter: blur(4px);
+            width: fit-content;
+            margin: 0 auto;
+            padding: 5px 14px;
+            border-radius: 30px;
+        }
+        .touch-ripple {
+            position: fixed;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(100,200,255,0.5) 0%, rgba(100,200,255,0) 70%);
+            pointer-events: none;
+            z-index: 1000;
+            transform: translate(-50%, -50%);
+            transition: transform 0.05s;
+        }
+    </style>
+</head>
+<body>
+    <div class="city-menu" id="cityMenu">
+        <button class="city-btn" data-city="rio">RIO ✝️</button>
+        <button class="city-btn" data-city="recife">RECIFE 🏛️</button>
+        <button class="city-btn" data-city="manaus">MANAUS 🎭</button>
+        <button class="city-btn" data-city="sao Paulo">SÃO PAULO 🌉</button>
+        <button class="city-btn" data-city="salvador">SALVADOR ⚓</button>
+        <button class="city-btn" data-city="brasilia">BRASÍLIA ⛪</button>
+        <button class="city-btn" data-city="belo Horizonte">BH 🏞️</button>
+        <button class="city-btn" data-city="fortaleza">FORTALEZA 🌊</button>
+    </div>
+    <div class="info-text" id="infoText">✨ toque ou mova o mouse sobre o símbolo | cada cidade ganha vida ✨</div>
+    <div id="touchRipple" class="touch-ripple" style="display: none;"></div>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.128.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.128.0/examples/jsm/"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+        import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+        import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+
+        // --- CENA ---
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x010118);
+        scene.fog = new THREE.FogExp2(0x010118, 0.008);
+
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(1.5, 3.2, 6.5);
+        camera.lookAt(0, 1.8, 0);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, precision: 'highp' });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.toneMapping = THREE.ReinhardToneMapping;
+        renderer.toneMappingExposure = 1.35;
+        document.body.appendChild(renderer.domElement);
+
+        // --- EFEITO BLOOM (brilho etéreo) ---
+        const renderScene = new RenderPass(scene, camera);
+        const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.0, 0.4, 0.3);
+        bloomPass.threshold = 0.08;
+        bloomPass.strength = 0.85;
+        bloomPass.radius = 0.65;
+        const effectComposer = new EffectComposer(renderer);
+        effectComposer.addPass(renderScene);
+        effectComposer.addPass(bloomPass);
+
+        // --- CONTROLES ORBITAIS (explorar suavemente) ---
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.06;
+        controls.rotateSpeed = 0.8;
+        controls.zoomSpeed = 0.9;
+        controls.enablePan = false;
+        controls.target.set(0, 2.0, 0);
+
+        // --- ILUMINAÇÃO DRAMÁTICA ---
+        const ambientLight = new THREE.AmbientLight(0x112244, 0.45);
+        scene.add(ambientLight);
+        const mainLight = new THREE.DirectionalLight(0xfff5e0, 1.0);
+        mainLight.position.set(2, 5, 3);
+        mainLight.castShadow = true;
+        mainLight.shadow.mapSize.width = 1024;
+        mainLight.shadow.mapSize.height = 1024;
+        scene.add(mainLight);
+        const fillLight = new THREE.PointLight(0x4488ff, 0.6);
+        fillLight.position.set(-1.5, 2, 2);
+        scene.add(fillLight);
+        const backLight = new THREE.PointLight(0x3366cc, 0.5);
+        backLight.position.set(0, 2.5, -3.8);
+        scene.add(backLight);
+        const danceLight = new THREE.PointLight(0x44aaff, 0.75);
+        danceLight.castShadow = false;
+        scene.add(danceLight);
+        const groundGlow = new THREE.PointLight(0x0088ff, 0.5);
+        groundGlow.position.set(0, -0.3, 0);
+        scene.add(groundGlow);
+
+        // --- CHÃO REFERENCIAL (sutil) ---
+        const gridHelper = new THREE.GridHelper(10, 20, 0x3366aa, 0x224466);
+        gridHelper.position.y = -0.5;
+        gridHelper.material.transparent = true;
+        gridHelper.material.opacity = 0.2;
+        scene.add(gridHelper);
+        const shadowPlane = new THREE.Mesh(
+            new THREE.PlaneGeometry(8, 8),
+            new THREE.ShadowMaterial({ opacity: 0.3, color: 0x000000, transparent: true })
+        );
+        shadowPlane.rotation.x = -Math.PI / 2;
+        shadowPlane.position.y = -0.48;
+        shadowPlane.receiveShadow = true;
+        scene.add(shadowPlane);
+
+        // --- DEFINIÇÃO DOS SÍMBOLOS 3D (cada cidade) ---
+        // Cada símbolo será um Group contendo malhas que representam o ícone.
+        // Aplicaremos a mesma lógica de movimento "tecido flutuante" nos vértices ou em componentes.
+        // Para manter leveza e fluidez, usaremos uma malha principal com vértices dinâmicos + partículas.
+        
+        // Criaremos um container que será trocado ao selecionar cidade
+        let currentSymbol = null;
+        let currentWindForce = []; // força de vento por vértice
+        let currentPhases = [];
+        
+        // Função para gerar geometria personalizada baseada no símbolo (simplificada mas expressiva)
+        function createSymbolGeometry(type) {
+            // Para cada cidade, criamos uma forma 3D que evoca o símbolo, com muitos vértices para ondular
+            switch(type) {
+                case 'rio': // Cristo Redentor: figura alongada com braços abertos
+                    return createChristGeometry();
+                case 'recife': // Torre de Cristal: estrutura espiralada e translúcida
+                    return createTowerGeometry(0x88ccff, 1.2);
+                case 'manaus': // Teatro Amazonas: cúpula e colunas
+                    return createTheaterGeometry();
+                case 'sao Paulo': // Ponte Estaiada: formas triangulares
+                    return createBridgeGeometry();
+                case 'salvador': // Elevador Lacerda: estrutura vertical com cabines
+                    return createElevatorGeometry();
+                case 'brasilia': // Catedral de Brasília: colunas hiperboloides
+                    return createCathedralGeometry();
+                case 'belo Horizonte': // Conjunto arquitetônico da Pampulha (curvas)
+                    return createPampulhaGeometry();
+                case 'fortaleza': // Dragão do Mar ou espigão (abstrato)
+                    return createFortalezaGeometry();
+                default:
+                    return createChristGeometry();
+            }
+        }
+        
+        function createChristGeometry() {
+            // Grupo com forma de Cristo simplificada: cilindro + esfera + braços como planos curvos
+            const group = new THREE.Group();
+            // Corpo
+            const bodyGeo = new THREE.CylinderGeometry(0.45, 0.55, 1.6, 24, 24);
+            const materialBody = new THREE.MeshStandardMaterial({ color: 0xeeddcc, metalness: 0.3, roughness: 0.4, emissive: 0x442200, emissiveIntensity: 0.2 });
+            const body = new THREE.Mesh(bodyGeo, materialBody);
+            body.position.y = 0;
+            body.castShadow = true;
+            group.add(body);
+            // Cabeça
+            const headGeo = new THREE.SphereGeometry(0.4, 32, 32);
+            const headMat = new THREE.MeshStandardMaterial({ color: 0xeeddcc, metalness: 0.2 });
+            const head = new THREE.Mesh(headGeo, headMat);
+            head.position.y = 0.95;
+            group.add(head);
+            // Braços (dois planos curvos)
+            const armGeo = new THREE.BoxGeometry(1.2, 0.18, 0.25);
+            const armMat = new THREE.MeshStandardMaterial({ color: 0xeeddcc });
+            const leftArm = new THREE.Mesh(armGeo, armMat);
+            leftArm.position.set(-0.85, 0.55, 0);
+            leftArm.rotation.z = 0.2;
+            const rightArm = new THREE.Mesh(armGeo, armMat);
+            rightArm.position.set(0.85, 0.55, 0);
+            rightArm.rotation.z = -0.2;
+            group.add(leftArm);
+            group.add(rightArm);
+            // Manto (capa)
+            const cloakGeo = new THREE.ConeGeometry(0.65, 0.7, 8);
+            const cloakMat = new THREE.MeshStandardMaterial({ color: 0xaa9977 });
+            const cloak = new THREE.Mesh(cloakGeo, cloakMat);
+            cloak.position.y = -0.15;
+            group.add(cloak);
+            return group;
+        }
+        
+        function createTowerGeometry(color, heightScale) {
+            const group = new THREE.Group();
+            const segments = 40;
+            const points = [];
+            for (let i = 0; i <= segments; i++) {
+                const t = i / segments;
+                const r = 0.4 * (1 - t * 0.6);
+                points.push(new THREE.Vector3(r, t * 2.2, 0));
+            }
+            const latheGeo = new THREE.LatheGeometry(points, 24);
+            const material = new THREE.MeshStandardMaterial({ color: color, metalness: 0.7, roughness: 0.2, transparent: true, opacity: 0.85, emissive: 0x2288aa, emissiveIntensity: 0.25 });
+            const tower = new THREE.Mesh(latheGeo, material);
+            tower.castShadow = true;
+            group.add(tower);
+            // topo espiral
+            const spiralGeo = new THREE.TorusGeometry(0.35, 0.05, 32, 100);
+            const spiralMat = new THREE.MeshStandardMaterial({ color: 0xaaffff });
+            const ring = new THREE.Mesh(spiralGeo, spiralMat);
+            ring.position.y = 2.25;
+            ring.rotation.x = Math.PI / 2;
+            group.add(ring);
+            return group;
+        }
+        
+        function createTheaterGeometry() {
+            const group = new THREE.Group();
+            const domeGeo = new THREE.SphereGeometry(0.8, 32, 32, 0, Math.PI*2, 0, Math.PI/2);
+            const domeMat = new THREE.MeshStandardMaterial({ color: 0xddbb88, metalness: 0.6 });
+            const dome = new THREE.Mesh(domeGeo, domeMat);
+            dome.position.y = 0.8;
+            group.add(dome);
+            const baseGeo = new THREE.BoxGeometry(1.5, 0.4, 1.5);
+            const baseMat = new THREE.MeshStandardMaterial({ color: 0xaa8866 });
+            const base = new THREE.Mesh(baseGeo, baseMat);
+            base.position.y = 0;
+            group.add(base);
+            for (let i = 0; i < 6; i++) {
+                const colGeo = new THREE.CylinderGeometry(0.12, 0.15, 0.9, 6);
+                const colMat = new THREE.MeshStandardMaterial({ color: 0xccaa88 });
+                const col = new THREE.Mesh(colGeo, colMat);
+                const angle = (i / 6) * Math.PI * 2;
+                col.position.set(Math.cos(angle) * 0.9, 0.45, Math.sin(angle) * 0.9);
+                group.add(col);
+            }
+            return group;
+        }
+        
+        function createBridgeGeometry() {
+            const group = new THREE.Group();
+            const pylonGeo = new THREE.CylinderGeometry(0.3, 0.5, 2.2, 8);
+            const pylonMat = new THREE.MeshStandardMaterial({ color: 0xaaaaaa, metalness: 0.8 });
+            const pylon = new THREE.Mesh(pylonGeo, pylonMat);
+            pylon.position.y = 1.1;
+            group.add(pylon);
+            const cables = [];
+            for (let i = -1; i <= 1; i+=0.5) {
+                const cableGeo = new THREE.CylinderGeometry(0.05, 0.05, 1.5, 4);
+                const cableMat = new THREE.MeshStandardMaterial({ color: 0xccccdd });
+                const cable = new THREE.Mesh(cableGeo, cableMat);
+                cable.position.set(i * 0.9, 1.6, 0);
+                cable.rotation.z = 0.3 * i;
+                group.add(cable);
+            }
+            return group;
+        }
+        
+        function createElevatorGeometry() {
+            const group = new THREE.Group();
+            const towerGeo = new THREE.BoxGeometry(0.8, 2.5, 0.8);
+            const towerMat = new THREE.MeshStandardMaterial({ color: 0xbbaa99 });
+            const tower = new THREE.Mesh(towerGeo, towerMat);
+            tower.position.y = 1.25;
+            group.add(tower);
+            const cabinGeo = new THREE.BoxGeometry(0.9, 0.6, 0.9);
+            const cabinMat = new THREE.MeshStandardMaterial({ color: 0x88aaff });
+            const cabin = new THREE.Mesh(cabinGeo, cabinMat);
+            cabin.position.y = 0.8;
+            group.add(cabin);
+            return group;
+        }
+        
+        function createCathedralGeometry() {
+            const group = new THREE.Group();
+            for (let i = 0; i < 16; i++) {
+                const angle = (i / 16) * Math.PI * 2;
+                const pillarGeo = new THREE.CylinderGeometry(0.08, 0.12, 1.6, 6);
+                const pillarMat = new THREE.MeshStandardMaterial({ color: 0xeeddcc });
+                const pillar = new THREE.Mesh(pillarGeo, pillarMat);
+                const r = 0.9;
+                pillar.position.set(Math.cos(angle) * r, 0.8, Math.sin(angle) * r);
+                group.add(pillar);
+            }
+            const roofGeo = new THREE.ConeGeometry(0.9, 0.6, 16);
+            const roofMat = new THREE.MeshStandardMaterial({ color: 0xccaa88 });
+            const roof = new THREE.Mesh(roofGeo, roofMat);
+            roof.position.y = 1.5;
+            group.add(roof);
+            return group;
+        }
+        
+        function createPampulhaGeometry() {
+            const group = new THREE.Group();
+            const curveGeo = new THREE.TorusGeometry(0.7, 0.12, 32, 64, Math.PI);
+            const curveMat = new THREE.MeshStandardMaterial({ color: 0x88aaff });
+            const arch = new THREE.Mesh(curveGeo, curveMat);
+            arch.rotation.x = Math.PI / 2;
+            arch.rotation.z = 0.5;
+            group.add(arch);
+            const sphereGeo = new THREE.SphereGeometry(0.4, 24, 24);
+            const sphereMat = new THREE.MeshStandardMaterial({ color: 0xffaa77 });
+            const sphere = new THREE.Mesh(sphereGeo, sphereMat);
+            sphere.position.y = 0.4;
+            group.add(sphere);
+            return group;
+        }
+        
+        function createFortalezaGeometry() {
+            const group = new THREE.Group();
+            const waveGeo = new THREE.TorusKnotGeometry(0.6, 0.1, 100, 16, 3, 4);
+            const waveMat = new THREE.MeshStandardMaterial({ color: 0x33ccff, metalness: 0.7 });
+            const knot = new THREE.Mesh(waveGeo, waveMat);
+            knot.scale.set(0.7, 0.7, 0.7);
+            group.add(knot);
+            const baseGeo = new THREE.CylinderGeometry(0.5, 0.7, 0.3, 8);
+            const baseMat = new THREE.MeshStandardMaterial({ color: 0x88aadd });
+            const base = new THREE.Mesh(baseGeo, baseMat);
+            base.position.y = -0.6;
+            group.add(base);
+            return group;
+        }
+        
+        // --- FUNÇÃO PARA CRIAR SÍMBOLO COMO MALHA ÚNICA (com vértices para ondulação) ---
+        // Para aplicar o movimento "tecido flutuante", extraímos todos os vértices dos filhos e criamos uma malha unificada?
+        // Melhor: manter grupo, mas aplicar animação em cada vértice de suas geometrias.
+        // Simplificando: vamos aplicar a lógica de vento nos vértices de todas as malhas do grupo.
+        function extractMeshesAndApplyWind(group, windArray, phases) {
+            const meshes = [];
+            group.traverse(child => {
+                if (child.isMesh) {
+                    meshes.push(child);
+                    // Inicializa arrays de força e fase para cada vértice
+                    const geom = child.geometry;
+                    if (geom && geom.attributes.position) {
+                        const count = geom.attributes.position.count;
+                        for (let i = 0; i < count; i++) {
+                            windArray.push(0);
+                            phases.push(Math.random() * Math.PI * 2);
+                        }
+                    }
+                }
+            });
+            return meshes;
+        }
+        
+        let currentMeshes = [];
+        let currentWindVectors = [];
+        let currentPhasesList = [];
+        let originalPositions = []; // guarda posições originais de cada vértice
+        
+        function loadSymbol(cityId) {
+            // Remove símbolo anterior
+            if (currentSymbol) scene.remove(currentSymbol);
+            currentSymbol = createSymbolGeometry(cityId);
+            scene.add(currentSymbol);
+            currentSymbol.position.y = 0.8;
+            currentSymbol.castShadow = true;
+            currentSymbol.receiveShadow = false;
+            
+            // Coletar todas as malhas e preparar dados de animação
+            currentMeshes = [];
+            currentWindVectors = [];
+            currentPhasesList = [];
+            originalPositions = [];
+            currentSymbol.traverse(child => {
+                if (child.isMesh) {
+                    const geom = child.geometry;
+                    if (geom && geom.attributes.position) {
+                        const posAttr = geom.attributes.position.array;
+                        const count = geom.attributes.position.count;
+                        const origCopy = [];
+                        for (let i = 0; i < count; i++) {
+                            const ix = i*3;
+                            origCopy.push(posAttr[ix], posAttr[ix+1], posAttr[ix+2]);
+                            currentWindVectors.push(0);
+                            currentPhasesList.push(Math.random() * Math.PI * 2);
+                        }
+                        originalPositions.push({ mesh: child, orig: origCopy, count: count });
+                        currentMeshes.push(child);
+                    }
+                }
+            });
+        }
+        
+        // --- LÓGICA DE MOVIMENTO FLUINDO COMO TECIDO (ondulações e vento) ---
+        let globalTime = 0;
+        function updateFloatingSymbol() {
+            if (!currentMeshes.length) return;
+            globalTime += 0.016;
+            
+            // Decaimento da força do vento
+            for (let i = 0; i < currentWindVectors.length; i++) {
+                currentWindVectors[i] *= 0.992;
+                if (currentWindVectors[i] < 0.002) currentWindVectors[i] = 0;
+            }
+            
+            let idxOffset = 0;
+            for (let m = 0; m < currentMeshes.length; m++) {
+                const mesh = currentMeshes[m];
+                const geom = mesh.geometry;
+                const posAttr = geom.attributes.position;
+                const posArray = posAttr.array;
+                const origData = originalPositions.find(op => op.mesh === mesh);
+                if (!origData) continue;
+                const orig = origData.orig;
+                const count = origData.count;
+                
+                for (let i = 0; i < count; i++) {
+                    const ix = i*3;
+                    const origX = orig[ix];
+                    const origY = orig[ix+1];
+                    const origZ = orig[ix+2];
+                    const wind = currentWindVectors[idxOffset + i];
+                    
+                    // Ondulações suaves (como seda ao vento)
+                    const wave1 = Math.sin(origX * 1.5 + globalTime * 1.2) * 0.03;
+                    const wave2 = Math.cos(origZ * 1.3 + globalTime * 0.9) * 0.03;
+                    const wave3 = Math.sin(origY * 1.8 + globalTime * 1.5) * 0.04;
+                    const individual = Math.sin(globalTime * 1.1 + currentPhasesList[idxOffset + i]) * 0.025;
+                    const windPush = wind * 0.08;
+                    
+                    // Flutuação geral
+                    const floatY = Math.sin(globalTime * 0.6) * 0.03;
+                    
+                    let newX = origX + wave1 + individual * 0.5;
+                    let newY = origY + wave2 + wave3 + windPush + floatY;
+                    let newZ = origZ + wave3 * 0.5 + individual;
+                    
+                    // Limites sutis para não desfigurar
+                    posArray[ix] = newX;
+                    posArray[ix+1] = newY;
+                    posArray[ix+2] = newZ;
+                }
+                idxOffset += count;
+                posAttr.needsUpdate = true;
+                geom.computeVertexNormals();
+            }
+        }
+        
+        // --- INTERATIVIDADE: TOQUE/MOUSE GERA VENTO NOS VÉRTICES ---
+        function applyWindToSymbol(touchX, touchZ, radius, intensity) {
+            if (!currentMeshes.length) return;
+            let idxOffset = 0;
+            for (let m = 0; m < currentMeshes.length; m++) {
+                const mesh = currentMeshes[m];
+                const posAttr = mesh.geometry.attributes.position;
+                const posArray = posAttr.array;
+                const count = originalPositions.find(op => op.mesh === mesh).count;
+                for (let i = 0; i < count; i++) {
+                    const ix = i*3;
+                    const vx = posArray[ix];
+                    const vz = posArray[ix+2];
+                    const dx = vx - touchX;
+                    const dz = vz - touchZ;
+                    const distSq = dx*dx + dz*dz;
+                    if (distSq < radius*radius) {
+                        const factor = (1 - Math.sqrt(distSq)/radius) * intensity;
+                        currentWindVectors[idxOffset + i] += factor * 0.4;
+                        if (currentWindVectors[idxOffset + i] > 0.9) currentWindVectors[idxOffset + i] = 0.9;
+                    }
+                }
+                idxOffset += count;
+            }
+        }
+        
+        // --- EVENTOS DE TOQUE ---
+        function getTouchPlanePoint(clientX, clientY) {
+            const raycaster = new THREE.Raycaster();
+            const mouseVec = new THREE.Vector2(
+                (clientX / renderer.domElement.clientWidth) * 2 - 1,
+                -(clientY / renderer.domElement.clientHeight) * 2 + 1
+            );
+            raycaster.setFromCamera(mouseVec, camera);
+            const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 1.2);
+            const point = new THREE.Vector3();
+            if (raycaster.ray.intersectPlane(plane, point)) {
+                return { x: point.x, z: point.z, valid: Math.abs(point.x) < 3 && Math.abs(point.z) < 3 };
+            }
+            return { x: 0, z: 0, valid: false };
+        }
+        
+        let activePointers = new Map();
+        let timerMap = new Map();
+        
+        function onPointerMove(clientX, clientY, id) {
+            const { x, z, valid } = getTouchPlanePoint(clientX, clientY);
+            if (!valid) return;
+            applyWindToSymbol(x, z, 1.1, 0.2);
+        }
+        
+        function onPointerDown(clientX, clientY, id) {
+            const { x, z, valid } = getTouchPlanePoint(clientX, clientY);
+            if (!valid) return;
+            applyWindToSymbol(x, z, 1.3, 0.5);
+            const timer = setTimeout(() => {
+                applyWindToSymbol(x, z, 1.5, 0.7);
+                groundGlow.intensity = 1.1;
+                setTimeout(() => { groundGlow.intensity = 0.5; }, 400);
+            }, 500);
+            timerMap.set(id, timer);
+            activePointers.set(id, true);
+            const ripple = document.getElementById('touchRipple');
+            if (ripple) {
+                ripple.style.display = 'block';
+                ripple.style.left = clientX + 'px';
+                ripple.style.top = clientY + 'px';
+            }
+        }
+        
+        function onPointerUp(id) {
+            if (timerMap.has(id)) clearTimeout(timerMap.get(id));
+            timerMap.delete(id);
+            activePointers.delete(id);
+            if (activePointers.size === 0) {
+                document.getElementById('touchRipple')?.setAttribute('style', 'display: none');
+            }
+        }
+        
+        renderer.domElement.addEventListener('mousemove', (e) => onPointerMove(e.clientX, e.clientY, 'mouse'));
+        renderer.domElement.addEventListener('mousedown', (e) => onPointerDown(e.clientX, e.clientY, 'mouse'));
+        window.addEventListener('mouseup', () => onPointerUp('mouse'));
+        renderer.domElement.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            for (let t of e.touches) onPointerMove(t.clientX, t.clientY, t.identifier);
+            const ripple = document.getElementById('touchRipple');
+            if (ripple && e.touches.length) {
+                ripple.style.display = 'block';
+                ripple.style.left = e.touches[0].clientX + 'px';
+                ripple.style.top = e.touches[0].clientY + 'px';
+            }
+        });
+        renderer.domElement.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            for (let t of e.touches) onPointerDown(t.clientX, t.clientY, t.identifier);
+        });
+        renderer.domElement.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            for (let t of e.changedTouches) onPointerUp(t.identifier);
+        });
+        
+        // --- ANIMAÇÃO DE LUZES E PARTÍCULAS (vento visível) ---
+        const particleCount = 1800;
+        const particleGeo = new THREE.BufferGeometry();
+        const particlePositions = new Float32Array(particleCount * 3);
+        for (let i = 0; i < particleCount; i++) {
+            particlePositions[i*3] = (Math.random() - 0.5) * 7;
+            particlePositions[i*3+1] = Math.random() * 4;
+            particlePositions[i*3+2] = (Math.random() - 0.5) * 6;
+        }
+        particleGeo.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
+        const particleMat = new THREE.PointsMaterial({ color: 0x88aaff, size: 0.04, transparent: true, blending: THREE.AdditiveBlending });
+        const particles = new THREE.Points(particleGeo, particleMat);
+        scene.add(particles);
+        
+        function updateParticles() {
+            const pos = particleGeo.attributes.position.array;
+            for (let i = 0; i < particleCount; i++) {
+                pos[i*3+1] += 0.008;
+                if (pos[i*3+1] > 3.8) {
+                    pos[i*3+1] = -0.5;
+                    pos[i*3] = (Math.random() - 0.5) * 6;
+                    pos[i*3+2] = (Math.random() - 0.5) * 5;
+                }
+            }
+            particleGeo.attributes.position.needsUpdate = true;
+        }
+        
+        let lightTime = 0;
+        function updateLights() {
+            lightTime += 0.016;
+            danceLight.position.x = Math.sin(lightTime * 0.7) * 1.8;
+            danceLight.position.z = Math.cos(lightTime * 0.5) * 1.5;
+            danceLight.position.y = 1.8 + Math.sin(lightTime * 1.2) * 0.8;
+            danceLight.intensity = 0.7 + Math.sin(lightTime * 1.4) * 0.25;
+            mainLight.intensity = 0.9 + Math.sin(lightTime * 0.5) * 0.1;
+        }
+        
+        // --- CARREGAR SÍMBOLO INICIAL ---
+        loadSymbol('rio');
+        
+        // --- MENU DE CIDADES ---
+        const btns = document.querySelectorAll('.city-btn');
+        btns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const city = btn.dataset.city;
+                btns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                loadSymbol(city);
+                // Reset ventos
+                for (let i = 0; i < currentWindVectors.length; i++) currentWindVectors[i] = 0;
+                const info = document.getElementById('infoText');
+                if (info) info.style.opacity = '0.6';
+                setTimeout(() => { if(info) info.style.opacity = '1'; }, 500);
+            });
+        });
+        document.querySelector('.city-btn[data-city="rio"]').classList.add('active');
+        
+        // --- LOOP PRINCIPAL ---
+        function animate() {
+            updateFloatingSymbol();
+            updateParticles();
+            updateLights();
+            controls.update();
+            effectComposer.render();
+            requestAnimationFrame(animate);
+        }
+        animate();
+        
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            effectComposer.setSize(window.innerWidth, window.innerHeight);
+        });
+        
+        console.log('✨ Símbolos do Brasil em movimento flutuante – toque e sinta o vento.');
+    </script>
+</body>
+</html>
