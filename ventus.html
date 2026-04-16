@@ -521,23 +521,127 @@
             const cityData = CITIES[cityKey];
             if (!cityData) return;
 
+            // Criar textura visual com gradiente e padrão para cada cidade
+            const canvas = document.createElement('canvas');
+            canvas.width = 512;
+            canvas.height = 512;
+            const ctx = canvas.getContext('2d');
+            
+            // Gradientes únicos por cidade
+            const gradients = {
+                rio: () => {
+                    const grad = ctx.createRadialGradient(256, 256, 0, 256, 256, 400);
+                    grad.addColorStop(0, '#ff8c42');
+                    grad.addColorStop(0.5, '#ff6b6b');
+                    grad.addColorStop(1, '#c92a2a');
+                    return grad;
+                },
+                recife: () => {
+                    const grad = ctx.createLinearGradient(0, 0, 512, 512);
+                    grad.addColorStop(0, '#4c6ef5');
+                    grad.addColorStop(0.5, '#1971c2');
+                    grad.addColorStop(1, '#0c4a6e');
+                    return grad;
+                },
+                manaus: () => {
+                    const grad = ctx.createRadialGradient(256, 256, 50, 256, 256, 400);
+                    grad.addColorStop(0, '#51cf66');
+                    grad.addColorStop(0.5, '#2f9e44');
+                    grad.addColorStop(1, '#0b4620');
+                    return grad;
+                },
+                saoPaulo: () => {
+                    const grad = ctx.createLinearGradient(0, 0, 512, 512);
+                    grad.addColorStop(0, '#a61e4d');
+                    grad.addColorStop(0.5, '#d6336c');
+                    grad.addColorStop(1, '#f06595');
+                    return grad;
+                },
+                salvador: () => {
+                    const grad = ctx.createLinearGradient(0, 0, 512, 512);
+                    grad.addColorStop(0, '#ffd43b');
+                    grad.addColorStop(0.5, '#fab005');
+                    grad.addColorStop(1, '#f59f00');
+                    return grad;
+                },
+                brasilia: () => {
+                    const grad = ctx.createRadialGradient(256, 256, 0, 256, 256, 400);
+                    grad.addColorStop(0, '#da77f2');
+                    grad.addColorStop(0.5, '#9c36b5');
+                    grad.addColorStop(1, '#3c1a7f');
+                    return grad;
+                },
+                beloHorizonte: () => {
+                    const grad = ctx.createLinearGradient(0, 0, 512, 512);
+                    grad.addColorStop(0, '#748ffc');
+                    grad.addColorStop(0.5, '#4c6ef5');
+                    grad.addColorStop(1, '#1971c2');
+                    return grad;
+                },
+                fortaleza: () => {
+                    const grad = ctx.createLinearGradient(0, 0, 512, 512);
+                    grad.addColorStop(0, '#00d9ff');
+                    grad.addColorStop(0.5, '#0099cc');
+                    grad.addColorStop(1, '#003d99');
+                    return grad;
+                }
+            };
+
+            // Aplicar gradiente
+            if (gradients[cityKey]) {
+                ctx.fillStyle = gradients[cityKey]();
+                ctx.fillRect(0, 0, 512, 512);
+            }
+
+            // Adicionar padrão de círculos
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+            ctx.lineWidth = 2;
+            for (let i = 0; i < 8; i++) {
+                ctx.beginPath();
+                ctx.arc(Math.random() * 512, Math.random() * 512, Math.random() * 80 + 20, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+
+            // Adicionar linhas dinâmicas
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+            ctx.lineWidth = 1;
+            for (let i = 0; i < 5; i++) {
+                ctx.beginPath();
+                ctx.moveTo(0, Math.random() * 512);
+                ctx.lineTo(512, Math.random() * 512);
+                ctx.stroke();
+            }
+
+            // Aplicar ao material
+            const canvasTexture = new THREE.CanvasTexture(canvas);
+            canvasTexture.magFilter = THREE.LinearFilter;
+            canvasTexture.minFilter = THREE.LinearMipmapLinearFilter;
+            
+            if (currentTexture) currentTexture.dispose();
+            currentTexture = canvasTexture;
+            hologramMaterial.map = currentTexture;
+            hologramMaterial.needsUpdate = true;
+            hologramMaterial.emissiveIntensity = 0.75;
+
+            // Tentar carregar imagem real em paralelo (sem bloquear)
             const loader = new THREE.TextureLoader();
             loader.load(
                 cityData.url,
                 (texture) => {
-                    if (currentTexture) currentTexture.dispose();
-                    currentTexture = texture;
-                    currentTexture.wrapS = THREE.RepeatWrapping;
-                    currentTexture.wrapT = THREE.RepeatWrapping;
-                    currentTexture.repeat.set(1.2, 1.2);
-                    hologramMaterial.map = currentTexture;
+                    console.log('Imagem da cidade carregada:', cityKey);
+                    texture.magFilter = THREE.LinearFilter;
+                    texture.minFilter = THREE.LinearMipmapLinearFilter;
+                    texture.wrapS = THREE.RepeatWrapping;
+                    texture.wrapT = THREE.RepeatWrapping;
+                    texture.repeat.set(1, 1);
+                    hologramMaterial.map = texture;
                     hologramMaterial.needsUpdate = true;
-                    hologramMaterial.emissiveIntensity = 0.75;
+                    if (currentTexture !== canvasTexture) currentTexture.dispose();
+                    currentTexture = texture;
                 },
                 undefined,
                 (err) => {
-                    console.warn('Erro ao carregar imagem da cidade:', err);
-                    showStatus('Erro ao carregar imagem', 'error');
+                    console.warn('Imagem externa não disponível, usando padrão visual:', err);
                 }
             );
         }
@@ -556,15 +660,24 @@
                 return;
             }
 
+            showStatus('⏳ Carregando imagem...', 'success');
             const loader = new THREE.TextureLoader();
+            
+            // Usar crossOrigin para evitar problemas de CORS
+            loader.crossOrigin = 'anonymous';
+            
             loader.load(
                 url,
                 (texture) => {
+                    console.log('Imagem personalizada carregada com sucesso');
+                    texture.magFilter = THREE.LinearFilter;
+                    texture.minFilter = THREE.LinearMipmapLinearFilter;
+                    texture.wrapS = THREE.RepeatWrapping;
+                    texture.wrapT = THREE.RepeatWrapping;
+                    texture.repeat.set(1, 1);
+                    
                     if (currentTexture) currentTexture.dispose();
                     currentTexture = texture;
-                    currentTexture.wrapS = THREE.RepeatWrapping;
-                    currentTexture.wrapT = THREE.RepeatWrapping;
-                    currentTexture.repeat.set(1.2, 1.2);
                     hologramMaterial.map = currentTexture;
                     hologramMaterial.needsUpdate = true;
                     hologramMaterial.emissiveIntensity = 0.75;
@@ -574,10 +687,15 @@
                     showStatus('✨ Imagem aplicada com sucesso ao Ventus!', 'success');
                     document.getElementById('imageUrl').value = '';
                 },
-                undefined,
+                (progressEvent) => {
+                    if (progressEvent.lengthComputable) {
+                        const percentComplete = (progressEvent.loaded / progressEvent.total) * 100;
+                        console.log('Carregamento: ' + percentComplete + '%');
+                    }
+                },
                 (err) => {
-                    console.warn('Erro ao carregar imagem personalizada:', err);
-                    showStatus('Erro ao carregar imagem. Verifique a URL e tente novamente.', 'error');
+                    console.error('Erro ao carregar imagem personalizada:', err);
+                    showStatus('⚠️ Erro: Imagem pode estar bloqueada por CORS ou URL inválida', 'error');
                 }
             );
         }
