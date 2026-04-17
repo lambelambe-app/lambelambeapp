@@ -1,1 +1,692 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Tetris 3D Holográfico</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+            font-family: 'Courier New', monospace;
+            background-color: #000000;
+            touch-action: none;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* HUD - Heads Up Display */
+        .hud {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        .hud-top {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            padding: 15px 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            font-size: 14px;
+            color: #00ffff;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+
+        .hud-score {
+            text-align: left;
+        }
+
+        .hud-level {
+            text-align: center;
+            flex: 1;
+        }
+
+        .hud-lines {
+            text-align: right;
+        }
+
+        .hud-bottom {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            padding: 15px 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            text-align: center;
+            color: #00ffff;
+            font-size: 12px;
+            letter-spacing: 1px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .control-btn {
+            background: rgba(0, 150, 255, 0.3);
+            border: 1px solid #00ffff;
+            color: #00ffff;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 11px;
+            font-weight: bold;
+            cursor: pointer;
+            pointer-events: auto;
+            transition: all 0.2s;
+        }
+
+        .control-btn:active {
+            background: rgba(0, 255, 255, 0.5);
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.6);
+        }
+
+        /* Game Over Screen */
+        .game-over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.95);
+            border: 2px solid #ff0000;
+            padding: 40px;
+            border-radius: 10px;
+            text-align: center;
+            color: #ff0000;
+            font-size: 24px;
+            z-index: 200;
+            display: none;
+            pointer-events: auto;
+        }
+
+        .game-over.show {
+            display: block;
+        }
+
+        .game-over h1 {
+            font-size: 36px;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px #ff0000;
+        }
+
+        .game-over p {
+            font-size: 18px;
+            margin: 10px 0;
+            color: #00ffff;
+        }
+
+        .game-over button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: #ff0000;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            pointer-events: auto;
+        }
+
+        .game-over button:active {
+            background: #cc0000;
+        }
+
+        /* Scanline effect */
+        .scanline {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 50;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 255, 255, 0.02) 0px,
+                rgba(0, 255, 255, 0.02) 2px,
+                transparent 2px,
+                transparent 6px
+            );
+        }
+
+        @media (max-width: 600px) {
+            .hud-top {
+                font-size: 12px;
+                padding: 10px 15px;
+            }
+
+            .hud-bottom {
+                font-size: 10px;
+                padding: 10px 15px;
+            }
+
+            .control-btn {
+                font-size: 10px;
+                padding: 6px 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- HUD -->
+    <div class="hud">
+        <div class="hud-top">
+            <div class="hud-score">SCORE: <span id="score">0</span></div>
+            <div class="hud-level">LEVEL: <span id="level">1</span></div>
+            <div class="hud-lines">LINES: <span id="lines">0</span></div>
+        </div>
+
+        <div class="hud-bottom">
+            <div>TETRIS 3D HOLOGRÁFICO</div>
+            <div class="controls">
+                <button class="control-btn" id="rotateBtn">⟲ GIRAR</button>
+                <button class="control-btn" id="dropBtn">⬇ CAIR</button>
+                <button class="control-btn" id="pauseBtn">⏸ PAUSA</button>
+            </div>
+        </div>
+
+        <div class="game-over" id="gameOver">
+            <h1>GAME OVER</h1>
+            <p>SCORE: <span id="finalScore">0</span></p>
+            <p>LEVEL: <span id="finalLevel">1</span></p>
+            <p>LINES: <span id="finalLines">0</span></p>
+            <button onclick="location.reload()">JOGAR NOVAMENTE</button>
+        </div>
+    </div>
+
+    <!-- Scanline effect -->
+    <div class="scanline"></div>
+
+    <!-- Three.js via CDN -->
+    <script async src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
+    <script async src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script async src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+    <script async src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+    <script async src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+
+    <script>
+        // Aguardar carregamento do Three.js
+        function waitForThree() {
+            if (typeof THREE === 'undefined') {
+                setTimeout(waitForThree, 100);
+                return;
+            }
+            initGame();
+        }
+
+        // ===== CONFIGURAÇÃO DO JOGO =====
+        const GRID_WIDTH = 10;
+        const GRID_HEIGHT = 20;
+        const BLOCK_SIZE = 0.3;
+
+        // Peças do Tetris (Tetrominós)
+        const TETROMINOS = {
+            I: { shape: [[1, 1, 1, 1]], color: 0x00ffff },
+            O: { shape: [[1, 1], [1, 1]], color: 0xffff00 },
+            T: { shape: [[0, 1, 0], [1, 1, 1]], color: 0xff00ff },
+            S: { shape: [[0, 1, 1], [1, 1, 0]], color: 0x00ff00 },
+            Z: { shape: [[1, 1, 0], [0, 1, 1]], color: 0xff0000 },
+            J: { shape: [[1, 0, 0], [1, 1, 1]], color: 0x0000ff },
+            L: { shape: [[0, 0, 1], [1, 1, 1]], color: 0xff8800 }
+        };
+
+        let scene, camera, renderer, controls, effectComposer;
+        let gameBoard = [];
+        let currentPiece = null;
+        let score = 0, level = 1, lines = 0;
+        let gameRunning = true, gamePaused = false;
+        let gameSpeed = 1000;
+        let lastDropTime = 0;
+
+        // Objetos 3D
+        let boardGroup = new THREE.Group();
+        let blockMeshes = [];
+
+        function initGame() {
+            // Scene
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x010118);
+            scene.fog = new THREE.FogExp2(0x010118, 0.006);
+
+            // Camera
+            camera = new THREE.PerspectiveCamera(
+                48,
+                window.innerWidth / window.innerHeight,
+                0.1,
+                1000
+            );
+            camera.position.set(5, 8, 10);
+            camera.lookAt(0, 5, 0);
+
+            // Renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, precision: 'highp' });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.shadowMap.enabled = true;
+            renderer.toneMapping = THREE.ReinhardToneMapping;
+            renderer.toneMappingExposure = 1.4;
+            document.body.insertBefore(renderer.domElement, document.body.firstChild);
+
+            // Post-processing
+            const renderScene = new THREE.RenderPass(scene, camera);
+            const bloomPass = new THREE.UnrealBloomPass(
+                new THREE.Vector2(window.innerWidth, window.innerHeight),
+                1.2,
+                0.5,
+                0.35
+            );
+            bloomPass.threshold = 0.05;
+            bloomPass.strength = 1.0;
+            bloomPass.radius = 0.75;
+            effectComposer = new THREE.EffectComposer(renderer);
+            effectComposer.addPass(renderScene);
+            effectComposer.addPass(bloomPass);
+
+            // Controls
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.08;
+            controls.rotateSpeed = 0.5;
+            controls.zoomSpeed = 1.0;
+            controls.enablePan = false;
+            controls.target.set(GRID_WIDTH / 2 * BLOCK_SIZE, GRID_HEIGHT / 2 * BLOCK_SIZE, 0);
+
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0x112244, 0.5);
+            scene.add(ambientLight);
+
+            const mainLight = new THREE.DirectionalLight(0xfff0e0, 1.0);
+            mainLight.position.set(5, 10, 5);
+            mainLight.castShadow = true;
+            scene.add(mainLight);
+
+            const fillLight = new THREE.PointLight(0x4488ff, 0.8);
+            fillLight.position.set(-5, 5, 5);
+            scene.add(fillLight);
+
+            const backLight = new THREE.PointLight(0x3366cc, 0.6);
+            backLight.position.set(0, 5, -8);
+            scene.add(backLight);
+
+            // Board plane (referência)
+            const boardGeometry = new THREE.PlaneGeometry(
+                GRID_WIDTH * BLOCK_SIZE,
+                GRID_HEIGHT * BLOCK_SIZE
+            );
+            const boardMaterial = new THREE.MeshStandardMaterial({
+                color: 0x001a33,
+                emissive: 0x001a33,
+                emissiveIntensity: 0.3,
+                metalness: 0.7,
+                roughness: 0.3,
+                transparent: true,
+                opacity: 0.8
+            });
+            const boardMesh = new THREE.Mesh(boardGeometry, boardMaterial);
+            boardMesh.position.z = -0.1;
+            scene.add(boardMesh);
+
+            // Board border
+            const borderGeometry = new THREE.EdgesGeometry(boardGeometry);
+            const borderMaterial = new THREE.LineBasicMaterial({ color: 0x00ffff, linewidth: 2 });
+            const border = new THREE.LineSegments(borderGeometry, borderMaterial);
+            border.position.z = 0;
+            scene.add(border);
+
+            // Board group
+            scene.add(boardGroup);
+
+            // Inicializar tabuleiro
+            for (let y = 0; y < GRID_HEIGHT; y++) {
+                gameBoard[y] = new Array(GRID_WIDTH).fill(0);
+            }
+
+            // Spawn primeira peça
+            spawnNewPiece();
+
+            // Setup UI
+            setupUI();
+
+            // Animation loop
+            let lastTime = Date.now();
+            const animate = () => {
+                const now = Date.now();
+                const deltaTime = now - lastTime;
+                lastTime = now;
+
+                if (gameRunning && !gamePaused) {
+                    if (now - lastDropTime > gameSpeed) {
+                        dropPiece();
+                        lastDropTime = now;
+                    }
+                }
+
+                controls.update();
+                effectComposer.render();
+                requestAnimationFrame(animate);
+            };
+            animate();
+
+            // Handle resize
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                effectComposer.setSize(window.innerWidth, window.innerHeight);
+            });
+
+            // Handle touch/keyboard
+            setupControls();
+        }
+
+        function spawnNewPiece() {
+            const keys = Object.keys(TETROMINOS);
+            const randomKey = keys[Math.floor(Math.random() * keys.length)];
+            const tetrominoData = TETROMINOS[randomKey];
+
+            currentPiece = {
+                shape: tetrominoData.shape,
+                color: tetrominoData.color,
+                x: Math.floor(GRID_WIDTH / 2) - 1,
+                y: 0,
+                rotation: 0
+            };
+
+            if (isColliding(currentPiece)) {
+                endGame();
+            }
+        }
+
+        function dropPiece() {
+            if (!currentPiece) return;
+
+            currentPiece.y++;
+
+            if (isColliding(currentPiece)) {
+                currentPiece.y--;
+                lockPiece();
+                clearLines();
+                spawnNewPiece();
+            }
+
+            updateDisplay();
+        }
+
+        function isColliding(piece) {
+            for (let y = 0; y < piece.shape.length; y++) {
+                for (let x = 0; x < piece.shape[y].length; x++) {
+                    if (piece.shape[y][x]) {
+                        const boardX = piece.x + x;
+                        const boardY = piece.y + y;
+
+                        if (boardX < 0 || boardX >= GRID_WIDTH || boardY >= GRID_HEIGHT) {
+                            return true;
+                        }
+
+                        if (boardY >= 0 && gameBoard[boardY][boardX]) {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
+        function lockPiece() {
+            for (let y = 0; y < currentPiece.shape.length; y++) {
+                for (let x = 0; x < currentPiece.shape[y].length; x++) {
+                    if (currentPiece.shape[y][x]) {
+                        const boardX = currentPiece.x + x;
+                        const boardY = currentPiece.y + y;
+
+                        if (boardY >= 0) {
+                            gameBoard[boardY][boardX] = currentPiece.color;
+                        }
+                    }
+                }
+            }
+            updateBoardDisplay();
+        }
+
+        function clearLines() {
+            let linesCleared = 0;
+
+            for (let y = GRID_HEIGHT - 1; y >= 0; y--) {
+                if (gameBoard[y].every(cell => cell !== 0)) {
+                    gameBoard.splice(y, 1);
+                    gameBoard.unshift(new Array(GRID_WIDTH).fill(0));
+                    linesCleared++;
+                    y++;
+                }
+            }
+
+            if (linesCleared > 0) {
+                lines += linesCleared;
+                score += linesCleared * 100 * level;
+                level = Math.floor(lines / 10) + 1;
+                gameSpeed = Math.max(200, 1000 - (level - 1) * 50);
+                updateBoardDisplay();
+            }
+        }
+
+        function rotatePiece() {
+            if (!currentPiece) return;
+
+            const original = currentPiece.shape;
+            currentPiece.shape = rotateMatrix(currentPiece.shape);
+
+            if (isColliding(currentPiece)) {
+                currentPiece.shape = original;
+            }
+            updateDisplay();
+        }
+
+        function rotateMatrix(matrix) {
+            const n = matrix.length;
+            const m = matrix[0].length;
+            const rotated = Array(m).fill(null).map(() => Array(n).fill(0));
+
+            for (let i = 0; i < n; i++) {
+                for (let j = 0; j < m; j++) {
+                    rotated[j][n - 1 - i] = matrix[i][j];
+                }
+            }
+
+            return rotated;
+        }
+
+        function updateDisplay() {
+            // Limpar blocos antigos
+            blockMeshes.forEach(mesh => boardGroup.remove(mesh));
+            blockMeshes = [];
+
+            // Desenhar tabuleiro
+            for (let y = 0; y < GRID_HEIGHT; y++) {
+                for (let x = 0; x < GRID_WIDTH; x++) {
+                    if (gameBoard[y][x]) {
+                        createBlock(x, y, gameBoard[y][x]);
+                    }
+                }
+            }
+
+            // Desenhar peça atual
+            if (currentPiece) {
+                for (let y = 0; y < currentPiece.shape.length; y++) {
+                    for (let x = 0; x < currentPiece.shape[y].length; x++) {
+                        if (currentPiece.shape[y][x]) {
+                            const boardX = currentPiece.x + x;
+                            const boardY = currentPiece.y + y;
+                            if (boardY >= 0) {
+                                createBlock(boardX, boardY, currentPiece.color, true);
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Atualizar HUD
+            document.getElementById('score').textContent = score;
+            document.getElementById('level').textContent = level;
+            document.getElementById('lines').textContent = lines;
+        }
+
+        function updateBoardDisplay() {
+            updateDisplay();
+        }
+
+        function createBlock(x, y, color, isActive = false) {
+            const geometry = new THREE.BoxGeometry(BLOCK_SIZE * 0.9, BLOCK_SIZE * 0.9, BLOCK_SIZE * 0.9);
+            const material = new THREE.MeshStandardMaterial({
+                color: color,
+                emissive: color,
+                emissiveIntensity: isActive ? 0.8 : 0.3,
+                metalness: 0.8,
+                roughness: 0.2
+            });
+
+            const mesh = new THREE.Mesh(geometry, material);
+            mesh.position.set(
+                x * BLOCK_SIZE + BLOCK_SIZE / 2 - (GRID_WIDTH * BLOCK_SIZE) / 2,
+                GRID_HEIGHT * BLOCK_SIZE / 2 - (y * BLOCK_SIZE + BLOCK_SIZE / 2),
+                0
+            );
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
+
+            boardGroup.add(mesh);
+            blockMeshes.push(mesh);
+        }
+
+        function endGame() {
+            gameRunning = false;
+            document.getElementById('finalScore').textContent = score;
+            document.getElementById('finalLevel').textContent = level;
+            document.getElementById('finalLines').textContent = lines;
+            document.getElementById('gameOver').classList.add('show');
+        }
+
+        function setupUI() {
+            document.getElementById('rotateBtn').addEventListener('click', rotatePiece);
+            document.getElementById('dropBtn').addEventListener('click', () => {
+                while (!isColliding(currentPiece)) {
+                    currentPiece.y++;
+                }
+                currentPiece.y--;
+                lockPiece();
+                clearLines();
+                spawnNewPiece();
+                updateDisplay();
+            });
+            document.getElementById('pauseBtn').addEventListener('click', () => {
+                gamePaused = !gamePaused;
+                document.getElementById('pauseBtn').textContent = gamePaused ? '▶ RETOMAR' : '⏸ PAUSA';
+            });
+        }
+
+        function setupControls() {
+            // Keyboard
+            document.addEventListener('keydown', (e) => {
+                if (!gameRunning || gamePaused) return;
+
+                if (e.key === 'ArrowLeft') {
+                    currentPiece.x--;
+                    if (isColliding(currentPiece)) currentPiece.x++;
+                    updateDisplay();
+                } else if (e.key === 'ArrowRight') {
+                    currentPiece.x++;
+                    if (isColliding(currentPiece)) currentPiece.x--;
+                    updateDisplay();
+                } else if (e.key === 'ArrowUp') {
+                    rotatePiece();
+                } else if (e.key === ' ') {
+                    e.preventDefault();
+                    while (!isColliding(currentPiece)) {
+                        currentPiece.y++;
+                    }
+                    currentPiece.y--;
+                    lockPiece();
+                    clearLines();
+                    spawnNewPiece();
+                    updateDisplay();
+                }
+            });
+
+            // Touch controls
+            let touchStartX = 0;
+            let touchStartY = 0;
+
+            document.addEventListener('touchstart', (e) => {
+                touchStartX = e.touches[0].clientX;
+                touchStartY = e.touches[0].clientY;
+            });
+
+            document.addEventListener('touchmove', (e) => {
+                if (!gameRunning || gamePaused) return;
+
+                const touchEndX = e.touches[0].clientX;
+                const touchEndY = e.touches[0].clientY;
+                const diffX = touchEndX - touchStartX;
+                const diffY = touchEndY - touchStartY;
+
+                if (Math.abs(diffX) > Math.abs(diffY)) {
+                    if (diffX > 30) {
+                        currentPiece.x++;
+                        if (isColliding(currentPiece)) currentPiece.x--;
+                        touchStartX = touchEndX;
+                    } else if (diffX < -30) {
+                        currentPiece.x--;
+                        if (isColliding(currentPiece)) currentPiece.x++;
+                        touchStartX = touchEndX;
+                    }
+                } else {
+                    if (diffY > 30) {
+                        rotatePiece();
+                        touchStartY = touchEndY;
+                    }
+                }
+
+                updateDisplay();
+            });
+        }
+
+        // Iniciar quando o DOM estiver pronto
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', waitForThree);
+        } else {
+            waitForThree();
+        }
+    </script>
+</body>
+</html>
 
