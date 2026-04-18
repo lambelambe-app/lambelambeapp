@@ -1,551 +1,529 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Fluxos | Seda ao Vento – Museu do Amanhã</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Symbolus – Encontre a Imagem Oculta</title>
     <style>
+        * {
+            user-select: none;
+            box-sizing: border-box;
+        }
+
         body {
+            background: linear-gradient(145deg, #1a2a3a 0%, #0f1a24 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', 'Poppins', monospace;
             margin: 0;
-            overflow: hidden;
-            font-family: 'Segoe UI', 'Montserrat', 'Poppins', sans-serif;
-            background-color: #000000;
+            padding: 16px;
         }
-        .info-text {
-            position: absolute;
-            top: 20px;
-            left: 0;
-            right: 0;
+
+        .game-container {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(8px);
+            border-radius: 48px;
+            padding: 20px;
+            width: 100%;
+            max-width: 700px;
+            box-shadow: 0 20px 35px rgba(0,0,0,0.4);
+        }
+
+        .game-panel {
+            background: #2c3e2f;
+            border-radius: 32px;
+            padding: 18px;
             text-align: center;
-            pointer-events: none;
-            z-index: 20;
-            color: rgba(180, 220, 255, 0.7);
-            font-size: 12px;
-            font-weight: 300;
-            letter-spacing: 2px;
-            font-family: monospace;
-            background: rgba(0,0,0,0.3);
-            backdrop-filter: blur(4px);
-            width: fit-content;
-            margin: 0 auto;
-            padding: 6px 16px;
-            border-radius: 30px;
         }
-        .touch-ripple {
+
+        h1 {
+            margin: 0 0 10px 0;
+            font-size: 1.8rem;
+            background: linear-gradient(135deg, #FFE6B0, #FFB347);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .word-choice {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+
+        .word-btn {
+            background: #f4e5c2;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 40px;
+            cursor: pointer;
+            font-family: monospace;
+            transition: 0.1s;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .word-btn:active {
+            transform: scale(0.96);
+        }
+
+        .game-area {
+            margin: 15px 0;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            background-color: #1e2a22;
+            border: 2px solid #c9a87b;
+            border-radius: 12px;
+            overflow: hidden;
+            aspect-ratio: 1 / 1;
+            margin: 10px auto;
+            width: 100%;
+        }
+
+        .cell {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(0.8rem, 3vw, 1.3rem);
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+            background-color: #fef7e0;
+            border: 1px solid #bbaa82;
+            cursor: pointer;
+            transition: 0.05s linear;
+            aspect-ratio: 1 / 1;
+        }
+
+        .cell.selected {
+            background-color: #a5d6a5;
+            box-shadow: inset 0 0 0 2px #2c5f2d;
+            transform: scale(0.98);
+        }
+
+        .cell.wrong-click {
+            background-color: #f8d7da;
+            animation: shake 0.2s;
+        }
+
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-2px); }
+            75% { transform: translateX(2px); }
+            100% { transform: translateX(0); }
+        }
+
+        .timer-area {
+            font-size: 1.5rem;
+            font-weight: bold;
+            background: #1f2c1b;
+            display: inline-block;
+            padding: 5px 20px;
+            border-radius: 40px;
+            color: #FFE484;
+            margin: 10px 0;
+        }
+
+        .score-area {
+            font-size: 1.2rem;
+            background: #3a5e3a;
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 30px;
+            margin-left: 10px;
+            color: white;
+        }
+
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        button.action {
+            background: #4a6741;
+            border: none;
+            font-size: 0.9rem;
+            font-weight: bold;
+            padding: 8px 18px;
+            border-radius: 30px;
+            color: white;
+            cursor: pointer;
+            transition: 0.1s;
+        }
+
+        button.action:active {
+            transform: scale(0.96);
+        }
+
+        .status {
+            margin-top: 12px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            background: #1f2c1bcc;
+            border-radius: 30px;
+            padding: 6px;
+            color: #FFE484;
+        }
+
+        .confetti-canvas {
             position: fixed;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(100,200,255,0.5) 0%, rgba(100,200,255,0) 70%);
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             pointer-events: none;
             z-index: 1000;
-            transform: translate(-50%, -50%);
-            transition: transform 0.05s;
         }
-        @media (max-width: 700px) {
-            .info-text { font-size: 10px; top: 12px; }
+
+        .symbol-confetti {
+            position: absolute;
+            font-size: 1.2rem;
+            font-weight: bold;
+            font-family: monospace;
+            animation: fall linear forwards;
+        }
+
+        @keyframes fall {
+            0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
         }
     </style>
 </head>
 <body>
-    <div class="info-text">🌀 SEDA AO VENTO | toque para soprar rajadas 🌀</div>
-    <div id="touchRipple" class="touch-ripple" style="display: none;"></div>
+<div class="game-container">
+    <div class="game-panel">
+        <h1>✨ SYMBOLUS ✨<br><span style="font-size:0.8rem;">Encontre a Imagem Oculta</span></h1>
 
-    <script type="importmap">
-        {
-            "imports": {
-                "three": "https://unpkg.com/three@0.128.0/build/three.module.js",
-                "three/addons/": "https://unpkg.com/three@0.128.0/examples/jsm/"
+        <div class="word-choice" id="wordChoice">
+            <!-- Botões das palavras serão inseridos aqui -->
+        </div>
+
+        <div class="game-area">
+            <div class="grid" id="symbolGrid"></div>
+        </div>
+
+        <div>
+            <span class="timer-area">⏱️ <span id="timer">60</span> s</span>
+            <span class="score-area">🔍 <span id="foundCount">0</span> / <span id="totalCount">0</span></span>
+        </div>
+
+        <div class="controls">
+            <button class="action" id="newGameBtn">🔄 NOVO JOGO</button>
+        </div>
+        <div class="status" id="statusMsg">Escolha uma palavra para começar!</div>
+    </div>
+</div>
+
+<script>
+    // ---------- CONFIGURAÇÃO DOS DESENHOS (FIGURAS) ----------
+    // Cada figura é uma matriz 12x12 (0 = vazio, 1 = parte do desenho)
+    // Usaremos desenhos simples de 12x12
+    const drawings = {
+        "🐟 PEIXE": [
+            [0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,1,1,0,0,0,0],
+            [0,0,0,0,1,1,1,1,1,0,0,0],
+            [0,0,0,1,1,1,1,1,1,1,0,0],
+            [0,0,1,1,1,1,1,1,1,1,1,0],
+            [0,0,1,1,1,1,1,1,1,1,1,0],
+            [0,1,1,1,1,1,1,1,1,1,1,0],
+            [0,1,1,1,0,0,1,1,1,1,1,0],
+            [0,0,1,1,0,0,0,1,1,1,0,0],
+            [0,0,0,1,1,1,1,1,0,0,0,0],
+            [0,0,0,0,0,1,1,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0]
+        ],
+        "🌞 SOL": [
+            [0,0,0,0,0,1,1,0,0,0,0,0],
+            [0,0,0,0,1,1,1,1,0,0,0,0],
+            [0,0,1,1,1,1,1,1,1,1,0,0],
+            [0,0,1,1,1,1,1,1,1,1,0,0],
+            [0,1,1,1,1,1,1,1,1,1,1,0],
+            [1,1,1,1,1,1,1,1,1,1,1,1],
+            [1,1,1,1,1,1,1,1,1,1,1,1],
+            [0,1,1,1,1,1,1,1,1,1,1,0],
+            [0,0,1,1,1,1,1,1,1,1,0,0],
+            [0,0,1,1,1,1,1,1,1,1,0,0],
+            [0,0,0,0,1,1,1,1,0,0,0,0],
+            [0,0,0,0,0,1,1,0,0,0,0,0]
+        ],
+        "🏠 CASA": [
+            [0,0,0,0,0,1,1,0,0,0,0,0],
+            [0,0,0,0,1,1,1,1,0,0,0,0],
+            [0,0,0,1,1,1,1,1,1,0,0,0],
+            [0,0,1,1,1,1,1,1,1,1,0,0],
+            [0,1,1,1,1,1,1,1,1,1,1,0],
+            [1,1,1,1,1,1,1,1,1,1,1,1],
+            [0,0,1,1,0,0,0,0,1,1,0,0],
+            [0,0,1,1,0,0,0,0,1,1,0,0],
+            [0,0,1,1,0,0,0,0,1,1,0,0],
+            [0,0,1,1,1,1,1,1,1,1,0,0],
+            [0,0,1,1,1,1,1,1,1,1,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0]
+        ]
+    };
+
+    const SYMBOLS = ["@", "#", "$", "%", "&", "?", "*", "+", "~"];
+    const GRID_SIZE = 12;
+
+    let currentDrawing = null;       // matriz 12x12 do desenho atual
+    let currentWord = "";
+    let gridData = [];               // matriz de símbolos exibidos
+    let selectedCells = [];          // booleanos indicando se a célula foi clicada (parte do desenho)
+    let totalTargetCells = 0;
+    let foundTargetCells = 0;
+    let timer = 60;
+    let timerInterval = null;
+    let gameActive = false;          // se o jogo está em andamento (não venceu nem tempo esgotado)
+    let gameWin = false;
+
+    // Elementos DOM
+    const wordChoiceDiv = document.getElementById("wordChoice");
+    const gridContainer = document.getElementById("symbolGrid");
+    const timerSpan = document.getElementById("timer");
+    const foundCountSpan = document.getElementById("foundCount");
+    const totalCountSpan = document.getElementById("totalCount");
+    const statusMsg = document.getElementById("statusMsg");
+    const newGameBtn = document.getElementById("newGameBtn");
+
+    // ---------- FUNÇÕES AUXILIARES ----------
+    function shuffleArray(arr) {
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+
+    // Gera uma grade 12x12 com símbolos aleatórios, mas garante que as células do desenho tenham símbolos variados
+    function generateGridWithDrawing(drawingMatrix) {
+        const grid = Array(GRID_SIZE).fill().map(() => Array(GRID_SIZE).fill(""));
+        for (let i = 0; i < GRID_SIZE; i++) {
+            for (let j = 0; j < GRID_SIZE; j++) {
+                // Símbolo aleatório
+                const randomSymbol = SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)];
+                grid[i][j] = randomSymbol;
             }
         }
-    </script>
+        return grid;
+    }
 
-    <script type="module">
-        import * as THREE from 'three';
-        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-        import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
-        import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
-        import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
-
-        // --- CENA ---
-        const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x010101);
-        scene.fog = new THREE.FogExp2(0x010101, 0.006);
-
-        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(1.2, 3.5, 7.2);
-        camera.lookAt(0, 2.5, 0);
-
-        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, precision: 'highp' });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        renderer.shadowMap.enabled = true;
-        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-        renderer.toneMapping = THREE.ReinhardToneMapping;
-        renderer.toneMappingExposure = 1.3;
-        document.body.appendChild(renderer.domElement);
-
-        // --- BLOOM (brilho etéreo) ---
-        const renderScene = new RenderPass(scene, camera);
-        const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.2, 0.4, 0.25);
-        bloomPass.threshold = 0.05;
-        bloomPass.strength = 0.9;
-        bloomPass.radius = 0.7;
-        const effectComposer = new EffectComposer(renderer);
-        effectComposer.addPass(renderScene);
-        effectComposer.addPass(bloomPass);
-
-        // --- CONTROLES ORBITAIS (suaves) ---
-        const controls = new OrbitControls(camera, renderer.domElement);
-        controls.enableDamping = true;
-        controls.dampingFactor = 0.06;
-        controls.rotateSpeed = 0.7;
-        controls.zoomSpeed = 0.9;
-        controls.enablePan = false;
-        controls.target.set(0, 2.8, 0);
-
-        // --- ILUMINAÇÃO DRAMÁTICA E DANÇANTE ---
-        const ambientLight = new THREE.AmbientLight(0x112233, 0.4);
-        scene.add(ambientLight);
-        
-        const mainLight = new THREE.DirectionalLight(0xfff0e0, 1.0);
-        mainLight.position.set(2, 5, 3);
-        mainLight.castShadow = true;
-        mainLight.shadow.mapSize.width = 2048;
-        mainLight.shadow.mapSize.height = 2048;
-        scene.add(mainLight);
-        
-        const fillLight = new THREE.PointLight(0x4488ff, 0.6);
-        fillLight.position.set(-1.5, 2.5, 2);
-        scene.add(fillLight);
-        
-        const backLight = new THREE.PointLight(0x3366cc, 0.5);
-        backLight.position.set(0, 3, -3.5);
-        scene.add(backLight);
-        
-        const danceLight = new THREE.PointLight(0x44aaff, 0.8);
-        danceLight.castShadow = false;
-        scene.add(danceLight);
-        
-        const groundGlow = new THREE.PointLight(0x0088ff, 0.5);
-        groundGlow.position.set(0, -0.3, 0);
-        scene.add(groundGlow);
-
-        // --- CHÃO REFERENCIAL SUTIL ---
-        const gridHelper = new THREE.GridHelper(12, 20, 0x3366aa, 0x224466);
-        gridHelper.position.y = -0.4;
-        gridHelper.material.transparent = true;
-        gridHelper.material.opacity = 0.2;
-        scene.add(gridHelper);
-        
-        const shadowPlane = new THREE.Mesh(
-            new THREE.PlaneGeometry(9, 9),
-            new THREE.ShadowMaterial({ opacity: 0.3, color: 0x000000, transparent: true, side: THREE.DoubleSide })
-        );
-        shadowPlane.rotation.x = -Math.PI / 2;
-        shadowPlane.position.y = -0.38;
-        shadowPlane.receiveShadow = true;
-        scene.add(shadowPlane);
-
-        // --- CRIAÇÃO DOS TECIDOS (SEDA: PLANOS LARGOS E FINOS, COM MUITOS SEGMENTOS) ---
-        // Para dar leveza, usamos proporção mais larga e menos altura, mas ainda sim alongados.
-        // Cada tecido tem 2.0 de largura, 4.5 de altura, com alta segmentação.
-        function createSilkFabric(color, emissiveColor, xOffset, yOffset) {
-            const width = 2.2;
-            const height = 5.0;
-            const widthSegments = 24;
-            const heightSegments = 100;
-            
-            const geometry = new THREE.PlaneGeometry(width, height, widthSegments, heightSegments);
-            const positions = geometry.attributes.position.array;
-            const origX = [];
-            const origY = [];
-            const origZ = [];
-            
-            for (let i = 0; i < positions.length; i += 3) {
-                origX.push(positions[i]);
-                origY.push(positions[i+1]);
-                origZ.push(positions[i+2]);
+    // Inicializa o estado do jogo para uma palavra específica
+    function initGame(word) {
+        if (timerInterval) clearInterval(timerInterval);
+        currentWord = word;
+        currentDrawing = drawings[word];
+        if (!currentDrawing) {
+            statusMsg.innerText = "Erro: desenho não encontrado!";
+            return false;
+        }
+        // Conta quantas células fazem parte do desenho (valor 1)
+        totalTargetCells = 0;
+        for (let i = 0; i < GRID_SIZE; i++) {
+            for (let j = 0; j < GRID_SIZE; j++) {
+                if (currentDrawing[i][j] === 1) totalTargetCells++;
             }
-            
-            // Material sedoso: alto brilho, transparência, reflexos suaves
-            const material = new THREE.MeshStandardMaterial({
-                color: color,
-                emissive: emissiveColor,
-                emissiveIntensity: 0.35,
-                roughness: 0.25,
-                metalness: 0.4,
-                transparent: true,
-                opacity: 0.88,
-                side: THREE.DoubleSide
-            });
-            
-            const mesh = new THREE.Mesh(geometry, material);
-            mesh.position.x = xOffset;
-            mesh.position.y = yOffset;
-            mesh.castShadow = true;
-            mesh.receiveShadow = false;
-            
-            return {
-                mesh,
-                geometry,
-                origX,
-                origY,
-                origZ,
-                material,
-                vertexCount: geometry.attributes.position.count
-            };
         }
+        // Gera grade de símbolos
+        gridData = generateGridWithDrawing(currentDrawing);
+        selectedCells = Array(GRID_SIZE).fill().map(() => Array(GRID_SIZE).fill(false));
+        foundTargetCells = 0;
+        timer = 60;
+        gameActive = true;
+        gameWin = false;
+        updateTimerDisplay();
+        updateScoreDisplay();
+        renderGrid();
+        statusMsg.innerText = `Encontre os ${totalTargetCells} símbolos que formam o ${word}! Clique neles.`;
+        startTimer();
+        return true;
+    }
 
-        // Tecido branco (esquerda) e azul (direita) – posicionados mais próximos para poderem se tocar
-        const silkWhite = createSilkFabric(0xffffff, 0xaaccff, -0.9, 2.2);
-        const silkBlue = createSilkFabric(0x66aaff, 0x2288ff, 0.9, 2.2);
-        scene.add(silkWhite.mesh);
-        scene.add(silkBlue.mesh);
+    function startTimer() {
+        if (timerInterval) clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            if (!gameActive || gameWin) return;
+            if (timer <= 1) {
+                // Tempo esgotado
+                clearInterval(timerInterval);
+                gameActive = false;
+                statusMsg.innerText = "⏰ TEMPO ESGOTADO! Clique em NOVO JOGO.";
+                renderGrid(); // desabilita cliques (gameActive false)
+            } else {
+                timer--;
+                updateTimerDisplay();
+            }
+        }, 1000);
+    }
 
-        // --- SISTEMA DE VENTO E FLUTUAÇÃO INDEPENDENTE ---
-        // Cada vértice terá sua própria "energia de voo" que varia no tempo e espaço.
-        // Armazenamos arrays para cada tecido: altura extra por vento, e fases individuais.
-        const whiteWindForce = new Array(silkWhite.vertexCount).fill(0);
-        const blueWindForce = new Array(silkBlue.vertexCount).fill(0);
-        
-        // Para cada vértice, uma fase aleatória (0 a 2PI) para movimentos únicos
-        const whitePhase = new Array(silkWhite.vertexCount);
-        const bluePhase = new Array(silkBlue.vertexCount);
-        for (let i = 0; i < silkWhite.vertexCount; i++) {
-            whitePhase[i] = Math.random() * Math.PI * 2;
+    function updateTimerDisplay() {
+        timerSpan.innerText = timer;
+    }
+
+    function updateScoreDisplay() {
+        foundCountSpan.innerText = foundTargetCells;
+        totalCountSpan.innerText = totalTargetCells;
+    }
+
+    // Verifica vitória
+    function checkVictory() {
+        if (foundTargetCells === totalTargetCells && totalTargetCells > 0 && gameActive && !gameWin) {
+            // VITÓRIA!
+            gameWin = true;
+            gameActive = false;
+            clearInterval(timerInterval);
+            statusMsg.innerText = "🎉 PARABÉNS! VOCÊ COMPLETOU A IMAGEM! 🎉";
+            launchConfetti();
+            renderGrid(); // para mostrar vitória (desabilita cliques)
         }
-        for (let i = 0; i < silkBlue.vertexCount; i++) {
-            bluePhase[i] = Math.random() * Math.PI * 2;
+    }
+
+    // Clique na célula
+    function onCellClick(row, col) {
+        if (!gameActive || gameWin) return;
+        // Se a célula já foi selecionada, não faz nada
+        if (selectedCells[row][col]) return;
+
+        // Verifica se essa célula faz parte do desenho
+        const isPartOfDrawing = (currentDrawing[row][col] === 1);
+        if (isPartOfDrawing) {
+            // Acerto: marca como selecionada
+            selectedCells[row][col] = true;
+            foundTargetCells++;
+            updateScoreDisplay();
+            renderGrid(); // re-render para mostrar visualmente a célula selecionada
+            checkVictory();
+        } else {
+            // Erro: feedback visual temporário
+            const cellDiv = document.querySelector(`.cell[data-row='${row}'][data-col='${col}']`);
+            if (cellDiv) {
+                cellDiv.classList.add("wrong-click");
+                setTimeout(() => cellDiv.classList.remove("wrong-click"), 200);
+            }
+            // Penalidade de tempo? Vamos reduzir 2 segundos
+            if (timer > 2) timer -= 2;
+            else timer = 0;
+            updateTimerDisplay();
+            statusMsg.innerText = "❌ Símbolo errado! -2 segundos.";
+            setTimeout(() => {
+                if (gameActive && !gameWin) statusMsg.innerText = `Encontre os símbolos do ${currentWord}!`;
+            }, 800);
+            if (timer <= 0) {
+                // força game over
+                clearInterval(timerInterval);
+                gameActive = false;
+                statusMsg.innerText = "⏰ TEMPO ESGOTADO! Clique em NOVO JOGO.";
+                renderGrid();
+            }
         }
-        
-        // Parâmetros globais de vento que mudam lentamente
-        let windStrength = 0.6;
-        let windDirectionX = 0.2;
-        let windDirectionZ = 0.1;
-        let updraft = 0.5;
-        
-        // Função que calcula a posição Y de cada vértice, com movimento completamente livre (nenhum ponto fixo)
-        // Baseado em múltiplas ondas viajantes + força de vento + flutuação aleatória + toque.
-        function updateFabricDynamic(fabric, windForceArray, phaseArray, timeOffset, isBlue) {
-            const posAttr = fabric.geometry.attributes.position;
-            const positions = posAttr.array;
-            const origX = fabric.origX;
-            const origY = fabric.origY;
-            const origZ = fabric.origZ;
-            
-            // Parâmetros que evoluem para criar movimento sempre novo
-            const tGlobal = performance.now() * 0.002;
-            const waveFreq1 = 1.2 + Math.sin(tGlobal * 0.17) * 0.3;
-            const waveFreq2 = 2.1 + Math.cos(tGlobal * 0.23) * 0.4;
-            const waveSpeed1 = 0.9 + Math.sin(tGlobal * 0.11) * 0.2;
-            const waveSpeed2 = 1.4 + Math.cos(tGlobal * 0.19) * 0.3;
-            const floatAmp = 0.35 + Math.sin(tGlobal * 0.4) * 0.1;
-            
-            for (let i = 0; i < fabric.vertexCount; i++) {
-                const x = origX[i];
-                const yOrig = origY[i];  // entre -2.5 e 2.5 (altura 5)
-                const z = origZ[i];
-                
-                // Normalizado de 0 a 1 na altura (para dar diferentes comportamentos na base e topo)
-                const t = (yOrig + 2.5) / 5.0; // 0 na base, 1 no topo
-                
-                // 1. ONDAS VERTICAIS VIAJANTES (sobe e desce como seda ao vento)
-                const wave1 = Math.sin(x * waveFreq1 + tGlobal * waveSpeed1 + timeOffset) * 0.22;
-                const wave2 = Math.cos(z * 1.3 + tGlobal * 1.1 + yOrig * 1.2) * 0.18;
-                const wave3 = Math.sin((yOrig * 1.8 + tGlobal * 1.6) * 1.2) * 0.15;
-                const wave4 = Math.sin((x * 1.5 + z * 1.2) * 0.9 + tGlobal * 1.4) * 0.12;
-                
-                // 2. FLUTUAÇÃO ALEATÓRIA INDIVIDUAL (cada vértice tem seu próprio ritmo)
-                const individual = Math.sin(tGlobal * 1.2 + phaseArray[i]) * 0.08;
-                const individual2 = Math.cos(tGlobal * 0.9 + phaseArray[i] * 1.7) * 0.06;
-                
-                // 3. FORÇA DO VENTO (sopra de baixo para cima, mais intenso no centro e no topo)
-                const windUp = windForceArray[i] * 0.7 + updraft * (0.5 + t * 0.8) * 0.4;
-                
-                // 4. EFEITO DE "CAIR" E "SER SOPRADO": simula a leveza da seda
-                // A base (t baixo) também se move, nada está fixo.
-                const sway = Math.sin(tGlobal * 0.7 + x * 1.2) * 0.1 * (1 - t) + Math.cos(tGlobal * 0.5 + z * 1.0) * 0.1 * t;
-                
-                // Altura base (flutuante) – todo o tecido pode subir e descer como um todo
-                const globalFloat = Math.sin(tGlobal * 0.3 + timeOffset) * 0.12;
-                
-                // Combinação final da coordenada Y (a coordenada original Y é deslocada)
-                let newY = yOrig + wave1 + wave2 + wave3 + wave4 + individual + individual2 + windUp + sway + globalFloat;
-                
-                // Limites para não encostar no chão (chão em -0.4) e nem subir demais
-                if (newY < -0.2) newY = -0.2;
-                if (newY > 3.2) newY = 3.2;
-                
-                // 5. MOVIMENTO HORIZONTAL (para que os tecidos se toquem e se afastem suavemente)
-                const lateralX = Math.sin(tGlobal * 0.6 + yOrig * 1.2 + timeOffset) * 0.08;
-                const lateralZ = Math.cos(tGlobal * 0.55 + yOrig * 0.9 + timeOffset) * 0.06;
-                const windPushX = windDirectionX * (0.2 + t * 0.3);
-                const windPushZ = windDirectionZ * (0.15 + t * 0.2);
-                
-                let newX = x + lateralX + windPushX;
-                let newZ = z + lateralZ + windPushZ;
-                
-                // Limites laterais suaves para não escaparem da cena, mas permitir encontro
-                if (isBlue) {
-                    if (newX < 0.2) newX = 0.2;
-                    if (newX > 2.2) newX = 2.2;
+    }
+
+    // Renderiza a grade com base no estado atual
+    function renderGrid() {
+        gridContainer.innerHTML = "";
+        for (let i = 0; i < GRID_SIZE; i++) {
+            for (let j = 0; j < GRID_SIZE; j++) {
+                const symbol = gridData[i][j];
+                const isSelected = selectedCells[i][j];
+                const cellDiv = document.createElement("div");
+                cellDiv.className = "cell";
+                if (isSelected) cellDiv.classList.add("selected");
+                cellDiv.textContent = symbol;
+                cellDiv.setAttribute("data-row", i);
+                cellDiv.setAttribute("data-col", j);
+                if (gameActive && !gameWin) {
+                    cellDiv.style.cursor = "pointer";
+                    cellDiv.addEventListener("click", (function(r,c) {
+                        return function() { onCellClick(r,c); };
+                    })(i,j));
                 } else {
-                    if (newX > -0.2) newX = -0.2;
-                    if (newX < -2.2) newX = -2.2;
+                    cellDiv.style.cursor = "default";
                 }
-                
-                positions[i*3] = newX;
-                positions[i*3+1] = newY;
-                positions[i*3+2] = newZ;
-            }
-            
-            posAttr.needsUpdate = true;
-            fabric.geometry.computeVertexNormals();
-        }
-        
-        // --- INTERATIVIDADE: TOQUE GERA RAJADAS DE VENTO NOS TECIDOS ---
-        // Função para aplicar força extra nos vértices próximos ao ponto de toque
-        function applyWindGust(fabric, windArray, touchX, touchZ, radius, intensity) {
-            const radSq = radius * radius;
-            const posAttr = fabric.geometry.attributes.position;
-            const positions = posAttr.array;
-            // Percorre vértices e aumenta windForceArray nos próximos
-            for (let i = 0; i < fabric.vertexCount; i++) {
-                const vx = positions[i*3];
-                const vz = positions[i*3+2];
-                const dx = vx - touchX;
-                const dz = vz - touchZ;
-                const distSq = dx*dx + dz*dz;
-                if (distSq < radSq) {
-                    const factor = (1 - Math.sqrt(distSq)/radius) * intensity;
-                    windArray[i] += factor * 0.35;
-                    if (windArray[i] > 1.2) windArray[i] = 1.2;
-                }
+                gridContainer.appendChild(cellDiv);
             }
         }
-        
-        // Decaimento suave da força do vento nos vértices
-        function decayWindForces() {
-            for (let i = 0; i < silkWhite.vertexCount; i++) {
-                whiteWindForce[i] *= 0.992;
-                if (whiteWindForce[i] < 0.005) whiteWindForce[i] = 0;
-            }
-            for (let i = 0; i < silkBlue.vertexCount; i++) {
-                blueWindForce[i] *= 0.992;
-                if (blueWindForce[i] < 0.005) blueWindForce[i] = 0;
-            }
+    }
+
+    // Efeito de chuva de símbolos coloridos
+    function launchConfetti() {
+        const existingCanvas = document.querySelector('.confetti-canvas');
+        if (existingCanvas) existingCanvas.remove();
+        const container = document.createElement('div');
+        container.className = 'confetti-canvas';
+        document.body.appendChild(container);
+        const symbols = SYMBOLS;
+        const num = 120;
+        for (let i = 0; i < num; i++) {
+            const symbol = symbols[Math.floor(Math.random() * symbols.length)];
+            const el = document.createElement('div');
+            el.className = 'symbol-confetti';
+            el.textContent = symbol;
+            const size = 0.8 + Math.random() * 1.5;
+            const left = Math.random() * 100;
+            const duration = 2 + Math.random() * 2.5;
+            const delay = Math.random() * 0.5;
+            el.style.fontSize = `${size}rem`;
+            el.style.left = `${left}%`;
+            el.style.animationDuration = `${duration}s`;
+            el.style.animationDelay = `${delay}s`;
+            el.style.position = 'absolute';
+            el.style.top = '-10vh';
+            const hue = Math.random() * 360;
+            el.style.color = `hsl(${hue}, 80%, 60%)`;
+            container.appendChild(el);
+            setTimeout(() => { if(el.parentNode) el.remove(); }, (duration+delay)*1000);
         }
-        
-        // --- EVENTOS DE TOQUE/MOUSE ---
-        function getTouchPlanePoint(clientX, clientY) {
-            const raycaster = new THREE.Raycaster();
-            const mouseVec = new THREE.Vector2(
-                (clientX / renderer.domElement.clientWidth) * 2 - 1,
-                -(clientY / renderer.domElement.clientHeight) * 2 + 1
-            );
-            raycaster.setFromCamera(mouseVec, camera);
-            const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 1.5);
-            const point = new THREE.Vector3();
-            if (raycaster.ray.intersectPlane(plane, point)) {
-                return { x: point.x, z: point.z, valid: Math.abs(point.x) < 4 && Math.abs(point.z) < 4 };
-            }
-            return { x: 0, z: 0, valid: false };
+        setTimeout(() => { if(container.parentNode) container.remove(); }, 5000);
+    }
+
+    // Reinicia o jogo com uma nova palavra (escolhida aleatoriamente ou pela seleção)
+    function resetGame(selectedWord = null) {
+        if (timerInterval) clearInterval(timerInterval);
+        gameActive = false;
+        gameWin = false;
+        if (!selectedWord) {
+            const words = Object.keys(drawings);
+            const randomIndex = Math.floor(Math.random() * words.length);
+            selectedWord = words[randomIndex];
         }
-        
-        let activeTouches = new Map();
-        let touchTimers = new Map();
-        
-        function onPointerMove(clientX, clientY, id) {
-            const { x, z, valid } = getTouchPlanePoint(clientX, clientY);
-            if (!valid) return;
-            // Rajada suave ao mover
-            applyWindGust(silkWhite, whiteWindForce, x, z, 1.3, 0.22);
-            applyWindGust(silkBlue, blueWindForce, x, z, 1.3, 0.22);
-        }
-        
-        function onPointerDown(clientX, clientY, id) {
-            const { x, z, valid } = getTouchPlanePoint(clientX, clientY);
-            if (!valid) return;
-            // Rajada forte no toque
-            applyWindGust(silkWhite, whiteWindForce, x, z, 1.6, 0.55);
-            applyWindGust(silkBlue, blueWindForce, x, z, 1.6, 0.55);
-            
-            // Toque sustentado: vento contínuo
-            const timer = setTimeout(() => {
-                applyWindGust(silkWhite, whiteWindForce, x, z, 1.8, 0.7);
-                applyWindGust(silkBlue, blueWindForce, x, z, 1.8, 0.7);
-                groundGlow.intensity = 1.0;
-                setTimeout(() => { groundGlow.intensity = 0.5; }, 400);
-            }, 500);
-            touchTimers.set(id, timer);
-            activeTouches.set(id, true);
-            
-            const ripple = document.getElementById('touchRipple');
-            if (ripple) {
-                ripple.style.display = 'block';
-                ripple.style.left = clientX + 'px';
-                ripple.style.top = clientY + 'px';
-            }
-        }
-        
-        function onPointerUp(id) {
-            if (touchTimers.has(id)) {
-                clearTimeout(touchTimers.get(id));
-                touchTimers.delete(id);
-            }
-            activeTouches.delete(id);
-            if (activeTouches.size === 0) {
-                const ripple = document.getElementById('touchRipple');
-                if (ripple) ripple.style.display = 'none';
-            }
-        }
-        
-        // Eventos mouse
-        renderer.domElement.addEventListener('mousemove', (e) => onPointerMove(e.clientX, e.clientY, 'mouse'));
-        renderer.domElement.addEventListener('mousedown', (e) => onPointerDown(e.clientX, e.clientY, 'mouse'));
-        window.addEventListener('mouseup', () => onPointerUp('mouse'));
-        
-        // Eventos touch
-        renderer.domElement.addEventListener('touchmove', (e) => {
-            e.preventDefault();
-            for (let i = 0; i < e.touches.length; i++) {
-                const t = e.touches[i];
-                onPointerMove(t.clientX, t.clientY, t.identifier);
-            }
-            const ripple = document.getElementById('touchRipple');
-            if (ripple && e.touches.length) {
-                ripple.style.display = 'block';
-                ripple.style.left = e.touches[0].clientX + 'px';
-                ripple.style.top = e.touches[0].clientY + 'px';
-            }
+        initGame(selectedWord);
+    }
+
+    // Cria os botões de escolha de palavra
+    function buildWordButtons() {
+        wordChoiceDiv.innerHTML = "";
+        const words = Object.keys(drawings);
+        words.forEach(word => {
+            const btn = document.createElement("button");
+            btn.textContent = word;
+            btn.classList.add("word-btn");
+            btn.addEventListener("click", () => {
+                if (timerInterval) clearInterval(timerInterval);
+                resetGame(word);
+            });
+            wordChoiceDiv.appendChild(btn);
         });
-        renderer.domElement.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            for (let i = 0; i < e.touches.length; i++) {
-                const t = e.touches[i];
-                onPointerDown(t.clientX, t.clientY, t.identifier);
-            }
-        });
-        renderer.domElement.addEventListener('touchend', (e) => {
-            e.preventDefault();
-            for (let i = 0; i < e.changedTouches.length; i++) {
-                onPointerUp(e.changedTouches[i].identifier);
-            }
-        });
-        
-        document.addEventListener('mousemove', (e) => {
-            const ripple = document.getElementById('touchRipple');
-            if (ripple && ripple.style.display === 'block') {
-                ripple.style.left = e.clientX + 'px';
-                ripple.style.top = e.clientY + 'px';
-            }
-        });
-        
-        // --- PARTÍCULAS DE AR (VENTO VISÍVEL) ---
-        const particleCount = 2500;
-        const particleGeo = new THREE.BufferGeometry();
-        const particlePositions = new Float32Array(particleCount * 3);
-        const particleSpeeds = [];
-        for (let i = 0; i < particleCount; i++) {
-            const radius = Math.random() * 5.0;
-            const angle = Math.random() * Math.PI * 2;
-            const x = Math.cos(angle) * radius;
-            const z = Math.sin(angle) * radius;
-            particlePositions[i*3] = x;
-            particlePositions[i*3+1] = Math.random() * 4.5;
-            particlePositions[i*3+2] = z;
-            particleSpeeds.push(0.008 + Math.random() * 0.02);
-        }
-        particleGeo.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
-        const particleMat = new THREE.PointsMaterial({ 
-            color: 0xaaddff, 
-            size: 0.04, 
-            transparent: true, 
-            blending: THREE.AdditiveBlending, 
-            opacity: 0.55 
-        });
-        const particles = new THREE.Points(particleGeo, particleMat);
-        scene.add(particles);
-        
-        function updateParticles() {
-            const posAttr = particleGeo.attributes.position.array;
-            for (let i = 0; i < particleCount; i++) {
-                let y = posAttr[i*3+1];
-                y += particleSpeeds[i];
-                if (y > 4.8) {
-                    y = -0.5;
-                    const newR = Math.random() * 5.2;
-                    const newAng = Math.random() * Math.PI * 2;
-                    posAttr[i*3] = Math.cos(newAng) * newR;
-                    posAttr[i*3+2] = Math.sin(newAng) * newR;
-                    particleSpeeds[i] = 0.007 + Math.random() * 0.022;
-                }
-                posAttr[i*3+1] = y;
-                // pequeno movimento espiral
-                posAttr[i*3] += Math.sin(Date.now() * 0.001 + i) * 0.0005;
-                posAttr[i*3+2] += Math.cos(Date.now() * 0.0009 + i) * 0.0005;
-            }
-            particleGeo.attributes.position.needsUpdate = true;
-        }
-        
-        // --- LUZES DANÇANTES E ATMOSFERA ---
-        let lightTime = 0;
-        function updateLights() {
-            lightTime += 0.016;
-            danceLight.position.x = Math.sin(lightTime * 0.7) * 2.0;
-            danceLight.position.z = Math.cos(lightTime * 0.5) * 1.8;
-            danceLight.position.y = 2.0 + Math.sin(lightTime * 1.1) * 1.2;
-            danceLight.intensity = 0.7 + Math.sin(lightTime * 1.3) * 0.25;
-            
-            mainLight.intensity = 0.85 + Math.sin(lightTime * 0.5) * 0.15;
-            fillLight.intensity = 0.55 + Math.sin(lightTime * 0.7) * 0.15;
-            backLight.intensity = 0.45 + Math.sin(lightTime * 0.6) * 0.1;
-            
-            // Mudança suave na direção do vento global
-            window.windDirectionX = Math.sin(lightTime * 0.12) * 0.15;
-            window.windDirectionZ = Math.cos(lightTime * 0.09) * 0.1;
-            window.updraft = 0.45 + Math.sin(lightTime * 0.22) * 0.15;
-        }
-        
-        // --- ANIMAÇÃO PRINCIPAL ---
-        let animTime = 0;
-        
-        function animate() {
-            animTime += 0.016;
-            decayWindForces();
-            
-            // Atualiza os tecidos com movimento completamente livre (nenhum vértice fixo)
-            updateFabricDynamic(silkWhite, whiteWindForce, whitePhase, 0, false);
-            updateFabricDynamic(silkBlue, blueWindForce, bluePhase, Math.PI, true);
-            
-            updateParticles();
-            updateLights();
-            
-            // Pequena variação na cor/brilho dos tecidos conforme vento
-            const avgWhiteWind = whiteWindForce.reduce((a,b)=>a+b,0)/whiteWindForce.length;
-            const avgBlueWind = blueWindForce.reduce((a,b)=>a+b,0)/blueWindForce.length;
-            silkWhite.material.emissiveIntensity = 0.35 + avgWhiteWind * 0.5;
-            silkBlue.material.emissiveIntensity = 0.35 + avgBlueWind * 0.5;
-            silkWhite.material.opacity = 0.88 + Math.sin(animTime * 0.6) * 0.05;
-            silkBlue.material.opacity = 0.88 + Math.cos(animTime * 0.7) * 0.05;
-            
-            controls.update();
-            effectComposer.render();
-            
-            requestAnimationFrame(animate);
-        }
-        
-        animate();
-        
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            effectComposer.setSize(window.innerWidth, window.innerHeight);
-        });
-        
-        console.log('✨ Seda ao Vento – Tecidos flutuam livremente, toque para soprar rajadas.');
-    </script>
+    }
+
+    // Evento do botão "Novo Jogo" (escolhe uma palavra aleatória)
+    newGameBtn.addEventListener("click", () => {
+        resetGame(); // aleatório
+    });
+
+    // Inicialização
+    buildWordButtons();
+    // Começa com uma palavra aleatória
+    resetGame();
+</script>
 </body>
 </html>
