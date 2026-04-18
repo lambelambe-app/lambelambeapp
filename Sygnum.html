@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Symbolus – Encontre a Imagem Oculta</title>
+    <title>Symbolus – Mosaico de Símbolos</title>
     <style>
         * {
             user-select: none;
@@ -11,106 +11,158 @@
         }
 
         body {
-            background: linear-gradient(145deg, #1a2a3a 0%, #0f1a24 100%);
+            background: linear-gradient(145deg, #0e1a1f 0%, #071217 100%);
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-family: 'Segoe UI', 'Poppins', monospace;
+            font-family: 'Segoe UI', 'Poppins', 'Courier New', monospace;
             margin: 0;
             padding: 16px;
         }
 
         .game-container {
-            background: rgba(255,255,255,0.1);
-            backdrop-filter: blur(8px);
-            border-radius: 48px;
+            background: rgba(0, 0, 0, 0.45);
+            backdrop-filter: blur(12px);
+            border-radius: 56px;
             padding: 20px;
             width: 100%;
-            max-width: 700px;
-            box-shadow: 0 20px 35px rgba(0,0,0,0.4);
+            max-width: 950px;
+            box-shadow: 0 25px 40px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,215,150,0.3);
         }
 
         .game-panel {
-            background: #2c3e2f;
-            border-radius: 32px;
-            padding: 18px;
+            background: #1e2b25;
+            border-radius: 40px;
+            padding: 20px;
             text-align: center;
+            box-shadow: inset 0 1px 4px rgba(255,255,200,0.1), 0 8px 20px rgba(0,0,0,0.3);
         }
 
         h1 {
-            margin: 0 0 10px 0;
-            font-size: 1.8rem;
-            background: linear-gradient(135deg, #FFE6B0, #FFB347);
+            margin: 0 0 8px 0;
+            font-size: 1.9rem;
+            background: linear-gradient(135deg, #FFE6B0, #FFB347, #FF8C42);
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
+            letter-spacing: 2px;
+        }
+
+        .sub {
+            font-size: 0.75rem;
+            color: #cfd8c5;
+            margin-bottom: 15px;
+        }
+
+        /* Área dos botões de palavras (imagens ocultas) */
+        .word-buttons-area {
+            background: #17241e;
+            border-radius: 60px;
+            padding: 12px 15px;
+            margin: 10px 0 15px 0;
         }
 
         .word-choice {
             display: flex;
             justify-content: center;
-            gap: 15px;
-            margin: 15px 0;
+            gap: 18px;
             flex-wrap: wrap;
         }
 
         .word-btn {
-            background: #f4e5c2;
-            border: none;
+            background: #2c3e2a;
+            border: 2px solid #c9b27c;
             padding: 10px 20px;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             font-weight: bold;
-            border-radius: 40px;
+            border-radius: 60px;
             cursor: pointer;
-            font-family: monospace;
+            font-family: 'Segoe UI', monospace;
             transition: 0.1s;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            color: #f9eec1;
+            min-width: 110px;
+            backdrop-filter: blur(4px);
         }
 
-        .word-btn:active {
-            transform: scale(0.96);
+        .word-btn.active-word {
+            background: #5f8b4c;
+            border-color: #ffd966;
+            color: white;
+            box-shadow: 0 0 0 2px #ffdd88;
+            transform: scale(1.02);
+        }
+
+        .word-btn.completed-word {
+            background: #2c6e3c;
+            border-color: #a5e0a5;
+            color: #e0ffd0;
+            text-decoration: line-through;
+            opacity: 0.8;
+            cursor: default;
+            filter: grayscale(0.2);
+        }
+
+        .word-btn.disabled-btn {
+            opacity: 0.5;
+            cursor: not-allowed;
+            filter: grayscale(0.3);
+            transform: none;
         }
 
         .game-area {
-            margin: 15px 0;
+            margin: 10px 0;
         }
 
+        /* Grid estilo mosaico/pontilhismo */
         .grid {
             display: grid;
-            grid-template-columns: repeat(12, 1fr);
-            background-color: #1e2a22;
-            border: 2px solid #c9a87b;
-            border-radius: 12px;
+            grid-template-columns: repeat(16, 1fr);
+            background-color: #0d1712;
+            border: 3px solid #c9a87b;
+            border-radius: 20px;
             overflow: hidden;
             aspect-ratio: 1 / 1;
-            margin: 10px auto;
+            margin: 12px auto;
             width: 100%;
+            box-shadow: 0 8px 18px black;
         }
 
         .cell {
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: clamp(0.8rem, 3vw, 1.3rem);
+            font-size: clamp(0.75rem, 2.5vw, 1.2rem);
             font-weight: bold;
-            font-family: 'Courier New', monospace;
-            background-color: #fef7e0;
-            border: 1px solid #bbaa82;
+            font-family: 'Courier New', 'Fira Code', monospace;
+            background-color: #fef3da;
+            border: 0.5px solid #aa946b;
             cursor: pointer;
-            transition: 0.05s linear;
+            transition: 0.08s linear;
             aspect-ratio: 1 / 1;
+            text-shadow: 0 0 1px rgba(0,0,0,0.3);
         }
 
-        .cell.selected {
-            background-color: #a5d6a5;
-            box-shadow: inset 0 0 0 2px #2c5f2d;
-            transform: scale(0.98);
+        /* Efeito de célula já descoberta (parte da imagem ativa) */
+        .cell.found-in-active {
+            background-color: #9bd48b;
+            box-shadow: inset 0 0 0 1px #2c6e2c;
+            transform: scale(0.97);
+            color: #1a3a1a;
+        }
+
+        /* Célula que pertence a imagem já completada (efeito sutil) */
+        .cell.completed-img-cell {
+            background-color: #b8d9aa;
+            opacity: 0.85;
         }
 
         .cell.wrong-click {
-            background-color: #f8d7da;
+            background-color: #ffb4a2;
             animation: shake 0.2s;
+            box-shadow: 0 0 0 2px red;
         }
 
         @keyframes shake {
@@ -121,44 +173,44 @@
         }
 
         .timer-area {
-            font-size: 1.5rem;
+            font-size: 1.7rem;
             font-weight: bold;
             background: #1f2c1b;
             display: inline-block;
-            padding: 5px 20px;
-            border-radius: 40px;
+            padding: 5px 25px;
+            border-radius: 50px;
             color: #FFE484;
-            margin: 10px 0;
+            margin: 8px 5px;
+            font-family: monospace;
         }
 
         .score-area {
             font-size: 1.2rem;
             background: #3a5e3a;
             display: inline-block;
-            padding: 5px 15px;
-            border-radius: 30px;
-            margin-left: 10px;
+            padding: 5px 18px;
+            border-radius: 40px;
             color: white;
         }
 
         .controls {
-            margin-top: 20px;
+            margin-top: 18px;
             display: flex;
             justify-content: center;
-            gap: 15px;
-            flex-wrap: wrap;
+            gap: 20px;
         }
 
         button.action {
             background: #4a6741;
             border: none;
-            font-size: 0.9rem;
+            font-size: 1rem;
             font-weight: bold;
-            padding: 8px 18px;
-            border-radius: 30px;
+            padding: 8px 22px;
+            border-radius: 40px;
             color: white;
             cursor: pointer;
             transition: 0.1s;
+            font-family: inherit;
         }
 
         button.action:active {
@@ -166,13 +218,14 @@
         }
 
         .status {
-            margin-top: 12px;
-            font-size: 0.9rem;
+            margin-top: 14px;
+            font-size: 1rem;
             font-weight: bold;
             background: #1f2c1bcc;
-            border-radius: 30px;
-            padding: 6px;
-            color: #FFE484;
+            border-radius: 50px;
+            padding: 8px;
+            color: #FFEAB0;
+            backdrop-filter: blur(4px);
         }
 
         .confetti-canvas {
@@ -187,7 +240,7 @@
 
         .symbol-confetti {
             position: absolute;
-            font-size: 1.2rem;
+            font-size: 1.3rem;
             font-weight: bold;
             font-family: monospace;
             animation: fall linear forwards;
@@ -197,15 +250,22 @@
             0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
             100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
         }
+
+        @media (max-width: 600px) {
+            .word-btn { padding: 6px 12px; font-size: 0.8rem; min-width: 80px; }
+            .timer-area { font-size: 1.3rem; padding: 3px 16px; }
+        }
     </style>
 </head>
 <body>
 <div class="game-container">
     <div class="game-panel">
-        <h1>✨ SYMBOLUS ✨<br><span style="font-size:0.8rem;">Encontre a Imagem Oculta</span></h1>
+        <h1>⚡ SYMBOLUS ⚡<br><span class="sub">mosaico de símbolos | encontre as imagens ocultas</span></h1>
 
-        <div class="word-choice" id="wordChoice">
-            <!-- Botões das palavras serão inseridos aqui -->
+        <div class="word-buttons-area">
+            <div class="word-choice" id="wordChoice">
+                <!-- Botões dinâmicos (imagens ocultas) serão inseridos aqui -->
+            </div>
         </div>
 
         <div class="game-area">
@@ -213,238 +273,330 @@
         </div>
 
         <div>
-            <span class="timer-area">⏱️ <span id="timer">60</span> s</span>
-            <span class="score-area">🔍 <span id="foundCount">0</span> / <span id="totalCount">0</span></span>
+            <span class="timer-area">⏱️ <span id="timer">180</span> s</span>
+            <span class="score-area">🎯 IMAGENS: <span id="completedImgs">0</span> / <span id="totalImgs">0</span></span>
         </div>
 
         <div class="controls">
             <button class="action" id="newGameBtn">🔄 NOVO JOGO</button>
         </div>
-        <div class="status" id="statusMsg">Escolha uma palavra para começar!</div>
+        <div class="status" id="statusMsg">🔮 Aguarde 15 segundos... os botões serão liberados!</div>
     </div>
 </div>
 
 <script>
-    // ---------- CONFIGURAÇÃO DOS DESENHOS (FIGURAS) ----------
-    // Cada figura é uma matriz 12x12 (0 = vazio, 1 = parte do desenho)
-    // Usaremos desenhos simples de 12x12
-    const drawings = {
-        "🐟 PEIXE": [
-            [0,0,0,0,0,0,0,0,0,0,0,0],
-            [0,0,0,0,0,0,1,1,0,0,0,0],
-            [0,0,0,0,1,1,1,1,1,0,0,0],
-            [0,0,0,1,1,1,1,1,1,1,0,0],
-            [0,0,1,1,1,1,1,1,1,1,1,0],
-            [0,0,1,1,1,1,1,1,1,1,1,0],
-            [0,1,1,1,1,1,1,1,1,1,1,0],
-            [0,1,1,1,0,0,1,1,1,1,1,0],
-            [0,0,1,1,0,0,0,1,1,1,0,0],
-            [0,0,0,1,1,1,1,1,0,0,0,0],
-            [0,0,0,0,0,1,1,0,0,0,0,0],
-            [0,0,0,0,0,0,0,0,0,0,0,0]
-        ],
-        "🌞 SOL": [
-            [0,0,0,0,0,1,1,0,0,0,0,0],
-            [0,0,0,0,1,1,1,1,0,0,0,0],
-            [0,0,1,1,1,1,1,1,1,1,0,0],
-            [0,0,1,1,1,1,1,1,1,1,0,0],
-            [0,1,1,1,1,1,1,1,1,1,1,0],
-            [1,1,1,1,1,1,1,1,1,1,1,1],
-            [1,1,1,1,1,1,1,1,1,1,1,1],
-            [0,1,1,1,1,1,1,1,1,1,1,0],
-            [0,0,1,1,1,1,1,1,1,1,0,0],
-            [0,0,1,1,1,1,1,1,1,1,0,0],
-            [0,0,0,0,1,1,1,1,0,0,0,0],
-            [0,0,0,0,0,1,1,0,0,0,0,0]
-        ],
-        "🏠 CASA": [
-            [0,0,0,0,0,1,1,0,0,0,0,0],
-            [0,0,0,0,1,1,1,1,0,0,0,0],
-            [0,0,0,1,1,1,1,1,1,0,0,0],
-            [0,0,1,1,1,1,1,1,1,1,0,0],
-            [0,1,1,1,1,1,1,1,1,1,1,0],
-            [1,1,1,1,1,1,1,1,1,1,1,1],
-            [0,0,1,1,0,0,0,0,1,1,0,0],
-            [0,0,1,1,0,0,0,0,1,1,0,0],
-            [0,0,1,1,0,0,0,0,1,1,0,0],
-            [0,0,1,1,1,1,1,1,1,1,0,0],
-            [0,0,1,1,1,1,1,1,1,1,0,0],
-            [0,0,0,0,0,0,0,0,0,0,0,0]
-        ]
-    };
+    // ======================== POOL DE IMAGENS (DESENHOS PONTILHADOS) ========================
+    // Cada imagem é uma matriz 8x8 (0 = vazio / 1 = pixel da imagem)
+    // Palavras temáticas (animais, transportes, esportes) simulando tendências de busca.
+    const IMAGES_POOL = [
+        { name: "🐬 GOLFINHO", matrix: [
+            [0,0,0,1,1,0,0,0],[0,0,1,1,1,1,0,0],[0,1,1,0,1,1,1,0],[0,1,1,1,1,1,1,0],
+            [0,1,1,1,1,1,1,0],[0,0,1,1,1,1,0,0],[0,0,0,1,1,0,0,0],[0,0,0,0,0,0,0,0]
+        ] },
+        { name: "🚗 CARRO ESPORTIVO", matrix: [
+            [0,0,1,1,1,1,0,0],[0,1,1,1,1,1,1,0],[1,1,0,1,1,0,1,1],[1,1,1,1,1,1,1,1],
+            [0,1,1,1,1,1,1,0],[0,0,1,0,0,1,0,0],[0,0,1,0,0,1,0,0],[0,0,0,0,0,0,0,0]
+        ] },
+        { name: "⚽ FUTEBOL", matrix: [
+            [0,0,0,1,1,0,0,0],[0,0,1,1,1,1,0,0],[0,1,1,1,1,1,1,0],[1,1,1,1,1,1,1,1],
+            [1,1,1,1,1,1,1,1],[0,1,1,1,1,1,1,0],[0,0,1,1,1,1,0,0],[0,0,0,1,1,0,0,0]
+        ] },
+        { name: "🏀 BASQUETE", matrix: [
+            [0,0,1,1,1,1,0,0],[0,1,1,0,0,1,1,0],[1,1,0,0,0,0,1,1],[1,1,0,0,0,0,1,1],
+            [1,1,0,0,0,0,1,1],[1,1,0,0,0,0,1,1],[0,1,1,1,1,1,1,0],[0,0,1,1,1,1,0,0]
+        ] },
+        { name: "✈️ AVIÃO", matrix: [
+            [0,0,0,1,1,0,0,0],[0,0,1,1,1,1,0,0],[1,1,1,1,1,1,1,1],[0,1,1,1,1,1,1,0],
+            [0,0,1,0,0,1,0,0],[0,0,1,0,0,1,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0]
+        ] },
+        { name: "🐘 ELEFANTE", matrix: [
+            [0,0,0,1,1,0,0,0],[0,0,1,1,1,1,0,0],[0,1,1,1,1,1,1,0],[1,1,1,1,1,1,1,1],
+            [1,1,0,1,1,0,1,1],[0,1,1,1,1,1,1,0],[0,0,1,1,1,1,0,0],[0,0,0,1,1,0,0,0]
+        ] },
+        { name: "🚲 BICICLETA", matrix: [
+            [0,1,0,0,0,0,1,0],[0,1,1,0,0,1,1,0],[0,0,1,1,1,1,0,0],[0,0,0,1,1,0,0,0],
+            [0,0,1,1,1,1,0,0],[0,1,1,0,0,1,1,0],[0,1,0,0,0,0,1,0],[0,0,0,0,0,0,0,0]
+        ] }
+    ];
 
-    const SYMBOLS = ["@", "#", "$", "%", "&", "?", "*", "+", "~"];
-    const GRID_SIZE = 12;
+    // Configurações do jogo
+    const GRID_SIZE = 16;          // grade 16x16 para acomodar várias imagens
+    const SYMBOLS = ["@", "#", "$", "%", "&", "?", "*", "+", "~", "∆", "©", "®", "¥", "€", "£", "♠", "♥", "♦", "♣", "⭐"];
+    const TIME_LIMIT = 180;        // 3 minutos
+    const BUTTON_UNLOCK_DELAY = 15; // 15 segundos para habilitar botões
 
-    let currentDrawing = null;       // matriz 12x12 do desenho atual
-    let currentWord = "";
-    let gridData = [];               // matriz de símbolos exibidos
-    let selectedCells = [];          // booleanos indicando se a célula foi clicada (parte do desenho)
-    let totalTargetCells = 0;
-    let foundTargetCells = 0;
-    let timer = 60;
+    let currentImages = [];         // array de objetos da imagem selecionada para a partida
+    let imagesProgress = [];        // { foundMask: boolean[][], completed, totalCells, completedCells }
+    let activeImageIndex = -1;      // índice da imagem atualmente selecionada (-1 = nenhuma)
+    let gridSymbols = [];            // matriz GRID_SIZE x GRID_SIZE com símbolos
+    let timeLeft = TIME_LIMIT;
     let timerInterval = null;
-    let gameActive = false;          // se o jogo está em andamento (não venceu nem tempo esgotado)
-    let gameWin = false;
+    let gameActive = true;           // jogo rodando (não venceu/perdeu)
+    let gameFinished = false;        // vitória ou derrota finalizada
+    let buttonsUnlocked = false;     // se os botões já foram liberados após 15s
+    let unlockTimeout = null;
 
     // Elementos DOM
     const wordChoiceDiv = document.getElementById("wordChoice");
     const gridContainer = document.getElementById("symbolGrid");
     const timerSpan = document.getElementById("timer");
-    const foundCountSpan = document.getElementById("foundCount");
-    const totalCountSpan = document.getElementById("totalCount");
+    const completedImgsSpan = document.getElementById("completedImgs");
+    const totalImgsSpan = document.getElementById("totalImgs");
     const statusMsg = document.getElementById("statusMsg");
     const newGameBtn = document.getElementById("newGameBtn");
 
-    // ---------- FUNÇÕES AUXILIARES ----------
-    function shuffleArray(arr) {
-        for (let i = arr.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [arr[i], arr[j]] = [arr[j], arr[i]];
-        }
-        return arr;
+    // ========== SIMULAÇÃO DE PALAVRAS TRENDING (animais, transportes, esportes) ==========
+    // Busca "tendências" simuladas de 3 sites, retorna 3 palavras aleatórias do pool temático.
+    async function fetchTrendingWords() {
+        // Simula latência de busca + tendências do dia
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                // Seleciona 3 imagens aleatórias do pool (índices únicos)
+                const shuffled = [...IMAGES_POOL];
+                for (let i = shuffled.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+                }
+                const selected = shuffled.slice(0, 3);
+                resolve(selected);
+            }, 80);
+        });
     }
 
-    // Gera uma grade 12x12 com símbolos aleatórios, mas garante que as células do desenho tenham símbolos variados
-    function generateGridWithDrawing(drawingMatrix) {
+    // Gera grade de símbolos aleatórios (não interfere nas posições das imagens)
+    function generateRandomGrid() {
         const grid = Array(GRID_SIZE).fill().map(() => Array(GRID_SIZE).fill(""));
         for (let i = 0; i < GRID_SIZE; i++) {
             for (let j = 0; j < GRID_SIZE; j++) {
-                // Símbolo aleatório
-                const randomSymbol = SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)];
-                grid[i][j] = randomSymbol;
+                const randSym = SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)];
+                grid[i][j] = randSym;
             }
         }
         return grid;
     }
 
-    // Inicializa o estado do jogo para uma palavra específica
-    function initGame(word) {
-        if (timerInterval) clearInterval(timerInterval);
-        currentWord = word;
-        currentDrawing = drawings[word];
-        if (!currentDrawing) {
-            statusMsg.innerText = "Erro: desenho não encontrado!";
+    // Posiciona as imagens na grade (cada imagem 8x8 em uma região sem sobreposição)
+    // offsets: (0,0), (0,8), (8,0) para 16x16 comporta 3 imagens.
+    function placeImagesOnGrid(images, grid) {
+        const offsets = [[0,0], [0,8], [8,0]];
+        const placed = [];
+        for (let idx = 0; idx < images.length; idx++) {
+            const img = images[idx];
+            const [offRow, offCol] = offsets[idx];
+            const matrix = img.matrix;
+            const cellsList = [];
+            let total = 0;
+            // varredura da matriz 8x8
+            for (let r = 0; r < 8; r++) {
+                for (let c = 0; c < 8; c++) {
+                    if (matrix[r] && matrix[r][c] === 1) {
+                        const absRow = offRow + r;
+                        const absCol = offCol + c;
+                        if (absRow < GRID_SIZE && absCol < GRID_SIZE) {
+                            cellsList.push([absRow, absCol]);
+                            total++;
+                        }
+                    }
+                }
+            }
+            placed.push({
+                word: img.name,
+                matrix: img.matrix,
+                offsetRow: offRow,
+                offsetCol: offCol,
+                cells: cellsList,      // lista de [row,col]
+                totalCells: total,
+                completedCells: 0,
+                completed: false,
+                foundMask: Array(8).fill().map(() => Array(8).fill(false))
+            });
+        }
+        return placed;
+    }
+
+    // Atualiza o contador de imagens completadas na UI
+    function updateImagesCounter() {
+        const completedCount = currentImages.filter(img => img.completed).length;
+        completedImgsSpan.innerText = completedCount;
+        totalImgsSpan.innerText = currentImages.length;
+        if (completedCount === currentImages.length && gameActive && !gameFinished) {
+            // VITÓRIA!
+            gameWin("complete");
+        }
+    }
+
+    // Verifica se uma célula específica pertence à imagem ativa, e se sim, registra acerto
+    function tryRevealCell(row, col) {
+        if (!gameActive || gameFinished) return false;
+        if (activeImageIndex === -1) {
+            statusMsg.innerText = "⚠️ Selecione uma imagem (botão) antes de tocar no mosaico!";
             return false;
         }
-        // Conta quantas células fazem parte do desenho (valor 1)
-        totalTargetCells = 0;
-        for (let i = 0; i < GRID_SIZE; i++) {
-            for (let j = 0; j < GRID_SIZE; j++) {
-                if (currentDrawing[i][j] === 1) totalTargetCells++;
+        const activeImg = currentImages[activeImageIndex];
+        if (activeImg.completed) {
+            statusMsg.innerText = `🏁 A imagem "${activeImg.word}" já foi concluída! Escolha outra.`;
+            return false;
+        }
+
+        // Verifica se a célula pertence à imagem ativa
+        let cellBelongs = false;
+        let localR = -1, localC = -1;
+        for (let i = 0; i < activeImg.cells.length; i++) {
+            const [r, c] = activeImg.cells[i];
+            if (r === row && c === col) {
+                cellBelongs = true;
+                // encontrar coordenadas locais (dentro da matriz 8x8)
+                localR = r - activeImg.offsetRow;
+                localC = c - activeImg.offsetCol;
+                break;
             }
         }
-        // Gera grade de símbolos
-        gridData = generateGridWithDrawing(currentDrawing);
-        selectedCells = Array(GRID_SIZE).fill().map(() => Array(GRID_SIZE).fill(false));
-        foundTargetCells = 0;
-        timer = 60;
-        gameActive = true;
-        gameWin = false;
-        updateTimerDisplay();
-        updateScoreDisplay();
-        renderGrid();
-        statusMsg.innerText = `Encontre os ${totalTargetCells} símbolos que formam o ${word}! Clique neles.`;
-        startTimer();
+
+        if (!cellBelongs) {
+            // Erro: penalidade de 2 segundos
+            if (timeLeft > 2) timeLeft -= 2;
+            else timeLeft = 0;
+            updateTimerDisplay();
+            statusMsg.innerText = `❌ Símbolo errado! -2 segundos. (${activeImg.word} não está aqui)`;
+            if (timeLeft <= 0) {
+                gameLose();
+            }
+            // feedback visual na célula
+            const cellDiv = document.querySelector(`.cell[data-row='${row}'][data-col='${col}']`);
+            if (cellDiv) {
+                cellDiv.classList.add("wrong-click");
+                setTimeout(() => cellDiv.classList.remove("wrong-click"), 250);
+            }
+            return false;
+        }
+
+        // Acerto: verifica se essa célula já foi descoberta nesta imagem
+        if (activeImg.foundMask[localR][localC]) {
+            statusMsg.innerText = `🔁 Célula já descoberta em ${activeImg.word}!`;
+            return false;
+        }
+
+        // Marcar como encontrada
+        activeImg.foundMask[localR][localC] = true;
+        activeImg.completedCells++;
+        updateImagesCounter(); // atualiza contagem e verifica vitória
+
+        // Atualizar visual da célula no grid
+        const cellDiv = document.querySelector(`.cell[data-row='${row}'][data-col='${col}']`);
+        if (cellDiv) {
+            cellDiv.classList.add("found-in-active");
+        }
+
+        statusMsg.innerText = `✅ Acerto! +1 em "${activeImg.word}" (${activeImg.completedCells}/${activeImg.totalCells})`;
+
+        // Verifica se a imagem foi completada
+        if (activeImg.completedCells === activeImg.totalCells) {
+            activeImg.completed = true;
+            // Marcar todas as células da imagem como "completadas" visualmente (estilo especial)
+            for (let [r,c] of activeImg.cells) {
+                const cellElt = document.querySelector(`.cell[data-row='${r}'][data-col='${c}']`);
+                if (cellElt) {
+                    cellElt.classList.add("completed-img-cell");
+                    cellElt.classList.remove("found-in-active");
+                }
+            }
+            statusMsg.innerText = `🎉 IMAGEM COMPLETA: ${activeImg.word}! 🎉`;
+            updateImagesCounter(); // já chama vitória se todas completas
+            // desativar o botão ativo se completou
+            renderWordButtons();  // re-render botões para mostrar completado
+            if (activeImageIndex !== -1 && currentImages[activeImageIndex].completed) {
+                activeImageIndex = -1; // reseta seleção ativa
+            }
+        } else {
+            // re-render apenas para manter highlight (já alteramos classe)
+        }
         return true;
     }
 
+    // Função chamada ao vencer
+    function gameWin(reason) {
+        if (gameFinished) return;
+        gameActive = false;
+        gameFinished = true;
+        if (timerInterval) clearInterval(timerInterval);
+        const winMessages = ["🎉 PARABÉNS!!! 🎉", "✨ ÓTIMO! ✨", "🏆 MAGNÍFICO! 🏆", "💎 VOCÊ É FERA! 💎"];
+        const msg = winMessages[Math.floor(Math.random() * winMessages.length)];
+        statusMsg.innerText = `${msg} Você completou todas as imagens!`;
+        launchConfetti();
+    }
+
+    function gameLose() {
+        if (gameFinished) return;
+        gameActive = false;
+        gameFinished = true;
+        if (timerInterval) clearInterval(timerInterval);
+        statusMsg.innerText = "⏰ TENTE NOVAMENTE ⏰ Tempo esgotado!";
+    }
+
+    // Timer principal
     function startTimer() {
         if (timerInterval) clearInterval(timerInterval);
         timerInterval = setInterval(() => {
-            if (!gameActive || gameWin) return;
-            if (timer <= 1) {
-                // Tempo esgotado
+            if (!gameActive || gameFinished) return;
+            if (timeLeft <= 1) {
+                timeLeft = 0;
+                updateTimerDisplay();
+                gameLose();
                 clearInterval(timerInterval);
-                gameActive = false;
-                statusMsg.innerText = "⏰ TEMPO ESGOTADO! Clique em NOVO JOGO.";
-                renderGrid(); // desabilita cliques (gameActive false)
+                renderGrid(); // desativa cliques
             } else {
-                timer--;
+                timeLeft--;
                 updateTimerDisplay();
             }
         }, 1000);
     }
 
     function updateTimerDisplay() {
-        timerSpan.innerText = timer;
+        timerSpan.innerText = timeLeft;
+        if (timeLeft <= 0 && !gameFinished) gameLose();
     }
 
-    function updateScoreDisplay() {
-        foundCountSpan.innerText = foundTargetCells;
-        totalCountSpan.innerText = totalTargetCells;
-    }
-
-    // Verifica vitória
-    function checkVictory() {
-        if (foundTargetCells === totalTargetCells && totalTargetCells > 0 && gameActive && !gameWin) {
-            // VITÓRIA!
-            gameWin = true;
-            gameActive = false;
-            clearInterval(timerInterval);
-            statusMsg.innerText = "🎉 PARABÉNS! VOCÊ COMPLETOU A IMAGEM! 🎉";
-            launchConfetti();
-            renderGrid(); // para mostrar vitória (desabilita cliques)
-        }
-    }
-
-    // Clique na célula
-    function onCellClick(row, col) {
-        if (!gameActive || gameWin) return;
-        // Se a célula já foi selecionada, não faz nada
-        if (selectedCells[row][col]) return;
-
-        // Verifica se essa célula faz parte do desenho
-        const isPartOfDrawing = (currentDrawing[row][col] === 1);
-        if (isPartOfDrawing) {
-            // Acerto: marca como selecionada
-            selectedCells[row][col] = true;
-            foundTargetCells++;
-            updateScoreDisplay();
-            renderGrid(); // re-render para mostrar visualmente a célula selecionada
-            checkVictory();
-        } else {
-            // Erro: feedback visual temporário
-            const cellDiv = document.querySelector(`.cell[data-row='${row}'][data-col='${col}']`);
-            if (cellDiv) {
-                cellDiv.classList.add("wrong-click");
-                setTimeout(() => cellDiv.classList.remove("wrong-click"), 200);
-            }
-            // Penalidade de tempo? Vamos reduzir 2 segundos
-            if (timer > 2) timer -= 2;
-            else timer = 0;
-            updateTimerDisplay();
-            statusMsg.innerText = "❌ Símbolo errado! -2 segundos.";
-            setTimeout(() => {
-                if (gameActive && !gameWin) statusMsg.innerText = `Encontre os símbolos do ${currentWord}!`;
-            }, 800);
-            if (timer <= 0) {
-                // força game over
-                clearInterval(timerInterval);
-                gameActive = false;
-                statusMsg.innerText = "⏰ TEMPO ESGOTADO! Clique em NOVO JOGO.";
-                renderGrid();
-            }
-        }
-    }
-
-    // Renderiza a grade com base no estado atual
+    // Renderização completa do grid
     function renderGrid() {
         gridContainer.innerHTML = "";
         for (let i = 0; i < GRID_SIZE; i++) {
             for (let j = 0; j < GRID_SIZE; j++) {
-                const symbol = gridData[i][j];
-                const isSelected = selectedCells[i][j];
+                const symbol = gridSymbols[i][j];
                 const cellDiv = document.createElement("div");
                 cellDiv.className = "cell";
-                if (isSelected) cellDiv.classList.add("selected");
+                // verificar se pertence a alguma imagem e se já foi encontrada na imagem ativa
+                let isFoundInActive = false;
+                let isFromCompleted = false;
+                if (activeImageIndex !== -1 && !currentImages[activeImageIndex]?.completed) {
+                    const activeImg = currentImages[activeImageIndex];
+                    for (let idx = 0; idx < activeImg.cells.length; idx++) {
+                        const [r,c] = activeImg.cells[idx];
+                        if (r === i && c === j) {
+                            const localR = r - activeImg.offsetRow;
+                            const localC = c - activeImg.offsetCol;
+                            if (activeImg.foundMask[localR][localC]) isFoundInActive = true;
+                            break;
+                        }
+                    }
+                }
+                // checar se a célula pertence a alguma imagem já completada
+                for (let img of currentImages) {
+                    if (img.completed) {
+                        for (let [r,c] of img.cells) {
+                            if (r === i && c === j) { isFromCompleted = true; break; }
+                        }
+                    }
+                }
+                if (isFoundInActive) cellDiv.classList.add("found-in-active");
+                if (isFromCompleted && !isFoundInActive) cellDiv.classList.add("completed-img-cell");
+
                 cellDiv.textContent = symbol;
                 cellDiv.setAttribute("data-row", i);
                 cellDiv.setAttribute("data-col", j);
-                if (gameActive && !gameWin) {
+                if (gameActive && !gameFinished) {
                     cellDiv.style.cursor = "pointer";
                     cellDiv.addEventListener("click", (function(r,c) {
-                        return function() { onCellClick(r,c); };
+                        return function() { tryRevealCell(r,c); };
                     })(i,j));
                 } else {
                     cellDiv.style.cursor = "default";
@@ -454,7 +606,93 @@
         }
     }
 
-    // Efeito de chuva de símbolos coloridos
+    // Atualiza botoes conforme estado (bloqueio, ativo, completo)
+    function renderWordButtons() {
+        wordChoiceDiv.innerHTML = "";
+        currentImages.forEach((img, idx) => {
+            const btn = document.createElement("button");
+            btn.textContent = `${img.word} ${img.completed ? '✓' : ''}`;
+            btn.classList.add("word-btn");
+            if (img.completed) {
+                btn.classList.add("completed-word");
+                btn.disabled = true;
+            } else if (!buttonsUnlocked && !gameFinished) {
+                btn.classList.add("disabled-btn");
+                btn.disabled = true;
+            } else {
+                btn.disabled = false;
+            }
+            if (activeImageIndex === idx && !img.completed && gameActive) {
+                btn.classList.add("active-word");
+            }
+            btn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                if (!gameActive || gameFinished) return;
+                if (!buttonsUnlocked) {
+                    statusMsg.innerText = `⏳ Botões serão liberados em ${BUTTON_UNLOCK_DELAY} segundos!`;
+                    return;
+                }
+                if (img.completed) {
+                    statusMsg.innerText = `🏆 "${img.word}" já foi concluída!`;
+                    return;
+                }
+                // Trocar imagem ativa
+                activeImageIndex = idx;
+                renderWordButtons();
+                renderGrid();   // reaplica highlight das células encontradas na nova imagem ativa
+                statusMsg.innerText = `🎯 Modo: ${img.word} | Toque nos símbolos que formam a imagem!`;
+            });
+            wordChoiceDiv.appendChild(btn);
+        });
+    }
+
+    // Liberar botões após delay
+    function scheduleUnlockButtons() {
+        if (unlockTimeout) clearTimeout(unlockTimeout);
+        unlockTimeout = setTimeout(() => {
+            if (gameActive && !gameFinished) {
+                buttonsUnlocked = true;
+                renderWordButtons();
+                statusMsg.innerText = `🔓 Botões liberados! Selecione uma imagem e toque no mosaico.`;
+            }
+        }, BUTTON_UNLOCK_DELAY * 1000);
+    }
+
+    // Inicializa uma nova partida com palavras "trending"
+    async function initNewGame() {
+        if (timerInterval) clearInterval(timerInterval);
+        if (unlockTimeout) clearTimeout(unlockTimeout);
+        gameActive = true;
+        gameFinished = false;
+        buttonsUnlocked = false;
+        activeImageIndex = -1;
+        timeLeft = TIME_LIMIT;
+        updateTimerDisplay();
+
+        statusMsg.innerText = "📡 Buscando palavras em alta (Google, Yahoo, Bing)...";
+        // Simula busca por palavras populares
+        const trendingImgs = await fetchTrendingWords();
+        currentImages = placeImagesOnGrid(trendingImgs, null);
+        // gerar grade de símbolos
+        gridSymbols = generateRandomGrid();
+        // Atualizar referências de células para cada imagem (já está em placeImagesOnGrid)
+        // Mas placeImagesOnGrid retorna array com cells
+        // Contudo precisamos garantir que a grade não sobreponha símbolos especiais, mas tudo ok.
+        // re-render
+        renderWordButtons();
+        renderGrid();
+        updateImagesCounter();
+        startTimer();
+        scheduleUnlockButtons();
+        statusMsg.innerText = `🕒 Aguarde ${BUTTON_UNLOCK_DELAY}s, os botões serão liberados! 3 minutos no total.`;
+    }
+
+    // Evento novo jogo
+    newGameBtn.addEventListener("click", () => {
+        initNewGame();
+    });
+
+    // Efeito confetti
     function launchConfetti() {
         const existingCanvas = document.querySelector('.confetti-canvas');
         if (existingCanvas) existingCanvas.remove();
@@ -462,7 +700,7 @@
         container.className = 'confetti-canvas';
         document.body.appendChild(container);
         const symbols = SYMBOLS;
-        const num = 120;
+        const num = 150;
         for (let i = 0; i < num; i++) {
             const symbol = symbols[Math.floor(Math.random() * symbols.length)];
             const el = document.createElement('div');
@@ -479,51 +717,15 @@
             el.style.position = 'absolute';
             el.style.top = '-10vh';
             const hue = Math.random() * 360;
-            el.style.color = `hsl(${hue}, 80%, 60%)`;
+            el.style.color = `hsl(${hue}, 80%, 65%)`;
             container.appendChild(el);
             setTimeout(() => { if(el.parentNode) el.remove(); }, (duration+delay)*1000);
         }
-        setTimeout(() => { if(container.parentNode) container.remove(); }, 5000);
+        setTimeout(() => { if(container.parentNode) container.remove(); }, 5500);
     }
 
-    // Reinicia o jogo com uma nova palavra (escolhida aleatoriamente ou pela seleção)
-    function resetGame(selectedWord = null) {
-        if (timerInterval) clearInterval(timerInterval);
-        gameActive = false;
-        gameWin = false;
-        if (!selectedWord) {
-            const words = Object.keys(drawings);
-            const randomIndex = Math.floor(Math.random() * words.length);
-            selectedWord = words[randomIndex];
-        }
-        initGame(selectedWord);
-    }
-
-    // Cria os botões de escolha de palavra
-    function buildWordButtons() {
-        wordChoiceDiv.innerHTML = "";
-        const words = Object.keys(drawings);
-        words.forEach(word => {
-            const btn = document.createElement("button");
-            btn.textContent = word;
-            btn.classList.add("word-btn");
-            btn.addEventListener("click", () => {
-                if (timerInterval) clearInterval(timerInterval);
-                resetGame(word);
-            });
-            wordChoiceDiv.appendChild(btn);
-        });
-    }
-
-    // Evento do botão "Novo Jogo" (escolhe uma palavra aleatória)
-    newGameBtn.addEventListener("click", () => {
-        resetGame(); // aleatório
-    });
-
-    // Inicialização
-    buildWordButtons();
-    // Começa com uma palavra aleatória
-    resetGame();
+    // Inicialização do jogo
+    initNewGame();
 </script>
 </body>
 </html>
