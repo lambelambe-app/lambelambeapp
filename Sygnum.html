@@ -2,732 +2,608 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Sygnus – Caça aos Símbolos ASCII</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>Sygnus · mosaico ASCII fluido</title>
     <style>
         * {
-            user-select: none;
+            margin: 0;
+            padding: 0;
             box-sizing: border-box;
+            user-select: none; /* evita seleção acidental em telas */
         }
 
         body {
-            background: linear-gradient(145deg, #0b1219 0%, #03070c 100%);
+            background: #0b0e12;
+            font-family: 'SF Mono', 'Fira Code', 'Courier New', monospace;
+            color: #cbd5e6;
+            padding: 1.2rem;
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-family: 'Segoe UI', 'Fira Code', 'Courier New', monospace;
-            margin: 0;
-            padding: 20px;
         }
 
+        /* container principal – sem bordas, sem caixas */
         .game-container {
-            background: rgba(0, 0, 0, 0.55);
-            backdrop-filter: blur(10px);
-            border-radius: 48px;
-            padding: 20px;
             width: 100%;
-            max-width: 1100px;
-            box-shadow: 0 20px 35px rgba(0,0,0,0.6);
-            border: 1px solid rgba(255,200,100,0.3);
-        }
-
-        .game-panel {
-            background: #1e262f;
-            border-radius: 36px;
-            padding: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
             text-align: center;
-            box-shadow: inset 0 1px 2px rgba(255,255,200,0.1), 0 10px 25px rgba(0,0,0,0.4);
         }
 
+        /* tipografia leve */
         h1 {
-            margin: 0 0 6px 0;
-            font-size: 2.2rem;
-            background: linear-gradient(135deg, #B8F2FF, #6EE7B7, #FFD966);
-            -webkit-background-clip: text;
+            font-size: clamp(2rem, 8vw, 3rem);
+            font-weight: 500;
+            letter-spacing: 6px;
+            background: linear-gradient(135deg, #c2e0ff, #96f0c0, #ffe6a3);
             background-clip: text;
+            -webkit-background-clip: text;
             color: transparent;
-            letter-spacing: 2px;
+            margin-bottom: 0.25rem;
+            text-shadow: none;
         }
 
         .sub {
-            font-size: 0.8rem;
-            color: #b9cdb0;
-            margin-bottom: 20px;
-            border-bottom: 1px dashed #4a6741;
-            display: inline-block;
-            padding-bottom: 5px;
+            font-size: 0.7rem;
+            letter-spacing: 2px;
+            color: #5f6e7a;
+            text-transform: uppercase;
+            margin-bottom: 1.5rem;
+            font-weight: 400;
         }
 
-        /* Área do desenho ASCII */
-        .drawing-area {
-            background: #0f1419;
-            border-radius: 28px;
-            padding: 15px;
-            margin: 10px 0;
+        /* área do mosaico – sem caixa, sem borda, sem sombra */
+        .mosaic-scroll {
             overflow-x: auto;
-            box-shadow: inset 0 0 0 1px #2e3a2e, 0 5px 15px black;
+            overflow-y: visible;
+            width: 100%;
+            -webkit-overflow-scrolling: touch;
+            margin: 0.5rem 0 1rem;
+            padding: 0 0 8px 0;
         }
 
-        .ascii-grid {
-            display: grid;
-            background-color: #0a0f14;
-            border-radius: 16px;
-            overflow: hidden;
+        .mosaic-area {
+            display: inline-block;
+            background: transparent;
+            line-height: 1.2;
+            cursor: crosshair;
+            font-size: 0; /* remove espaços inline */
+        }
+
+        /* linhas do mosaico */
+        .ascii-row {
+            display: flex;
+            flex-wrap: nowrap;
             justify-content: center;
-            font-family: 'Fira Code', 'Courier New', monospace;
-            font-weight: 500;
         }
 
-        .grid-row {
-            display: flex;
-        }
-
-        .ascii-cell {
-            display: flex;
+        /* cada caractere – fluido, adaptável, sem borda */
+        .ascii-char {
+            display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 38px;
-            height: 38px;
-            font-size: 1.4rem;
-            font-weight: bold;
-            background-color: #1e2a2a;
-            border: 1px solid #3e4e3a;
-            color: #eef4db;
-            cursor: pointer;
-            transition: 0.08s linear;
-            text-shadow: 0 0 3px black;
+            width: clamp(24px, 5vw, 36px);
+            height: clamp(28px, 6vw, 42px);
+            font-size: clamp(1rem, 4.5vw, 1.6rem);
+            font-weight: 500;
+            font-family: 'SF Mono', 'Fira Code', 'Courier New', monospace;
+            transition: all 0.12s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            text-align: center;
+            flex-shrink: 0;
+            background: transparent;
+            border-radius: 6px;
         }
 
-        /* Célula marcada (encontrada) */
-        .ascii-cell.found {
-            background-color: #2c8c5e;
-            color: white;
-            box-shadow: inset 0 0 0 2px #b6ffb0;
-            transform: scale(0.97);
+        /* estado não revelado: tons suaves de cinza sem rigidez */
+        .ascii-char:not(.found):not(.found-at):not(.found-hash):not(.found-dollar):not(.found-percent):not(.found-question):not(.found-amp):not(.found-star):not(.found-plus):not(.found-minus) {
+            color: #3a4249;
+            text-shadow: none;
+            opacity: 0.85;
         }
 
-        /* Efeito de erro */
-        .ascii-cell.wrong {
-            background-color: #c74b3a;
-            animation: shakeFlash 0.2s;
-            box-shadow: 0 0 0 2px red;
+        /* seleção temporária – leve e suave */
+        .ascii-char.selected {
+            background: rgba(180, 220, 255, 0.2);
+            color: #ffffff !important;
+            transform: scale(1.08);
+            text-shadow: 0 0 6px rgba(255,255,200,0.8);
+            border-radius: 12px;
         }
 
-        @keyframes shakeFlash {
-            0% { transform: translateX(0); background-color: #c74b3a; }
-            25% { transform: translateX(-3px); }
-            75% { transform: translateX(3px); }
-            100% { transform: translateX(0); background-color: #1e2a2a; }
-        }
+        /* cores vivas porém suaves para os símbolos revelados */
+        .found-at { color: #ff8a7a; text-shadow: 0 0 3px #ff5a4a; }
+        .found-hash { color: #8effb2; text-shadow: 0 0 3px #4ecc6e; }
+        .found-dollar { color: #ffe38c; text-shadow: 0 0 3px #ffcd4a; }
+        .found-percent { color: #7aa2f7; text-shadow: 0 0 3px #4a6eff; }
+        .found-question { color: #e68afc; text-shadow: 0 0 3px #c65af0; }
+        .found-amp { color: #6ee7e7; text-shadow: 0 0 3px #3acaca; }
+        .found-star { color: #ffb45e; text-shadow: 0 0 3px #ff9a2a; }
+        .found-plus { color: #f2f2f2; text-shadow: 0 0 4px #dddddd; }
+        .found-minus { color: #a0abb5; text-shadow: 0 0 2px #7a8794; }
 
-        /* Barra de símbolos (botões) */
-        .symbols-bar {
-            background: #10171e;
-            border-radius: 60px;
-            padding: 12px 15px;
-            margin: 20px 0 10px;
+        /* barra de botões – sem caixa, apenas flex orgânico */
+        .controls-bar {
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
-            gap: 12px;
+            gap: 0.8rem;
+            margin: 2rem 0 1rem;
+            padding: 0.25rem;
         }
 
-        .sym-btn {
-            background: #2a363f;
-            border: 2px solid #6a7a68;
-            padding: 10px 18px;
-            font-size: 1.3rem;
-            font-weight: bold;
-            border-radius: 60px;
+        /* botões circulares suaves, sem bordas duras */
+        .confirm-btn {
+            background: rgba(30, 38, 48, 0.6);
+            backdrop-filter: blur(4px);
+            border: none;
+            width: clamp(64px, 14vw, 80px);
+            height: clamp(64px, 14vw, 80px);
+            border-radius: 80px;
+            font-size: clamp(1.6rem, 6vw, 2.2rem);
+            font-weight: 600;
             font-family: monospace;
-            transition: 0.1s;
-            box-shadow: 0 2px 6px black;
-            color: #f0e6c5;
-            min-width: 85px;
-            cursor: default;
+            color: #a3b3c4;
+            cursor: pointer;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 5px;
+            justify-content: center;
+            transition: all 0.2s ease;
+            box-shadow: none;
+            outline: none;
+            position: relative;
         }
 
-        .sym-btn.active-symbol {
-            background: #4b8b5e;
-            border-color: #ffdf8c;
-            box-shadow: 0 0 0 2px #f9e45b;
-            transform: scale(1.02);
-            color: white;
+        .confirm-btn:active {
+            transform: scale(0.96);
+            background: rgba(50, 65, 80, 0.8);
         }
 
-        .sym-btn.completed {
-            background: #2c553b;
-            border-color: #a5d6a5;
-            opacity: 0.7;
+        .confirm-btn.active {
+            color: #ffdf8c;
+            background: rgba(70, 110, 130, 0.5);
+            text-shadow: 0 0 6px #ffdd77;
+        }
+
+        .confirm-btn.completed {
+            opacity: 0.4;
+            transform: scale(0.94);
+            cursor: default;
             filter: grayscale(0.2);
             text-decoration: line-through;
+            text-decoration-thickness: 2px;
+            text-decoration-color: #6a7a88;
         }
 
-        .sym-symbol {
-            font-size: 1.7rem;
-            font-weight: bold;
+        .btn-progress {
+            font-size: 0.7rem;
+            font-weight: normal;
+            letter-spacing: 0.5px;
+            background: none;
+            margin-top: 4px;
+            color: #6d859c;
         }
 
-        .sym-progress {
-            font-size: 0.75rem;
-            background: #00000066;
-            padding: 2px 8px;
-            border-radius: 40px;
-        }
-
-        .controls {
-            margin-top: 18px;
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-        }
-
-        button.action {
-            background: #3f5e49;
+        /* mensagem de status – leve, integrada */
+        .status-msg {
+            margin-top: 1.8rem;
+            font-size: 0.85rem;
+            color: #8ea1b2;
+            background: transparent;
+            padding: 0.5rem;
+            letter-spacing: 0.3px;
+            border-radius: 0;
+            backdrop-filter: none;
             border: none;
-            font-size: 1rem;
-            font-weight: bold;
-            padding: 8px 26px;
-            border-radius: 40px;
-            color: white;
-            cursor: pointer;
-            transition: 0.1s;
+            transition: all 0.2s;
+        }
+
+        /* botão novo jogo – minimal */
+        .new-game-btn {
+            background: none;
+            border: none;
+            color: #8d9fae;
+            font-size: 0.85rem;
             font-family: inherit;
+            padding: 0.6rem 1.8rem;
+            margin-top: 0.5rem;
+            cursor: pointer;
+            border-radius: 40px;
+            transition: 0.15s;
             letter-spacing: 1px;
-        }
-
-        button.action:active {
-            transform: scale(0.96);
-        }
-
-        .status {
-            margin-top: 15px;
-            font-size: 1rem;
-            font-weight: bold;
-            background: #030c12cc;
-            border-radius: 60px;
-            padding: 8px 15px;
-            color: #FFE6A3;
             backdrop-filter: blur(4px);
+            background: rgba(20, 28, 34, 0.4);
         }
 
-        /* Confetti */
-        .confetti-canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 1000;
-        }
-        .symbol-confetti {
-            position: absolute;
-            font-size: 1.3rem;
-            font-weight: bold;
-            font-family: monospace;
-            animation: fall linear forwards;
-        }
-        @keyframes fall {
-            0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
-            100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+        .new-game-btn:active {
+            transform: scale(0.97);
+            color: #cde3f5;
         }
 
-        @media (max-width: 700px) {
-            .ascii-cell { width: 28px; height: 28px; font-size: 1rem; }
-            .sym-btn { padding: 5px 10px; min-width: 65px; }
-            .sym-symbol { font-size: 1.2rem; }
+        /* animação shake suave */
+        @keyframes gentleShake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-4px); }
+            75% { transform: translateX(4px); }
+        }
+        .shake {
+            animation: gentleShake 0.2s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+        }
+
+        /* toque responsivo: espaçamento para dedos */
+        @media (max-width: 640px) {
+            body { padding: 0.8rem; }
+            .confirm-btn { width: 60px; height: 60px; font-size: 1.6rem; }
+            .btn-progress { font-size: 0.6rem; }
+            .ascii-char { width: 28px; height: 32px; font-size: 1rem; }
+        }
+
+        @media (max-width: 480px) {
+            .ascii-char { width: 26px; height: 30px; font-size: 0.9rem; }
+            .confirm-btn { width: 54px; height: 54px; }
+        }
+
+        /* sem bordas, sem cards, sem sombras — apenas o essencial */
+        .mosaic-scroll::-webkit-scrollbar {
+            height: 4px;
+            background: transparent;
+        }
+        .mosaic-scroll::-webkit-scrollbar-thumb {
+            background: #2e3b44;
+            border-radius: 10px;
         }
     </style>
 </head>
 <body>
+
 <div class="game-container">
-    <div class="game-panel">
-        <h1>⚡ SYGNUS ⚡</h1>
-        <div class="sub">decifre o mosaico | encontre todos os símbolos ocultos</div>
+    <h1>SYGNUS</h1>
+    <div class="sub">toque · selecione · confirme</div>
 
-        <!-- Área do desenho ASCII -->
-        <div class="drawing-area">
-            <div id="asciiGrid" class="ascii-grid"></div>
-        </div>
-
-        <!-- Barra com os 9 símbolos e progresso -->
-        <div class="symbols-bar" id="symbolsBar"></div>
-
-        <div class="controls">
-            <button class="action" id="newGameBtn">🎲 NOVO DESENHO</button>
-        </div>
-        <div class="status" id="statusMsg">🔍 @ está ativo! Clique nas células com @ para revelá-las.</div>
+    <!-- Área rolável do mosaico, sem caixa delimitadora -->
+    <div class="mosaic-scroll">
+        <div class="mosaic-area" id="mosaicArea"></div>
     </div>
+
+    <!-- Barra de símbolos (botões circulares) -->
+    <div class="controls-bar" id="controlsBar"></div>
+
+    <div class="status-msg" id="statusMsg">✦ Toque em um símbolo cinza no mosaico e depois no botão correspondente.</div>
+    
+    <button class="new-game-btn" id="newGameBtn">⟳ novo mosaico</button>
 </div>
 
 <script>
-    // ============================================================
-    //  SYGNUS – JOGO DE CAÇA AOS SÍMBOLOS ASCII
-    //  DESENHOS ALEATÓRIOS INFINITOS (PRÉ-DEFINIDOS + SORTEIO)
-    //  SÍMBOLOS: @ # $ % ? & * + -
-    // ============================================================
+    (function() {
+        // ---------- CONFIGURAÇÃO ----------
+        const SYMBOLS = ['@', '#', '$', '%', '?', '&', '*', '+', '-'];
+        const SYMBOL_CLASSES = {
+            '@': 'found-at', '#': 'found-hash', '$': 'found-dollar',
+            '%': 'found-percent', '?': 'found-question', '&': 'found-amp',
+            '*': 'found-star', '+': 'found-plus', '-': 'found-minus'
+        };
 
-    // --- CONJUNTO DE DESENHOS ASCII ART (USANDO APENAS OS 9 CARACTERES) ---
-    // Cada desenho é um array de strings (linhas), usando somente os caracteres permitidos.
-    // Os espaços também são permitidos para formar a silhueta, mas o jogo só considera os 9 símbolos.
-    // Para garantir a variedade infinita, sortearemos um desenho aleatório desta lista (e podemos expandir)
-    const ASCII_DRAWINGS = [
-        // 1. Coração estilizado
-        [
-            "  @@@    @@@  ",
-            " @@@@@  @@@@@ ",
-            "@@@@@@@@@@@@@@",
-            "@@@@@@@@@@@@@@",
-            " @@@@@@@@@@@@ ",
-            "  @@@@@@@@@@  ",
-            "   @@@@@@@@   ",
-            "    @@@@@@    ",
-            "     @@@@     ",
-            "      @@      "
-        ],
-        // 2. Estrela
-        [
-            "      %       ",
-            "    %%% %%    ",
-            "   %%%%%%%%   ",
-            "  %%%%%%%%%%  ",
-            "%%%%%%%%%%%%%%",
-            "  %%%%%%%%%%  ",
-            "   %%%%%%%%   ",
-            "    %%% %%    ",
-            "      %       ",
-            "      &       "
-        ],
-        // 3. Peixe
-        [
-            "       #       ",
-            "    #######    ",
-            "   #########   ",
-            "  ###########  ",
-            " ############# ",
-            "###       #####",
-            " ############# ",
-            "  ###########  ",
-            "   #########   ",
-            "    #####      "
-        ],
-        // 4. Casa
-        [
-            "      @@@      ",
-            "     @@@@@     ",
-            "    @@@@@@@    ",
-            "   @@@@@@@@@   ",
-            "  @@$@@$@@$@@  ",
-            "  @@@@@@@@@@@  ",
-            "  @#@   @#@    ",
-            "  @#@   @#@    ",
-            "  @@@@@@@@@@@  ",
-            "  @@@@@@@@@@@  "
-        ],
-        // 5. Árvore
-        [
-            "      &        ",
-            "     &&&       ",
-            "    &&&&&      ",
-            "   &&&&&&&     ",
-            "  &&&&&&&&&    ",
-            " &&&&&&&&&&&   ",
-            "&&&&&& &&&&&&  ",
-            "    &&&&       ",
-            "    &&&&       ",
-            "    ####       "
-        ],
-        // 6. Gato
-        [
-            "   @@@   @@@   ",
-            "  @   @ @   @  ",
-            " @     @     @ ",
-            "@@@@@@@@@@@@@@@",
-            "@  @@     @@  @",
-            "@ @  @@@ @  @ @",
-            "@@@       @@@@@",
-            " @         @   ",
-            " @    ?    @   ",
-            "  @@@@@@@@@    "
-        ],
-        // 7. Nave espacial
-        [
-            "       *       ",
-            "      ***      ",
-            "     *****     ",
-            "    *******    ",
-            "   *********   ",
-            "  ***********  ",
-            " ************* ",
-            "*****   *******",
-            "  *       *    ",
-            "  *       *    "
-        ],
-        // 8. Flor
-        [
-            "      %        ",
-            "     %%%       ",
-            "    %%%%%      ",
-            "   %%%%%%%     ",
-            "  %%%%%%%%%    ",
-            "     |||       ",
-            "     |||       ",
-            "   @@@@@@@     ",
-            "   @@@@@@@     ",
-            "   @@@@@@@     "
-        ],
-        // 9. Dragão simples
-        [
-            "       @@      ",
-            "      @@@@     ",
-            "     @@@@@@    ",
-            "    @@@@@@@@   ",
-            "   @@@#  #@@@  ",
-            "  @@@@    @@@@ ",
-            " @@@@      @@@@",
-            "@@@@  ????  @@@",
-            " @@   ????   @@",
-            "  @         @  "
-        ],
-        // 10. Hexágono/tecnologia
-        [
-            "    +++++     ",
-            "   +++++++    ",
-            "  +++++++++   ",
-            " +++++++++++  ",
-            "+++++++++++++ ",
-            " +++++++++++  ",
-            "  +++++++++   ",
-            "   +++++++    ",
-            "    +++++     ",
-            "      -       "
-        ]
-    ];
+        // Dimensões do mosaico: 20 linhas x 48 colunas (melhor responsividade)
+        const ROWS = 20;
+        const COLS = 48;
 
-    // Lista dos 9 símbolos na ordem de liberação
-    const SYMBOLS_ORDER = ['@', '#', '$', '%', '?', '&', '*', '+', '-'];
-    
-    // Estado do jogo
-    let currentDrawing = [];      // matriz de caracteres (array 2D)
-    let rows = 0, cols = 0;
-    let symbolTotals = {};        // total de ocorrências por símbolo
-    let symbolFound = {};         // quantas já foram encontradas
-    let markedCells = [];         // matriz booleana (marcado/descoberto)
-    let activeSymbol = '@';       // símbolo atualmente liberado
-    let gameActive = true;
-    let gameCompleted = false;
+        let currentDrawing = [];       // matriz de caracteres
+        let symbolTotals = {};          // total de ocorrências por símbolo
+        let symbolFound = {};           // quantos já foram descobertos
+        let selectedCell = null;        // { row, col, char }
+        let gameActive = true;
+        let victoryFlag = false;
 
-    // Elementos DOM
-    const asciiGridDiv = document.getElementById("asciiGrid");
-    const symbolsBar = document.getElementById("symbolsBar");
-    const statusMsgSpan = document.getElementById("statusMsg");
-    const newGameBtn = document.getElementById("newGameBtn");
+        const mosaicArea = document.getElementById('mosaicArea');
+        const controlsBar = document.getElementById('controlsBar');
+        const statusMsg = document.getElementById('statusMsg');
+        const newGameBtn = document.getElementById('newGameBtn');
 
-    // --- FUNÇÃO PARA SELECIONAR UM DESENHO ALEATÓRIO (infinito, com repetição possível mas variado)---
-    function getRandomDrawing() {
-        const randomIndex = Math.floor(Math.random() * ASCII_DRAWINGS.length);
-        return ASCII_DRAWINGS[randomIndex].slice(); // cópia
-    }
+        // ---------- FUNÇÕES AUXILIARES ----------
+        function resetGameState() {
+            currentDrawing = [];
+            symbolTotals = {};
+            symbolFound = {};
+            selectedCell = null;
+            gameActive = true;
+            victoryFlag = false;
 
-    // Converte o desenho (array de strings) em matriz 2D e calcula estatísticas
-    function loadDrawing(drawingLines) {
-        const matrix = [];
-        let maxLen = 0;
-        for (let line of drawingLines) {
-            maxLen = Math.max(maxLen, line.length);
+            SYMBOLS.forEach(s => {
+                symbolTotals[s] = 0;
+                symbolFound[s] = 0;
+            });
         }
-        // Preenche matriz com espaços para alinhar (espaços não contam como símbolo)
-        for (let i = 0; i < drawingLines.length; i++) {
-            const line = drawingLines[i];
-            const row = [];
-            for (let j = 0; j < maxLen; j++) {
-                const ch = j < line.length ? line[j] : ' ';
-                row.push(ch);
-            }
-            matrix.push(row);
-        }
-        rows = matrix.length;
-        cols = matrix[0].length;
-        
-        // Inicializa contadores
-        const totals = {};
-        for (let sym of SYMBOLS_ORDER) totals[sym] = 0;
-        for (let i = 0; i < rows; i++) {
-            for (let j = 0; j < cols; j++) {
-                const ch = matrix[i][j];
-                if (SYMBOLS_ORDER.includes(ch)) {
-                    totals[ch]++;
-                }
-            }
-        }
-        return { matrix, totals };
-    }
 
-    // Reinicia o estado do jogo com um novo desenho aleatório
-    function initNewGame() {
-        // Escolhe desenho aleatório (infinito)
-        const rawDrawing = getRandomDrawing();
-        const { matrix, totals } = loadDrawing(rawDrawing);
-        currentDrawing = matrix;
-        symbolTotals = totals;
-        
-        // Verifica se algum símbolo tem total zero; se tiver, trocamos de desenho para evitar travamento
-        let hasZero = false;
-        for (let sym of SYMBOLS_ORDER) {
-            if (symbolTotals[sym] === 0) {
-                hasZero = true;
-                break;
-            }
-        }
-        if (hasZero) {
-            // tenta outro desenho no máximo 5 vezes
-            for (let attempt = 0; attempt < 5; attempt++) {
-                const newRaw = getRandomDrawing();
-                const newRes = loadDrawing(newRaw);
-                let ok = true;
-                for (let sym of SYMBOLS_ORDER) {
-                    if (newRes.totals[sym] === 0) { ok = false; break; }
-                }
-                if (ok) {
-                    currentDrawing = newRes.matrix;
-                    symbolTotals = newRes.totals;
-                    rows = currentDrawing.length;
-                    cols = currentDrawing[0].length;
-                    break;
-                }
-            }
-        }
-        
-        // Inicializa found e markedCells
-        for (let sym of SYMBOLS_ORDER) {
-            symbolFound[sym] = 0;
-        }
-        markedCells = Array(rows).fill().map(() => Array(cols).fill(false));
-        
-        activeSymbol = '@';
-        gameActive = true;
-        gameCompleted = false;
-        
-        // Se o símbolo @ tiver total 0 (improvável) mas caso aconteça, avança para o próximo
-        if (symbolTotals['@'] === 0) {
-            advanceToNextUncompletedSymbol();
-        }
-        
-        renderAsciiGrid();
-        renderSymbolsBar();
-        updateStatusMessage();
-    }
-    
-    // Avança para o próximo símbolo não totalmente encontrado
-    function advanceToNextUncompletedSymbol() {
-        const currentIndex = SYMBOLS_ORDER.indexOf(activeSymbol);
-        for (let i = currentIndex + 1; i < SYMBOLS_ORDER.length; i++) {
-            const nextSym = SYMBOLS_ORDER[i];
-            if (symbolFound[nextSym] < symbolTotals[nextSym]) {
-                activeSymbol = nextSym;
-                return true;
-            }
-        }
-        // Se todos estiverem completos, vitória!
-        const allCompleted = SYMBOLS_ORDER.every(sym => symbolFound[sym] === symbolTotals[sym]);
-        if (allCompleted && !gameCompleted) {
-            victoryGame();
-        }
-        return false;
-    }
-    
-    // Verifica vitória após cada atualização
-    function checkAllSymbolsCompleted() {
-        const allDone = SYMBOLS_ORDER.every(sym => symbolFound[sym] === symbolTotals[sym]);
-        if (allDone && !gameCompleted && gameActive) {
-            victoryGame();
-        }
-    }
-    
-    function victoryGame() {
-        gameCompleted = true;
-        gameActive = false;
-        statusMsgSpan.innerHTML = "🎉✨ PARABÉNS!!! ✨🎉 Você revelou todos os símbolos! Desenho completo!";
-        launchConfetti();
-        renderSymbolsBar(); // atualiza visual dos botões
-    }
-    
-    // Ação ao clicar em uma célula
-    function onCellClick(row, col) {
-        if (!gameActive || gameCompleted) return;
-        if (markedCells[row][col]) {
-            statusMsgSpan.innerHTML = `⚠️ Esta célula já foi descoberta! (${currentDrawing[row][col]})`;
-            return;
-        }
-        const cellChar = currentDrawing[row][col];
-        // Verifica se o caractere é um dos símbolos válidos
-        if (!SYMBOLS_ORDER.includes(cellChar)) {
-            // Caractere inválido (espaço ou outro), erro
-            flashWrongCell(row, col);
-            statusMsgSpan.innerHTML = `❌ Erro! "${cellChar}" não é um símbolo válido. Clique apenas nos símbolos: ${SYMBOLS_ORDER.join(' ')}`;
-            return;
-        }
-        
-        // Se o caractere é igual ao símbolo ativo
-        if (cellChar === activeSymbol) {
-            // Acerto!
-            markedCells[row][col] = true;
-            symbolFound[activeSymbol]++;
-            updateCellVisual(row, col, true);
-            // Atualiza barra de símbolos
-            renderSymbolsBar();
+        // Gera mosaico aleatório denso e equilibrado (evita símbolos com zero)
+        function generateRandomMosaic() {
+            const matrix = [];
+            // primeiro, garantir que cada símbolo apareça pelo menos 1x
+            const minOccurrence = {};
+            SYMBOLS.forEach(s => { minOccurrence[s] = 1; });
             
-            // Verifica se completou este símbolo
-            if (symbolFound[activeSymbol] === symbolTotals[activeSymbol]) {
-                // Mensagem de conclusão
-                statusMsgSpan.innerHTML = `🎉 SÍMBOLO ${activeSymbol} COMPLETO! Avançando para o próximo... 🎉`;
-                // Avança para o próximo símbolo ainda não completo
-                const hasNext = advanceToNextUncompletedSymbol();
-                if (!hasNext) {
-                    checkAllSymbolsCompleted();
-                } else {
-                    renderSymbolsBar(); // atualiza destaque
-                    updateStatusMessage();
+            // preencher vazios
+            for (let i = 0; i < ROWS; i++) {
+                const row = [];
+                for (let j = 0; j < COLS; j++) {
+                    let randSym = SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)];
+                    row.push(randSym);
                 }
+                matrix.push(row);
+            }
+            
+            // recalcular totais e verificar se algum símbolo ficou com 0
+            const totals = {};
+            SYMBOLS.forEach(s => totals[s] = 0);
+            for (let i = 0; i < ROWS; i++) {
+                for (let j = 0; j < COLS; j++) {
+                    totals[matrix[i][j]]++;
+                }
+            }
+            // se algum símbolo tiver total zero, forçar alguns caracteres
+            for (let s of SYMBOLS) {
+                if (totals[s] === 0) {
+                    // substituir algumas posições aleatórias
+                    for (let k = 0; k < 3; k++) {
+                        const randRow = Math.floor(Math.random() * ROWS);
+                        const randCol = Math.floor(Math.random() * COLS);
+                        matrix[randRow][randCol] = s;
+                    }
+                }
+            }
+            // recalcular totais finais
+            const finalTotals = {};
+            SYMBOLS.forEach(s => finalTotals[s] = 0);
+            for (let i = 0; i < ROWS; i++) {
+                for (let j = 0; j < COLS; j++) {
+                    finalTotals[matrix[i][j]]++;
+                }
+            }
+            return { matrix: matrix, totals: finalTotals };
+        }
+
+        // Inicializa / reinicia o jogo
+        function initGame() {
+            resetGameState();
+            const { matrix, totals } = generateRandomMosaic();
+            currentDrawing = matrix;
+            symbolTotals = totals;
+            
+            renderMosaic();
+            renderControls();
+            statusMsg.innerText = "🌀 Mosaico gerado. Toque em um caractere cinza e depois no botão do símbolo correto.";
+            if (victoryFlag) victoryFlag = false;
+            gameActive = true;
+            selectedCell = null;
+        }
+
+        // Renderização completa do mosaico (sem bordas)
+        function renderMosaic() {
+            mosaicArea.innerHTML = '';
+            for (let r = 0; r < ROWS; r++) {
+                const rowDiv = document.createElement('div');
+                rowDiv.className = 'ascii-row';
+                for (let c = 0; c < COLS; c++) {
+                    const char = currentDrawing[r][c];
+                    const span = document.createElement('span');
+                    span.className = 'ascii-char';
+                    span.textContent = char;
+                    span.setAttribute('data-row', r);
+                    span.setAttribute('data-col', c);
+                    
+                    // Se já foi descoberto, aplicar classe de cor correspondente
+                    const isFound = (symbolFound[char] > 0 && isCharAlreadyFound(r, c, char));
+                    if (isFound) {
+                        span.classList.add(SYMBOL_CLASSES[char]);
+                    } else {
+                        // estilo neutro/cinza suave já aplicado via CSS
+                        span.style.opacity = '0.9';
+                    }
+                    
+                    // Verifica se está selecionado atualmente
+                    if (selectedCell && selectedCell.row === r && selectedCell.col === c) {
+                        span.classList.add('selected');
+                    }
+                    
+                    span.addEventListener('click', (function(row, col, ch) {
+                        return function() { selectFromMosaic(row, col, ch); };
+                    })(r, c, char));
+                    
+                    rowDiv.appendChild(span);
+                }
+                mosaicArea.appendChild(rowDiv);
+            }
+        }
+        
+        // Função auxiliar: verifica se uma célula específica já foi descoberta (para render)
+        function isCharAlreadyFound(row, col, char) {
+            // Descobrimos que o caractere está revelado se a contagem global já atingiu? 
+            // Mas precisamos saber se essa célula individualmente já foi validada.
+            // Para isso, mantemos um mapa de células reveladas.
+            if (!window._revealedCells) window._revealedCells = new Set();
+            const key = `${row},${col}`;
+            return window._revealedCells.has(key);
+        }
+        
+        // Atualiza o estado interno e visual quando uma célula é validada
+        function markCellAsFound(row, col, char) {
+            if (!window._revealedCells) window._revealedCells = new Set();
+            const key = `${row},${col}`;
+            if (window._revealedCells.has(key)) return;
+            window._revealedCells.add(key);
+            
+            // Atualizar estilo diretamente no DOM
+            const cellSpan = document.querySelector(`.ascii-char[data-row='${row}'][data-col='${col}']`);
+            if (cellSpan) {
+                cellSpan.classList.remove('selected');
+                cellSpan.classList.add(SYMBOL_CLASSES[char]);
+                cellSpan.style.opacity = '1';
+            }
+        }
+        
+        // Lida com a seleção de um caractere no mosaico
+        function selectFromMosaic(row, col, char) {
+            if (!gameActive || victoryFlag) {
+                statusMsg.innerText = "🏁 Jogo finalizado! Clique em 'novo mosaico' para continuar.";
+                return;
+            }
+            // Verificar se essa célula já foi revelada
+            if (window._revealedCells && window._revealedCells.has(`${row},${col}`)) {
+                statusMsg.innerText = `⚠️ Símbolo "${char}" já foi descoberto! Toque em um ainda cinza.`;
+                return;
+            }
+            
+            // Remove seleção anterior
+            if (selectedCell) {
+                const prevSpan = document.querySelector(`.ascii-char[data-row='${selectedCell.row}'][data-col='${selectedCell.col}']`);
+                if (prevSpan) prevSpan.classList.remove('selected');
+            }
+            
+            // Define nova seleção
+            selectedCell = { row, col, char };
+            const currentSpan = document.querySelector(`.ascii-char[data-row='${row}'][data-col='${col}']`);
+            if (currentSpan) currentSpan.classList.add('selected');
+            
+            statusMsg.innerText = `🔍 "${char}" selecionado. Toque no botão correspondente abaixo.`;
+            // Realça o botão ativo de forma sugestiva
+            highlightActiveButtonForChar(char);
+        }
+        
+        function highlightActiveButtonForChar(char) {
+            // apenas um auxílio visual sem forçar clique
+            document.querySelectorAll('.confirm-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.innerText.trim()[0] === char) {
+                    btn.classList.add('active');
+                }
+            });
+            setTimeout(() => {
+                document.querySelectorAll('.confirm-btn').forEach(btn => btn.classList.remove('active'));
+            }, 800);
+        }
+        
+        // Confirmação do símbolo através do botão
+        function confirmSymbol(sym) {
+            if (!gameActive || victoryFlag) {
+                statusMsg.innerText = "Jogo encerrado, gere um novo mosaico.";
+                return;
+            }
+            if (!selectedCell) {
+                statusMsg.innerText = "👆 Primeiro, toque em um caractere cinza no mosaico.";
+                return;
+            }
+            
+            const btn = document.getElementById(`btn-${sym}`);
+            if (btn && btn.classList.contains('completed')) {
+                statusMsg.innerText = `🏆 Símbolo ${sym} já está completo!`;
+                return;
+            }
+            
+            const { row, col, char: selectedChar } = selectedCell;
+            
+            // Verificar se a célula ainda não foi revelada (segurança extra)
+            if (window._revealedCells && window._revealedCells.has(`${row},${col}`)) {
+                statusMsg.innerText = "Esta célula já foi descoberta. Selecione outra.";
+                selectedCell = null;
+                renderMosaic(); // atualiza visual
+                return;
+            }
+            
+            if (selectedChar === sym) {
+                // ACERTO!
+                // Marcar célula como encontrada
+                markCellAsFound(row, col, sym);
+                symbolFound[sym]++;
+                
+                // Atualizar contadores dos botões
+                renderControls();
+                
+                // Remover seleção atual
+                const selectedSpan = document.querySelector(`.ascii-char[data-row='${row}'][data-col='${col}']`);
+                if (selectedSpan) selectedSpan.classList.remove('selected');
+                selectedCell = null;
+                
+                // Mensagem de sucesso
+                statusMsg.innerText = `✔️ Correto! ${sym} (${symbolFound[sym]}/${symbolTotals[sym]})`;
+                
+                // Verificar se o símbolo atual foi completado
+                if (symbolFound[sym] === symbolTotals[sym]) {
+                    statusMsg.innerText = `✨ SÍMBOLO ${sym} COMPLETO! ✨ ${symbolFound[sym]}/${symbolTotals[sym]}`;
+                }
+                
+                // Checar vitória geral
+                checkVictory();
             } else {
-                statusMsgSpan.innerHTML = `✅ Acertou! ${activeSymbol}: ${symbolFound[activeSymbol]}/${symbolTotals[activeSymbol]}`;
-            }
-            // após marcar, verifica vitória geral
-            checkAllSymbolsCompleted();
-        } else {
-            // Erro: clicou em símbolo diferente do ativo
-            flashWrongCell(row, col);
-            statusMsgSpan.innerHTML = `❌ Erro! Você precisa encontrar o símbolo "${activeSymbol}". Você clicou em "${cellChar}". Tente novamente!`;
-        }
-    }
-    
-    // Efeito visual de erro
-    function flashWrongCell(row, col) {
-        const cellDiv = document.querySelector(`.ascii-cell[data-row='${row}'][data-col='${col}']`);
-        if (cellDiv) {
-            cellDiv.classList.add('wrong');
-            setTimeout(() => cellDiv.classList.remove('wrong'), 250);
-        }
-    }
-    
-    // Atualiza visual de uma célula específica
-    function updateCellVisual(row, col, isFound) {
-        const cellDiv = document.querySelector(`.ascii-cell[data-row='${row}'][data-col='${col}']`);
-        if (cellDiv && isFound) {
-            cellDiv.classList.add('found');
-        }
-    }
-    
-    // Renderiza toda a grade ASCII
-    function renderAsciiGrid() {
-        asciiGridDiv.innerHTML = "";
-        asciiGridDiv.style.gridTemplateColumns = `repeat(${cols}, minmax(0, 1fr))`;
-        for (let i = 0; i < rows; i++) {
-            for (let j = 0; j < cols; j++) {
-                const ch = currentDrawing[i][j];
-                const cell = document.createElement("div");
-                cell.className = "ascii-cell";
-                if (markedCells[i][j]) cell.classList.add("found");
-                cell.textContent = ch;
-                cell.setAttribute("data-row", i);
-                cell.setAttribute("data-col", j);
-                cell.addEventListener("click", (function(r,c) {
-                    return function() { onCellClick(r,c); };
-                })(i,j));
-                asciiGridDiv.appendChild(cell);
+                // ERRO: animação de shake e feedback
+                const errorSpan = document.querySelector(`.ascii-char[data-row='${row}'][data-col='${col}']`);
+                if (errorSpan) {
+                    errorSpan.classList.add('shake');
+                    setTimeout(() => errorSpan.classList.remove('shake'), 400);
+                }
+                statusMsg.innerText = `❌ Erro! Você selecionou "${selectedChar}" mas confirmou "${sym}". Tente novamente com o botão correto.`;
+                // Não limpamos a seleção para permitir nova tentativa (mas mantemos destaque)
+                // Apenas realça que deve clicar no botão certo.
+                highlightActiveButtonForChar(selectedChar);
             }
         }
-    }
-    
-    // Renderiza a barra com os botões de símbolo (progresso)
-    function renderSymbolsBar() {
-        symbolsBar.innerHTML = "";
-        for (let sym of SYMBOLS_ORDER) {
-            const total = symbolTotals[sym];
-            const found = symbolFound[sym];
-            const isCompleted = (found === total && total > 0);
-            const isActive = (activeSymbol === sym && !gameCompleted && gameActive);
-            
-            const btnDiv = document.createElement("div");
-            btnDiv.className = "sym-btn";
-            if (isCompleted) btnDiv.classList.add("completed");
-            if (isActive) btnDiv.classList.add("active-symbol");
-            
-            const symSpan = document.createElement("div");
-            symSpan.className = "sym-symbol";
-            symSpan.textContent = sym;
-            
-            const progSpan = document.createElement("div");
-            progSpan.className = "sym-progress";
-            progSpan.textContent = `${found}/${total}`;
-            
-            btnDiv.appendChild(symSpan);
-            btnDiv.appendChild(progSpan);
-            
-            // Adiciona um pequeno tooltip/indicador
-            if (isActive) {
-                btnDiv.title = "🔓 Símbolo ativo – clique no desenho para revelar";
-            } else if (isCompleted) {
-                btnDiv.title = "✅ Símbolo completo!";
+        
+        function checkVictory() {
+            const allCompleted = SYMBOLS.every(s => symbolFound[s] === symbolTotals[s]);
+            if (allCompleted && !victoryFlag && gameActive) {
+                victoryFlag = true;
+                gameActive = false;
+                statusMsg.innerHTML = "<span style='color:#b5f0b0; font-weight:500;'>✨ MOSAICO COMPLETO! PARABÉNS! ✨</span>";
+                // também desabilita visualmente cliques futuros
+            }
+        }
+        
+        // Renderiza botões e atualiza progresso
+        function renderControls() {
+            controlsBar.innerHTML = '';
+            for (let sym of SYMBOLS) {
+                const total = symbolTotals[sym] || 0;
+                const found = symbolFound[sym] || 0;
+                const isCompleted = (found === total && total > 0);
+                
+                const btn = document.createElement('button');
+                btn.className = 'confirm-btn';
+                if (isCompleted) btn.classList.add('completed');
+                btn.id = `btn-${sym}`;
+                btn.innerHTML = `${sym}<span class="btn-progress">${found}/${total}</span>`;
+                
+                btn.addEventListener('click', (function(s) {
+                    return function() { confirmSymbol(s); };
+                })(sym));
+                
+                controlsBar.appendChild(btn);
+            }
+            // se houver vitória, não altera mais nada
+            if (victoryFlag) {
+                document.querySelectorAll('.confirm-btn').forEach(btn => btn.style.pointerEvents = 'none');
             } else {
-                btnDiv.title = `🔒 Ainda bloqueado. Complete o símbolo atual (${activeSymbol}) primeiro.`;
+                document.querySelectorAll('.confirm-btn').forEach(btn => btn.style.pointerEvents = 'auto');
             }
-            symbolsBar.appendChild(btnDiv);
         }
-    }
-    
-    function updateStatusMessage() {
-        if (gameCompleted) return;
-        const totalActive = symbolTotals[activeSymbol];
-        const foundActive = symbolFound[activeSymbol];
-        statusMsgSpan.innerHTML = `🎯 Símbolo ATIVO: "${activeSymbol}"  |  Progresso: ${foundActive}/${totalActive}  |  Clique nas células com esse símbolo!`;
-    }
-    
-    // Efeito de confete na vitória
-    function launchConfetti() {
-        const existingCanvas = document.querySelector('.confetti-canvas');
-        if (existingCanvas) existingCanvas.remove();
-        const container = document.createElement('div');
-        container.className = 'confetti-canvas';
-        document.body.appendChild(container);
-        const chars = SYMBOLS_ORDER;
-        const num = 180;
-        for (let i = 0; i < num; i++) {
-            const symbol = chars[Math.floor(Math.random() * chars.length)];
-            const el = document.createElement('div');
-            el.className = 'symbol-confetti';
-            el.textContent = symbol;
-            const size = 0.9 + Math.random() * 1.6;
-            const left = Math.random() * 100;
-            const duration = 2 + Math.random() * 2.8;
-            const delay = Math.random() * 0.6;
-            el.style.fontSize = `${size}rem`;
-            el.style.left = `${left}%`;
-            el.style.animationDuration = `${duration}s`;
-            el.style.animationDelay = `${delay}s`;
-            el.style.position = 'absolute';
-            el.style.top = '-12vh';
-            const hue = Math.random() * 360;
-            el.style.color = `hsl(${hue}, 85%, 65%)`;
-            container.appendChild(el);
-            setTimeout(() => { if(el.parentNode) el.remove(); }, (duration+delay)*1000);
+        
+        // Reinício completo do jogo (novo mosaico aleatório)
+        function restartGame() {
+            if (window._revealedCells) window._revealedCells.clear();
+            else window._revealedCells = new Set();
+            selectedCell = null;
+            gameActive = true;
+            victoryFlag = false;
+            initGame();
         }
-        setTimeout(() => { if(container.parentNode) container.remove(); }, 5500);
-    }
-    
-    // Botão novo jogo: gera novo desenho aleatório
-    newGameBtn.addEventListener("click", () => {
-        initNewGame();
-    });
-    
-    // Inicializa o jogo pela primeira vez
-    initNewGame();
+        
+        // Evento do botão novo jogo
+        newGameBtn.addEventListener('click', () => {
+            restartGame();
+        });
+        
+        // Inicialização pela primeira vez
+        window._revealedCells = new Set();
+        initGame();
+    })();
 </script>
 </body>
 </html>
