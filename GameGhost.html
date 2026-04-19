@@ -2,870 +2,594 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Tetris 3D Holográfico - Refatorado</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Tetris 3D Holográfico - Phaser 3</title>
     <style>
-        * {
+        body {
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        body {
-            width: 100%;
-            height: 100vh;
-            overflow: hidden;
-            font-family: 'Courier New', monospace;
-            background-color: #000000;
-            touch-action: none; /* Previne scroll durante toque */
-        }
-
-        canvas {
-            display: block;
-            width: 100%;
-            height: 100%;
-        }
-
-        /* HUD */
-        .hud {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            pointer-events: none;
-            z-index: 100;
-        }
-
-        .hud-top {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            right: 20px;
+            background: linear-gradient(145deg, #0a0f1e 0%, #0c1222 100%);
             display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
-
-        .panel {
-            background: rgba(0, 0, 0, 0.75);
-            backdrop-filter: blur(10px);
-            padding: 12px 18px;
-            border-radius: 12px;
-            border: 1px solid rgba(0, 255, 255, 0.4);
-            color: #00ffff;
-            font-weight: bold;
-            letter-spacing: 1px;
-            font-size: 14px;
-            text-align: center;
-            min-width: 100px;
-        }
-
-        .panel span {
-            color: #ffffff;
-            font-size: 20px;
-            display: block;
-            margin-top: 5px;
-        }
-
-        .next-piece {
-            background: rgba(0, 0, 0, 0.75);
-            backdrop-filter: blur(10px);
-            padding: 12px 18px;
-            border-radius: 12px;
-            border: 1px solid rgba(0, 255, 255, 0.4);
-            color: #00ffff;
-            text-align: center;
-        }
-
-        .next-canvas {
-            width: 80px;
-            height: 80px;
-            display: block;
-            margin: 8px auto 0;
-            background: rgba(0, 0, 0, 0.5);
-            border-radius: 8px;
-        }
-
-        .hold-panel {
-            background: rgba(0, 0, 0, 0.75);
-            backdrop-filter: blur(10px);
-            padding: 12px 18px;
-            border-radius: 12px;
-            border: 1px solid rgba(0, 255, 255, 0.4);
-            color: #00ffff;
-            text-align: center;
-        }
-
-        .hold-canvas {
-            width: 80px;
-            height: 80px;
-            display: block;
-            margin: 8px auto 0;
-            background: rgba(0, 0, 0, 0.5);
-            border-radius: 8px;
-        }
-
-        .hud-bottom {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
-            right: 20px;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(10px);
-            padding: 15px 20px;
-            border-radius: 12px;
-            border: 1px solid rgba(0, 255, 255, 0.3);
-            text-align: center;
-            color: #00ffff;
-            font-size: 12px;
-            letter-spacing: 1px;
-        }
-
-        .controls {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-top: 10px;
-        }
-
-        .control-btn {
-            background: rgba(0, 150, 255, 0.3);
-            border: 1px solid #00ffff;
-            color: #00ffff;
-            padding: 12px 20px;
-            border-radius: 40px;
-            font-size: 14px;
-            font-weight: bold;
-            cursor: pointer;
-            pointer-events: auto;
-            transition: all 0.2s;
-            font-family: monospace;
-            min-width: 80px;
-        }
-
-        .control-btn:active {
-            background: rgba(0, 255, 255, 0.6);
-            transform: scale(0.96);
-            box-shadow: 0 0 15px rgba(0, 255, 255, 0.6);
-        }
-
-        .game-over {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.95);
-            border: 2px solid #ff3366;
-            padding: 30px;
-            border-radius: 20px;
-            text-align: center;
-            color: #ff3366;
-            font-size: 24px;
-            z-index: 200;
-            display: none;
-            pointer-events: auto;
-            backdrop-filter: blur(20px);
-            min-width: 280px;
-        }
-
-        .game-over.show {
-            display: block;
-        }
-
-        .game-over h1 {
-            font-size: 36px;
-            margin-bottom: 20px;
-            text-shadow: 0 0 10px #ff3366;
-        }
-
-        .game-over p {
-            font-size: 18px;
-            margin: 10px 0;
-            color: #00ffff;
-        }
-
-        .game-over button {
-            margin-top: 20px;
-            padding: 12px 24px;
-            background: #ff3366;
-            color: white;
-            border: none;
-            border-radius: 40px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
-        .game-over button:active {
-            background: #cc0044;
-            transform: scale(0.96);
-        }
-
-        .pause-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(8px);
-            z-index: 150;
-            display: none;
             justify-content: center;
             align-items: center;
-            pointer-events: none;
+            min-height: 100vh;
+            font-family: 'Courier New', 'Segoe UI', monospace;
         }
-
-        .pause-overlay.show {
+        .game-container {
+            box-shadow: 0 20px 35px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1);
+            border-radius: 24px;
+            padding: 20px;
+            background: rgba(10, 20, 30, 0.6);
+            backdrop-filter: blur(4px);
+        }
+        canvas {
+            display: block;
+            margin: 0 auto;
+            border-radius: 16px;
+            box-shadow: 0 0 0 2px #00ffff33, 0 0 0 5px #0a0f1e;
+        }
+        .info-panel {
+            text-align: center;
+            margin-top: 18px;
+            color: #0ff;
+            text-shadow: 0 0 5px #0ff, 0 0 2px #0aa;
+            font-weight: bold;
+            letter-spacing: 2px;
             display: flex;
+            justify-content: center;
+            gap: 2rem;
         }
-
-        .pause-text {
-            font-size: 48px;
-            color: #00ffff;
-            text-shadow: 0 0 20px cyan;
-            letter-spacing: 8px;
-            background: rgba(0,0,0,0.6);
-            padding: 20px 40px;
-            border-radius: 20px;
-            border: 2px solid cyan;
+        .info-panel div {
+            background: #000000aa;
+            backdrop-filter: blur(8px);
+            padding: 6px 18px;
+            border-radius: 60px;
+            border-left: 2px solid cyan;
+            border-right: 2px solid cyan;
         }
-
-        .scanline {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 50;
-            background: repeating-linear-gradient(0deg, rgba(0,255,255,0.02) 0px, rgba(0,255,255,0.02) 2px, transparent 2px, transparent 6px);
+        button {
+            background: #0a1a2a;
+            border: 1px solid cyan;
+            color: cyan;
+            font-family: monospace;
+            font-weight: bold;
+            font-size: 1.2rem;
+            padding: 6px 24px;
+            border-radius: 60px;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 0 6px cyan;
         }
-
-        @media (max-width: 700px) {
-            .panel { padding: 8px 12px; min-width: 70px; font-size: 10px; }
-            .panel span { font-size: 16px; }
-            .control-btn { padding: 10px 16px; font-size: 12px; min-width: 65px; }
-            .next-canvas, .hold-canvas { width: 60px; height: 60px; }
+        button:hover {
+            background: cyan;
+            color: #0a0f1e;
+            box-shadow: 0 0 18px cyan;
+            transform: scale(1.02);
+        }
+        @media (max-width: 550px) {
+            .info-panel { gap: 1rem; font-size: 0.9rem; }
+            button { font-size: 1rem; padding: 4px 18px; }
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.86.0/dist/phaser.min.js"></script>
 </head>
 <body>
-    <div class="hud">
-        <div class="hud-top">
-            <div class="panel">SCORE<span id="score">0</span></div>
-            <div class="panel">LEVEL<span id="level">1</span></div>
-            <div class="panel">LINES<span id="lines">0</span></div>
-            <div class="panel">HIGH SCORE<span id="highScore">0</span></div>
-            <div class="hold-panel">HOLD<div><canvas id="holdCanvas" class="hold-canvas" width="80" height="80"></canvas></div></div>
-            <div class="next-piece">NEXT<div><canvas id="nextCanvas" class="next-canvas" width="80" height="80"></canvas></div></div>
+<div>
+    <div class="game-container">
+        <div id="game-root"></div>
+        <div class="info-panel">
+            <div>🔹 SCORE: <span id="score-val">0</span></div>
+            <div>📊 LEVEL: <span id="level-val">1</span></div>
+            <div>📏 LINES: <span id="lines-val">0</span></div>
         </div>
-
-        <div class="hud-bottom">
-            <div>TETRIS 3D HOLOGRÁFICO | ← → mover | ↑ girar | Espaço: queda</div>
-            <div class="controls">
-                <button class="control-btn" id="rotateBtn">⟲ GIRAR</button>
-                <button class="control-btn" id="dropBtn">⬇ CAIR</button>
-                <button class="control-btn" id="holdBtn">⤓ HOLD</button>
-                <button class="control-btn" id="pauseBtn">⏸ PAUSA</button>
-            </div>
+        <div style="text-align: center; margin-top: 18px;">
+            <button id="reset-btn">🌀 REINICIAR JOGO</button>
         </div>
-
-        <div class="game-over" id="gameOver">
-            <h1>GAME OVER</h1>
-            <p>SCORE: <span id="finalScore">0</span></p>
-            <p>LEVEL: <span id="finalLevel">1</span></p>
-            <p>LINES: <span id="finalLines">0</span></p>
-            <button id="restartBtn">JOGAR NOVAMENTE</button>
-        </div>
-        <div class="pause-overlay" id="pauseOverlay">
-            <div class="pause-text">PAUSADO</div>
+        <div style="text-align: center; margin-top: 12px; font-size: 0.7rem; color: #6cf; opacity: 0.7;">
+            ← → mover | ↑ girar | Espaço: queda instantânea
         </div>
     </div>
-    <div class="scanline"></div>
+</div>
 
-    <!-- Carregamento síncrono do Three.js e complementos para evitar problemas -->
-    <script type="importmap">
-        {
-            "imports": {
-                "three": "https://unpkg.com/three@0.128.0/build/three.module.js",
-                "three/addons/": "https://unpkg.com/three@0.128.0/examples/jsm/"
+<script>
+    (function(){
+        // ======================== TETRIS CORE (LÓGICA CLÁSSICA) ========================
+        const COLS = 10;
+        const ROWS = 20;
+        const BLOCK_SIZE = 30;      // tamanho do bloco em px
+        // Matriz do grid de jogo (0 = vazio, >0 = preenchido)
+        let gameGrid = Array(ROWS).fill().map(() => Array(COLS).fill(0));
+        
+        // Peças Tetromino (formato matriz 4x4)
+        const TETROMINOS = [
+            {   // I
+                shape: [
+                    [0,0,0,0],
+                    [1,1,1,1],
+                    [0,0,0,0],
+                    [0,0,0,0]
+                ],
+                color: 0x00f0f0  // ciano holográfico
+            },
+            {   // O
+                shape: [
+                    [0,0,0,0],
+                    [0,1,1,0],
+                    [0,1,1,0],
+                    [0,0,0,0]
+                ],
+                color: 0xf0e040  // amarelo neon
+            },
+            {   // T
+                shape: [
+                    [0,0,0,0],
+                    [0,1,0,0],
+                    [1,1,1,0],
+                    [0,0,0,0]
+                ],
+                color: 0xd060f0  // roxo holográfico
+            },
+            {   // S
+                shape: [
+                    [0,0,0,0],
+                    [0,1,1,0],
+                    [1,1,0,0],
+                    [0,0,0,0]
+                ],
+                color: 0x40f040  // verde neon
+            },
+            {   // Z
+                shape: [
+                    [0,0,0,0],
+                    [1,1,0,0],
+                    [0,1,1,0],
+                    [0,0,0,0]
+                ],
+                color: 0xf06060  // vermelho
+            },
+            {   // L
+                shape: [
+                    [0,0,0,0],
+                    [1,0,0,0],
+                    [1,1,1,0],
+                    [0,0,0,0]
+                ],
+                color: 0xf0a030  // laranja
+            },
+            {   // J
+                shape: [
+                    [0,0,0,0],
+                    [0,0,1,0],
+                    [1,1,1,0],
+                    [0,0,0,0]
+                ],
+                color: 0x4080f0  // azul elétrico
             }
-        }
-    </script>
-
-    <script type="module">
-        import * as THREE from 'three';
-        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-        import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
-        import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
-        import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
-
-        // ========== CONFIGURAÇÕES DO JOGO ==========
-        const GRID_WIDTH = 10;
-        const GRID_HEIGHT = 20;
-        const BLOCK_SIZE = 0.32;
+        ];
         
-        // Definição das peças (formato matriz e cor)
-        const TETROMINOS = {
-            I: { shape: [[1,1,1,1]], color: 0x00ffff },
-            O: { shape: [[1,1],[1,1]], color: 0xffff00 },
-            T: { shape: [[0,1,0],[1,1,1]], color: 0xff44ff },
-            S: { shape: [[0,1,1],[1,1,0]], color: 0x44ff44 },
-            Z: { shape: [[1,1,0],[0,1,1]], color: 0xff4444 },
-            J: { shape: [[1,0,0],[1,1,1]], color: 0x4488ff },
-            L: { shape: [[0,0,1],[1,1,1]], color: 0xffaa44 }
-        };
-        const PIECES_LIST = Object.keys(TETROMINOS);
-        
-        // Sistema de pontuação padrão
-        const LINE_SCORES = [0, 40, 100, 300, 1200];
-        
-        // ========== ESTADO GLOBAL ==========
-        let scene, camera, renderer, controls, effectComposer, boardGroup;
-        let gameBoard = [];          // matriz 20x10, guarda cor (número) ou 0
-        let currentPiece = null;
+        let currentPiece = null;      // peça ativa { shape, color, x, y }
         let nextPiece = null;
-        let holdPiece = null;
-        let canHold = true;
-        let score = 0, level = 1, lines = 0;
-        let gameRunning = true, gamePaused = false;
-        let gameSpeed = 1000;
-        let lastDropTime = 0;
-        let animationId = null;
+        let score = 0;
+        let totalLines = 0;
+        let level = 1;
+        let gameOver = false;
         
-        // Referências visuais: para não recriar todos os blocos, vamos manter um array 2D de meshes
-        let blockMeshes = Array(GRID_HEIGHT).fill().map(() => Array(GRID_WIDTH).fill(null));
-        let currentPieceMeshes = []; // armazena os meshes da peça atual
-        
-        // High score
-        let highScore = localStorage.getItem('tetris3d_highscore') ? parseInt(localStorage.getItem('tetris3d_highscore')) : 0;
-        
-        // Canvas 2D para next/hold
-        const nextCanvas = document.getElementById('nextCanvas');
-        const nextCtx = nextCanvas.getContext('2d');
-        const holdCanvas = document.getElementById('holdCanvas');
-        const holdCtx = holdCanvas.getContext('2d');
-        
-        // ========== FUNÇÕES AUXILIARES ==========
-        function updateHighScoreUI() {
-            document.getElementById('highScore').innerText = highScore;
-        }
-        
-        function saveHighScore() {
-            if (score > highScore) {
-                highScore = score;
-                localStorage.setItem('tetris3d_highscore', highScore);
-                updateHighScoreUI();
-            }
-        }
-        
-        // Desenhar peça pequena no canvas (para next/hold)
-        function drawPieceOnCanvas(ctx, piece, size = 80) {
-            ctx.clearRect(0, 0, size, size);
-            ctx.fillStyle = '#0a0a2a';
-            ctx.fillRect(0, 0, size, size);
-            if (!piece) return;
-            const shape = piece.shape;
-            const color = piece.color;
-            const blockW = size / 4;
-            const blockH = size / 4;
-            const offsetX = (size - (shape[0].length * blockW)) / 2;
-            const offsetY = (size - (shape.length * blockH)) / 2;
-            for (let y = 0; y < shape.length; y++) {
-                for (let x = 0; x < shape[0].length; x++) {
-                    if (shape[y][x]) {
-                        ctx.fillStyle = '#' + new THREE.Color(color).getHexString();
-                        ctx.shadowBlur = 0;
-                        ctx.fillRect(offsetX + x * blockW, offsetY + y * blockH, blockW - 1, blockH - 1);
-                        ctx.fillStyle = 'rgba(255,255,255,0.3)';
-                        ctx.fillRect(offsetX + x * blockW, offsetY + y * blockH, blockW - 2, blockH - 2);
-                    }
-                }
-            }
-        }
-        
-        function updateNextHoldDisplay() {
-            drawPieceOnCanvas(nextCtx, nextPiece);
-            if (holdPiece) drawPieceOnCanvas(holdCtx, holdPiece);
-            else {
-                holdCtx.clearRect(0, 0, 80, 80);
-                holdCtx.fillStyle = '#0a0a2a';
-                holdCtx.fillRect(0, 0, 80, 80);
-                holdCtx.fillStyle = '#00ffff66';
-                holdCtx.font = "12px monospace";
-                holdCtx.fillText("HOLD", 20, 45);
-            }
-        }
-        
-        // Gerar peça aleatória
-        function getRandomPiece() {
-            const key = PIECES_LIST[Math.floor(Math.random() * PIECES_LIST.length)];
-            const data = TETROMINOS[key];
+        // Funções auxiliares do Tetris
+        function randomPiece() {
+            const idx = Math.floor(Math.random() * TETROMINOS.length);
+            const piece = TETROMINOS[idx];
             return {
-                shape: data.shape.map(row => [...row]),
-                color: data.color,
-                x: Math.floor(GRID_WIDTH / 2) - Math.ceil(data.shape[0].length / 2),
-                y: 0,
-                rotation: 0
+                shape: piece.shape.map(row => [...row]),
+                color: piece.color,
+                x: Math.floor((COLS - piece.shape[0].length) / 2),
+                y: 0
             };
         }
         
-        // Rotação de matriz
-        function rotateMatrixClockwise(matrix) {
-            const n = matrix.length, m = matrix[0].length;
-            const rotated = Array(m).fill().map(() => Array(n).fill(0));
+        function rotateShape(shape) {
+            const n = shape.length;
+            const rotated = Array(n).fill().map(() => Array(n).fill(0));
             for (let i = 0; i < n; i++)
-                for (let j = 0; j < m; j++)
-                    rotated[j][n - 1 - i] = matrix[i][j];
+                for (let j = 0; j < n; j++)
+                    rotated[j][n - 1 - i] = shape[i][j];
             return rotated;
         }
         
-        // Verificar colisão
-        function isColliding(piece) {
-            for (let y = 0; y < piece.shape.length; y++) {
-                for (let x = 0; x < piece.shape[y].length; x++) {
-                    if (piece.shape[y][x]) {
-                        const boardX = piece.x + x;
-                        const boardY = piece.y + y;
-                        if (boardX < 0 || boardX >= GRID_WIDTH || boardY >= GRID_HEIGHT) return true;
-                        if (boardY >= 0 && gameBoard[boardY][boardX] !== 0) return true;
+        function collides(shape, offsetX, offsetY) {
+            for (let row = 0; row < shape.length; row++) {
+                for (let col = 0; col < shape[0].length; col++) {
+                    if (shape[row][col] !== 0) {
+                        const boardX = offsetX + col;
+                        const boardY = offsetY + row;
+                        if (boardX < 0 || boardX >= COLS || boardY >= ROWS || boardY < 0)
+                            return true;
+                        if (boardY >= 0 && gameGrid[boardY][boardX] !== 0)
+                            return true;
                     }
                 }
             }
             return false;
         }
         
-        // Tentar mover
-        function tryMove(dx, dy) {
-            if (!currentPiece || !gameRunning || gamePaused) return false;
-            currentPiece.x += dx;
-            currentPiece.y += dy;
-            if (isColliding(currentPiece)) {
-                currentPiece.x -= dx;
-                currentPiece.y -= dy;
-                return false;
-            }
-            updateVisuals();
-            return true;
-        }
-        
-        // Tentar rotacionar com wall kicks simples (tenta deslocar lateralmente)
-        function tryRotate() {
-            if (!currentPiece || !gameRunning || gamePaused) return;
-            const originalShape = currentPiece.shape;
-            const rotated = rotateMatrixClockwise(originalShape);
-            const oldX = currentPiece.x;
-            const oldShape = currentPiece.shape;
-            currentPiece.shape = rotated;
-            // Ajuste de posição para não sair da grade
-            if (currentPiece.x + rotated[0].length > GRID_WIDTH) currentPiece.x = GRID_WIDTH - rotated[0].length;
-            if (currentPiece.x < 0) currentPiece.x = 0;
-            
-            if (!isColliding(currentPiece)) {
-                updateVisuals();
-                return;
-            }
-            // Tenta deslocar esquerda/direita
-            for (let offset of [-1, 1, -2, 2]) {
-                currentPiece.x = oldX + offset;
-                if (currentPiece.x + rotated[0].length > GRID_WIDTH) currentPiece.x = GRID_WIDTH - rotated[0].length;
-                if (currentPiece.x < 0) currentPiece.x = 0;
-                if (!isColliding(currentPiece)) {
-                    updateVisuals();
-                    return;
-                }
-            }
-            // Reverte
-            currentPiece.shape = oldShape;
-            currentPiece.x = oldX;
-        }
-        
-        // Hard drop
-        function hardDrop() {
-            if (!currentPiece || !gameRunning || gamePaused) return;
-            while (!isColliding(currentPiece)) currentPiece.y++;
-            currentPiece.y--;
-            lockPiece();
-        }
-        
-        // Travar peça no tabuleiro
-        function lockPiece() {
-            for (let y = 0; y < currentPiece.shape.length; y++) {
-                for (let x = 0; x < currentPiece.shape[y].length; x++) {
-                    if (currentPiece.shape[y][x]) {
-                        const boardX = currentPiece.x + x;
-                        const boardY = currentPiece.y + y;
-                        if (boardY >= 0 && boardY < GRID_HEIGHT) {
-                            gameBoard[boardY][boardX] = currentPiece.color;
-                            // Atualizar mesh existente ou criar nova
-                            createBlockMesh(boardX, boardY, currentPiece.color);
+        function mergePiece() {
+            for (let row = 0; row < currentPiece.shape.length; row++) {
+                for (let col = 0; col < currentPiece.shape[0].length; col++) {
+                    if (currentPiece.shape[row][col] !== 0) {
+                        const boardX = currentPiece.x + col;
+                        const boardY = currentPiece.y + row;
+                        if (boardY >= 0 && boardY < ROWS && boardX >= 0 && boardX < COLS) {
+                            gameGrid[boardY][boardX] = currentPiece.color;
                         }
                     }
                 }
             }
-            clearLinesAndUpdate();
-            spawnNewPieceFromNext();
-            updateVisuals();
-        }
-        
-        // Limpar linhas e atualizar pontuação
-        function clearLinesAndUpdate() {
+            // verificar linhas completas
             let linesCleared = 0;
-            for (let y = GRID_HEIGHT-1; y >= 0; ) {
-                if (gameBoard[y].every(cell => cell !== 0)) {
-                    // Remover linha
-                    for (let row = y; row > 0; row--) gameBoard[row] = [...gameBoard[row-1]];
-                    gameBoard[0] = new Array(GRID_WIDTH).fill(0);
+            for (let row = ROWS-1; row >= 0; ) {
+                let full = true;
+                for (let col = 0; col < COLS; col++) {
+                    if (gameGrid[row][col] === 0) {
+                        full = false;
+                        break;
+                    }
+                }
+                if (full) {
+                    // remove linha
+                    for (let r = row; r > 0; r--) {
+                        gameGrid[r] = [...gameGrid[r-1]];
+                    }
+                    gameGrid[0] = Array(COLS).fill(0);
                     linesCleared++;
-                    // Reconstruir todas as meshes a partir da linha afetada (simples: recriar tudo? Mas faremos atualização inteligente)
-                    // Para performance, vamos reconstruir apenas as meshes a partir da linha removida
-                    rebuildBoardMeshesFrom(y);
-                    // Não incrementa y pois a linha seguinte desceu
+                    // continua na mesma linha (pois a linha de cima desceu)
                 } else {
-                    y--;
+                    row--;
                 }
             }
             
             if (linesCleared > 0) {
-                const points = LINE_SCORES[linesCleared] * level;
-                score += points;
-                lines += linesCleared;
-                level = Math.floor(lines / 10) + 1;
-                gameSpeed = Math.max(180, 1000 - (level-1) * 60);
-                document.getElementById('score').innerText = score;
-                document.getElementById('level').innerText = level;
-                document.getElementById('lines').innerText = lines;
-                saveHighScore();
-                updateHighScoreUI();
-            }
-        }
-        
-        // Reconstruir meshes a partir de certa linha (para otimizar)
-        function rebuildBoardMeshesFrom(startY) {
-            for (let y = startY; y < GRID_HEIGHT; y++) {
-                for (let x = 0; x < GRID_WIDTH; x++) {
-                    if (blockMeshes[y][x]) {
-                        boardGroup.remove(blockMeshes[y][x]);
-                        if (blockMeshes[y][x].geometry) blockMeshes[y][x].geometry.dispose();
-                        if (blockMeshes[y][x].material) blockMeshes[y][x].material.dispose();
-                        blockMeshes[y][x] = null;
-                    }
-                    if (gameBoard[y][x] !== 0) {
-                        createBlockMesh(x, y, gameBoard[y][x]);
-                    }
+                // pontuação clássica
+                const points = [0, 40, 100, 300, 1200];
+                const addScore = points[Math.min(linesCleared,4)] * level;
+                score += addScore;
+                totalLines += linesCleared;
+                // recalcular level (cada 10 linhas)
+                const newLevel = 1 + Math.floor(totalLines / 10);
+                if (newLevel > level) {
+                    level = newLevel;
                 }
+                updateUI();
             }
+            
+            spawnNewPiece();
+            updateUI();
         }
         
-        // Criar ou atualizar mesh de um bloco
-        function createBlockMesh(x, y, color) {
-            if (blockMeshes[y] && blockMeshes[y][x]) {
-                // Atualizar material
-                blockMeshes[y][x].material.color.setHex(color);
-                return;
-            }
-            const geometry = new THREE.BoxGeometry(BLOCK_SIZE * 0.92, BLOCK_SIZE * 0.92, BLOCK_SIZE * 0.92);
-            const material = new THREE.MeshStandardMaterial({
-                color: color,
-                emissive: color,
-                emissiveIntensity: 0.35,
-                metalness: 0.85,
-                roughness: 0.2
-            });
-            const mesh = new THREE.Mesh(geometry, material);
-            mesh.position.set(
-                x * BLOCK_SIZE + BLOCK_SIZE/2 - (GRID_WIDTH * BLOCK_SIZE)/2,
-                GRID_HEIGHT * BLOCK_SIZE/2 - (y * BLOCK_SIZE + BLOCK_SIZE/2),
-                0
-            );
-            mesh.castShadow = true;
-            mesh.receiveShadow = true;
-            boardGroup.add(mesh);
-            if (!blockMeshes[y]) blockMeshes[y] = [];
-            blockMeshes[y][x] = mesh;
-        }
-        
-        // Atualizar visualização da peça atual (remove e recria os meshes dela)
-        function updateCurrentPieceVisuals() {
-            // Remove meshes antigos da peça
-            for (let m of currentPieceMeshes) {
-                if (m && m.parent) boardGroup.remove(m);
-                if (m && m.geometry) m.geometry.dispose();
-                if (m && m.material) m.material.dispose();
-            }
-            currentPieceMeshes = [];
-            if (!currentPiece) return;
-            for (let y = 0; y < currentPiece.shape.length; y++) {
-                for (let x = 0; x < currentPiece.shape[y].length; x++) {
-                    if (currentPiece.shape[y][x]) {
-                        const boardX = currentPiece.x + x;
-                        const boardY = currentPiece.y + y;
-                        if (boardY >= 0 && boardY < GRID_HEIGHT) {
-                            const geometry = new THREE.BoxGeometry(BLOCK_SIZE * 0.92, BLOCK_SIZE * 0.92, BLOCK_SIZE * 0.92);
-                            const material = new THREE.MeshStandardMaterial({
-                                color: currentPiece.color,
-                                emissive: currentPiece.color,
-                                emissiveIntensity: 0.9,
-                                metalness: 0.9,
-                                roughness: 0.1
-                            });
-                            const mesh = new THREE.Mesh(geometry, material);
-                            mesh.position.set(
-                                boardX * BLOCK_SIZE + BLOCK_SIZE/2 - (GRID_WIDTH * BLOCK_SIZE)/2,
-                                GRID_HEIGHT * BLOCK_SIZE/2 - (boardY * BLOCK_SIZE + BLOCK_SIZE/2),
-                                0.05
-                            );
-                            mesh.castShadow = true;
-                            boardGroup.add(mesh);
-                            currentPieceMeshes.push(mesh);
-                        }
-                    }
-                }
-            }
-        }
-        
-        function updateVisuals() {
-            updateCurrentPieceVisuals();
-        }
-        
-        // Spawn de nova peça (usa nextPiece)
-        function spawnNewPieceFromNext() {
+        function spawnNewPiece() {
             if (!nextPiece) {
-                nextPiece = getRandomPiece();
+                nextPiece = randomPiece();
             }
             currentPiece = {
                 shape: nextPiece.shape.map(row => [...row]),
                 color: nextPiece.color,
-                x: Math.floor(GRID_WIDTH / 2) - Math.ceil(nextPiece.shape[0].length / 2),
+                x: Math.floor((COLS - nextPiece.shape[0].length) / 2),
                 y: 0
             };
-            nextPiece = getRandomPiece();
-            updateNextHoldDisplay();
-            canHold = true;
+            nextPiece = randomPiece();
             
-            if (isColliding(currentPiece)) {
-                endGame();
-            }
-            updateVisuals();
-        }
-        
-        // Hold piece
-        function holdCurrent() {
-            if (!canHold || !gameRunning || gamePaused) return;
-            if (holdPiece === null) {
-                holdPiece = {
-                    shape: currentPiece.shape.map(row => [...row]),
-                    color: currentPiece.color
-                };
-                spawnNewPieceFromNext();
+            // game over? colisão imediata ao spawn
+            if (collides(currentPiece.shape, currentPiece.x, currentPiece.y)) {
+                gameOver = true;
+                currentPiece = null;
             } else {
-                const temp = {
-                    shape: currentPiece.shape.map(row => [...row]),
-                    color: currentPiece.color
-                };
-                currentPiece = {
-                    shape: holdPiece.shape.map(row => [...row]),
-                    color: holdPiece.color,
-                    x: Math.floor(GRID_WIDTH / 2) - Math.ceil(holdPiece.shape[0].length / 2),
-                    y: 0
-                };
-                if (isColliding(currentPiece)) {
-                    endGame();
-                } else {
-                    holdPiece = temp;
-                }
+                gameOver = false;
             }
-            canHold = false;
-            updateNextHoldDisplay();
-            updateVisuals();
+            updateUI();
         }
         
-        // Drop automático a cada gameSpeed
-        function autoDrop() {
-            if (!gameRunning || gamePaused) return;
-            if (!tryMove(0, 1)) {
-                lockPiece();
+        function movePiece(dx, dy) {
+            if (!currentPiece || gameOver) return false;
+            if (!collides(currentPiece.shape, currentPiece.x + dx, currentPiece.y + dy)) {
+                currentPiece.x += dx;
+                currentPiece.y += dy;
+                return true;
+            } else if (dy === 1) { 
+                // se tentou mover pra baixo e colidiu: fixa a peça
+                mergePiece();
+                return false;
             }
+            return false;
         }
         
-        function endGame() {
-            gameRunning = false;
-            document.getElementById('finalScore').innerText = score;
-            document.getElementById('finalLevel').innerText = level;
-            document.getElementById('finalLines').innerText = lines;
-            document.getElementById('gameOver').classList.add('show');
-        }
-        
-        function resetGame() {
-            // Limpar tabuleiro
-            for (let y = 0; y < GRID_HEIGHT; y++) {
-                gameBoard[y] = new Array(GRID_WIDTH).fill(0);
-                for (let x = 0; x < GRID_WIDTH; x++) {
-                    if (blockMeshes[y] && blockMeshes[y][x]) {
-                        boardGroup.remove(blockMeshes[y][x]);
-                        if (blockMeshes[y][x].geometry) blockMeshes[y][x].geometry.dispose();
-                        if (blockMeshes[y][x].material) blockMeshes[y][x].material.dispose();
-                        blockMeshes[y][x] = null;
+        function rotatePiece() {
+            if (!currentPiece || gameOver) return;
+            const rotatedShape = rotateShape(currentPiece.shape);
+            if (!collides(rotatedShape, currentPiece.x, currentPiece.y)) {
+                currentPiece.shape = rotatedShape;
+            } else {
+                // tentativa de "wall kick" simples: deslocar lateral
+                for (let offset of [-1, 1, -2, 2]) {
+                    if (!collides(rotatedShape, currentPiece.x + offset, currentPiece.y)) {
+                        currentPiece.shape = rotatedShape;
+                        currentPiece.x += offset;
+                        break;
                     }
                 }
             }
-            score = 0; lines = 0; level = 1; gameSpeed = 1000;
-            holdPiece = null; canHold = true;
-            document.getElementById('score').innerText = '0';
-            document.getElementById('level').innerText = '1';
-            document.getElementById('lines').innerText = '0';
-            nextPiece = getRandomPiece();
-            spawnNewPieceFromNext();
-            gameRunning = true;
-            gamePaused = false;
-            document.getElementById('pauseOverlay').classList.remove('show');
-            document.getElementById('gameOver').classList.remove('show');
-            lastDropTime = performance.now();
-            updateHighScoreUI();
-            updateVisuals();
         }
         
-        // ========== THREE.JS SETUP ==========
-        function init3D() {
-            scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x010118);
-            scene.fog = new THREE.FogExp2(0x010118, 0.008);
-            camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.set(6, 8, 12);
-            camera.lookAt(0, 5, 0);
-            renderer = new THREE.WebGLRenderer({ antialias: true });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(window.devicePixelRatio);
-            renderer.shadowMap.enabled = true;
-            document.body.insertBefore(renderer.domElement, document.body.firstChild);
-            
-            const renderScene = new RenderPass(scene, camera);
-            const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.0, 0.4, 0.2);
-            bloomPass.threshold = 0.1;
-            bloomPass.strength = 0.8;
-            bloomPass.radius = 0.5;
-            effectComposer = new EffectComposer(renderer);
-            effectComposer.addPass(renderScene);
-            effectComposer.addPass(bloomPass);
-            
-            controls = new OrbitControls(camera, renderer.domElement);
-            controls.enableDamping = true;
-            controls.dampingFactor = 0.05;
-            controls.rotateSpeed = 0.8;
-            controls.zoomSpeed = 0.8;
-            controls.enablePan = false;
-            controls.target.set(0, 3.5, 0);
-            
-            // Luzes
-            const ambient = new THREE.AmbientLight(0x112244, 0.6);
-            scene.add(ambient);
-            const mainLight = new THREE.DirectionalLight(0xfff5e0, 1.2);
-            mainLight.position.set(5, 12, 6);
-            mainLight.castShadow = true;
-            scene.add(mainLight);
-            const fill = new THREE.PointLight(0x4488ff, 0.7);
-            fill.position.set(-4, 5, 5);
-            scene.add(fill);
-            const back = new THREE.PointLight(0xff66cc, 0.5);
-            back.position.set(0, 4, -7);
-            scene.add(back);
-            
-            // Grid de referência
-            const gridHelper = new THREE.GridHelper(8, 20, 0x00aaff, 0x335588);
-            gridHelper.position.y = -1;
-            scene.add(gridHelper);
-            
-            boardGroup = new THREE.Group();
-            scene.add(boardGroup);
-            
-            // Inicializar jogo
-            resetGame();
+        function hardDrop() {
+            if (!currentPiece || gameOver) return;
+            while (!collides(currentPiece.shape, currentPiece.x, currentPiece.y + 1)) {
+                currentPiece.y++;
+            }
+            mergePiece();  // fixa imediatamente
         }
         
-        // Loop de animação
-        let lastFrameTime = 0;
-        function animate(now) {
-            if (!gameRunning && !document.getElementById('gameOver').classList.contains('show')) return;
-            if (gameRunning && !gamePaused) {
-                if (now - lastDropTime >= gameSpeed) {
-                    autoDrop();
-                    lastDropTime = now;
+        function updateUI() {
+            const scoreSpan = document.getElementById('score-val');
+            const levelSpan = document.getElementById('level-val');
+            const linesSpan = document.getElementById('lines-val');
+            if (scoreSpan) scoreSpan.innerText = score;
+            if (levelSpan) levelSpan.innerText = level;
+            if (linesSpan) linesSpan.innerText = totalLines;
+        }
+        
+        function resetGame() {
+            gameGrid = Array(ROWS).fill().map(() => Array(COLS).fill(0));
+            score = 0;
+            totalLines = 0;
+            level = 1;
+            gameOver = false;
+            nextPiece = randomPiece();
+            spawnNewPiece();
+            updateUI();
+        }
+        
+        // ======================== CAMADA DE RENDERIZAÇÃO PHASER 3 ========================
+        class TetrisScene extends Phaser.Scene {
+            constructor() {
+                super({ key: 'TetrisScene' });
+                this.graphicsLayer = null;
+                this.blockGraphics = null;
+                this.cursors = null;
+                this.spaceKey = null;
+                this.lastTimestamp = 0;
+                this.dropInterval = 500; // ms
+            }
+            
+            preload() {
+                // sem assets externos, tudo desenhado via Graphics
+            }
+            
+            create() {
+                // Configura física arcade (não usamos colisões pesadas, mas útil para efeitos)
+                this.physics.world.setBounds(0, 0, COLS * BLOCK_SIZE, ROWS * BLOCK_SIZE);
+                
+                // Fundo escuro com efeito holográfico
+                this.cameras.main.setBackgroundColor(0x050a15);
+                // grade de fundo sutil
+                const bgGraphics = this.add.graphics();
+                bgGraphics.lineStyle(1, 0x00aaff, 0.2);
+                for (let i = 0; i <= COLS; i++) {
+                    bgGraphics.moveTo(i * BLOCK_SIZE, 0);
+                    bgGraphics.lineTo(i * BLOCK_SIZE, ROWS * BLOCK_SIZE);
+                    bgGraphics.strokePath();
+                }
+                for (let j = 0; j <= ROWS; j++) {
+                    bgGraphics.moveTo(0, j * BLOCK_SIZE);
+                    bgGraphics.lineTo(COLS * BLOCK_SIZE, j * BLOCK_SIZE);
+                    bgGraphics.strokePath();
+                }
+                
+                // Grupo de blocos estáticos (grid fixo)
+                this.staticBlocks = this.add.group();
+                this.previewGroup = this.add.group();
+                
+                // Teclado
+                this.cursors = this.input.keyboard.createCursorKeys();
+                this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+                
+                // Temporizador de queda automática
+                this.time.addEvent({
+                    delay: this.dropInterval,
+                    callback: this.autoDrop,
+                    callbackScope: this,
+                    loop: true
+                });
+                
+                // botão reset externo
+                const resetBtn = document.getElementById('reset-btn');
+                if (resetBtn) {
+                    resetBtn.onclick = () => {
+                        resetGame();
+                        this.redrawFullGrid();
+                    };
+                }
+                
+                this.redrawFullGrid();
+            }
+            
+            autoDrop() {
+                if (!gameOver && currentPiece) {
+                    // velocidade dinâmica baseada no level: queda mais rápida
+                    const speed = Math.max(80, 500 - (level-1) * 35);
+                    this.dropInterval = speed;
+                    const event = this.time.getEvents()[0];
+                    if(event) event.delay = speed;
+                    
+                    movePiece(0, 1);
+                    this.redrawFullGrid();
+                } else if(gameOver) {
+                    this.drawGameOver();
+                } else {
+                    this.redrawFullGrid();
                 }
             }
-            controls.update();
-            effectComposer.render();
-            requestAnimationFrame(animate);
-        }
-        
-        // ========== EVENTOS E UI ==========
-        function setupEvents() {
-            document.getElementById('rotateBtn').addEventListener('click', () => tryRotate());
-            document.getElementById('dropBtn').addEventListener('click', () => hardDrop());
-            document.getElementById('holdBtn').addEventListener('click', () => holdCurrent());
-            document.getElementById('pauseBtn').addEventListener('click', () => {
-                if (!gameRunning) return;
-                gamePaused = !gamePaused;
-                document.getElementById('pauseOverlay').classList.toggle('show', gamePaused);
-                document.getElementById('pauseBtn').innerText = gamePaused ? '▶ RETOMAR' : '⏸ PAUSA';
-                if (!gamePaused) lastDropTime = performance.now();
-            });
-            document.getElementById('restartBtn').addEventListener('click', () => {
-                resetGame();
-            });
             
-            window.addEventListener('keydown', (e) => {
-                if (!gameRunning || gamePaused) return;
-                const key = e.key;
-                if (key === 'ArrowLeft') { tryMove(-1, 0); e.preventDefault(); }
-                else if (key === 'ArrowRight') { tryMove(1, 0); e.preventDefault(); }
-                else if (key === 'ArrowUp') { tryRotate(); e.preventDefault(); }
-                else if (key === 'ArrowDown') { tryMove(0, 1); e.preventDefault(); }
-                else if (key === ' ') { hardDrop(); e.preventDefault(); }
-                else if (key === 'h' || key === 'H') { holdCurrent(); e.preventDefault(); }
-            });
-            
-            // Touch controls
-            let touchStartX = 0, touchStartY = 0;
-            document.addEventListener('touchstart', (e) => {
-                touchStartX = e.touches[0].clientX;
-                touchStartY = e.touches[0].clientY;
-                e.preventDefault();
-            });
-            document.addEventListener('touchmove', (e) => {
-                if (!gameRunning || gamePaused) return;
-                const dx = e.touches[0].clientX - touchStartX;
-                const dy = e.touches[0].clientY - touchStartY;
-                if (Math.abs(dx) > 20 && Math.abs(dx) > Math.abs(dy)) {
-                    if (dx > 0) tryMove(1, 0);
-                    else tryMove(-1, 0);
-                    touchStartX = e.touches[0].clientX;
-                } else if (Math.abs(dy) > 20 && dy > 0) {
-                    tryMove(0, 1);
-                    touchStartY = e.touches[0].clientY;
+            update() {
+                if (gameOver) {
+                    this.drawGameOver();
+                    return;
                 }
-                e.preventDefault();
-            });
-            document.addEventListener('touchend', () => {});
+                if (!currentPiece) return;
+                
+                // controles
+                if (this.cursors.left.isDown) {
+                    movePiece(-1, 0);
+                    this.redrawFullGrid();
+                    this.time.delayedCall(120, () => {}, [], this);
+                }
+                else if (this.cursors.right.isDown) {
+                    movePiece(1, 0);
+                    this.redrawFullGrid();
+                    this.time.delayedCall(120, () => {}, [], this);
+                }
+                else if (this.cursors.up.isDown && Phaser.Input.Keyboard.JustDown(this.cursors.up)) {
+                    rotatePiece();
+                    this.redrawFullGrid();
+                }
+                else if (this.spaceKey.isDown && Phaser.Input.Keyboard.JustDown(this.spaceKey)) {
+                    hardDrop();
+                    this.redrawFullGrid();
+                }
+            }
+            
+            redrawFullGrid() {
+                // Limpa todos os blocos desenhados anteriormente
+                this.staticBlocks.clear(true, true);
+                this.previewGroup.clear(true, true);
+                
+                // Desenha blocos fixos do grid
+                for (let row = 0; row < ROWS; row++) {
+                    for (let col = 0; col < COLS; col++) {
+                        const colorVal = gameGrid[row][col];
+                        if (colorVal !== 0) {
+                            this.drawBlock(col * BLOCK_SIZE, row * BLOCK_SIZE, colorVal);
+                        }
+                    }
+                }
+                
+                // Desenha peça atual (com brilho extra holográfico)
+                if (currentPiece && !gameOver) {
+                    const piece = currentPiece;
+                    for (let r = 0; r < piece.shape.length; r++) {
+                        for (let c = 0; c < piece.shape[0].length; c++) {
+                            if (piece.shape[r][c]) {
+                                const x = (piece.x + c) * BLOCK_SIZE;
+                                const y = (piece.y + r) * BLOCK_SIZE;
+                                this.drawBlock(x, y, piece.color, true);
+                            }
+                        }
+                    }
+                }
+                
+                // Desenha próxima peça (preview)
+                if (nextPiece && !gameOver) {
+                    const previewX = COLS * BLOCK_SIZE + 20;
+                    const previewY = 50;
+                    const smallSize = 22;
+                    const gfxPreview = this.add.graphics();
+                    for (let r = 0; r < nextPiece.shape.length; r++) {
+                        for (let c = 0; c < nextPiece.shape[0].length; c++) {
+                            if (nextPiece.shape[r][c]) {
+                                const colorHex = nextPiece.color;
+                                gfxPreview.fillStyle(colorHex, 0.95);
+                                gfxPreview.fillRect(previewX + c * smallSize, previewY + r * smallSize, smallSize-1, smallSize-1);
+                                // efeito neon
+                                gfxPreview.lineStyle(1, 0xffffff, 0.5);
+                                gfxPreview.strokeRect(previewX + c * smallSize, previewY + r * smallSize, smallSize-1, smallSize-1);
+                            }
+                        }
+                    }
+                    this.previewGroup.add(gfxPreview);
+                    
+                    // texto "PRÓXIMO"
+                    const txt = this.add.text(previewX, previewY-25, "🔮 PRÓXIMO", {
+                        fontFamily: 'monospace',
+                        fontSize: '14px',
+                        color: '#0ff',
+                        shadow: { offsetX: 0, offsetY: 0, blur: 6, fill: true }
+                    });
+                    this.previewGroup.add(txt);
+                }
+                
+                // Mostrar level/score no canto superior direito via Phaser também
+                if (!gameOver) {
+                    const infoText = `LEVEL ${level}   SCORE ${score}`;
+                    let hud = this.children.getByName('hudText');
+                    if(hud) hud.destroy();
+                    hud = this.add.text(COLS * BLOCK_SIZE + 15, 200, infoText, {
+                        fontSize: '16px',
+                        fontFamily: 'monospace',
+                        color: '#9cf',
+                        backgroundColor: '#00000088',
+                        padding: { x: 6, y: 4 },
+                        borderRadius: 8
+                    }).setName('hudText');
+                    this.previewGroup.add(hud);
+                }
+            }
+            
+            drawBlock(x, y, colorHex, isActive = false) {
+                const graphics = this.add.graphics();
+                graphics.fillStyle(colorHex, 0.95);
+                graphics.fillRect(x, y, BLOCK_SIZE-1, BLOCK_SIZE-1);
+                // Efeito holográfico: bordas ciano e brilho interno
+                graphics.lineStyle(1.5, 0x88ffff, 0.85);
+                graphics.strokeRect(x, y, BLOCK_SIZE-1, BLOCK_SIZE-1);
+                if (isActive) {
+                    // Brilho extra para peça ativa
+                    graphics.fillStyle(0xffffff, 0.2);
+                    graphics.fillRect(x+2, y+2, BLOCK_SIZE-5, BLOCK_SIZE-5);
+                }
+                this.staticBlocks.add(graphics);
+                return graphics;
+            }
+            
+            drawGameOver() {
+                const overlay = this.add.graphics();
+                overlay.fillStyle(0x000000, 0.75);
+                overlay.fillRect(0, 0, COLS * BLOCK_SIZE, ROWS * BLOCK_SIZE);
+                const gameOverText = this.add.text(COLS * BLOCK_SIZE/2, ROWS * BLOCK_SIZE/2 - 20, "💀 GAME OVER 💀", {
+                    fontFamily: 'monospace',
+                    fontSize: '28px',
+                    color: '#ff3366',
+                    shadow: { offsetX: 0, offsetY: 0, blur: 12, fill: true, color: '#ff0066' }
+                }).setOrigin(0.5);
+                const scoreFinal = this.add.text(COLS * BLOCK_SIZE/2, ROWS * BLOCK_SIZE/2 + 20, `SCORE: ${score}  |  LINES: ${totalLines}`, {
+                    fontFamily: 'monospace',
+                    fontSize: '18px',
+                    color: '#aaf'
+                }).setOrigin(0.5);
+                this.previewGroup.add(overlay);
+                this.previewGroup.add(gameOverText);
+                this.previewGroup.add(scoreFinal);
+            }
         }
         
-        // Inicialização
-        function init() {
-            init3D();
-            setupEvents();
-            updateHighScoreUI();
-            lastDropTime = performance.now();
-            requestAnimationFrame(animate);
-        }
+        // Configuração e inicialização do Phaser
+        const config = {
+            type: Phaser.AUTO,
+            parent: 'game-root',
+            width: COLS * BLOCK_SIZE + 210,   // espaço extra para preview e UI
+            height: ROWS * BLOCK_SIZE,
+            backgroundColor: '#03060c',
+            scene: TetrisScene,
+            physics: {
+                default: 'arcade',
+                arcade: { debug: false, gravity: { y: 0 } }
+            },
+            scale: {
+                mode: Phaser.Scale.FIT,
+                autoCenter: Phaser.Scale.CENTER_BOTH
+            }
+        };
         
-        init();
-    </script>
+        window.game = new Phaser.Game(config);
+        
+        // Inicializa estado do jogo (reset)
+        resetGame();
+    })();
+</script>
 </body>
 </html>
