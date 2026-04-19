@@ -14,7 +14,7 @@
             box-sizing: border-box;
         }
         body {
-            background: #1e3c2c;
+            background: #f0f0f0;  /* Fundo neutro, sem verde */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -23,40 +23,20 @@
             padding: 20px;
             font-family: monospace;
         }
-        .container {
-            background: #fef7e0;
-            border-radius: 30px;
-            padding: 20px;
-            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
-            display: inline-block;
-        }
         canvas {
             display: block;
             margin: 0 auto;
-            border-radius: 16px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            border-radius: 0;    /* Sem bordas arredondadas */
+            box-shadow: none;    /* Sem sombra */
             cursor: pointer;
             width: 100%;
             height: auto;
             max-width: 540px;
         }
-        .info {
-            text-align: center;
-            margin-top: 12px;
-            font-size: 12px;
-            color: #3b5c3a;
-        }
-        a {
-            color: #2c5e2a;
-        }
     </style>
 </head>
 <body>
-<div class="container">
-    <canvas id="gameCanvas" width="540" height="680"></canvas>
-    <div class="info">✔️ Seguro para crianças | Sem anúncios | Apenas lógica</div>
-    <div class="info"><a href="#">🔒 Política de Privacidade</a> – sem coleta de dados</div>
-</div>
+<canvas id="gameCanvas" width="540" height="680"></canvas>
 
 <script>
     (function(){
@@ -372,10 +352,13 @@
         }
         
         function drawPaletteAndButtons() {
-            let startX = (GRID - (SYMBOLS.length*(BTN_W+8))) / 2;
+            // Aumentar espaçamento entre botões de símbolos: gap de 12px (antes 8)
+            let gap = 12;
+            let totalWidth = SYMBOLS.length * BTN_W + (SYMBOLS.length-1) * gap;
+            let startX = (GRID - totalWidth) / 2;
             symbolAreas = [];
             for(let i=0;i<SYMBOLS.length;i++){
-                let x = startX + i*(BTN_W+8);
+                let x = startX + i * (BTN_W + gap);
                 let y = PAL_Y;
                 ctx.fillStyle = "#f0e6d2";
                 ctx.fillRect(x,y,BTN_W,BTN_W);
@@ -386,8 +369,8 @@
                 ctx.fillText(SYMBOLS[i], x+BTN_W/2, y+BTN_W/2);
                 symbolAreas.push({x,y,w:BTN_W,h:BTN_W,sym:SYMBOLS[i]});
             }
-            // botão limpar
-            let eraseX = startX + SYMBOLS.length*(BTN_W+8) + 12;
+            // botão limpar (posicionado após o último símbolo com mesmo espaçamento)
+            let eraseX = startX + SYMBOLS.length * (BTN_W + gap);
             ctx.fillStyle = "#d9c8aa";
             ctx.fillRect(eraseX, PAL_Y, BTN_W, BTN_W);
             ctx.strokeRect(eraseX, PAL_Y, BTN_W, BTN_W);
@@ -395,9 +378,9 @@
             ctx.fillText("⌫", eraseX+BTN_W/2, PAL_Y+BTN_W/2);
             clearArea = {x:eraseX, y:PAL_Y, w:BTN_W, h:BTN_W};
             
-            // botões NOVO e VERIFICAR
-            let newX = GRID/2 - 70;
-            let btnY = PAL_Y + 60;
+            // botões NOVO e VERIFICAR mais abaixo (aumentar Y em 20px)
+            let btnY = PAL_Y + 70;  // antes era +60, agora +70 para descer
+            let newX = GRID/2 - 80;  // centralizar melhor
             ctx.fillStyle = "#4a6741";
             ctx.fillRect(newX, btnY, 100, 40);
             ctx.fillStyle = "white";
@@ -491,4 +474,3 @@
 </script>
 </body>
 </html>
-
