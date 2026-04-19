@@ -1,1 +1,683 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Bocha Realista - Jogador vs Robô</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(145deg, #1a472a 0%, #0e2a1a 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Segoe UI', 'Roboto', 'Poppins', sans-serif;
+        }
+        .game-container {
+            position: relative;
+            box-shadow: 0 25px 40px rgba(0,0,0,0.5), inset 0 1px 2px rgba(255,255,255,0.2);
+            border-radius: 28px;
+            background: #2c5a2e;
+            padding: 12px;
+        }
+        canvas {
+            display: block;
+            border-radius: 20px;
+            cursor: grab;
+            box-shadow: inset 0 0 0 2px rgba(255,215,140,0.6), 0 10px 20px rgba(0,0,0,0.3);
+        }
+        canvas:active {
+            cursor: grabbing;
+        }
+        .ui-panel {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            pointer-events: none;
+            z-index: 10;
+            font-weight: bold;
+            text-shadow: 2px 2px 0 #00000080;
+        }
+        .score-card {
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(8px);
+            padding: 10px 20px;
+            border-radius: 60px;
+            color: #f7ecc7;
+            font-size: 1.5rem;
+            letter-spacing: 1px;
+            border-left: 5px solid #e3b23c;
+            border-right: 5px solid #3c8fe3;
+            font-weight: bold;
+            box-shadow: 0 4px 12px black;
+            pointer-events: auto;
+        }
+        .turn-indicator {
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(12px);
+            padding: 8px 24px;
+            border-radius: 40px;
+            font-size: 1.3rem;
+            color: #ffd966;
+            font-weight: bold;
+            text-transform: uppercase;
+            border: 1px solid #ffc857;
+            box-shadow: 0 0 15px rgba(0,0,0,0.5);
+            pointer-events: auto;
+        }
+        .balls-left {
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(8px);
+            padding: 8px 20px;
+            border-radius: 40px;
+            font-size: 1.2rem;
+            color: #ddd;
+            font-weight: bold;
+            display: flex;
+            gap: 20px;
+            pointer-events: auto;
+        }
+        .balls-left span {
+            color: #ffaa66;
+        }
+        .reset-btn {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #2c2c2c;
+            border: none;
+            color: white;
+            padding: 10px 28px;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            z-index: 20;
+            font-family: inherit;
+            backdrop-filter: blur(4px);
+            background: rgba(30,30,30,0.85);
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px black;
+            pointer-events: auto;
+        }
+        .reset-btn:hover {
+            background: #4a4a4a;
+            transform: translateX(-50%) scale(1.02);
+            color: #ffd966;
+        }
+        @keyframes fadeMessage {
+            0% { opacity: 0; transform: translateY(10px);}
+            15% { opacity: 1; transform: translateY(0);}
+            85% { opacity: 1; transform: translateY(0);}
+            100% { opacity: 0; transform: translateY(-10px);}
+        }
+        .message-popup {
+            position: absolute;
+            bottom: 90px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #000000cc;
+            backdrop-filter: blur(12px);
+            padding: 8px 20px;
+            border-radius: 50px;
+            color: #f5cb5c;
+            font-weight: bold;
+            font-size: 1.2rem;
+            pointer-events: none;
+            white-space: nowrap;
+            z-index: 25;
+            animation: fadeMessage 2.2s ease forwards;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
+</head>
+<body>
+<div class="game-container">
+    <div id="game-parent"></div>
+</div>
 
+<script>
+    // ======================= CONFIGURAÇÕES REALISTAS =======================
+    const CONFIG = {
+        width: 1300,
+        height: 700,
+        ballRadius: 14,
+        pallinoRadius: 8,
+        playerColor: 0xdd3b3b,
+        robotColor: 0x3b7add,
+        pallinoColor: 0xf5f2e0,
+        groundColor: 0x3c9e3a,
+        frictionAir: 0.025,      // atrito do ar (rolamento realista)
+        restitution: 0.65,       // elasticidade colisões
+        ballMass: 1.2,
+        throwForceBase: 0.023,   // força proporcional
+        maxForce: 0.048,
+        minForce: 0.012,
+        robotSkillVariation: 0.12,  // variação de mira do robô (realismo)
+        timeScale: 1.0
+    };
+
+    class BochaGame extends Phaser.Scene {
+        constructor() {
+            super({ key: 'BochaGame' });
+            this.playerBalls = [];       // corpos das bolas do jogador (ainda não lançadas)
+            this.robotBalls = [];
+            this.allMovingBalls = [];     // todas bolas em campo (incluindo lançadas)
+            this.pallino = null;
+            this.availablePlayer = [];    // referencias das bolas que restam para arremesso
+            this.availableRobot = [];
+            this.currentTurn = 'player';  // 'player' ou 'robot'
+            this.gameState = 'idle';       // idle, aiming, throwing, moving, scoring
+            this.playerScore = 0;
+            this.robotScore = 0;
+            this.ballsThrownPlayer = 0;
+            this.ballsThrownRobot = 0;
+            this.maxBallsPerPlayer = 4;
+            this.aimVector = { x: 0, y: 0 };
+            this.aimGraphics = null;
+            this.aimStartPoint = null;
+            this.currentBallToThrow = null;
+            this.isAiming = false;
+            this.movingBallsCheck = false;
+            this.roundActive = true;
+            this.uiTurnText = null;
+            this.uiPlayerBallsLeft = null;
+            this.uiRobotBallsLeft = null;
+            this.uiPlayerScore = null;
+            this.uiRobotScore = null;
+            this.messageTimeout = null;
+            this.robotTimeout = null;
+        }
+
+        preload() {
+            // Carregar textura de grama sutil (criamos gradiente via canvas)
+            this.load.image('grass', this.generateGrassTexture());
+            // Textura de sombra circular para efeito realista
+            this.load.image('shadow', this.generateShadowTexture());
+        }
+
+        generateGrassTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 256;
+            canvas.height = 256;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#3c9e3a';
+            ctx.fillRect(0, 0, 256, 256);
+            for(let i=0; i<800; i++) {
+                ctx.fillStyle = `rgba(80, 130, 60, ${Math.random() * 0.3})`;
+                ctx.fillRect(Math.random()*256, Math.random()*256, 2, 2);
+            }
+            return canvas;
+        }
+
+        generateShadowTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 64;
+            canvas.height = 64;
+            const ctx = canvas.getContext('2d');
+            const grd = ctx.createRadialGradient(32,32,0,32,32,32);
+            grd.addColorStop(0, 'rgba(0,0,0,0.45)');
+            grd.addColorStop(0.6, 'rgba(0,0,0,0.2)');
+            grd.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.fillStyle = grd;
+            ctx.fillRect(0,0,64,64);
+            return canvas;
+        }
+
+        create() {
+            this.matter.world.setGravity(0, 0);
+            this.matter.world.setBounds(20, 20, CONFIG.width - 40, CONFIG.height - 40, 50, true, true, false, true);
+            
+            // Fundo com textura de grama
+            this.add.image(CONFIG.width/2, CONFIG.height/2, 'grass').setDisplaySize(CONFIG.width, CONFIG.height);
+            
+            // Detalhes decorativos: linhas do campo de bocha
+            const graphics = this.add.graphics();
+            graphics.lineStyle(2, 0xc2b280, 0.35);
+            graphics.strokeRect(40, 40, CONFIG.width - 80, CONFIG.height - 80);
+            graphics.lineStyle(1, 0xe9d68b, 0.25);
+            for(let i=0;i<3;i++) {
+                graphics.beginPath();
+                graphics.arc(CONFIG.width/2, CONFIG.height/2, 120 + i*50, 0, Math.PI*2);
+                graphics.strokePath();
+            }
+            
+            // Criar paredes invisíveis com bounce realista (já feito pelo bounds, mas refinamos)
+            this.createWalls();
+            
+            // UI
+            this.uiTurnText = this.add.text(CONFIG.width/2, 55, 'SUA VEZ', { fontFamily: 'Poppins', fontSize: '26px', color: '#fff3cf', fontWeight: 'bold', stroke: '#000000', strokeThickness: 4 }).setOrigin(0.5).setDepth(10);
+            this.uiPlayerScore = this.add.text(120, 20, `JOGADOR: 0`, { fontFamily: 'Poppins', fontSize: '24px', color: '#ffc5a0', fontWeight: 'bold', stroke: '#1a1a1a', strokeThickness: 3 });
+            this.uiRobotScore = this.add.text(CONFIG.width - 180, 20, `ROBÔ: 0`, { fontFamily: 'Poppins', fontSize: '24px', color: '#aad4ff', fontWeight: 'bold', stroke: '#1a1a1a', strokeThickness: 3 });
+            this.uiPlayerBallsLeft = this.add.text(30, CONFIG.height-45, `⚫ RESTANTES: ${this.maxBallsPerPlayer}`, { fontSize: '18px', color: '#eedd99', backgroundColor: '#000000aa', padding: {x:12,y:6}, borderRadius: 20 });
+            this.uiRobotBallsLeft = this.add.text(CONFIG.width-170, CONFIG.height-45, `🤖 RESTANTES: ${this.maxBallsPerPlayer}`, { fontSize: '18px', color: '#aaccff', backgroundColor: '#000000aa', padding: {x:12,y:6}, borderRadius: 20 });
+            
+            // Botão reset
+            const resetBtn = this.add.text(CONFIG.width/2, CONFIG.height-28, '🔄 NOVA RODADA', { fontSize: '18px', color: '#ffffff', backgroundColor: '#2c2e2f', padding: {x:20,y:8}, borderRadius: 30 }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+            resetBtn.on('pointerdown', () => this.resetRound(true));
+            resetBtn.on('pointerover', () => resetBtn.setStyle({ backgroundColor: '#4a5b3e', color: '#ffd966'}));
+            resetBtn.on('pointerout', () => resetBtn.setStyle({ backgroundColor: '#2c2e2f', color: '#ffffff'}));
+            
+            this.aimGraphics = this.add.graphics();
+            
+            // Inicializar rodada
+            this.initRound();
+            
+            // Input do jogador (mira com arrasto)
+            this.input.on('pointerdown', this.onPointerDown, this);
+            this.input.on('pointermove', this.onPointerMove, this);
+            this.input.on('pointerup', this.onPointerUp, this);
+        }
+        
+        createWalls() {
+            // Pequenas bordas com fricção (realce)
+            const thickness = 30;
+            const opts = { isStatic: true, restitution: 0.7, friction: 0.3 };
+            this.matter.add.rectangle(CONFIG.width/2, -10, CONFIG.width, thickness, opts);
+            this.matter.add.rectangle(CONFIG.width/2, CONFIG.height+10, CONFIG.width, thickness, opts);
+            this.matter.add.rectangle(-10, CONFIG.height/2, thickness, CONFIG.height, opts);
+            this.matter.add.rectangle(CONFIG.width+10, CONFIG.height/2, thickness, CONFIG.height, opts);
+        }
+        
+        initRound() {
+            if(this.robotTimeout) clearTimeout(this.robotTimeout);
+            this.gameState = 'idle';
+            this.currentTurn = 'player';
+            this.ballsThrownPlayer = 0;
+            this.ballsThrownRobot = 0;
+            this.roundActive = true;
+            this.updateUITurn();
+            this.updateUIBallsLeft();
+            
+            // Limpar bolas antigas
+            if(this.allMovingBalls.length) {
+                this.allMovingBalls.forEach(ball => {
+                    if(ball && ball.body) this.matter.world.remove(ball.body);
+                    if(ball && ball.destroy) ball.destroy();
+                });
+            }
+            this.playerBalls = [];
+            this.robotBalls = [];
+            this.allMovingBalls = [];
+            
+            // Criar Pallino (posição aleatória, mas dentro de uma zona central)
+            const randX = Phaser.Math.Between(CONFIG.width*0.35, CONFIG.width*0.65);
+            const randY = Phaser.Math.Between(CONFIG.height*0.3, CONFIG.height*0.7);
+            this.pallino = this.matter.add.circle(randX, randY, CONFIG.pallinoRadius, {
+                restitution: CONFIG.restitution,
+                frictionAir: 0.01,
+                label: 'pallino',
+                isStatic: false,
+                mass: 0.8,
+                friction: 0.2
+            });
+            this.pallino.setCircle(CONFIG.pallinoRadius);
+            this.pallino.setBounce(CONFIG.restitution);
+            const pallinoGfx = this.add.image(randX, randY, 'shadow').setScale(1.2).setDepth(1);
+            const pallinoBall = this.add.circle(randX, randY, CONFIG.pallinoRadius, CONFIG.pallinoColor).setDepth(5);
+            pallinoBall.setStrokeStyle(2, 0xeeeeaa, 0.9);
+            this.pallino.setData('gfx', pallinoBall);
+            this.pallino.setData('shadow', pallinoGfx);
+            this.allMovingBalls.push(this.pallino);
+            
+            // Criar bolas do Jogador (lado esquerdo)
+            const startX = 80;
+            const startYBase = CONFIG.height/2 - 70;
+            for(let i=0; i<this.maxBallsPerPlayer; i++) {
+                const yOff = i * 32;
+                const xPos = startX;
+                const yPos = startYBase + yOff;
+                const ball = this.createBall(xPos, yPos, CONFIG.playerColor, 'player');
+                this.playerBalls.push(ball);
+                this.allMovingBalls.push(ball);
+            }
+            
+            // Bolas do Robô (lado direito)
+            const robotStartX = CONFIG.width - 80;
+            const robotStartYBase = CONFIG.height/2 - 70;
+            for(let i=0; i<this.maxBallsPerPlayer; i++) {
+                const yOff = i * 32;
+                const ball = this.createBall(robotStartX, robotStartYBase + yOff, CONFIG.robotColor, 'robot');
+                this.robotBalls.push(ball);
+                this.allMovingBalls.push(ball);
+            }
+            
+            this.availablePlayer = [...this.playerBalls];
+            this.availableRobot = [...this.robotBalls];
+            
+            // Atualizar textos
+            this.updateUIBallsLeft();
+            this.showMessage("🎯 Arraste a partir da sua bola para lançar!", 2500);
+        }
+        
+        createBall(x, y, color, owner) {
+            const body = this.matter.add.circle(x, y, CONFIG.ballRadius, {
+                restitution: CONFIG.restitution,
+                frictionAir: CONFIG.frictionAir,
+                friction: 0.55,
+                mass: CONFIG.ballMass,
+                label: owner
+            });
+            body.setBounce(CONFIG.restitution);
+            const shadow = this.add.image(x, y, 'shadow').setScale(1.3).setDepth(2);
+            const ballGfx = this.add.circle(x, y, CONFIG.ballRadius, color).setDepth(6);
+            ballGfx.setStrokeStyle(2, 0xfff5cc, 0.5);
+            // gradiente interno (efeito 3d)
+            const gradient = ballGfx.setGradientFill(color, color, 0xffffff, 0xffffff);
+            body.setData('gfx', ballGfx);
+            body.setData('shadow', shadow);
+            body.setData('owner', owner);
+            body.setData('thrown', false);
+            return body;
+        }
+        
+        onPointerDown(pointer) {
+            if(this.gameState !== 'idle' || this.currentTurn !== 'player' || this.availablePlayer.length === 0) return;
+            const worldPoint = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
+            // verifica se clicou em cima da bola atual (a primeira disponível)
+            if(this.availablePlayer.length === 0) return;
+            const currentBall = this.availablePlayer[0];
+            const dx = worldPoint.x - currentBall.position.x;
+            const dy = worldPoint.y - currentBall.position.y;
+            const dist = Math.hypot(dx, dy);
+            if(dist <= CONFIG.ballRadius + 8) {
+                this.isAiming = true;
+                this.aimStartPoint = { x: currentBall.position.x, y: currentBall.position.y };
+                this.currentBallToThrow = currentBall;
+                this.gameState = 'aiming';
+                this.input.setDefaultCursor('grabbing');
+            }
+        }
+        
+        onPointerMove(pointer) {
+            if(!this.isAiming || this.gameState !== 'aiming') return;
+            const worldPoint = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
+            const dx = worldPoint.x - this.aimStartPoint.x;
+            const dy = worldPoint.y - this.aimStartPoint.y;
+            let force = Math.min(CONFIG.maxForce, Math.max(CONFIG.minForce, Math.hypot(dx, dy) * 0.0022));
+            let angle = Math.atan2(dy, dx);
+            // limite força visual
+            const maxLen = 180;
+            let len = Math.min(maxLen, Math.hypot(dx, dy));
+            let normX = Math.cos(angle);
+            let normY = Math.sin(angle);
+            this.aimVector = { x: normX * force, y: normY * force };
+            
+            // desenhar mira
+            this.aimGraphics.clear();
+            this.aimGraphics.lineStyle(4, 0xffdd77, 0.9);
+            this.aimGraphics.beginPath();
+            this.aimGraphics.moveTo(this.aimStartPoint.x, this.aimStartPoint.y);
+            this.aimGraphics.lineTo(this.aimStartPoint.x + normX * len, this.aimStartPoint.y + normY * len);
+            this.aimGraphics.strokePath();
+            for(let i=0.2; i<=1; i+=0.2) {
+                this.aimGraphics.fillStyle(0xffaa44, 0.8);
+                this.aimGraphics.fillCircle(this.aimStartPoint.x + normX * len * i, this.aimStartPoint.y + normY * len * i, 5);
+            }
+            let forcePercent = (force - CONFIG.minForce)/(CONFIG.maxForce - CONFIG.minForce);
+            this.aimGraphics.lineStyle(2, 0xff5500, 0.7);
+            this.aimGraphics.beginPath();
+            this.aimGraphics.moveTo(this.aimStartPoint.x, this.aimStartPoint.y);
+            this.aimGraphics.lineTo(this.aimStartPoint.x + normX * len * forcePercent, this.aimStartPoint.y + normY * len * forcePercent);
+            this.aimGraphics.strokePath();
+        }
+        
+        onPointerUp() {
+            if(!this.isAiming || this.gameState !== 'aiming' || !this.currentBallToThrow) {
+                this.cancelAim();
+                return;
+            }
+            const forceVec = { x: this.aimVector.x, y: this.aimVector.y };
+            if(Math.hypot(forceVec.x, forceVec.y) < 0.008) {
+                this.cancelAim();
+                this.showMessage("⚠️ Força muito baixa, tente novamente!", 800);
+                return;
+            }
+            // aplicar impulso
+            this.gameState = 'moving';
+            this.isAiming = false;
+            this.aimGraphics.clear();
+            const ball = this.currentBallToThrow;
+            ball.setData('thrown', true);
+            // aplicar força realista (impulso)
+            const impulse = { x: forceVec.x * 45, y: forceVec.y * 45 };
+            this.matter.body.applyForce(ball, ball.position, impulse);
+            
+            // remover da lista de disponíveis
+            const idx = this.availablePlayer.indexOf(ball);
+            if(idx !== -1) this.availablePlayer.splice(idx,1);
+            this.ballsThrownPlayer++;
+            this.updateUIBallsLeft();
+            this.updateUITurn();
+            
+            // após lançar, esperar estabilização e passar turno
+            this.waitForStabilityAndNextTurn('player');
+            this.cancelAim();
+        }
+        
+        cancelAim() {
+            this.isAiming = false;
+            this.aimGraphics.clear();
+            this.gameState = 'idle';
+            this.currentBallToThrow = null;
+            this.input.setDefaultCursor('default');
+        }
+        
+        waitForStabilityAndNextTurn(turnJustPlayed) {
+            const checkInterval = setInterval(() => {
+                let moving = false;
+                for(let obj of this.allMovingBalls) {
+                    if(obj && obj.body && (Math.abs(obj.body.velocity.x) > 1.2 || Math.abs(obj.body.velocity.y) > 1.2)) {
+                        moving = true;
+                        break;
+                    }
+                }
+                if(!moving) {
+                    clearInterval(checkInterval);
+                    if(turnJustPlayed === 'player') {
+                        if(this.availablePlayer.length === 0 && this.availableRobot.length === 0) {
+                            this.calculateAndAddScore();
+                        } else if(this.availableRobot.length > 0) {
+                            this.currentTurn = 'robot';
+                            this.gameState = 'idle';
+                            this.updateUITurn();
+                            this.robotPlay();
+                        } else {
+                            this.currentTurn = 'player';
+                            this.gameState = 'idle';
+                            this.updateUITurn();
+                        }
+                    } 
+                    else if(turnJustPlayed === 'robot') {
+                        if(this.availablePlayer.length === 0 && this.availableRobot.length === 0) {
+                            this.calculateAndAddScore();
+                        } else if(this.availablePlayer.length > 0) {
+                            this.currentTurn = 'player';
+                            this.gameState = 'idle';
+                            this.updateUITurn();
+                        } else {
+                            this.currentTurn = 'robot';
+                            this.gameState = 'idle';
+                            this.updateUITurn();
+                            this.robotPlay();
+                        }
+                    }
+                }
+            }, 60);
+        }
+        
+        robotPlay() {
+            if(this.currentTurn !== 'robot' || this.availableRobot.length === 0 || this.gameState !== 'idle') return;
+            this.gameState = 'moving';
+            this.showMessage("🤖 Robô está calculando a mira...", 700);
+            if(this.robotTimeout) clearTimeout(this.robotTimeout);
+            this.robotTimeout = setTimeout(() => {
+                if(!this.roundActive) return;
+                const robotBall = this.availableRobot[0];
+                if(!robotBall || !this.pallino) { this.gameState='idle'; return; }
+                const dx = this.pallino.position.x - robotBall.position.x;
+                const dy = this.pallino.position.y - robotBall.position.y;
+                let angle = Math.atan2(dy, dx);
+                const distance = Math.hypot(dx, dy);
+                let force = Phaser.Math.Clamp(distance * 0.0017, CONFIG.minForce, CONFIG.maxForce);
+                // adicionar imprecisão realista
+                const variation = (Math.random() - 0.5) * CONFIG.robotSkillVariation;
+                angle += variation * 0.9;
+                force *= (1 + (Math.random() - 0.5)*0.18);
+                force = Math.min(CONFIG.maxForce, Math.max(CONFIG.minForce, force));
+                const impulseX = Math.cos(angle) * force * 48;
+                const impulseY = Math.sin(angle) * force * 48;
+                this.matter.body.applyForce(robotBall, robotBall.position, { x: impulseX, y: impulseY });
+                robotBall.setData('thrown', true);
+                const idx = this.availableRobot.indexOf(robotBall);
+                if(idx !== -1) this.availableRobot.splice(idx,1);
+                this.ballsThrownRobot++;
+                this.updateUIBallsLeft();
+                this.updateUITurn();
+                this.waitForStabilityAndNextTurn('robot');
+                this.gameState = 'idle';
+            }, 750);
+        }
+        
+        calculateAndAddScore() {
+            if(this.gameState === 'scoring') return;
+            this.gameState = 'scoring';
+            // Calcular distâncias de todas as bolas em campo (que foram lançadas)
+            const playerDistances = [];
+            const robotDistances = [];
+            for(let ball of this.allMovingBalls) {
+                if(!ball || ball === this.pallino) continue;
+                if(!ball.body) continue;
+                const dist = Phaser.Math.Distance.Between(ball.position.x, ball.position.y, this.pallino.position.x, this.pallino.position.y);
+                if(ball.getData('owner') === 'player') playerDistances.push(dist);
+                else if(ball.getData('owner') === 'robot') robotDistances.push(dist);
+            }
+            if(playerDistances.length === 0 && robotDistances.length === 0) {
+                this.endRoundDraw();
+                return;
+            }
+            const bestPlayer = playerDistances.length ? Math.min(...playerDistances) : Infinity;
+            const bestRobot = robotDistances.length ? Math.min(...robotDistances) : Infinity;
+            let playerPoints = 0, robotPoints = 0;
+            if(bestPlayer < bestRobot) {
+                playerPoints = playerDistances.filter(d => d < bestRobot).length;
+            } else if(bestRobot < bestPlayer) {
+                robotPoints = robotDistances.filter(d => d < bestPlayer).length;
+            } else {
+                // empate na melhor bola: nenhum ponto (ou ambos zero, regra tradicional)
+                playerPoints = 0;
+                robotPoints = 0;
+            }
+            this.playerScore += playerPoints;
+            this.robotScore += robotPoints;
+            this.uiPlayerScore.setText(`JOGADOR: ${this.playerScore}`);
+            this.uiRobotScore.setText(`ROBÔ: ${this.robotScore}`);
+            let msg = `🏆 Rodada finalizada! `;
+            if(playerPoints>0) msg+= `Você +${playerPoints}  `;
+            if(robotPoints>0) msg+= `Robô +${robotPoints}`;
+            if(playerPoints===0 && robotPoints===0) msg = "🤝 Rodada empatada! Ninguém pontua.";
+            this.showMessage(msg, 3200);
+            this.roundActive = false;
+            // Reset automático após 3.5 segundos
+            setTimeout(() => this.resetRound(false), 3500);
+        }
+        
+        endRoundDraw() {
+            this.showMessage("⚠️ Nenhuma bola válida! Reiniciando rodada...", 2000);
+            setTimeout(() => this.resetRound(false), 2100);
+        }
+        
+        resetRound(manual = false) {
+            if(this.robotTimeout) clearTimeout(this.robotTimeout);
+            this.gameState = 'idle';
+            this.cancelAim();
+            // remove todos corpos físicos
+            this.allMovingBalls.forEach(ball => {
+                if(ball && ball.body) this.matter.world.remove(ball.body);
+                const gfx = ball.getData('gfx');
+                const shad = ball.getData('shadow');
+                if(gfx && gfx.destroy) gfx.destroy();
+                if(shad && shad.destroy) shad.destroy();
+            });
+            if(this.pallino) {
+                const pallGfx = this.pallino.getData('gfx');
+                const pallShad = this.pallino.getData('shadow');
+                if(pallGfx) pallGfx.destroy();
+                if(pallShad) pallShad.destroy();
+                if(this.pallino.body) this.matter.world.remove(this.pallino.body);
+            }
+            this.initRound();
+            if(manual) this.showMessage("🔄 Rodada reiniciada! Boa sorte!", 1800);
+        }
+        
+        updateUITurn() {
+            if(this.currentTurn === 'player' && this.availablePlayer.length > 0 && this.roundActive) {
+                this.uiTurnText.setText('🎯 SUA VEZ — Arraste a bola');
+                this.uiTurnText.setColor('#ffdb8e');
+            } else if(this.currentTurn === 'robot' && this.availableRobot.length > 0 && this.roundActive) {
+                this.uiTurnText.setText('🤖 ROBÔ PENSANDO...');
+                this.uiTurnText.setColor('#8bb9ff');
+            } else if((this.availablePlayer.length===0 && this.availableRobot.length===0)) {
+                this.uiTurnText.setText('⚖️ CALCULANDO PONTOS');
+            } else {
+                this.uiTurnText.setText('⚡ AGUARDE');
+            }
+        }
+        
+        updateUIBallsLeft() {
+            this.uiPlayerBallsLeft.setText(`⚫ RESTANTES: ${this.availablePlayer.length}`);
+            this.uiRobotBallsLeft.setText(`🤖 RESTANTES: ${this.availableRobot.length}`);
+        }
+        
+        showMessage(text, duration) {
+            const msg = this.add.text(CONFIG.width/2, CONFIG.height-85, text, { fontFamily: 'Poppins', fontSize: '20px', color: '#fff2c9', backgroundColor: '#000000aa', padding: {x:15,y:8}, borderRadius: 40 }).setOrigin(0.5).setDepth(20);
+            this.time.delayedCall(duration, () => { if(msg) msg.destroy(); });
+        }
+        
+        update() {
+            // Sincronizar gráficos com física
+            if(this.allMovingBalls) {
+                for(let body of this.allMovingBalls) {
+                    if(body && body.body) {
+                        const gfx = body.getData('gfx');
+                        const shadow = body.getData('shadow');
+                        if(gfx) { gfx.x = body.position.x; gfx.y = body.position.y; }
+                        if(shadow) { shadow.x = body.position.x; shadow.y = body.position.y; }
+                    }
+                }
+            }
+        }
+    }
+    
+    const config = {
+        type: Phaser.AUTO,
+        parent: 'game-parent',
+        width: CONFIG.width,
+        height: CONFIG.height,
+        backgroundColor: '#1f4f2b',
+        scene: BochaGame,
+        physics: {
+            default: 'matter',
+            matter: {
+                gravity: { x: 0, y: 0 },
+                enableSleeping: true,
+                debug: false
+            }
+        },
+        scale: {
+            mode: Phaser.Scale.FIT,
+            autoCenter: Phaser.Scale.CENTER_BOTH
+        }
+    };
+    
+    window.game = new Phaser.Game(config);
+</script>
+</body>
+</html>
