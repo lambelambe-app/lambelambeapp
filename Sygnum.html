@@ -14,7 +14,7 @@
             box-sizing: border-box;
         }
         body {
-            background: #f0f0f0;  /* Fundo neutro, sem verde */
+            background: #f0f0f0;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -26,17 +26,17 @@
         canvas {
             display: block;
             margin: 0 auto;
-            border-radius: 0;    /* Sem bordas arredondadas */
-            box-shadow: none;    /* Sem sombra */
             cursor: pointer;
             width: 100%;
             height: auto;
             max-width: 540px;
+            box-shadow: none;
+            border-radius: 0;
         }
     </style>
 </head>
 <body>
-<canvas id="gameCanvas" width="540" height="680"></canvas>
+<canvas id="gameCanvas" width="540" height="700"></canvas>
 
 <script>
     (function(){
@@ -46,9 +46,13 @@
         const BOX = 3;
         const CELL = 60;
         const GRID = CELL * SIZE; // 540
-        const PAL_Y = GRID + 20;
-        const STATUS_Y = PAL_Y + 80;
+        const PAL_Y = GRID + 20;       // posição Y da paleta de símbolos
         const BTN_W = 44;
+        const GAP_SYMBOLS = 12;        // espaçamento entre botões de símbolos
+        
+        // Ajuste: botões mais abaixo, distantes do grid e da mensagem
+        const BTNS_Y = PAL_Y + 100;     // botões "NOVO" e "VERIFICAR" (antes 70)
+        const STATUS_Y = BTNS_Y + 50;   // mensagem de status 50px abaixo dos botões
         
         let canvas = document.getElementById('gameCanvas');
         let ctx = canvas.getContext('2d');
@@ -288,10 +292,8 @@
         }
         
         function drawGrid() {
-            // fundo claro
             ctx.fillStyle = "#fef7e0";
             ctx.fillRect(0,0,GRID,GRID);
-            // células
             for(let r=0;r<SIZE;r++){
                 for(let c=0;c<SIZE;c++){
                     let x = c*CELL, y = r*CELL;
@@ -315,7 +317,6 @@
                     ctx.strokeRect(x,y,CELL-1,CELL-1);
                 }
             }
-            // linhas grossas
             ctx.beginPath();
             ctx.lineWidth = 3;
             ctx.strokeStyle = "#333";
@@ -352,13 +353,12 @@
         }
         
         function drawPaletteAndButtons() {
-            // Aumentar espaçamento entre botões de símbolos: gap de 12px (antes 8)
-            let gap = 12;
-            let totalWidth = SYMBOLS.length * BTN_W + (SYMBOLS.length-1) * gap;
+            // Paleta de símbolos com espaçamento aumentado
+            let totalWidth = SYMBOLS.length * BTN_W + (SYMBOLS.length-1) * GAP_SYMBOLS;
             let startX = (GRID - totalWidth) / 2;
             symbolAreas = [];
             for(let i=0;i<SYMBOLS.length;i++){
-                let x = startX + i * (BTN_W + gap);
+                let x = startX + i * (BTN_W + GAP_SYMBOLS);
                 let y = PAL_Y;
                 ctx.fillStyle = "#f0e6d2";
                 ctx.fillRect(x,y,BTN_W,BTN_W);
@@ -369,8 +369,8 @@
                 ctx.fillText(SYMBOLS[i], x+BTN_W/2, y+BTN_W/2);
                 symbolAreas.push({x,y,w:BTN_W,h:BTN_W,sym:SYMBOLS[i]});
             }
-            // botão limpar (posicionado após o último símbolo com mesmo espaçamento)
-            let eraseX = startX + SYMBOLS.length * (BTN_W + gap);
+            // Botão limpar (apagar)
+            let eraseX = startX + SYMBOLS.length * (BTN_W + GAP_SYMBOLS);
             ctx.fillStyle = "#d9c8aa";
             ctx.fillRect(eraseX, PAL_Y, BTN_W, BTN_W);
             ctx.strokeRect(eraseX, PAL_Y, BTN_W, BTN_W);
@@ -378,20 +378,19 @@
             ctx.fillText("⌫", eraseX+BTN_W/2, PAL_Y+BTN_W/2);
             clearArea = {x:eraseX, y:PAL_Y, w:BTN_W, h:BTN_W};
             
-            // botões NOVO e VERIFICAR mais abaixo (aumentar Y em 20px)
-            let btnY = PAL_Y + 70;  // antes era +60, agora +70 para descer
-            let newX = GRID/2 - 80;  // centralizar melhor
+            // Botões NOVO e VERIFICAR reposicionados mais abaixo (BTNS_Y)
+            let newX = GRID/2 - 80;
             ctx.fillStyle = "#4a6741";
-            ctx.fillRect(newX, btnY, 100, 40);
+            ctx.fillRect(newX, BTNS_Y, 100, 40);
             ctx.fillStyle = "white";
             ctx.font = "bold 20px 'Segoe UI'";
-            ctx.fillText("NOVO", newX+50, btnY+26);
-            newArea = {x:newX, y:btnY, w:100, h:40};
+            ctx.fillText("NOVO", newX+50, BTNS_Y+26);
+            newArea = {x:newX, y:BTNS_Y, w:100, h:40};
             
             let checkX = GRID/2 + 30;
-            ctx.fillRect(checkX, btnY, 110, 40);
-            ctx.fillText("VERIFICAR", checkX+55, btnY+26);
-            checkArea = {x:checkX, y:btnY, w:110, h:40};
+            ctx.fillRect(checkX, BTNS_Y, 110, 40);
+            ctx.fillText("VERIFICAR", checkX+55, BTNS_Y+26);
+            checkArea = {x:checkX, y:BTNS_Y, w:110, h:40};
         }
         
         function drawStatus() {
@@ -422,7 +421,7 @@
         function onClick(e) {
             e.preventDefault();
             let {x,y} = getCanvasCoords(e);
-            // verifica botões da paleta
+            // Botões da paleta
             for(let area of symbolAreas){
                 if(x>=area.x && x<=area.x+area.w && y>=area.y && y<=area.y+area.h){
                     placeSymbol(area.sym);
@@ -441,7 +440,7 @@
                 verify();
                 return;
             }
-            // clique no grid
+            // Clique no grid
             if(x>=0 && x<GRID && y>=0 && y<GRID){
                 let col = Math.floor(x/CELL);
                 let row = Math.floor(y/CELL);
