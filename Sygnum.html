@@ -30,29 +30,32 @@
             width: 100%;
             height: auto;
             max-width: 540px;
-            box-shadow: none;
-            border-radius: 0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-radius: 8px;
         }
     </style>
 </head>
 <body>
-<canvas id="gameCanvas" width="540" height="700"></canvas>
+<canvas id="gameCanvas" width="540" height="720"></canvas>
 
 <script>
     (function(){
-        // Símbolos e constantes
+        // ==================== CONFIGURAÇÕES ====================
         const SYMBOLS = ["@","#","$","%","&","?","*","+","~"];
         const SIZE = 9;
         const BOX = 3;
-        const CELL = 60;
-        const GRID = CELL * SIZE; // 540
-        const PAL_Y = GRID + 20;       // posição Y da paleta de símbolos
-        const BTN_W = 44;
-        const GAP_SYMBOLS = 12;        // espaçamento entre botões de símbolos
-        
-        // Ajuste: botões mais abaixo, distantes do grid e da mensagem
-        const BTNS_Y = PAL_Y + 100;     // botões "NOVO" e "VERIFICAR" (antes 70)
-        const STATUS_Y = BTNS_Y + 50;   // mensagem de status 50px abaixo dos botões
+        const CELL = 54;          // reduzido para caber melhor (540/10 = 54, mas grid 9x54=486, vou ajustar)
+        // Para manter grid 540x540, CELL = 60. Mas com título, vamos manter 60 e ajustar layout.
+        // Melhor: CELL = 60, GRID = 540. Título ocupa espaço no topo.
+        const CELL_SIZE = 60;
+        const GRID_SIZE = CELL_SIZE * SIZE; // 540
+        const TITLE_Y = 30;        // posição Y do título
+        const GRID_Y = 70;          // grid começa no Y 70 (antes era 0)
+        const PAL_Y = GRID_Y + GRID_SIZE + 15;  // paleta abaixo do grid
+        const BTN_W = 42;           // botões de símbolo um pouco menores para caber
+        const GAP_SYMBOLS = 8;      // espaçamento entre botões de símbolos
+        const BTNS_Y = PAL_Y + 80;   // botões NOVO e VERIFICAR mais abaixo
+        const STATUS_Y = BTNS_Y + 55; // mensagem de status abaixo dos botões
         
         let canvas = document.getElementById('gameCanvas');
         let ctx = canvas.getContext('2d');
@@ -70,7 +73,7 @@
         let newArea = null;
         let checkArea = null;
         
-        // ---------- Lógica do Sudoku ----------
+        // ---------- Lógica do Sudoku (inalterada) ----------
         function isValidPlacement(b, r, c, sym) {
             for(let i=0;i<SIZE;i++) {
                 if(i!==c && b[r][i]===sym) return false;
@@ -282,21 +285,63 @@
             drawEverything();
         }
         
-        // ---------- Desenho ----------
+        // ---------- DESENHO (com título e ajustes) ----------
         function drawEverything() {
             ctx.clearRect(0,0,canvas.width,canvas.height);
+            drawTitle();
             drawGrid();
             drawSymbols();
             drawPaletteAndButtons();
             drawStatus();
         }
         
+        // Título futurista/pichado
+        function drawTitle() {
+            ctx.save();
+            ctx.shadowBlur = 0;
+            // efeito de spray: múltiplas camadas com leve deslocamento
+            const title = "SYMBOLUM";
+            ctx.font = "bold 34px 'Orbitron', 'Monoton', 'Courier New', monospace";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            
+            // camada de fundo (sombra irregular)
+            for(let i=0;i<8;i++){
+                ctx.fillStyle = `rgba(80, 60, 40, ${0.1 + Math.random()*0.2})`;
+                ctx.fillText(title, canvas.width/2 + (Math.random()*3 - 1.5), TITLE_Y + (Math.random()*3 - 1.5));
+            }
+            // texto principal com gradiente metálico
+            let grad = ctx.createLinearGradient(canvas.width/2 - 100, TITLE_Y-10, canvas.width/2+100, TITLE_Y+20);
+            grad.addColorStop(0, "#c79a2e");
+            grad.addColorStop(0.5, "#f5d742");
+            grad.addColorStop(1, "#b87c1a");
+            ctx.fillStyle = grad;
+            ctx.font = "bold 38px 'Orbitron', 'Monoton', monospace";
+            ctx.fillText(title, canvas.width/2, TITLE_Y);
+            // borda estilizada
+            ctx.strokeStyle = "#3a2a1a";
+            ctx.lineWidth = 1.5;
+            ctx.strokeText(title, canvas.width/2, TITLE_Y);
+            
+            // pequenos respingos (simulando tinta spray)
+            ctx.fillStyle = "#d4a13e";
+            for(let i=0;i<60;i++){
+                let x = canvas.width/2 + (Math.random() - 0.5) * 180;
+                let y = TITLE_Y + (Math.random() - 0.5) * 25;
+                ctx.fillRect(x, y, 1.5, 1.5);
+            }
+            ctx.restore();
+        }
+        
         function drawGrid() {
+            // fundo do grid
             ctx.fillStyle = "#fef7e0";
-            ctx.fillRect(0,0,GRID,GRID);
+            ctx.fillRect(0, GRID_Y, GRID_SIZE, GRID_SIZE);
+            
             for(let r=0;r<SIZE;r++){
                 for(let c=0;c<SIZE;c++){
-                    let x = c*CELL, y = r*CELL;
+                    let x = c*CELL_SIZE;
+                    let y = GRID_Y + r*CELL_SIZE;
                     let bg = "#ffffff";
                     let isFixed = fixed[r][c];
                     let isSel = (selectedRow===r && selectedCol===c);
@@ -312,95 +357,112 @@
                         if(r>=sr && r<sr+BOX && c>=sc && c<sc+BOX && !(r===selectedRow || c===selectedCol)) bg = "#efe0bd";
                     }
                     ctx.fillStyle = bg;
-                    ctx.fillRect(x,y,CELL-1,CELL-1);
+                    ctx.fillRect(x, y, CELL_SIZE-1, CELL_SIZE-1);
                     ctx.strokeStyle = "#aaa";
-                    ctx.strokeRect(x,y,CELL-1,CELL-1);
+                    ctx.strokeRect(x, y, CELL_SIZE-1, CELL_SIZE-1);
                 }
             }
+            // linhas grossas do grid
             ctx.beginPath();
             ctx.lineWidth = 3;
             ctx.strokeStyle = "#333";
             for(let i=0;i<=SIZE;i++){
                 if(i%BOX===0) ctx.lineWidth = 3;
                 else ctx.lineWidth = 1;
+                let pos = i * CELL_SIZE;
                 ctx.beginPath();
-                ctx.moveTo(i*CELL,0);
-                ctx.lineTo(i*CELL,GRID);
+                ctx.moveTo(pos, GRID_Y);
+                ctx.lineTo(pos, GRID_Y + GRID_SIZE);
                 ctx.stroke();
                 ctx.beginPath();
-                ctx.moveTo(0,i*CELL);
-                ctx.lineTo(GRID,i*CELL);
+                ctx.moveTo(0, GRID_Y + pos);
+                ctx.lineTo(GRID_SIZE, GRID_Y + pos);
                 ctx.stroke();
             }
         }
         
         function drawSymbols() {
-            ctx.font = `bold ${Math.floor(CELL*0.45)}px monospace`;
+            ctx.font = `bold ${Math.floor(CELL_SIZE*0.45)}px monospace`;
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
             for(let r=0;r<SIZE;r++){
                 for(let c=0;c<SIZE;c++){
                     let v = board[r][c];
                     if(v==="") continue;
-                    let x = c*CELL+CELL/2, y = r*CELL+CELL/2;
+                    let x = c*CELL_SIZE + CELL_SIZE/2;
+                    let y = GRID_Y + r*CELL_SIZE + CELL_SIZE/2;
                     let color = "#2c3e2f";
                     if(fixed[r][c]) color = "#3b2a1f";
                     else if(!isValidPlacement(board,r,c,v)) color = "#c0392b";
                     ctx.fillStyle = color;
-                    ctx.fillText(v,x,y);
+                    ctx.fillText(v, x, y);
                 }
             }
         }
         
         function drawPaletteAndButtons() {
-            // Paleta de símbolos com espaçamento aumentado
+            // Calcular posição para caber tudo (símbolos + botão limpar)
             let totalWidth = SYMBOLS.length * BTN_W + (SYMBOLS.length-1) * GAP_SYMBOLS;
-            let startX = (GRID - totalWidth) / 2;
+            let startX = (GRID_SIZE - totalWidth) / 2;
             symbolAreas = [];
             for(let i=0;i<SYMBOLS.length;i++){
                 let x = startX + i * (BTN_W + GAP_SYMBOLS);
                 let y = PAL_Y;
                 ctx.fillStyle = "#f0e6d2";
-                ctx.fillRect(x,y,BTN_W,BTN_W);
+                ctx.fillRect(x, y, BTN_W, BTN_W);
                 ctx.strokeStyle = "#b0a07c";
-                ctx.strokeRect(x,y,BTN_W,BTN_W);
+                ctx.strokeRect(x, y, BTN_W, BTN_W);
                 ctx.fillStyle = "#2d3e2b";
-                ctx.font = `28px monospace`;
+                ctx.font = `26px monospace`;
                 ctx.fillText(SYMBOLS[i], x+BTN_W/2, y+BTN_W/2);
-                symbolAreas.push({x,y,w:BTN_W,h:BTN_W,sym:SYMBOLS[i]});
+                symbolAreas.push({x, y, w: BTN_W, h: BTN_W, sym: SYMBOLS[i]});
             }
-            // Botão limpar (apagar)
+            // Botão limpar (⌫) - agora com espaço garantido
             let eraseX = startX + SYMBOLS.length * (BTN_W + GAP_SYMBOLS);
             ctx.fillStyle = "#d9c8aa";
             ctx.fillRect(eraseX, PAL_Y, BTN_W, BTN_W);
             ctx.strokeRect(eraseX, PAL_Y, BTN_W, BTN_W);
             ctx.fillStyle = "#3b2a1f";
+            ctx.font = `26px monospace`;
             ctx.fillText("⌫", eraseX+BTN_W/2, PAL_Y+BTN_W/2);
-            clearArea = {x:eraseX, y:PAL_Y, w:BTN_W, h:BTN_W};
+            clearArea = {x: eraseX, y: PAL_Y, w: BTN_W, h: BTN_W};
             
-            // Botões NOVO e VERIFICAR reposicionados mais abaixo (BTNS_Y)
-            let newX = GRID/2 - 80;
+            // Botões NOVO e VERIFICAR reposicionados mais à esquerda e descidos
+            let buttonWidth = 100;
+            let spacing = 20;
+            let totalButtonsWidth = buttonWidth * 2 + spacing;
+            let startButtonsX = (GRID_SIZE - totalButtonsWidth) / 2 - 25; // deslocar um pouco à esquerda
+            let newX = startButtonsX;
+            let checkX = newX + buttonWidth + spacing;
+            let btnY = BTNS_Y;
+            
             ctx.fillStyle = "#4a6741";
-            ctx.fillRect(newX, BTNS_Y, 100, 40);
+            ctx.fillRect(newX, btnY, buttonWidth, 40);
             ctx.fillStyle = "white";
-            ctx.font = "bold 20px 'Segoe UI'";
-            ctx.fillText("NOVO", newX+50, BTNS_Y+26);
-            newArea = {x:newX, y:BTNS_Y, w:100, h:40};
+            ctx.font = "bold 18px 'Segoe UI'";
+            ctx.fillText("NOVO", newX+buttonWidth/2, btnY+26);
+            newArea = {x: newX, y: btnY, w: buttonWidth, h: 40};
             
-            let checkX = GRID/2 + 30;
-            ctx.fillRect(checkX, BTNS_Y, 110, 40);
-            ctx.fillText("VERIFICAR", checkX+55, BTNS_Y+26);
-            checkArea = {x:checkX, y:BTNS_Y, w:110, h:40};
+            ctx.fillStyle = "#4a6741";
+            ctx.fillRect(checkX, btnY, 110, 40);
+            ctx.fillStyle = "white";
+            ctx.fillText("VERIFICAR", checkX+55, btnY+26);
+            checkArea = {x: checkX, y: btnY, w: 110, h: 40};
         }
         
         function drawStatus() {
-            ctx.font = "bold 15px monospace";
+            ctx.font = "bold 16px monospace";
             ctx.fillStyle = "#2c3e2f";
+            ctx.shadowBlur = 0;
             ctx.textAlign = "center";
-            ctx.fillText(statusMsg, GRID/2, STATUS_Y);
+            // fundo semi-transparente para legibilidade
+            ctx.fillStyle = "rgba(240,240,240,0.7)";
+            ctx.fillRect(GRID_SIZE/2 - 200, STATUS_Y-15, 400, 28);
+            ctx.fillStyle = "#1e3c2c";
+            ctx.fillText(statusMsg, GRID_SIZE/2, STATUS_Y);
         }
         
-        // ---------- Eventos (toque e mouse) ----------
+        // ---------- Eventos (toque e mouse) com coordenadas relativas ----------
         function getCanvasCoords(e) {
             let rect = canvas.getBoundingClientRect();
             let scaleX = canvas.width / rect.width;
@@ -415,12 +477,12 @@
             }
             let canvasX = (clientX - rect.left) * scaleX;
             let canvasY = (clientY - rect.top) * scaleY;
-            return {x:Math.min(Math.max(0,canvasX),canvas.width), y:Math.min(Math.max(0,canvasY),canvas.height)};
+            return {x: Math.min(Math.max(0, canvasX), canvas.width), y: Math.min(Math.max(0, canvasY), canvas.height)};
         }
         
         function onClick(e) {
             e.preventDefault();
-            let {x,y} = getCanvasCoords(e);
+            let {x, y} = getCanvasCoords(e);
             // Botões da paleta
             for(let area of symbolAreas){
                 if(x>=area.x && x<=area.x+area.w && y>=area.y && y<=area.y+area.h){
@@ -440,10 +502,10 @@
                 verify();
                 return;
             }
-            // Clique no grid
-            if(x>=0 && x<GRID && y>=0 && y<GRID){
-                let col = Math.floor(x/CELL);
-                let row = Math.floor(y/CELL);
+            // Clique no grid (considerando deslocamento GRID_Y)
+            if(x>=0 && x<GRID_SIZE && y>=GRID_Y && y<GRID_Y+GRID_SIZE){
+                let col = Math.floor(x / CELL_SIZE);
+                let row = Math.floor((y - GRID_Y) / CELL_SIZE);
                 if(row>=0 && row<SIZE && col>=0 && col<SIZE){
                     if(gameOver){
                         statusMsg = "Jogo finalizado. Clique NOVO.";
@@ -464,7 +526,7 @@
             }
         }
         
-        canvas.addEventListener('touchstart', onClick, {passive:false});
+        canvas.addEventListener('touchstart', onClick, {passive: false});
         canvas.addEventListener('mousedown', onClick);
         
         // Iniciar jogo
