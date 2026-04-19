@@ -2,608 +2,672 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>Sygnus · mosaico ASCII fluido</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    
+    <!-- METADADOS PARA CLASSIFICAÇÃO DE CONTEÚDO - SEGURANÇA PARA CRIANÇAS -->
+    <meta name="rating" content="General">
+    <meta name="distribution" content="Global">
+    <meta name="audience" content="Everyone">
+    <meta name="content-language" content="pt-br">
+    <meta name="googlebot" content="index, follow">
+    <meta name="age-rating" content="General Audiences">
+    <meta name="category" content="Puzzle Game">
+    <meta name="suitable-for-children" content="yes">
+    <meta name="child-directed" content="true">
+    <meta name="max-ad-content-rating" content="G">
+    
+    <title>Symbolum - Sudoku de Símbolos (Phaser 2D)</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            user-select: none; /* evita seleção acidental em telas */
+            user-select: none;
         }
 
         body {
-            background: #0b0e12;
-            font-family: 'SF Mono', 'Fira Code', 'Courier New', monospace;
-            color: #cbd5e6;
-            padding: 1.2rem;
+            background: linear-gradient(145deg, #1e3c2c 0%, #2a4a35 100%);
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
+            font-family: 'Segoe UI', 'Poppins', monospace;
+            padding: 20px;
+            margin: 0;
         }
 
-        /* container principal – sem bordas, sem caixas */
-        .game-container {
-            width: 100%;
-            max-width: 1400px;
-            margin: 0 auto;
-            text-align: center;
-        }
-
-        /* tipografia leve */
-        h1 {
-            font-size: clamp(2rem, 8vw, 3rem);
-            font-weight: 500;
-            letter-spacing: 6px;
-            background: linear-gradient(135deg, #c2e0ff, #96f0c0, #ffe6a3);
-            background-clip: text;
-            -webkit-background-clip: text;
-            color: transparent;
-            margin-bottom: 0.25rem;
-            text-shadow: none;
-        }
-
-        .sub {
-            font-size: 0.7rem;
-            letter-spacing: 2px;
-            color: #5f6e7a;
-            text-transform: uppercase;
-            margin-bottom: 1.5rem;
-            font-weight: 400;
-        }
-
-        /* área do mosaico – sem caixa, sem borda, sem sombra */
-        .mosaic-scroll {
-            overflow-x: auto;
-            overflow-y: visible;
-            width: 100%;
-            -webkit-overflow-scrolling: touch;
-            margin: 0.5rem 0 1rem;
-            padding: 0 0 8px 0;
-        }
-
-        .mosaic-area {
-            display: inline-block;
-            background: transparent;
-            line-height: 1.2;
-            cursor: crosshair;
-            font-size: 0; /* remove espaços inline */
-        }
-
-        /* linhas do mosaico */
-        .ascii-row {
-            display: flex;
-            flex-wrap: nowrap;
-            justify-content: center;
-        }
-
-        /* cada caractere – fluido, adaptável, sem borda */
-        .ascii-char {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: clamp(24px, 5vw, 36px);
-            height: clamp(28px, 6vw, 42px);
-            font-size: clamp(1rem, 4.5vw, 1.6rem);
-            font-weight: 500;
-            font-family: 'SF Mono', 'Fira Code', 'Courier New', monospace;
-            transition: all 0.12s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-            text-align: center;
-            flex-shrink: 0;
-            background: transparent;
-            border-radius: 6px;
-        }
-
-        /* estado não revelado: tons suaves de cinza sem rigidez */
-        .ascii-char:not(.found):not(.found-at):not(.found-hash):not(.found-dollar):not(.found-percent):not(.found-question):not(.found-amp):not(.found-star):not(.found-plus):not(.found-minus) {
-            color: #3a4249;
-            text-shadow: none;
-            opacity: 0.85;
-        }
-
-        /* seleção temporária – leve e suave */
-        .ascii-char.selected {
-            background: rgba(180, 220, 255, 0.2);
-            color: #ffffff !important;
-            transform: scale(1.08);
-            text-shadow: 0 0 6px rgba(255,255,200,0.8);
-            border-radius: 12px;
-        }
-
-        /* cores vivas porém suaves para os símbolos revelados */
-        .found-at { color: #ff8a7a; text-shadow: 0 0 3px #ff5a4a; }
-        .found-hash { color: #8effb2; text-shadow: 0 0 3px #4ecc6e; }
-        .found-dollar { color: #ffe38c; text-shadow: 0 0 3px #ffcd4a; }
-        .found-percent { color: #7aa2f7; text-shadow: 0 0 3px #4a6eff; }
-        .found-question { color: #e68afc; text-shadow: 0 0 3px #c65af0; }
-        .found-amp { color: #6ee7e7; text-shadow: 0 0 3px #3acaca; }
-        .found-star { color: #ffb45e; text-shadow: 0 0 3px #ff9a2a; }
-        .found-plus { color: #f2f2f2; text-shadow: 0 0 4px #dddddd; }
-        .found-minus { color: #a0abb5; text-shadow: 0 0 2px #7a8794; }
-
-        /* barra de botões – sem caixa, apenas flex orgânico */
-        .controls-bar {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 0.8rem;
-            margin: 2rem 0 1rem;
-            padding: 0.25rem;
-        }
-
-        /* botões circulares suaves, sem bordas duras */
-        .confirm-btn {
-            background: rgba(30, 38, 48, 0.6);
-            backdrop-filter: blur(4px);
-            border: none;
-            width: clamp(64px, 14vw, 80px);
-            height: clamp(64px, 14vw, 80px);
-            border-radius: 80px;
-            font-size: clamp(1.6rem, 6vw, 2.2rem);
-            font-weight: 600;
-            font-family: monospace;
-            color: #a3b3c4;
-            cursor: pointer;
+        .game-wrapper {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            transition: all 0.2s ease;
-            box-shadow: none;
-            outline: none;
-            position: relative;
+            background: #fef7e0;
+            border-radius: 48px;
+            padding: 20px 20px 25px 20px;
+            box-shadow: 0 20px 35px rgba(0,0,0,0.3);
         }
 
-        .confirm-btn:active {
-            transform: scale(0.96);
-            background: rgba(50, 65, 80, 0.8);
+        #game-container {
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 8px 18px rgba(0,0,0,0.2);
         }
 
-        .confirm-btn.active {
-            color: #ffdf8c;
-            background: rgba(70, 110, 130, 0.5);
-            text-shadow: 0 0 6px #ffdd77;
-        }
-
-        .confirm-btn.completed {
-            opacity: 0.4;
-            transform: scale(0.94);
-            cursor: default;
-            filter: grayscale(0.2);
-            text-decoration: line-through;
-            text-decoration-thickness: 2px;
-            text-decoration-color: #6a7a88;
-        }
-
-        .btn-progress {
+        .safety-note {
+            text-align: center;
             font-size: 0.7rem;
-            font-weight: normal;
-            letter-spacing: 0.5px;
-            background: none;
-            margin-top: 4px;
-            color: #6d859c;
+            color: #3b5c3a;
+            margin-top: 16px;
+            padding-top: 12px;
+            border-top: 1px solid #d4c9a6;
+            font-weight: 500;
         }
 
-        /* mensagem de status – leve, integrada */
-        .status-msg {
-            margin-top: 1.8rem;
-            font-size: 0.85rem;
-            color: #8ea1b2;
-            background: transparent;
-            padding: 0.5rem;
-            letter-spacing: 0.3px;
-            border-radius: 0;
-            backdrop-filter: none;
-            border: none;
-            transition: all 0.2s;
+        .privacy-link {
+            text-align: center;
+            font-size: 0.7rem;
+            margin-top: 8px;
         }
-
-        /* botão novo jogo – minimal */
-        .new-game-btn {
-            background: none;
-            border: none;
-            color: #8d9fae;
-            font-size: 0.85rem;
-            font-family: inherit;
-            padding: 0.6rem 1.8rem;
-            margin-top: 0.5rem;
-            cursor: pointer;
-            border-radius: 40px;
-            transition: 0.15s;
-            letter-spacing: 1px;
-            backdrop-filter: blur(4px);
-            background: rgba(20, 28, 34, 0.4);
+        .privacy-link a {
+            color: #2c5e2a;
+            text-decoration: none;
+            font-weight: bold;
         }
-
-        .new-game-btn:active {
-            transform: scale(0.97);
-            color: #cde3f5;
+        .privacy-link a:hover {
+            text-decoration: underline;
         }
-
-        /* animação shake suave */
-        @keyframes gentleShake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-4px); }
-            75% { transform: translateX(4px); }
-        }
-        .shake {
-            animation: gentleShake 0.2s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
-        }
-
-        /* toque responsivo: espaçamento para dedos */
-        @media (max-width: 640px) {
-            body { padding: 0.8rem; }
-            .confirm-btn { width: 60px; height: 60px; font-size: 1.6rem; }
-            .btn-progress { font-size: 0.6rem; }
-            .ascii-char { width: 28px; height: 32px; font-size: 1rem; }
-        }
-
-        @media (max-width: 480px) {
-            .ascii-char { width: 26px; height: 30px; font-size: 0.9rem; }
-            .confirm-btn { width: 54px; height: 54px; }
-        }
-
-        /* sem bordas, sem cards, sem sombras — apenas o essencial */
-        .mosaic-scroll::-webkit-scrollbar {
-            height: 4px;
-            background: transparent;
-        }
-        .mosaic-scroll::-webkit-scrollbar-thumb {
-            background: #2e3b44;
-            border-radius: 10px;
+        
+        @media (max-width: 700px) {
+            .game-wrapper {
+                padding: 12px;
+            }
         }
     </style>
+    <!-- Phaser 3 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
 </head>
 <body>
-
-<div class="game-container">
-    <h1>SYGNUS</h1>
-    <div class="sub">toque · selecione · confirme</div>
-
-    <!-- Área rolável do mosaico, sem caixa delimitadora -->
-    <div class="mosaic-scroll">
-        <div class="mosaic-area" id="mosaicArea"></div>
+<div class="game-wrapper">
+    <div id="game-container"></div>
+    <div class="safety-note">✔️ Jogo seguro para todas as idades | Sem anúncios inadequados | Apenas diversão e lógica</div>
+    <div class="privacy-link">
+        <a href="#" target="_blank">🔒 Política de Privacidade</a> – Este app não coleta dados pessoais.
     </div>
-
-    <!-- Barra de símbolos (botões circulares) -->
-    <div class="controls-bar" id="controlsBar"></div>
-
-    <div class="status-msg" id="statusMsg">✦ Toque em um símbolo cinza no mosaico e depois no botão correspondente.</div>
-    
-    <button class="new-game-btn" id="newGameBtn">⟳ novo mosaico</button>
 </div>
 
 <script>
+    // ============================================================
+    // CONFIGURAÇÃO DE SEGURANÇA PARA CRIANÇAS (COPPA/GDPR)
+    // ============================================================
     (function() {
-        // ---------- CONFIGURAÇÃO ----------
-        const SYMBOLS = ['@', '#', '$', '%', '?', '&', '*', '+', '-'];
-        const SYMBOL_CLASSES = {
-            '@': 'found-at', '#': 'found-hash', '$': 'found-dollar',
-            '%': 'found-percent', '?': 'found-question', '&': 'found-amp',
-            '*': 'found-star', '+': 'found-plus', '-': 'found-minus'
-        };
-
-        // Dimensões do mosaico: 20 linhas x 48 colunas (melhor responsividade)
-        const ROWS = 20;
-        const COLS = 48;
-
-        let currentDrawing = [];       // matriz de caracteres
-        let symbolTotals = {};          // total de ocorrências por símbolo
-        let symbolFound = {};           // quantos já foram descobertos
-        let selectedCell = null;        // { row, col, char }
-        let gameActive = true;
-        let victoryFlag = false;
-
-        const mosaicArea = document.getElementById('mosaicArea');
-        const controlsBar = document.getElementById('controlsBar');
-        const statusMsg = document.getElementById('statusMsg');
-        const newGameBtn = document.getElementById('newGameBtn');
-
-        // ---------- FUNÇÕES AUXILIARES ----------
-        function resetGameState() {
-            currentDrawing = [];
-            symbolTotals = {};
-            symbolFound = {};
-            selectedCell = null;
-            gameActive = true;
-            victoryFlag = false;
-
-            SYMBOLS.forEach(s => {
-                symbolTotals[s] = 0;
-                symbolFound[s] = 0;
-            });
+        window.google_tag_for_child_directed_treatment = 1;
+        window.google_tag_for_under_age_of_consent = 1;
+        window.google_max_ad_content_rating = "G";
+        if (typeof googletag !== 'undefined' && googletag.pubads) {
+            try {
+                googletag.pubads().setTagForChildDirectedTreatment(1);
+                googletag.pubads().setMaxAdContentRating('G');
+                googletag.pubads().setRequestNonPersonalizedAds(1);
+            } catch(e) {}
         }
-
-        // Gera mosaico aleatório denso e equilibrado (evita símbolos com zero)
-        function generateRandomMosaic() {
-            const matrix = [];
-            // primeiro, garantir que cada símbolo apareça pelo menos 1x
-            const minOccurrence = {};
-            SYMBOLS.forEach(s => { minOccurrence[s] = 1; });
-            
-            // preencher vazios
-            for (let i = 0; i < ROWS; i++) {
-                const row = [];
-                for (let j = 0; j < COLS; j++) {
-                    let randSym = SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)];
-                    row.push(randSym);
-                }
-                matrix.push(row);
-            }
-            
-            // recalcular totais e verificar se algum símbolo ficou com 0
-            const totals = {};
-            SYMBOLS.forEach(s => totals[s] = 0);
-            for (let i = 0; i < ROWS; i++) {
-                for (let j = 0; j < COLS; j++) {
-                    totals[matrix[i][j]]++;
-                }
-            }
-            // se algum símbolo tiver total zero, forçar alguns caracteres
-            for (let s of SYMBOLS) {
-                if (totals[s] === 0) {
-                    // substituir algumas posições aleatórias
-                    for (let k = 0; k < 3; k++) {
-                        const randRow = Math.floor(Math.random() * ROWS);
-                        const randCol = Math.floor(Math.random() * COLS);
-                        matrix[randRow][randCol] = s;
-                    }
-                }
-            }
-            // recalcular totais finais
-            const finalTotals = {};
-            SYMBOLS.forEach(s => finalTotals[s] = 0);
-            for (let i = 0; i < ROWS; i++) {
-                for (let j = 0; j < COLS; j++) {
-                    finalTotals[matrix[i][j]]++;
-                }
-            }
-            return { matrix: matrix, totals: finalTotals };
-        }
-
-        // Inicializa / reinicia o jogo
-        function initGame() {
-            resetGameState();
-            const { matrix, totals } = generateRandomMosaic();
-            currentDrawing = matrix;
-            symbolTotals = totals;
-            
-            renderMosaic();
-            renderControls();
-            statusMsg.innerText = "🌀 Mosaico gerado. Toque em um caractere cinza e depois no botão do símbolo correto.";
-            if (victoryFlag) victoryFlag = false;
-            gameActive = true;
-            selectedCell = null;
-        }
-
-        // Renderização completa do mosaico (sem bordas)
-        function renderMosaic() {
-            mosaicArea.innerHTML = '';
-            for (let r = 0; r < ROWS; r++) {
-                const rowDiv = document.createElement('div');
-                rowDiv.className = 'ascii-row';
-                for (let c = 0; c < COLS; c++) {
-                    const char = currentDrawing[r][c];
-                    const span = document.createElement('span');
-                    span.className = 'ascii-char';
-                    span.textContent = char;
-                    span.setAttribute('data-row', r);
-                    span.setAttribute('data-col', c);
-                    
-                    // Se já foi descoberto, aplicar classe de cor correspondente
-                    const isFound = (symbolFound[char] > 0 && isCharAlreadyFound(r, c, char));
-                    if (isFound) {
-                        span.classList.add(SYMBOL_CLASSES[char]);
-                    } else {
-                        // estilo neutro/cinza suave já aplicado via CSS
-                        span.style.opacity = '0.9';
-                    }
-                    
-                    // Verifica se está selecionado atualmente
-                    if (selectedCell && selectedCell.row === r && selectedCell.col === c) {
-                        span.classList.add('selected');
-                    }
-                    
-                    span.addEventListener('click', (function(row, col, ch) {
-                        return function() { selectFromMosaic(row, col, ch); };
-                    })(r, c, char));
-                    
-                    rowDiv.appendChild(span);
-                }
-                mosaicArea.appendChild(rowDiv);
-            }
-        }
-        
-        // Função auxiliar: verifica se uma célula específica já foi descoberta (para render)
-        function isCharAlreadyFound(row, col, char) {
-            // Descobrimos que o caractere está revelado se a contagem global já atingiu? 
-            // Mas precisamos saber se essa célula individualmente já foi validada.
-            // Para isso, mantemos um mapa de células reveladas.
-            if (!window._revealedCells) window._revealedCells = new Set();
-            const key = `${row},${col}`;
-            return window._revealedCells.has(key);
-        }
-        
-        // Atualiza o estado interno e visual quando uma célula é validada
-        function markCellAsFound(row, col, char) {
-            if (!window._revealedCells) window._revealedCells = new Set();
-            const key = `${row},${col}`;
-            if (window._revealedCells.has(key)) return;
-            window._revealedCells.add(key);
-            
-            // Atualizar estilo diretamente no DOM
-            const cellSpan = document.querySelector(`.ascii-char[data-row='${row}'][data-col='${col}']`);
-            if (cellSpan) {
-                cellSpan.classList.remove('selected');
-                cellSpan.classList.add(SYMBOL_CLASSES[char]);
-                cellSpan.style.opacity = '1';
-            }
-        }
-        
-        // Lida com a seleção de um caractere no mosaico
-        function selectFromMosaic(row, col, char) {
-            if (!gameActive || victoryFlag) {
-                statusMsg.innerText = "🏁 Jogo finalizado! Clique em 'novo mosaico' para continuar.";
-                return;
-            }
-            // Verificar se essa célula já foi revelada
-            if (window._revealedCells && window._revealedCells.has(`${row},${col}`)) {
-                statusMsg.innerText = `⚠️ Símbolo "${char}" já foi descoberto! Toque em um ainda cinza.`;
-                return;
-            }
-            
-            // Remove seleção anterior
-            if (selectedCell) {
-                const prevSpan = document.querySelector(`.ascii-char[data-row='${selectedCell.row}'][data-col='${selectedCell.col}']`);
-                if (prevSpan) prevSpan.classList.remove('selected');
-            }
-            
-            // Define nova seleção
-            selectedCell = { row, col, char };
-            const currentSpan = document.querySelector(`.ascii-char[data-row='${row}'][data-col='${col}']`);
-            if (currentSpan) currentSpan.classList.add('selected');
-            
-            statusMsg.innerText = `🔍 "${char}" selecionado. Toque no botão correspondente abaixo.`;
-            // Realça o botão ativo de forma sugestiva
-            highlightActiveButtonForChar(char);
-        }
-        
-        function highlightActiveButtonForChar(char) {
-            // apenas um auxílio visual sem forçar clique
-            document.querySelectorAll('.confirm-btn').forEach(btn => {
-                btn.classList.remove('active');
-                if (btn.innerText.trim()[0] === char) {
-                    btn.classList.add('active');
-                }
-            });
-            setTimeout(() => {
-                document.querySelectorAll('.confirm-btn').forEach(btn => btn.classList.remove('active'));
-            }, 800);
-        }
-        
-        // Confirmação do símbolo através do botão
-        function confirmSymbol(sym) {
-            if (!gameActive || victoryFlag) {
-                statusMsg.innerText = "Jogo encerrado, gere um novo mosaico.";
-                return;
-            }
-            if (!selectedCell) {
-                statusMsg.innerText = "👆 Primeiro, toque em um caractere cinza no mosaico.";
-                return;
-            }
-            
-            const btn = document.getElementById(`btn-${sym}`);
-            if (btn && btn.classList.contains('completed')) {
-                statusMsg.innerText = `🏆 Símbolo ${sym} já está completo!`;
-                return;
-            }
-            
-            const { row, col, char: selectedChar } = selectedCell;
-            
-            // Verificar se a célula ainda não foi revelada (segurança extra)
-            if (window._revealedCells && window._revealedCells.has(`${row},${col}`)) {
-                statusMsg.innerText = "Esta célula já foi descoberta. Selecione outra.";
-                selectedCell = null;
-                renderMosaic(); // atualiza visual
-                return;
-            }
-            
-            if (selectedChar === sym) {
-                // ACERTO!
-                // Marcar célula como encontrada
-                markCellAsFound(row, col, sym);
-                symbolFound[sym]++;
-                
-                // Atualizar contadores dos botões
-                renderControls();
-                
-                // Remover seleção atual
-                const selectedSpan = document.querySelector(`.ascii-char[data-row='${row}'][data-col='${col}']`);
-                if (selectedSpan) selectedSpan.classList.remove('selected');
-                selectedCell = null;
-                
-                // Mensagem de sucesso
-                statusMsg.innerText = `✔️ Correto! ${sym} (${symbolFound[sym]}/${symbolTotals[sym]})`;
-                
-                // Verificar se o símbolo atual foi completado
-                if (symbolFound[sym] === symbolTotals[sym]) {
-                    statusMsg.innerText = `✨ SÍMBOLO ${sym} COMPLETO! ✨ ${symbolFound[sym]}/${symbolTotals[sym]}`;
-                }
-                
-                // Checar vitória geral
-                checkVictory();
-            } else {
-                // ERRO: animação de shake e feedback
-                const errorSpan = document.querySelector(`.ascii-char[data-row='${row}'][data-col='${col}']`);
-                if (errorSpan) {
-                    errorSpan.classList.add('shake');
-                    setTimeout(() => errorSpan.classList.remove('shake'), 400);
-                }
-                statusMsg.innerText = `❌ Erro! Você selecionou "${selectedChar}" mas confirmou "${sym}". Tente novamente com o botão correto.`;
-                // Não limpamos a seleção para permitir nova tentativa (mas mantemos destaque)
-                // Apenas realça que deve clicar no botão certo.
-                highlightActiveButtonForChar(selectedChar);
-            }
-        }
-        
-        function checkVictory() {
-            const allCompleted = SYMBOLS.every(s => symbolFound[s] === symbolTotals[s]);
-            if (allCompleted && !victoryFlag && gameActive) {
-                victoryFlag = true;
-                gameActive = false;
-                statusMsg.innerHTML = "<span style='color:#b5f0b0; font-weight:500;'>✨ MOSAICO COMPLETO! PARABÉNS! ✨</span>";
-                // também desabilita visualmente cliques futuros
-            }
-        }
-        
-        // Renderiza botões e atualiza progresso
-        function renderControls() {
-            controlsBar.innerHTML = '';
-            for (let sym of SYMBOLS) {
-                const total = symbolTotals[sym] || 0;
-                const found = symbolFound[sym] || 0;
-                const isCompleted = (found === total && total > 0);
-                
-                const btn = document.createElement('button');
-                btn.className = 'confirm-btn';
-                if (isCompleted) btn.classList.add('completed');
-                btn.id = `btn-${sym}`;
-                btn.innerHTML = `${sym}<span class="btn-progress">${found}/${total}</span>`;
-                
-                btn.addEventListener('click', (function(s) {
-                    return function() { confirmSymbol(s); };
-                })(sym));
-                
-                controlsBar.appendChild(btn);
-            }
-            // se houver vitória, não altera mais nada
-            if (victoryFlag) {
-                document.querySelectorAll('.confirm-btn').forEach(btn => btn.style.pointerEvents = 'none');
-            } else {
-                document.querySelectorAll('.confirm-btn').forEach(btn => btn.style.pointerEvents = 'auto');
-            }
-        }
-        
-        // Reinício completo do jogo (novo mosaico aleatório)
-        function restartGame() {
-            if (window._revealedCells) window._revealedCells.clear();
-            else window._revealedCells = new Set();
-            selectedCell = null;
-            gameActive = true;
-            victoryFlag = false;
-            initGame();
-        }
-        
-        // Evento do botão novo jogo
-        newGameBtn.addEventListener('click', () => {
-            restartGame();
-        });
-        
-        // Inicialização pela primeira vez
-        window._revealedCells = new Set();
-        initGame();
+        window.SYMBOLUM_CHILD_SAFE = true;
+        window.SYMBOLUM_AGE_RATING = "G";
+        console.log("[Symbolum] Modo seguro para crianças ativado.");
     })();
+
+    // ==================== CONFIGURAÇÕES DO JOGO ====================
+    const SYMBOLS = ["@", "#", "$", "%", "&", "?", "*", "+", "~"];
+    const SIZE = 9;
+    const BOX_SIZE = 3;
+    const CELL_SIZE = 60;        // 60x60 pixels
+    const GRID_SIZE = CELL_SIZE * SIZE;  // 540x540
+    const PALETTE_Y = GRID_SIZE + 70;     // posição Y da paleta
+    const STATUS_Y = PALETTE_Y + 85;      // posição do texto de status
+    
+    // Estado do jogo
+    let board = Array(SIZE).fill().map(() => Array(SIZE).fill(""));
+    let solution = Array(SIZE).fill().map(() => Array(SIZE).fill(""));
+    let fixedCells = Array(SIZE).fill().map(() => Array(SIZE).fill(false));
+    let selectedRow = -1, selectedCol = -1;
+    let currentGameOver = false;
+    
+    // Referências globais da cena
+    let scene = null;
+    let gridGraphics = [];     // armazenar objetos gráficos das células
+    let statusText = null;
+    let paletteButtons = [];
+    let activePaletteIndex = -1;
+    
+    // ==================== FUNÇÕES DE LÓGICA DO SUDOKU ====================
+    function isValidPlacement(boardTemp, row, col, symbol) {
+        for (let c = 0; c < SIZE; c++) {
+            if (c !== col && boardTemp[row][c] === symbol) return false;
+        }
+        for (let r = 0; r < SIZE; r++) {
+            if (r !== row && boardTemp[r][col] === symbol) return false;
+        }
+        const startRow = Math.floor(row / BOX_SIZE) * BOX_SIZE;
+        const startCol = Math.floor(col / BOX_SIZE) * BOX_SIZE;
+        for (let r = startRow; r < startRow + BOX_SIZE; r++) {
+            for (let c = startCol; c < startCol + BOX_SIZE; c++) {
+                if ((r !== row || c !== col) && boardTemp[r][c] === symbol) return false;
+            }
+        }
+        return true;
+    }
+    
+    function findEmpty(boardArr) {
+        for (let i = 0; i < SIZE; i++) {
+            for (let j = 0; j < SIZE; j++) {
+                if (boardArr[i][j] === "") return [i, j];
+            }
+        }
+        return null;
+    }
+    
+    function solveSudoku(boardArr) {
+        const emptySpot = findEmpty(boardArr);
+        if (!emptySpot) return true;
+        const [row, col] = emptySpot;
+        const shuffledSymbols = [...SYMBOLS];
+        for (let i = shuffledSymbols.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffledSymbols[i], shuffledSymbols[j]] = [shuffledSymbols[j], shuffledSymbols[i]];
+        }
+        for (let sym of shuffledSymbols) {
+            if (isValidPlacement(boardArr, row, col, sym)) {
+                boardArr[row][col] = sym;
+                if (solveSudoku(boardArr)) return true;
+                boardArr[row][col] = "";
+            }
+        }
+        return false;
+    }
+    
+    function generateFullSolution() {
+        let full = Array(SIZE).fill().map(() => Array(SIZE).fill(""));
+        // fallback inicial para garantir que o solver tenha algo
+        for (let i = 0; i < SIZE; i++) {
+            for (let j = 0; j < SIZE; j++) {
+                full[i][j] = SYMBOLS[(i * 3 + j) % SYMBOLS.length];
+            }
+        }
+        solveSudoku(full);
+        return full;
+    }
+    
+    function generateNewPuzzle() {
+        // Gera solução completa aleatória
+        let fullSolution = generateFullSolution();
+        for (let i = 0; i < SIZE; i++) {
+            for (let j = 0; j < SIZE; j++) {
+                solution[i][j] = fullSolution[i][j];
+            }
+        }
+        
+        // Cria o puzzle removendo células
+        let puzzleBoard = Array(SIZE).fill().map(() => Array(SIZE).fill(""));
+        for (let i = 0; i < SIZE; i++) {
+            for (let j = 0; j < SIZE; j++) {
+                puzzleBoard[i][j] = solution[i][j];
+            }
+        }
+        
+        const cellsToRemove = 48 + Math.floor(Math.random() * 12);
+        let removed = 0;
+        while (removed < cellsToRemove) {
+            const row = Math.floor(Math.random() * SIZE);
+            const col = Math.floor(Math.random() * SIZE);
+            if (puzzleBoard[row][col] !== "") {
+                puzzleBoard[row][col] = "";
+                removed++;
+            }
+        }
+        
+        for (let i = 0; i < SIZE; i++) {
+            for (let j = 0; j < SIZE; j++) {
+                board[i][j] = puzzleBoard[i][j];
+                fixedCells[i][j] = (puzzleBoard[i][j] !== "");
+            }
+        }
+        
+        currentGameOver = false;
+        selectedRow = -1;
+        selectedCol = -1;
+        if (scene) {
+            updateAllCellsVisual();
+            updateStatusMessage("Novo desafio! Clique em uma célula e depois num símbolo.");
+        }
+    }
+    
+    function checkVictory() {
+        for (let i = 0; i < SIZE; i++) {
+            for (let j = 0; j < SIZE; j++) {
+                const val = board[i][j];
+                if (val === "") return false;
+                if (!isValidPlacement(board, i, j, val)) return false;
+            }
+        }
+        return true;
+    }
+    
+    // ==================== EFEITOS VISUAIS (CONFETES) ====================
+    function launchSymbolConfetti() {
+        if (!scene) return;
+        const particles = scene.add.particles(0, 0, 'confettiEmitter', {
+            frame: false,
+            lifespan: 2500,
+            speedY: { min: 200, max: 400 },
+            speedX: { min: -150, max: 150 },
+            scale: { start: 0.8, end: 0.1 },
+            alpha: { start: 1, end: 0 },
+            tint: [0xffaa44, 0xff6644, 0x44ffaa, 0xff44aa, 0xaaff44],
+            emitting: false
+        });
+        // Cria partículas personalizadas com símbolos (usando texto dinâmico)
+        // Abordagem mais simples: criar textos animados caindo (como no original)
+        const container = document.createElement('div');
+        container.style.position = 'fixed';
+        container.style.top = '0';
+        container.style.left = '0';
+        container.style.width = '100%';
+        container.style.height = '100%';
+        container.style.pointerEvents = 'none';
+        container.style.zIndex = '9999';
+        document.body.appendChild(container);
+        
+        for (let i = 0; i < 80; i++) {
+            const symbol = SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)];
+            const el = document.createElement('div');
+            el.textContent = symbol;
+            el.style.position = 'absolute';
+            el.style.fontSize = (1 + Math.random() * 1.5) + 'rem';
+            el.style.fontWeight = 'bold';
+            el.style.fontFamily = 'monospace';
+            el.style.left = Math.random() * 100 + '%';
+            el.style.top = '-10%';
+            el.style.color = `hsl(${Math.random() * 360}, 80%, 60%)`;
+            el.style.textShadow = '0 0 4px gold';
+            el.style.opacity = '0.9';
+            el.style.animation = `fallSymbol ${1.5 + Math.random() * 1.5}s linear forwards`;
+            container.appendChild(el);
+            
+            setTimeout(() => {
+                if (el.parentNode) el.remove();
+            }, 3000);
+        }
+        setTimeout(() => {
+            if (container.parentNode) container.remove();
+        }, 3200);
+        
+        // Adiciona keyframes dinamicamente se não existirem
+        if (!document.querySelector('#confetti-keyframes')) {
+            const style = document.createElement('style');
+            style.id = 'confetti-keyframes';
+            style.textContent = `
+                @keyframes fallSymbol {
+                    0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+                    100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+    }
+    
+    // ==================== ATUALIZAÇÃO VISUAL DO GRID (PHASER) ====================
+    function updateAllCellsVisual() {
+        if (!scene) return;
+        for (let i = 0; i < SIZE; i++) {
+            for (let j = 0; j < SIZE; j++) {
+                const cellObj = gridGraphics[i][j];
+                const value = board[i][j];
+                const isFixed = fixedCells[i][j];
+                const isSelected = (selectedRow === i && selectedCol === j);
+                let hasConflict = false;
+                if (value !== "" && !isFixed) {
+                    if (!isValidPlacement(board, i, j, value)) hasConflict = true;
+                }
+                
+                // Atualiza cor de fundo
+                let bgColor = 0xffffff;
+                if (isFixed) bgColor = 0xe8e0d0;
+                else if (hasConflict) bgColor = 0xf8d7da;
+                else if (isSelected) bgColor = 0xffe0a3;
+                else bgColor = 0xffffff;
+                
+                // Destaque de linha/coluna/quando selecionado
+                if (!isSelected && selectedRow !== -1 && selectedCol !== -1) {
+                    if (i === selectedRow || j === selectedCol) bgColor = 0xf9f0df;
+                    const sRowBlock = Math.floor(selectedRow / BOX_SIZE) * BOX_SIZE;
+                    const sColBlock = Math.floor(selectedCol / BOX_SIZE) * BOX_SIZE;
+                    if (i >= sRowBlock && i < sRowBlock+BOX_SIZE && j >= sColBlock && j < sColBlock+BOX_SIZE) {
+                        if (!(i === selectedRow || j === selectedCol)) bgColor = 0xefe0bd;
+                    }
+                }
+                
+                cellObj.bgRect.setFillStyle(bgColor);
+                // Atualiza texto
+                cellObj.text.setText(value === "" ? "·" : value);
+                cellObj.text.setColor(value === "" ? "#8b7a5b" : (isFixed ? "#3b2a1f" : "#2c3e2f"));
+                if (hasConflict && !isFixed && value !== "") {
+                    cellObj.text.setColor("#c0392b");
+                    cellObj.text.setStyle({ fontStyle: "italic", textDecoration: "line-through" });
+                } else {
+                    cellObj.text.setStyle({ fontStyle: "normal", textDecoration: "none" });
+                }
+                // Borda extra para célula selecionada
+                if (isSelected) {
+                    cellObj.bgRect.setStrokeStyle(3, 0xf39c12);
+                } else {
+                    cellObj.bgRect.setStrokeStyle(1, 0xaaaaaa);
+                }
+            }
+        }
+        if (currentGameOver) {
+            statusText.setText("🏆 VITÓRIA! Parabéns! 🏆");
+            statusText.setColor("#b8860b");
+        }
+    }
+    
+    function updateStatusMessage(msg) {
+        if (!scene) return;
+        if (!currentGameOver) {
+            statusText.setText(msg);
+            statusText.setColor("#2c3e2f");
+        } else {
+            statusText.setText("🎉 Vitória! Clique em NOVO para continuar! 🎉");
+            statusText.setColor("#b8860b");
+        }
+    }
+    
+    // Coloca um símbolo na célula selecionada
+    function placeSymbol(symbol) {
+        if (currentGameOver) {
+            updateStatusMessage("Jogo finalizado! Clique em NOVO JOGO.");
+            return;
+        }
+        if (selectedRow === -1 || selectedCol === -1) {
+            updateStatusMessage("Primeiro, clique em uma célula vazia ou editável.");
+            return;
+        }
+        const row = selectedRow;
+        const col = selectedCol;
+        if (fixedCells[row][col]) {
+            updateStatusMessage(`Célula fixa não pode ser alterada.`);
+            return;
+        }
+        
+        board[row][col] = symbol;
+        const isValidMove = isValidPlacement(board, row, col, symbol);
+        if (!isValidMove) {
+            updateStatusMessage(`⚠️ Conflito! O símbolo ${symbol} está em conflito.`);
+        } else {
+            updateStatusMessage(`Símbolo ${symbol} inserido!`);
+        }
+        
+        updateAllCellsVisual();
+        if (checkVictory()) {
+            currentGameOver = true;
+            updateStatusMessage("");
+            statusText.setText("🎉✨ VITÓRIA! ✨🎉");
+            statusText.setColor("#d4a017");
+            launchSymbolConfetti();
+            updateAllCellsVisual();
+        }
+    }
+    
+    function clearSelectedCell() {
+        if (currentGameOver) {
+            updateStatusMessage("Já venceu! Inicie um novo.");
+            return;
+        }
+        if (selectedRow === -1 || selectedCol === -1) {
+            updateStatusMessage("Selecione uma célula para limpar.");
+            return;
+        }
+        if (fixedCells[selectedRow][selectedCol]) {
+            updateStatusMessage("Célula fixa original não pode ser limpa!");
+            return;
+        }
+        if (board[selectedRow][selectedCol] !== "") {
+            board[selectedRow][selectedCol] = "";
+            updateStatusMessage(`Célula limpa.`);
+            updateAllCellsVisual();
+            if (checkVictory()) {
+                currentGameOver = true;
+                launchSymbolConfetti();
+                updateAllCellsVisual();
+            }
+        } else {
+            updateStatusMessage("Célula já está vazia.");
+        }
+    }
+    
+    function checkBoardErrors() {
+        if (currentGameOver) {
+            updateStatusMessage("Já venceu! Reinicie para testar outro.");
+            return;
+        }
+        let hasAnyEmpty = false;
+        let conflictCount = 0;
+        for (let i = 0; i < SIZE; i++) {
+            for (let j = 0; j < SIZE; j++) {
+                const val = board[i][j];
+                if (val === "") hasAnyEmpty = true;
+                else if (!isValidPlacement(board, i, j, val)) conflictCount++;
+            }
+        }
+        if (conflictCount === 0 && !hasAnyEmpty) {
+            updateStatusMessage("🎉✅ Perfeito! Você completou corretamente! Vitória! ✅🎉");
+            currentGameOver = true;
+            launchSymbolConfetti();
+            updateAllCellsVisual();
+        } else if (conflictCount === 0 && hasAnyEmpty) {
+            updateStatusMessage("✅ Nenhum conflito encontrado! Continue preenchendo.");
+        } else {
+            updateStatusMessage(`⚠️ Atenção: ${conflictCount} célula(s) em conflito! ⚠️`);
+        }
+        updateAllCellsVisual();
+    }
+    
+    // ==================== CRIAÇÃO DA CENA PHASER ====================
+    class SymbolumGame extends Phaser.Scene {
+        constructor() {
+            super({ key: 'SymbolumScene' });
+        }
+        
+        preload() {
+            // Não precisa carregar assets externos
+        }
+        
+        create() {
+            scene = this;
+            
+            // Fundo da área de jogo
+            this.add.rectangle(0, 0, GRID_SIZE, GRID_SIZE + 180, 0xfef7e0).setOrigin(0, 0);
+            
+            // Desenhar linhas do grid (bordas grossas)
+            const graphics = this.add.graphics();
+            graphics.lineStyle(2, 0x333333);
+            for (let i = 0; i <= SIZE; i++) {
+                const lineWidth = (i % BOX_SIZE === 0) ? 3 : 1;
+                graphics.lineStyle(lineWidth, 0x333333);
+                graphics.beginPath();
+                graphics.moveTo(i * CELL_SIZE, 0);
+                graphics.lineTo(i * CELL_SIZE, GRID_SIZE);
+                graphics.stroke();
+                graphics.moveTo(0, i * CELL_SIZE);
+                graphics.lineTo(GRID_SIZE, i * CELL_SIZE);
+                graphics.stroke();
+            }
+            
+            // Inicializa grid de células interativas
+            gridGraphics = [];
+            for (let row = 0; row < SIZE; row++) {
+                gridGraphics[row] = [];
+                for (let col = 0; col < SIZE; col++) {
+                    const x = col * CELL_SIZE;
+                    const y = row * CELL_SIZE;
+                    const bgRect = this.add.rectangle(x + CELL_SIZE/2, y + CELL_SIZE/2, CELL_SIZE-2, CELL_SIZE-2, 0xffffff)
+                        .setOrigin(0.5).setInteractive({ useHandCursor: true })
+                        .setStrokeStyle(1, 0xaaaaaa);
+                    
+                    const text = this.add.text(x + CELL_SIZE/2, y + CELL_SIZE/2, "", {
+                        fontSize: '32px',
+                        fontFamily: 'monospace',
+                        fontWeight: 'bold',
+                        color: '#2c3e2f'
+                    }).setOrigin(0.5);
+                    
+                    // Evento de clique na célula
+                    bgRect.on('pointerdown', () => {
+                        if (currentGameOver) {
+                            updateStatusMessage("Jogo concluído! Comece uma nova partida.");
+                            return;
+                        }
+                        if (fixedCells[row][col]) {
+                            selectedRow = row;
+                            selectedCol = col;
+                            updateStatusMessage(`Célula fixa: ${board[row][col]} (não editável)`);
+                            updateAllCellsVisual();
+                        } else {
+                            selectedRow = row;
+                            selectedCol = col;
+                            updateStatusMessage(`Célula selecionada. Clique num símbolo.`);
+                            updateAllCellsVisual();
+                        }
+                    });
+                    
+                    gridGraphics[row][col] = { bgRect, text };
+                }
+            }
+            
+            // Criação da paleta de símbolos
+            const paletteStartX = (GRID_SIZE - (SYMBOLS.length * 48)) / 2;
+            paletteButtons = [];
+            SYMBOLS.forEach((sym, idx) => {
+                const btnX = paletteStartX + idx * 48 + 24;
+                const btnY = PALETTE_Y;
+                const btnBg = this.add.rectangle(btnX, btnY, 44, 44, 0xf0e6d2)
+                    .setOrigin(0.5).setInteractive({ useHandCursor: true })
+                    .setStrokeStyle(1, 0xb0a07c);
+                const btnText = this.add.text(btnX, btnY, sym, {
+                    fontSize: '28px',
+                    fontFamily: 'monospace',
+                    fontWeight: 'bold',
+                    color: '#2d3e2b'
+                }).setOrigin(0.5);
+                
+                btnBg.on('pointerdown', () => {
+                    if (activePaletteIndex !== -1) {
+                        // reset visual do anterior
+                        if (paletteButtons[activePaletteIndex]) {
+                            paletteButtons[activePaletteIndex].bg.setFillStyle(0xf0e6d2);
+                        }
+                    }
+                    activePaletteIndex = idx;
+                    btnBg.setFillStyle(0xffb347);
+                    placeSymbol(sym);
+                    // reseta destaque após curto tempo
+                    setTimeout(() => {
+                        if (activePaletteIndex === idx) {
+                            btnBg.setFillStyle(0xf0e6d2);
+                            activePaletteIndex = -1;
+                        }
+                    }, 200);
+                });
+                paletteButtons.push({ bg: btnBg, text: btnText, symbol: sym });
+            });
+            
+            // Botão de limpar (apagar)
+            const eraseX = paletteStartX + SYMBOLS.length * 48 + 30;
+            const eraseBg = this.add.rectangle(eraseX, PALETTE_Y, 44, 44, 0xd9c8aa)
+                .setOrigin(0.5).setInteractive({ useHandCursor: true })
+                .setStrokeStyle(1, 0x8b7a5b);
+            const eraseText = this.add.text(eraseX, PALETTE_Y, "⌫", {
+                fontSize: '28px',
+                fontFamily: 'monospace',
+                color: '#3b2a1f'
+            }).setOrigin(0.5);
+            eraseBg.on('pointerdown', () => {
+                clearSelectedCell();
+                eraseBg.setFillStyle(0xc2aa7a);
+                setTimeout(() => eraseBg.setFillStyle(0xd9c8aa), 150);
+            });
+            
+            // Botão NOVO JOGO
+            const newBtnX = GRID_SIZE/2 - 100;
+            const newBtn = this.add.rectangle(newBtnX, PALETTE_Y + 55, 90, 40, 0x4a6741)
+                .setOrigin(0.5).setInteractive({ useHandCursor: true });
+            const newText = this.add.text(newBtnX, PALETTE_Y + 55, "NOVO", {
+                fontSize: '20px',
+                fontWeight: 'bold',
+                color: '#ffffff'
+            }).setOrigin(0.5);
+            newBtn.on('pointerdown', () => {
+                generateNewPuzzle();
+                selectedRow = -1;
+                selectedCol = -1;
+                currentGameOver = false;
+                updateAllCellsVisual();
+                updateStatusMessage("Novo jogo! Selecione uma célula.");
+                newBtn.setFillStyle(0x6b8c5c);
+                setTimeout(() => newBtn.setFillStyle(0x4a6741), 150);
+            });
+            
+            // Botão VERIFICAR
+            const checkBtnX = GRID_SIZE/2 + 100;
+            const checkBtn = this.add.rectangle(checkBtnX, PALETTE_Y + 55, 100, 40, 0x4a6741)
+                .setOrigin(0.5).setInteractive({ useHandCursor: true });
+            const checkText = this.add.text(checkBtnX, PALETTE_Y + 55, "VERIFICAR", {
+                fontSize: '18px',
+                fontWeight: 'bold',
+                color: '#ffffff'
+            }).setOrigin(0.5);
+            checkBtn.on('pointerdown', () => {
+                checkBoardErrors();
+                checkBtn.setFillStyle(0x6b8c5c);
+                setTimeout(() => checkBtn.setFillStyle(0x4a6741), 150);
+            });
+            
+            // Texto de status
+            statusText = this.add.text(GRID_SIZE/2, STATUS_Y, "Clique em uma célula e num símbolo", {
+                fontSize: '16px',
+                fontWeight: 'bold',
+                fontFamily: 'monospace',
+                color: '#2c3e2f',
+                backgroundColor: '#f0ede0',
+                padding: { x: 10, y: 5 },
+                align: 'center'
+            }).setOrigin(0.5);
+            statusText.setBackgroundColor('#f0ede0');
+            
+            // Inicializar o jogo
+            generateNewPuzzle();
+            updateAllCellsVisual();
+        }
+    }
+    
+    // Configuração do Phaser
+    const config = {
+        type: Phaser.AUTO,
+        parent: 'game-container',
+        width: GRID_SIZE,
+        height: GRID_SIZE + 160,
+        backgroundColor: '#fef7e0',
+        scale: {
+            mode: Phaser.Scale.FIT,
+            autoCenter: Phaser.Scale.CENTER_BOTH
+        },
+        scene: SymbolumGame,
+        input: {
+            activePointers: 2
+        }
+    };
+    
+    window.addEventListener('load', () => {
+        new Phaser.Game(config);
+    });
 </script>
 </body>
 </html>
