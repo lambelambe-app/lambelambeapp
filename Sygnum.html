@@ -6,7 +6,7 @@
     <meta name="rating" content="General">
     <meta name="audience" content="Everyone">
     <meta name="child-directed" content="true">
-    <title>Symbolum - Sudoku de Símbolos</title>
+    <title>Symbolum - Sudoku Futurista</title>
     <style>
         * {
             user-select: none;
@@ -14,48 +14,58 @@
             box-sizing: border-box;
         }
         body {
-            background: #f0f0f0;
+            background: #0a0f0e;
+            background-image: radial-gradient(circle at 10% 20%, #1a2a1f, #0a100d);
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
             margin: 0;
-            padding: 20px;
-            font-family: monospace;
+            padding: 16px;
+            font-family: 'Segoe UI', monospace;
+        }
+        .game-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
         canvas {
             display: block;
             margin: 0 auto;
             cursor: pointer;
-            width: 100%;
+            width: auto;
             height: auto;
-            max-width: 540px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            border-radius: 8px;
+            max-width: 100%;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 0 2px rgba(210,180,80,0.3);
+            background: #fef7e0;
         }
+        /* O canvas terá tamanho fixo de 540x700, mas o CSS permite redimensionamento suave */
     </style>
 </head>
 <body>
-<canvas id="gameCanvas" width="540" height="720"></canvas>
+<div class="game-wrapper">
+    <canvas id="gameCanvas" width="540" height="700"></canvas>
+</div>
 
 <script>
     (function(){
-        // ==================== CONFIGURAÇÕES ====================
+        // ---------- CONFIGURAÇÕES GLOBAIS ----------
         const SYMBOLS = ["@","#","$","%","&","?","*","+","~"];
         const SIZE = 9;
         const BOX = 3;
-        const CELL = 54;          // reduzido para caber melhor (540/10 = 54, mas grid 9x54=486, vou ajustar)
-        // Para manter grid 540x540, CELL = 60. Mas com título, vamos manter 60 e ajustar layout.
-        // Melhor: CELL = 60, GRID = 540. Título ocupa espaço no topo.
-        const CELL_SIZE = 60;
-        const GRID_SIZE = CELL_SIZE * SIZE; // 540
-        const TITLE_Y = 30;        // posição Y do título
-        const GRID_Y = 70;          // grid começa no Y 70 (antes era 0)
-        const PAL_Y = GRID_Y + GRID_SIZE + 15;  // paleta abaixo do grid
-        const BTN_W = 42;           // botões de símbolo um pouco menores para caber
-        const GAP_SYMBOLS = 8;      // espaçamento entre botões de símbolos
-        const BTNS_Y = PAL_Y + 80;   // botões NOVO e VERIFICAR mais abaixo
-        const STATUS_Y = BTNS_Y + 55; // mensagem de status abaixo dos botões
+        const CELL = 60;            // 60px cada célula
+        const GRID_SIZE = CELL * SIZE; // 540px
+        const GRID_Y = 72;           // grid começa após o título
+        const TITLE_Y = 34;
+        
+        // Posicionamento dos elementos da UI
+        const PAL_Y = GRID_Y + GRID_SIZE + 12;
+        const BTN_W = 44;
+        const GAP_SYMBOL = 8;
+        const BTN_CONTROL_Y = PAL_Y + 82;
+        const STATUS_Y = BTN_CONTROL_Y + 52;
         
         let canvas = document.getElementById('gameCanvas');
         let ctx = canvas.getContext('2d');
@@ -65,15 +75,15 @@
         let fixed = Array(SIZE).fill().map(()=>Array(SIZE).fill(false));
         let selectedRow = -1, selectedCol = -1;
         let gameOver = false;
-        let statusMsg = "Clique numa célula e depois num símbolo";
+        let statusMsg = "⚡ Toque numa célula e depois num símbolo ⚡";
         
-        // Áreas dos botões (para detecção de clique)
+        // Áreas interativas (cliques)
         let symbolAreas = [];
         let clearArea = null;
         let newArea = null;
         let checkArea = null;
         
-        // ---------- Lógica do Sudoku (inalterada) ----------
+        // ---------- LÓGICA DO SUDOKU (Robusta) ----------
         function isValidPlacement(b, r, c, sym) {
             for(let i=0;i<SIZE;i++) {
                 if(i!==c && b[r][i]===sym) return false;
@@ -146,7 +156,7 @@
             gameOver = false;
             selectedRow = -1;
             selectedCol = -1;
-            statusMsg = "Novo jogo! Clique numa célula.";
+            statusMsg = "✨ Novo jogo! Selecione uma célula ✨";
             drawEverything();
         }
         
@@ -160,7 +170,7 @@
             return true;
         }
         
-        function confetti() {
+        function confettiEffect() {
             let container = document.createElement('div');
             container.style.position = 'fixed';
             container.style.top = '0';
@@ -170,70 +180,70 @@
             container.style.pointerEvents = 'none';
             container.style.zIndex = '9999';
             document.body.appendChild(container);
-            for(let i=0;i<70;i++){
+            for(let i=0;i<90;i++){
                 let sym = SYMBOLS[Math.floor(Math.random()*SYMBOLS.length)];
                 let div = document.createElement('div');
                 div.innerText = sym;
                 div.style.position = 'absolute';
-                div.style.fontSize = (1+Math.random()*1.5)+'rem';
+                div.style.fontSize = (1+Math.random()*1.8)+'rem';
                 div.style.fontWeight = 'bold';
                 div.style.fontFamily = 'monospace';
                 div.style.left = Math.random()*100+'%';
                 div.style.top = '-10%';
-                div.style.color = `hsl(${Math.random()*360},80%,60%)`;
-                div.style.textShadow = '0 0 3px gold';
-                div.style.animation = `fall ${1.5+Math.random()*1.5}s linear forwards`;
+                div.style.color = `hsl(${Math.random()*360},85%,60%)`;
+                div.style.textShadow = '0 0 5px gold';
+                div.style.animation = `fallAnim ${1.6+Math.random()*1.5}s linear forwards`;
                 container.appendChild(div);
             }
             if(!document.getElementById('confettiStyle')){
                 let style = document.createElement('style');
                 style.id = 'confettiStyle';
-                style.textContent = `@keyframes fall{0%{transform:translateY(0) rotate(0deg);opacity:1;}100%{transform:translateY(100vh) rotate(360deg);opacity:0;}}`;
+                style.textContent = `@keyframes fallAnim{0%{transform:translateY(0) rotate(0deg);opacity:1;}100%{transform:translateY(100vh) rotate(400deg);opacity:0;}}`;
                 document.head.appendChild(style);
             }
-            setTimeout(()=>container.remove(),3000);
+            setTimeout(()=>container.remove(),3200);
         }
         
-        // ---------- Ações ----------
+        // ---------- AÇÕES DO JOGO ----------
         function placeSymbol(sym) {
             if(gameOver){
-                statusMsg = "Jogo acabou! Clique em NOVO.";
+                statusMsg = "🏁 Jogo acabou! Clique em NOVO.";
                 drawEverything();
                 return;
             }
             if(selectedRow===-1){
-                statusMsg = "Selecione uma célula primeiro.";
+                statusMsg = "👆 Selecione uma célula primeiro.";
                 drawEverything();
                 return;
             }
             if(fixed[selectedRow][selectedCol]){
-                statusMsg = "Célula fixa! Não pode mudar.";
+                statusMsg = "🔒 Célula fixa! Não pode mudar.";
                 drawEverything();
                 return;
             }
             board[selectedRow][selectedCol] = sym;
             if(!isValidPlacement(board, selectedRow, selectedCol, sym)){
-                statusMsg = `⚠️ Conflito com ${sym}!`;
+                statusMsg = `⚠️ Conflito com ${sym}! Tente outro.`;
             } else {
-                statusMsg = `${sym} inserido!`;
+                statusMsg = `✔️ ${sym} inserido!`;
             }
             drawEverything();
             if(checkWin()){
                 gameOver = true;
                 statusMsg = "🏆 VITÓRIA! Parabéns! 🏆";
                 drawEverything();
-                confetti();
+                confettiEffect();
             }
         }
         
         function clearCell() {
             if(gameOver){
-                statusMsg = "Jogo acabado, clique NOVO.";
+                statusMsg = "Jogo finalizado. Clique NOVO.";
                 drawEverything();
                 return;
             }
             if(selectedRow===-1){
-                statusMsg = "Selecione uma célula.";
+                statusMsg = "Selecione uma célula para limpar.";
                 drawEverything();
                 return;
             }
@@ -244,21 +254,21 @@
             }
             if(board[selectedRow][selectedCol] !== ""){
                 board[selectedRow][selectedCol] = "";
-                statusMsg = "Célula limpa.";
+                statusMsg = "🗑️ Célula limpa.";
                 drawEverything();
                 if(checkWin()){
                     gameOver = true;
                     statusMsg = "🏆 Vitória! 🏆";
                     drawEverything();
-                    confetti();
+                    confettiEffect();
                 }
             } else {
-                statusMsg = "Célula já vazia.";
+                statusMsg = "Célula já está vazia.";
                 drawEverything();
             }
         }
         
-        function verify() {
+        function verifyBoard() {
             if(gameOver){
                 statusMsg = "Jogo já vencido. Comece um novo.";
                 drawEverything();
@@ -273,200 +283,188 @@
                 }
             }
             if(conflicts===0 && !empty){
-                statusMsg = "✅ Perfeito! Você venceu! ✅";
+                statusMsg = "🎉✅ PERFEITO! Você venceu! ✅🎉";
                 gameOver = true;
                 drawEverything();
-                confetti();
+                confettiEffect();
             } else if(conflicts===0 && empty){
                 statusMsg = "✅ Sem conflitos! Continue preenchendo.";
             } else {
-                statusMsg = `⚠️ ${conflicts} conflito(s) encontrado(s)!`;
+                statusMsg = `⚠️ ${conflicts} conflito(s) encontrado(s)! Revise.`;
             }
             drawEverything();
         }
         
-        // ---------- DESENHO (com título e ajustes) ----------
+        // ---------- DESENHO COMPLETO (estilo futurista/pichado) ----------
         function drawEverything() {
             ctx.clearRect(0,0,canvas.width,canvas.height);
-            drawTitle();
+            drawFuturisticTitle();
             drawGrid();
-            drawSymbols();
-            drawPaletteAndButtons();
-            drawStatus();
+            drawSymbolsOnGrid();
+            drawPaletteAndControls();
+            drawStatusMessage();
         }
         
-        // Título futurista/pichado
-        function drawTitle() {
+        function drawFuturisticTitle() {
             ctx.save();
-            ctx.shadowBlur = 0;
-            // efeito de spray: múltiplas camadas com leve deslocamento
             const title = "SYMBOLUM";
-            ctx.font = "bold 34px 'Orbitron', 'Monoton', 'Courier New', monospace";
+            ctx.font = "bold 36px 'Orbitron', 'Monoton', 'Courier New', monospace";
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
-            
-            // camada de fundo (sombra irregular)
-            for(let i=0;i<8;i++){
-                ctx.fillStyle = `rgba(80, 60, 40, ${0.1 + Math.random()*0.2})`;
-                ctx.fillText(title, canvas.width/2 + (Math.random()*3 - 1.5), TITLE_Y + (Math.random()*3 - 1.5));
+            // efeito spray / pichação
+            for(let i=0;i<12;i++){
+                ctx.fillStyle = `rgba(180, 130, 50, ${0.1+Math.random()*0.2})`;
+                ctx.fillText(title, canvas.width/2 + (Math.random()*4-2), TITLE_Y + (Math.random()*4-2));
             }
-            // texto principal com gradiente metálico
-            let grad = ctx.createLinearGradient(canvas.width/2 - 100, TITLE_Y-10, canvas.width/2+100, TITLE_Y+20);
-            grad.addColorStop(0, "#c79a2e");
-            grad.addColorStop(0.5, "#f5d742");
-            grad.addColorStop(1, "#b87c1a");
+            let grad = ctx.createLinearGradient(canvas.width/2-120, TITLE_Y-8, canvas.width/2+120, TITLE_Y+18);
+            grad.addColorStop(0, "#e6b422");
+            grad.addColorStop(0.6, "#ffdd77");
+            grad.addColorStop(1, "#c9921e");
             ctx.fillStyle = grad;
-            ctx.font = "bold 38px 'Orbitron', 'Monoton', monospace";
             ctx.fillText(title, canvas.width/2, TITLE_Y);
-            // borda estilizada
-            ctx.strokeStyle = "#3a2a1a";
-            ctx.lineWidth = 1.5;
+            ctx.strokeStyle = "#5a3e1a";
+            ctx.lineWidth = 2;
             ctx.strokeText(title, canvas.width/2, TITLE_Y);
-            
-            // pequenos respingos (simulando tinta spray)
-            ctx.fillStyle = "#d4a13e";
-            for(let i=0;i<60;i++){
-                let x = canvas.width/2 + (Math.random() - 0.5) * 180;
-                let y = TITLE_Y + (Math.random() - 0.5) * 25;
-                ctx.fillRect(x, y, 1.5, 1.5);
+            // respingos
+            ctx.fillStyle = "#f0b83a";
+            for(let i=0;i<80;i++){
+                let x = canvas.width/2 + (Math.random()-0.5)*210;
+                let y = TITLE_Y + (Math.random()-0.5)*28;
+                ctx.fillRect(x, y, 1.8, 1.8);
             }
             ctx.restore();
         }
         
         function drawGrid() {
-            // fundo do grid
-            ctx.fillStyle = "#fef7e0";
+            ctx.fillStyle = "#fef2da";
             ctx.fillRect(0, GRID_Y, GRID_SIZE, GRID_SIZE);
-            
             for(let r=0;r<SIZE;r++){
                 for(let c=0;c<SIZE;c++){
-                    let x = c*CELL_SIZE;
-                    let y = GRID_Y + r*CELL_SIZE;
-                    let bg = "#ffffff";
+                    let x = c*CELL;
+                    let y = GRID_Y + r*CELL;
+                    let bg = "#fffcf0";
                     let isFixed = fixed[r][c];
                     let isSel = (selectedRow===r && selectedCol===c);
                     let hasConflict = false;
                     let val = board[r][c];
                     if(val !== "" && !isFixed && !isValidPlacement(board,r,c,val)) hasConflict = true;
-                    if(isFixed) bg = "#e8e0d0";
-                    else if(hasConflict) bg = "#f8d7da";
-                    else if(isSel) bg = "#ffe0a3";
+                    if(isFixed) bg = "#e2d8bd";
+                    else if(hasConflict) bg = "#ffdeda";
+                    else if(isSel) bg = "#ffe6b3";
                     else if(selectedRow!==-1){
-                        if(r===selectedRow || c===selectedCol) bg = "#f9f0df";
+                        if(r===selectedRow || c===selectedCol) bg = "#faf0dc";
                         let sr = Math.floor(selectedRow/BOX)*BOX, sc = Math.floor(selectedCol/BOX)*BOX;
-                        if(r>=sr && r<sr+BOX && c>=sc && c<sc+BOX && !(r===selectedRow || c===selectedCol)) bg = "#efe0bd";
+                        if(r>=sr && r<sr+BOX && c>=sc && c<sc+BOX && !(r===selectedRow || c===selectedCol)) bg = "#f3e8ce";
                     }
                     ctx.fillStyle = bg;
-                    ctx.fillRect(x, y, CELL_SIZE-1, CELL_SIZE-1);
-                    ctx.strokeStyle = "#aaa";
-                    ctx.strokeRect(x, y, CELL_SIZE-1, CELL_SIZE-1);
+                    ctx.fillRect(x, y, CELL-1, CELL-1);
+                    ctx.strokeStyle = "#bcae8a";
+                    ctx.strokeRect(x, y, CELL-1, CELL-1);
                 }
             }
-            // linhas grossas do grid
             ctx.beginPath();
-            ctx.lineWidth = 3;
-            ctx.strokeStyle = "#333";
+            ctx.lineWidth = 2.8;
+            ctx.strokeStyle = "#3b3222";
             for(let i=0;i<=SIZE;i++){
-                if(i%BOX===0) ctx.lineWidth = 3;
-                else ctx.lineWidth = 1;
-                let pos = i * CELL_SIZE;
+                let lineWidth = (i%BOX===0) ? 3 : 1.2;
+                ctx.lineWidth = lineWidth;
+                let pos = i*CELL;
                 ctx.beginPath();
                 ctx.moveTo(pos, GRID_Y);
-                ctx.lineTo(pos, GRID_Y + GRID_SIZE);
+                ctx.lineTo(pos, GRID_Y+GRID_SIZE);
                 ctx.stroke();
                 ctx.beginPath();
-                ctx.moveTo(0, GRID_Y + pos);
-                ctx.lineTo(GRID_SIZE, GRID_Y + pos);
+                ctx.moveTo(0, GRID_Y+pos);
+                ctx.lineTo(GRID_SIZE, GRID_Y+pos);
                 ctx.stroke();
             }
         }
         
-        function drawSymbols() {
-            ctx.font = `bold ${Math.floor(CELL_SIZE*0.45)}px monospace`;
+        function drawSymbolsOnGrid() {
+            ctx.font = `bold ${Math.floor(CELL*0.44)}px monospace`;
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
             for(let r=0;r<SIZE;r++){
                 for(let c=0;c<SIZE;c++){
                     let v = board[r][c];
                     if(v==="") continue;
-                    let x = c*CELL_SIZE + CELL_SIZE/2;
-                    let y = GRID_Y + r*CELL_SIZE + CELL_SIZE/2;
-                    let color = "#2c3e2f";
-                    if(fixed[r][c]) color = "#3b2a1f";
-                    else if(!isValidPlacement(board,r,c,v)) color = "#c0392b";
+                    let x = c*CELL + CELL/2;
+                    let y = GRID_Y + r*CELL + CELL/2;
+                    let color = "#2c4a2e";
+                    if(fixed[r][c]) color = "#5a3e28";
+                    else if(!isValidPlacement(board,r,c,v)) color = "#bc2f1e";
                     ctx.fillStyle = color;
                     ctx.fillText(v, x, y);
                 }
             }
         }
         
-        function drawPaletteAndButtons() {
-            // Calcular posição para caber tudo (símbolos + botão limpar)
-            let totalWidth = SYMBOLS.length * BTN_W + (SYMBOLS.length-1) * GAP_SYMBOLS;
-            let startX = (GRID_SIZE - totalWidth) / 2;
+        function drawPaletteAndControls() {
+            // Botões de símbolo
+            let totalSymWidth = SYMBOLS.length * BTN_W + (SYMBOLS.length-1) * GAP_SYMBOL;
+            let startX = (GRID_SIZE - totalSymWidth) / 2;
             symbolAreas = [];
             for(let i=0;i<SYMBOLS.length;i++){
-                let x = startX + i * (BTN_W + GAP_SYMBOLS);
+                let x = startX + i * (BTN_W + GAP_SYMBOL);
                 let y = PAL_Y;
-                ctx.fillStyle = "#f0e6d2";
+                ctx.fillStyle = "#ebdfbf";
                 ctx.fillRect(x, y, BTN_W, BTN_W);
-                ctx.strokeStyle = "#b0a07c";
+                ctx.strokeStyle = "#a99264";
                 ctx.strokeRect(x, y, BTN_W, BTN_W);
-                ctx.fillStyle = "#2d3e2b";
+                ctx.fillStyle = "#3a2c1c";
                 ctx.font = `26px monospace`;
                 ctx.fillText(SYMBOLS[i], x+BTN_W/2, y+BTN_W/2);
                 symbolAreas.push({x, y, w: BTN_W, h: BTN_W, sym: SYMBOLS[i]});
             }
-            // Botão limpar (⌫) - agora com espaço garantido
-            let eraseX = startX + SYMBOLS.length * (BTN_W + GAP_SYMBOLS);
-            ctx.fillStyle = "#d9c8aa";
+            // botão limpar
+            let eraseX = startX + SYMBOLS.length * (BTN_W + GAP_SYMBOL);
+            ctx.fillStyle = "#cdb891";
             ctx.fillRect(eraseX, PAL_Y, BTN_W, BTN_W);
             ctx.strokeRect(eraseX, PAL_Y, BTN_W, BTN_W);
-            ctx.fillStyle = "#3b2a1f";
-            ctx.font = `26px monospace`;
+            ctx.fillStyle = "#2e241a";
             ctx.fillText("⌫", eraseX+BTN_W/2, PAL_Y+BTN_W/2);
             clearArea = {x: eraseX, y: PAL_Y, w: BTN_W, h: BTN_W};
             
-            // Botões NOVO e VERIFICAR reposicionados mais à esquerda e descidos
-            let buttonWidth = 100;
-            let spacing = 20;
-            let totalButtonsWidth = buttonWidth * 2 + spacing;
-            let startButtonsX = (GRID_SIZE - totalButtonsWidth) / 2 - 25; // deslocar um pouco à esquerda
-            let newX = startButtonsX;
-            let checkX = newX + buttonWidth + spacing;
-            let btnY = BTNS_Y;
+            // Botões NOVO e VERIFICAR reposicionados sem cortes
+            let btnW = 104;
+            let gap = 24;
+            let totalCtrlWidth = btnW*2 + gap;
+            let ctrlStartX = (GRID_SIZE - totalCtrlWidth) / 2;
+            let newX = ctrlStartX;
+            let checkX = newX + btnW + gap;
+            let btnY = BTN_CONTROL_Y;
             
-            ctx.fillStyle = "#4a6741";
-            ctx.fillRect(newX, btnY, buttonWidth, 40);
-            ctx.fillStyle = "white";
-            ctx.font = "bold 18px 'Segoe UI'";
-            ctx.fillText("NOVO", newX+buttonWidth/2, btnY+26);
-            newArea = {x: newX, y: btnY, w: buttonWidth, h: 40};
+            ctx.fillStyle = "#3a5e3c";
+            ctx.fillRect(newX, btnY, btnW, 44);
+            ctx.fillStyle = "#fcf9ea";
+            ctx.font = "bold 20px 'Segoe UI'";
+            ctx.fillText("NOVO", newX+btnW/2, btnY+29);
+            newArea = {x: newX, y: btnY, w: btnW, h: 44};
             
-            ctx.fillStyle = "#4a6741";
-            ctx.fillRect(checkX, btnY, 110, 40);
-            ctx.fillStyle = "white";
-            ctx.fillText("VERIFICAR", checkX+55, btnY+26);
-            checkArea = {x: checkX, y: btnY, w: 110, h: 40};
+            ctx.fillStyle = "#3a5e3c";
+            ctx.fillRect(checkX, btnY, btnW, 44);
+            ctx.fillStyle = "#fcf9ea";
+            ctx.fillText("VERIFICAR", checkX+btnW/2, btnY+29);
+            checkArea = {x: checkX, y: btnY, w: btnW, h: 44};
         }
         
-        function drawStatus() {
-            ctx.font = "bold 16px monospace";
-            ctx.fillStyle = "#2c3e2f";
-            ctx.shadowBlur = 0;
+        function drawStatusMessage() {
+            ctx.font = "bold 15px 'Segoe UI', monospace";
             ctx.textAlign = "center";
-            // fundo semi-transparente para legibilidade
-            ctx.fillStyle = "rgba(240,240,240,0.7)";
-            ctx.fillRect(GRID_SIZE/2 - 200, STATUS_Y-15, 400, 28);
-            ctx.fillStyle = "#1e3c2c";
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = "#2c3e2f";
+            ctx.fillRect(GRID_SIZE/2-210, STATUS_Y-14, 420, 28);
+            ctx.fillStyle = "#fef3d6";
+            ctx.fillRect(GRID_SIZE/2-208, STATUS_Y-12, 416, 24);
+            ctx.fillStyle = "#1f3b2c";
             ctx.fillText(statusMsg, GRID_SIZE/2, STATUS_Y);
         }
         
-        // ---------- Eventos (toque e mouse) com coordenadas relativas ----------
+        // ---------- TRATAMENTO DE EVENTOS (Robusto para toque/mouse) ----------
         function getCanvasCoords(e) {
-            let rect = canvas.getBoundingClientRect();
-            let scaleX = canvas.width / rect.width;
-            let scaleY = canvas.height / rect.height;
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
             let clientX, clientY;
             if(e.touches){
                 clientX = e.touches[0].clientX;
@@ -477,13 +475,15 @@
             }
             let canvasX = (clientX - rect.left) * scaleX;
             let canvasY = (clientY - rect.top) * scaleY;
-            return {x: Math.min(Math.max(0, canvasX), canvas.width), y: Math.min(Math.max(0, canvasY), canvas.height)};
+            canvasX = Math.min(Math.max(0, canvasX), canvas.width);
+            canvasY = Math.min(Math.max(0, canvasY), canvas.height);
+            return {x: canvasX, y: canvasY};
         }
         
-        function onClick(e) {
+        function handleCanvasClick(e) {
             e.preventDefault();
-            let {x, y} = getCanvasCoords(e);
-            // Botões da paleta
+            const {x, y} = getCanvasCoords(e);
+            // Verifica paleta de símbolos
             for(let area of symbolAreas){
                 if(x>=area.x && x<=area.x+area.w && y>=area.y && y<=area.y+area.h){
                     placeSymbol(area.sym);
@@ -499,13 +499,13 @@
                 return;
             }
             if(checkArea && x>=checkArea.x && x<=checkArea.x+checkArea.w && y>=checkArea.y && y<=checkArea.y+checkArea.h){
-                verify();
+                verifyBoard();
                 return;
             }
-            // Clique no grid (considerando deslocamento GRID_Y)
+            // clique no grid (sudoku)
             if(x>=0 && x<GRID_SIZE && y>=GRID_Y && y<GRID_Y+GRID_SIZE){
-                let col = Math.floor(x / CELL_SIZE);
-                let row = Math.floor((y - GRID_Y) / CELL_SIZE);
+                let col = Math.floor(x / CELL);
+                let row = Math.floor((y - GRID_Y) / CELL);
                 if(row>=0 && row<SIZE && col>=0 && col<SIZE){
                     if(gameOver){
                         statusMsg = "Jogo finalizado. Clique NOVO.";
@@ -515,24 +515,23 @@
                     if(fixed[row][col]){
                         selectedRow = row;
                         selectedCol = col;
-                        statusMsg = `Célula fixa: ${board[row][col]} (não editável)`;
+                        statusMsg = `🔒 Célula fixa: ${board[row][col]} (não editável)`;
                     } else {
                         selectedRow = row;
                         selectedCol = col;
-                        statusMsg = `Célula (${row+1},${col+1}) selecionada. Toque num símbolo.`;
+                        statusMsg = `📍 Célula (${row+1},${col+1}) selecionada. Escolha um símbolo.`;
                     }
                     drawEverything();
                 }
             }
         }
         
-        canvas.addEventListener('touchstart', onClick, {passive: false});
-        canvas.addEventListener('mousedown', onClick);
+        canvas.addEventListener('touchstart', handleCanvasClick, {passive: false});
+        canvas.addEventListener('mousedown', handleCanvasClick);
         
-        // Iniciar jogo
+        // Inicialização
         newGame();
     })();
 </script>
 </body>
 </html>
-
