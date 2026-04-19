@@ -6,8 +6,7 @@
     <meta name="rating" content="General">
     <meta name="audience" content="Everyone">
     <meta name="child-directed" content="true">
-    <meta name="max-ad-content-rating" content="G">
-    <title>Symbolum - Sudoku de Símbolos (Canvas 2D)</title>
+    <title>Symbolum - Sudoku de Símbolos</title>
     <style>
         * {
             user-select: none;
@@ -15,557 +14,481 @@
             box-sizing: border-box;
         }
         body {
-            background: linear-gradient(145deg, #1e3c2c 0%, #2a4a35 100%);
-            min-height: 100vh;
+            background: #1e3c2c;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-family: 'Segoe UI', 'Poppins', monospace;
-            padding: 20px;
+            min-height: 100vh;
             margin: 0;
+            padding: 20px;
+            font-family: monospace;
         }
-        .game-wrapper {
+        .container {
             background: #fef7e0;
-            border-radius: 40px;
-            padding: 20px 20px 25px 20px;
-            box-shadow: 0 20px 35px rgba(0,0,0,0.3);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            border-radius: 30px;
+            padding: 20px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+            display: inline-block;
         }
         canvas {
             display: block;
             margin: 0 auto;
-            border-radius: 20px;
-            box-shadow: 0 8px 18px rgba(0,0,0,0.2);
+            border-radius: 16px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
             cursor: pointer;
-            touch-action: manipulation;
+            width: 100%;
+            height: auto;
+            max-width: 540px;
         }
-        .safety-note {
+        .info {
             text-align: center;
-            font-size: 0.7rem;
+            margin-top: 12px;
+            font-size: 12px;
             color: #3b5c3a;
-            margin-top: 16px;
-            padding-top: 12px;
-            border-top: 1px solid #d4c9a6;
-            font-weight: 500;
         }
-        .privacy-link {
-            text-align: center;
-            font-size: 0.7rem;
-            margin-top: 8px;
-        }
-        .privacy-link a {
+        a {
             color: #2c5e2a;
-            text-decoration: none;
-            font-weight: bold;
-        }
-        @media (max-width: 600px) {
-            .game-wrapper { padding: 12px; }
         }
     </style>
 </head>
 <body>
-<div class="game-wrapper">
+<div class="container">
     <canvas id="gameCanvas" width="540" height="680"></canvas>
-    <div class="safety-note">✔️ Jogo seguro para todas as idades | Sem anúncios inadequados | Apenas lógica e diversão</div>
-    <div class="privacy-link"><a href="#">🔒 Política de Privacidade</a> – Sem coleta de dados pessoais.</div>
+    <div class="info">✔️ Seguro para crianças | Sem anúncios | Apenas lógica</div>
+    <div class="info"><a href="#">🔒 Política de Privacidade</a> – sem coleta de dados</div>
 </div>
 
 <script>
-    (function() {
-        // Configuração de segurança para anúncios (COPPA/GDPR)
-        window.google_tag_for_child_directed_treatment = 1;
-        window.google_tag_for_under_age_of_consent = 1;
-        window.google_max_ad_content_rating = "G";
-        window.SYMBOLUM_CHILD_SAFE = true;
-    })();
-
-    // ==================== CONFIGURAÇÕES ====================
-    const SYMBOLS = ["@", "#", "$", "%", "&", "?", "*", "+", "~"];
-    const SIZE = 9;
-    const BOX_SIZE = 3;
-    const CELL_SIZE = 60;      // 60x60
-    const GRID_SIZE = CELL_SIZE * SIZE; // 540
-    const PALETTE_Y = GRID_SIZE + 20;
-    const STATUS_Y = PALETTE_Y + 80;
-    const BTN_SIZE = 44;
-    
-    let canvas = document.getElementById('gameCanvas');
-    let ctx = canvas.getContext('2d');
-    
-    // Estado do jogo
-    let board = Array(SIZE).fill().map(() => Array(SIZE).fill(""));
-    let solution = Array(SIZE).fill().map(() => Array(SIZE).fill(""));
-    let fixedCells = Array(SIZE).fill().map(() => Array(SIZE).fill(false));
-    let selectedRow = -1, selectedCol = -1;
-    let currentGameOver = false;
-    let statusMessage = "Clique em uma célula e depois num símbolo";
-    
-    // Coordenadas dos botões da paleta (para detecção de clique)
-    let symbolButtons = [];
-    let clearButtonRect = null;
-    let newButtonRect = null;
-    let checkButtonRect = null;
-    
-    // ========== LÓGICA DO SUDOKU ==========
-    function isValidPlacement(boardTemp, row, col, symbol) {
-        for (let c = 0; c < SIZE; c++) if (c !== col && boardTemp[row][c] === symbol) return false;
-        for (let r = 0; r < SIZE; r++) if (r !== row && boardTemp[r][col] === symbol) return false;
-        const startRow = Math.floor(row / BOX_SIZE) * BOX_SIZE;
-        const startCol = Math.floor(col / BOX_SIZE) * BOX_SIZE;
-        for (let r = startRow; r < startRow + BOX_SIZE; r++)
-            for (let c = startCol; c < startCol + BOX_SIZE; c++)
-                if ((r !== row || c !== col) && boardTemp[r][c] === symbol) return false;
-        return true;
-    }
-    
-    function findEmpty(boardArr) {
-        for (let i = 0; i < SIZE; i++)
-            for (let j = 0; j < SIZE; j++)
-                if (boardArr[i][j] === "") return [i, j];
-        return null;
-    }
-    
-    function solveSudoku(boardArr) {
-        const emptySpot = findEmpty(boardArr);
-        if (!emptySpot) return true;
-        const [row, col] = emptySpot;
-        const shuffled = [...SYMBOLS];
-        for (let i = shuffled.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-        }
-        for (let sym of shuffled) {
-            if (isValidPlacement(boardArr, row, col, sym)) {
-                boardArr[row][col] = sym;
-                if (solveSudoku(boardArr)) return true;
-                boardArr[row][col] = "";
+    (function(){
+        // Símbolos e constantes
+        const SYMBOLS = ["@","#","$","%","&","?","*","+","~"];
+        const SIZE = 9;
+        const BOX = 3;
+        const CELL = 60;
+        const GRID = CELL * SIZE; // 540
+        const PAL_Y = GRID + 20;
+        const STATUS_Y = PAL_Y + 80;
+        const BTN_W = 44;
+        
+        let canvas = document.getElementById('gameCanvas');
+        let ctx = canvas.getContext('2d');
+        
+        // Estado do jogo
+        let board = Array(SIZE).fill().map(()=>Array(SIZE).fill(""));
+        let fixed = Array(SIZE).fill().map(()=>Array(SIZE).fill(false));
+        let selectedRow = -1, selectedCol = -1;
+        let gameOver = false;
+        let statusMsg = "Clique numa célula e depois num símbolo";
+        
+        // Áreas dos botões (para detecção de clique)
+        let symbolAreas = [];
+        let clearArea = null;
+        let newArea = null;
+        let checkArea = null;
+        
+        // ---------- Lógica do Sudoku ----------
+        function isValidPlacement(b, r, c, sym) {
+            for(let i=0;i<SIZE;i++) {
+                if(i!==c && b[r][i]===sym) return false;
+                if(i!==r && b[i][c]===sym) return false;
             }
+            let sr = Math.floor(r/BOX)*BOX, sc = Math.floor(c/BOX)*BOX;
+            for(let i=sr;i<sr+BOX;i++)
+                for(let j=sc;j<sc+BOX;j++)
+                    if((i!==r || j!==c) && b[i][j]===sym) return false;
+            return true;
         }
-        return false;
-    }
-    
-    function generateFullSolution() {
-        let full = Array(SIZE).fill().map(() => Array(SIZE).fill(""));
-        for (let i = 0; i < SIZE; i++)
-            for (let j = 0; j < SIZE; j++)
-                full[i][j] = SYMBOLS[(i * 3 + j) % SYMBOLS.length];
-        solveSudoku(full);
-        return full;
-    }
-    
-    function generateNewPuzzle() {
-        let fullSolution = generateFullSolution();
-        for (let i = 0; i < SIZE; i++)
-            for (let j = 0; j < SIZE; j++)
-                solution[i][j] = fullSolution[i][j];
         
-        let puzzleBoard = Array(SIZE).fill().map(() => Array(SIZE).fill(""));
-        for (let i = 0; i < SIZE; i++)
-            for (let j = 0; j < SIZE; j++)
-                puzzleBoard[i][j] = solution[i][j];
+        function findEmpty(b) {
+            for(let i=0;i<SIZE;i++)
+                for(let j=0;j<SIZE;j++)
+                    if(b[i][j]==="") return [i,j];
+            return null;
+        }
         
-        const cellsToRemove = 48 + Math.floor(Math.random() * 12);
-        let removed = 0;
-        while (removed < cellsToRemove) {
-            const row = Math.floor(Math.random() * SIZE);
-            const col = Math.floor(Math.random() * SIZE);
-            if (puzzleBoard[row][col] !== "") {
-                puzzleBoard[row][col] = "";
-                removed++;
+        function solve(b) {
+            let empty = findEmpty(b);
+            if(!empty) return true;
+            let [r,c] = empty;
+            let shuffled = [...SYMBOLS];
+            for(let i=shuffled.length-1;i>0;i--){
+                let j=Math.floor(Math.random()*(i+1));
+                [shuffled[i],shuffled[j]]=[shuffled[j],shuffled[i]];
             }
-        }
-        
-        for (let i = 0; i < SIZE; i++) {
-            for (let j = 0; j < SIZE; j++) {
-                board[i][j] = puzzleBoard[i][j];
-                fixedCells[i][j] = (puzzleBoard[i][j] !== "");
-            }
-        }
-        
-        currentGameOver = false;
-        selectedRow = -1;
-        selectedCol = -1;
-        statusMessage = "Novo jogo! Toque em uma célula e depois em um símbolo.";
-        drawAll();
-    }
-    
-    function checkVictory() {
-        for (let i = 0; i < SIZE; i++) {
-            for (let j = 0; j < SIZE; j++) {
-                const val = board[i][j];
-                if (val === "") return false;
-                if (!isValidPlacement(board, i, j, val)) return false;
-            }
-        }
-        return true;
-    }
-    
-    // ========== EFEITO CONFETE ==========
-    function launchConfetti() {
-        const container = document.createElement('div');
-        container.style.position = 'fixed';
-        container.style.top = '0';
-        container.style.left = '0';
-        container.style.width = '100%';
-        container.style.height = '100%';
-        container.style.pointerEvents = 'none';
-        container.style.zIndex = '9999';
-        document.body.appendChild(container);
-        
-        for (let i = 0; i < 80; i++) {
-            const symbol = SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)];
-            const el = document.createElement('div');
-            el.textContent = symbol;
-            el.style.position = 'absolute';
-            el.style.fontSize = (1 + Math.random() * 1.6) + 'rem';
-            el.style.fontWeight = 'bold';
-            el.style.fontFamily = 'monospace';
-            el.style.left = Math.random() * 100 + '%';
-            el.style.top = '-10%';
-            el.style.color = `hsl(${Math.random() * 360}, 85%, 65%)`;
-            el.style.textShadow = '0 0 3px gold';
-            el.style.opacity = '0.9';
-            el.style.animation = `fallAnim ${1.5 + Math.random() * 1.8}s linear forwards`;
-            container.appendChild(el);
-        }
-        
-        if (!document.querySelector('#confetti-style')) {
-            const style = document.createElement('style');
-            style.id = 'confetti-style';
-            style.textContent = `
-                @keyframes fallAnim {
-                    0% { transform: translateY(0) rotate(0deg); opacity: 1; }
-                    100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+            for(let sym of shuffled){
+                if(isValidPlacement(b,r,c,sym)){
+                    b[r][c]=sym;
+                    if(solve(b)) return true;
+                    b[r][c]="";
                 }
-            `;
-            document.head.appendChild(style);
-        }
-        
-        setTimeout(() => container.remove(), 3200);
-    }
-    
-    // ========== AÇÕES DO JOGO ==========
-    function placeSymbol(symbol) {
-        if (currentGameOver) {
-            statusMessage = "Jogo finalizado! Clique em NOVO.";
-            drawAll();
-            return;
-        }
-        if (selectedRow === -1 || selectedCol === -1) {
-            statusMessage = "Primeiro, toque em uma célula vazia.";
-            drawAll();
-            return;
-        }
-        if (fixedCells[selectedRow][selectedCol]) {
-            statusMessage = "Célula fixa não pode ser alterada.";
-            drawAll();
-            return;
-        }
-        
-        board[selectedRow][selectedCol] = symbol;
-        const valid = isValidPlacement(board, selectedRow, selectedCol, symbol);
-        if (!valid) {
-            statusMessage = `⚠️ Conflito! Símbolo ${symbol} em conflito.`;
-        } else {
-            statusMessage = `Símbolo ${symbol} inserido!`;
-        }
-        
-        drawAll();
-        if (checkVictory()) {
-            currentGameOver = true;
-            statusMessage = "🎉✨ VITÓRIA! Parabéns! ✨🎉";
-            drawAll();
-            launchConfetti();
-        }
-    }
-    
-    function clearSelectedCell() {
-        if (currentGameOver) {
-            statusMessage = "Já venceu! Inicie um novo.";
-            drawAll();
-            return;
-        }
-        if (selectedRow === -1 || selectedCol === -1) {
-            statusMessage = "Selecione uma célula para limpar.";
-            drawAll();
-            return;
-        }
-        if (fixedCells[selectedRow][selectedCol]) {
-            statusMessage = "Célula fixa não pode ser limpa.";
-            drawAll();
-            return;
-        }
-        if (board[selectedRow][selectedCol] !== "") {
-            board[selectedRow][selectedCol] = "";
-            statusMessage = "Célula limpa.";
-            drawAll();
-            if (checkVictory()) {
-                currentGameOver = true;
-                statusMessage = "🎉 Vitória! 🎉";
-                drawAll();
-                launchConfetti();
             }
-        } else {
-            statusMessage = "Célula já está vazia.";
-            drawAll();
+            return false;
         }
-    }
-    
-    function checkBoardErrors() {
-        if (currentGameOver) {
-            statusMessage = "Já venceu! Reinicie para testar outro.";
-            drawAll();
-            return;
-        }
-        let empty = false, conflicts = 0;
-        for (let i = 0; i < SIZE; i++) {
-            for (let j = 0; j < SIZE; j++) {
-                const val = board[i][j];
-                if (val === "") empty = true;
-                else if (!isValidPlacement(board, i, j, val)) conflicts++;
-            }
-        }
-        if (conflicts === 0 && !empty) {
-            statusMessage = "🎉✅ Perfeito! Você venceu! ✅🎉";
-            currentGameOver = true;
-            drawAll();
-            launchConfetti();
-        } else if (conflicts === 0 && empty) {
-            statusMessage = "✅ Nenhum conflito! Continue preenchendo.";
-        } else {
-            statusMessage = `⚠️ ${conflicts} célula(s) em conflito! ⚠️`;
-        }
-        drawAll();
-    }
-    
-    // ========== DESENHO COMPLETO (CANVAS) ==========
-    function drawAll() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        drawGridBackground();
-        drawSymbols();
-        drawPalette();
-        drawStatus();
-        drawButtons();
-    }
-    
-    function drawGridBackground() {
-        // Fundo branco
-        ctx.fillStyle = "#fef7e0";
-        ctx.fillRect(0, 0, GRID_SIZE, GRID_SIZE);
         
-        // Células individuais
-        for (let row = 0; row < SIZE; row++) {
-            for (let col = 0; col < SIZE; col++) {
-                const x = col * CELL_SIZE;
-                const y = row * CELL_SIZE;
-                let bgColor = "#ffffff";
-                const isFixed = fixedCells[row][col];
-                const isSelected = (selectedRow === row && selectedCol === col);
-                let hasConflict = false;
-                const val = board[row][col];
-                if (val !== "" && !isFixed) {
-                    if (!isValidPlacement(board, row, col, val)) hasConflict = true;
+        function generateFull() {
+            let full = Array(SIZE).fill().map(()=>Array(SIZE).fill(""));
+            for(let i=0;i<SIZE;i++)
+                for(let j=0;j<SIZE;j++)
+                    full[i][j] = SYMBOLS[(i*3+j)%SYMBOLS.length];
+            solve(full);
+            return full;
+        }
+        
+        function newGame() {
+            let full = generateFull();
+            let puzzle = Array(SIZE).fill().map(()=>Array(SIZE).fill(""));
+            for(let i=0;i<SIZE;i++)
+                for(let j=0;j<SIZE;j++)
+                    puzzle[i][j] = full[i][j];
+            let toRemove = 48 + Math.floor(Math.random()*12);
+            let removed = 0;
+            while(removed < toRemove){
+                let r = Math.floor(Math.random()*SIZE);
+                let c = Math.floor(Math.random()*SIZE);
+                if(puzzle[r][c] !== ""){
+                    puzzle[r][c] = "";
+                    removed++;
                 }
-                
-                if (isFixed) bgColor = "#e8e0d0";
-                else if (hasConflict) bgColor = "#f8d7da";
-                else if (isSelected) bgColor = "#ffe0a3";
-                else if (selectedRow !== -1 && selectedCol !== -1) {
-                    if (row === selectedRow || col === selectedCol) bgColor = "#f9f0df";
-                    const sRowBlock = Math.floor(selectedRow / BOX_SIZE) * BOX_SIZE;
-                    const sColBlock = Math.floor(selectedCol / BOX_SIZE) * BOX_SIZE;
-                    if (row >= sRowBlock && row < sRowBlock+BOX_SIZE && col >= sColBlock && col < sColBlock+BOX_SIZE)
-                        if (!(row === selectedRow || col === selectedCol)) bgColor = "#efe0bd";
+            }
+            for(let i=0;i<SIZE;i++){
+                for(let j=0;j<SIZE;j++){
+                    board[i][j] = puzzle[i][j];
+                    fixed[i][j] = (puzzle[i][j] !== "");
                 }
-                
-                ctx.fillStyle = bgColor;
-                ctx.fillRect(x, y, CELL_SIZE-1, CELL_SIZE-1);
-                ctx.strokeStyle = "#aaaaaa";
-                ctx.strokeRect(x, y, CELL_SIZE-1, CELL_SIZE-1);
             }
+            gameOver = false;
+            selectedRow = -1;
+            selectedCol = -1;
+            statusMsg = "Novo jogo! Clique numa célula.";
+            drawEverything();
         }
         
-        // Linhas grossas do grid (blocos)
-        ctx.beginPath();
-        ctx.lineWidth = 3;
-        ctx.strokeStyle = "#333333";
-        for (let i = 0; i <= SIZE; i++) {
-            if (i % BOX_SIZE === 0) {
-                ctx.lineWidth = 3;
-            } else {
-                ctx.lineWidth = 1;
+        function checkWin() {
+            for(let i=0;i<SIZE;i++)
+                for(let j=0;j<SIZE;j++){
+                    let v = board[i][j];
+                    if(v==="") return false;
+                    if(!isValidPlacement(board,i,j,v)) return false;
+                }
+            return true;
+        }
+        
+        function confetti() {
+            let container = document.createElement('div');
+            container.style.position = 'fixed';
+            container.style.top = '0';
+            container.style.left = '0';
+            container.style.width = '100%';
+            container.style.height = '100%';
+            container.style.pointerEvents = 'none';
+            container.style.zIndex = '9999';
+            document.body.appendChild(container);
+            for(let i=0;i<70;i++){
+                let sym = SYMBOLS[Math.floor(Math.random()*SYMBOLS.length)];
+                let div = document.createElement('div');
+                div.innerText = sym;
+                div.style.position = 'absolute';
+                div.style.fontSize = (1+Math.random()*1.5)+'rem';
+                div.style.fontWeight = 'bold';
+                div.style.fontFamily = 'monospace';
+                div.style.left = Math.random()*100+'%';
+                div.style.top = '-10%';
+                div.style.color = `hsl(${Math.random()*360},80%,60%)`;
+                div.style.textShadow = '0 0 3px gold';
+                div.style.animation = `fall ${1.5+Math.random()*1.5}s linear forwards`;
+                container.appendChild(div);
             }
-            ctx.beginPath();
-            ctx.moveTo(i * CELL_SIZE, 0);
-            ctx.lineTo(i * CELL_SIZE, GRID_SIZE);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.moveTo(0, i * CELL_SIZE);
-            ctx.lineTo(GRID_SIZE, i * CELL_SIZE);
-            ctx.stroke();
-        }
-    }
-    
-    function drawSymbols() {
-        ctx.font = `bold ${Math.floor(CELL_SIZE * 0.45)}px monospace`;
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        for (let row = 0; row < SIZE; row++) {
-            for (let col = 0; col < SIZE; col++) {
-                const val = board[row][col];
-                if (val === "") continue;
-                const x = col * CELL_SIZE + CELL_SIZE/2;
-                const y = row * CELL_SIZE + CELL_SIZE/2;
-                const isFixed = fixedCells[row][col];
-                let color = "#2c3e2f";
-                if (isFixed) color = "#3b2a1f";
-                else if (!isValidPlacement(board, row, col, val)) color = "#c0392b";
-                ctx.fillStyle = color;
-                ctx.fillText(val, x, y);
+            if(!document.getElementById('confettiStyle')){
+                let style = document.createElement('style');
+                style.id = 'confettiStyle';
+                style.textContent = `@keyframes fall{0%{transform:translateY(0) rotate(0deg);opacity:1;}100%{transform:translateY(100vh) rotate(360deg);opacity:0;}}`;
+                document.head.appendChild(style);
             }
-        }
-    }
-    
-    function drawPalette() {
-        const startX = (GRID_SIZE - (SYMBOLS.length * (BTN_SIZE + 8))) / 2;
-        symbolButtons = [];
-        for (let i = 0; i < SYMBOLS.length; i++) {
-            const x = startX + i * (BTN_SIZE + 8);
-            const y = PALETTE_Y;
-            // fundo
-            ctx.fillStyle = "#f0e6d2";
-            ctx.shadowBlur = 0;
-            ctx.fillRect(x, y, BTN_SIZE, BTN_SIZE);
-            ctx.strokeStyle = "#b0a07c";
-            ctx.strokeRect(x, y, BTN_SIZE, BTN_SIZE);
-            ctx.fillStyle = "#2d3e2b";
-            ctx.font = `bold 28px monospace`;
-            ctx.fillText(SYMBOLS[i], x + BTN_SIZE/2, y + BTN_SIZE/2);
-            symbolButtons.push({ x, y, w: BTN_SIZE, h: BTN_SIZE, symbol: SYMBOLS[i] });
+            setTimeout(()=>container.remove(),3000);
         }
         
-        // Botão Limpar
-        const eraseX = startX + SYMBOLS.length * (BTN_SIZE + 8) + 12;
-        ctx.fillStyle = "#d9c8aa";
-        ctx.fillRect(eraseX, PALETTE_Y, BTN_SIZE, BTN_SIZE);
-        ctx.strokeStyle = "#8b7a5b";
-        ctx.strokeRect(eraseX, PALETTE_Y, BTN_SIZE, BTN_SIZE);
-        ctx.fillStyle = "#3b2a1f";
-        ctx.font = `28px monospace`;
-        ctx.fillText("⌫", eraseX + BTN_SIZE/2, PALETTE_Y + BTN_SIZE/2);
-        clearButtonRect = { x: eraseX, y: PALETTE_Y, w: BTN_SIZE, h: BTN_SIZE };
-        
-        // Botão NOVO
-        const newX = GRID_SIZE/2 - 70;
-        const newY = PALETTE_Y + 60;
-        ctx.fillStyle = "#4a6741";
-        ctx.fillRect(newX, newY, 100, 40);
-        ctx.fillStyle = "white";
-        ctx.font = "bold 20px 'Segoe UI'";
-        ctx.fillText("NOVO", newX + 50, newY + 26);
-        newButtonRect = { x: newX, y: newY, w: 100, h: 40 };
-        
-        // Botão VERIFICAR
-        const checkX = GRID_SIZE/2 + 30;
-        ctx.fillStyle = "#4a6741";
-        ctx.fillRect(checkX, newY, 110, 40);
-        ctx.fillStyle = "white";
-        ctx.fillText("VERIFICAR", checkX + 55, newY + 26);
-        checkButtonRect = { x: checkX, y: newY, w: 110, h: 40 };
-    }
-    
-    function drawStatus() {
-        ctx.font = "bold 16px monospace";
-        ctx.fillStyle = "#2c3e2f";
-        ctx.shadowBlur = 0;
-        ctx.textAlign = "center";
-        ctx.fillText(statusMessage, GRID_SIZE/2, STATUS_Y);
-    }
-    
-    function drawButtons() {
-        // já desenhado em drawPalette
-    }
-    
-    // ========== EVENTOS DE TOQUE E MOUSE ==========
-    function getCanvasCoords(e) {
-        const rect = canvas.getBoundingClientRect();
-        const scaleX = canvas.width / rect.width;
-        const scaleY = canvas.height / rect.height;
-        let clientX, clientY;
-        if (e.touches) {
-            clientX = e.touches[0].clientX;
-            clientY = e.touches[0].clientY;
-        } else {
-            clientX = e.clientX;
-            clientY = e.clientY;
-        }
-        let canvasX = (clientX - rect.left) * scaleX;
-        let canvasY = (clientY - rect.top) * scaleY;
-        canvasX = Math.min(Math.max(0, canvasX), canvas.width);
-        canvasY = Math.min(Math.max(0, canvasY), canvas.height);
-        return { x: canvasX, y: canvasY };
-    }
-    
-    function handleTap(e) {
-        e.preventDefault();
-        const { x, y } = getCanvasCoords(e);
-        
-        // Verifica botões da paleta primeiro
-        for (let btn of symbolButtons) {
-            if (x >= btn.x && x <= btn.x + btn.w && y >= btn.y && y <= btn.y + btn.h) {
-                placeSymbol(btn.symbol);
-                drawAll();
+        // ---------- Ações ----------
+        function placeSymbol(sym) {
+            if(gameOver){
+                statusMsg = "Jogo acabou! Clique em NOVO.";
+                drawEverything();
                 return;
             }
-        }
-        if (clearButtonRect && x >= clearButtonRect.x && x <= clearButtonRect.x + clearButtonRect.w && y >= clearButtonRect.y && y <= clearButtonRect.y + clearButtonRect.h) {
-            clearSelectedCell();
-            drawAll();
-            return;
-        }
-        if (newButtonRect && x >= newButtonRect.x && x <= newButtonRect.x + newButtonRect.w && y >= newButtonRect.y && y <= newButtonRect.y + newButtonRect.h) {
-            generateNewPuzzle();
-            drawAll();
-            return;
-        }
-        if (checkButtonRect && x >= checkButtonRect.x && x <= checkButtonRect.x + checkButtonRect.w && y >= checkButtonRect.y && y <= checkButtonRect.y + checkButtonRect.h) {
-            checkBoardErrors();
-            drawAll();
-            return;
-        }
-        
-        // Clique no grid
-        if (x >= 0 && x < GRID_SIZE && y >= 0 && y < GRID_SIZE) {
-            const col = Math.floor(x / CELL_SIZE);
-            const row = Math.floor(y / CELL_SIZE);
-            if (row >= 0 && row < SIZE && col >= 0 && col < SIZE) {
-                if (currentGameOver) {
-                    statusMessage = "Jogo concluído! Clique em NOVO.";
-                    drawAll();
-                    return;
-                }
-                if (fixedCells[row][col]) {
-                    selectedRow = row;
-                    selectedCol = col;
-                    statusMessage = `Célula fixa: ${board[row][col]} (não editável)`;
-                } else {
-                    selectedRow = row;
-                    selectedCol = col;
-                    statusMessage = `Célula (${row+1},${col+1}) selecionada. Toque num símbolo.`;
-                }
-                drawAll();
+            if(selectedRow===-1){
+                statusMsg = "Selecione uma célula primeiro.";
+                drawEverything();
+                return;
+            }
+            if(fixed[selectedRow][selectedCol]){
+                statusMsg = "Célula fixa! Não pode mudar.";
+                drawEverything();
+                return;
+            }
+            board[selectedRow][selectedCol] = sym;
+            if(!isValidPlacement(board, selectedRow, selectedCol, sym)){
+                statusMsg = `⚠️ Conflito com ${sym}!`;
+            } else {
+                statusMsg = `${sym} inserido!`;
+            }
+            drawEverything();
+            if(checkWin()){
+                gameOver = true;
+                statusMsg = "🏆 VITÓRIA! Parabéns! 🏆";
+                drawEverything();
+                confetti();
             }
         }
-    }
-    
-    canvas.addEventListener('touchstart', handleTap, { passive: false });
-    canvas.addEventListener('mousedown', handleTap);
-    
-    // Inicializa o jogo
-    generateNewPuzzle();
-    drawAll();
+        
+        function clearCell() {
+            if(gameOver){
+                statusMsg = "Jogo acabado, clique NOVO.";
+                drawEverything();
+                return;
+            }
+            if(selectedRow===-1){
+                statusMsg = "Selecione uma célula.";
+                drawEverything();
+                return;
+            }
+            if(fixed[selectedRow][selectedCol]){
+                statusMsg = "Célula fixa não pode ser limpa.";
+                drawEverything();
+                return;
+            }
+            if(board[selectedRow][selectedCol] !== ""){
+                board[selectedRow][selectedCol] = "";
+                statusMsg = "Célula limpa.";
+                drawEverything();
+                if(checkWin()){
+                    gameOver = true;
+                    statusMsg = "🏆 Vitória! 🏆";
+                    drawEverything();
+                    confetti();
+                }
+            } else {
+                statusMsg = "Célula já vazia.";
+                drawEverything();
+            }
+        }
+        
+        function verify() {
+            if(gameOver){
+                statusMsg = "Jogo já vencido. Comece um novo.";
+                drawEverything();
+                return;
+            }
+            let empty = false, conflicts = 0;
+            for(let i=0;i<SIZE;i++){
+                for(let j=0;j<SIZE;j++){
+                    let v = board[i][j];
+                    if(v==="") empty = true;
+                    else if(!isValidPlacement(board,i,j,v)) conflicts++;
+                }
+            }
+            if(conflicts===0 && !empty){
+                statusMsg = "✅ Perfeito! Você venceu! ✅";
+                gameOver = true;
+                drawEverything();
+                confetti();
+            } else if(conflicts===0 && empty){
+                statusMsg = "✅ Sem conflitos! Continue preenchendo.";
+            } else {
+                statusMsg = `⚠️ ${conflicts} conflito(s) encontrado(s)!`;
+            }
+            drawEverything();
+        }
+        
+        // ---------- Desenho ----------
+        function drawEverything() {
+            ctx.clearRect(0,0,canvas.width,canvas.height);
+            drawGrid();
+            drawSymbols();
+            drawPaletteAndButtons();
+            drawStatus();
+        }
+        
+        function drawGrid() {
+            // fundo claro
+            ctx.fillStyle = "#fef7e0";
+            ctx.fillRect(0,0,GRID,GRID);
+            // células
+            for(let r=0;r<SIZE;r++){
+                for(let c=0;c<SIZE;c++){
+                    let x = c*CELL, y = r*CELL;
+                    let bg = "#ffffff";
+                    let isFixed = fixed[r][c];
+                    let isSel = (selectedRow===r && selectedCol===c);
+                    let hasConflict = false;
+                    let val = board[r][c];
+                    if(val !== "" && !isFixed && !isValidPlacement(board,r,c,val)) hasConflict = true;
+                    if(isFixed) bg = "#e8e0d0";
+                    else if(hasConflict) bg = "#f8d7da";
+                    else if(isSel) bg = "#ffe0a3";
+                    else if(selectedRow!==-1){
+                        if(r===selectedRow || c===selectedCol) bg = "#f9f0df";
+                        let sr = Math.floor(selectedRow/BOX)*BOX, sc = Math.floor(selectedCol/BOX)*BOX;
+                        if(r>=sr && r<sr+BOX && c>=sc && c<sc+BOX && !(r===selectedRow || c===selectedCol)) bg = "#efe0bd";
+                    }
+                    ctx.fillStyle = bg;
+                    ctx.fillRect(x,y,CELL-1,CELL-1);
+                    ctx.strokeStyle = "#aaa";
+                    ctx.strokeRect(x,y,CELL-1,CELL-1);
+                }
+            }
+            // linhas grossas
+            ctx.beginPath();
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = "#333";
+            for(let i=0;i<=SIZE;i++){
+                if(i%BOX===0) ctx.lineWidth = 3;
+                else ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(i*CELL,0);
+                ctx.lineTo(i*CELL,GRID);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(0,i*CELL);
+                ctx.lineTo(GRID,i*CELL);
+                ctx.stroke();
+            }
+        }
+        
+        function drawSymbols() {
+            ctx.font = `bold ${Math.floor(CELL*0.45)}px monospace`;
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            for(let r=0;r<SIZE;r++){
+                for(let c=0;c<SIZE;c++){
+                    let v = board[r][c];
+                    if(v==="") continue;
+                    let x = c*CELL+CELL/2, y = r*CELL+CELL/2;
+                    let color = "#2c3e2f";
+                    if(fixed[r][c]) color = "#3b2a1f";
+                    else if(!isValidPlacement(board,r,c,v)) color = "#c0392b";
+                    ctx.fillStyle = color;
+                    ctx.fillText(v,x,y);
+                }
+            }
+        }
+        
+        function drawPaletteAndButtons() {
+            let startX = (GRID - (SYMBOLS.length*(BTN_W+8))) / 2;
+            symbolAreas = [];
+            for(let i=0;i<SYMBOLS.length;i++){
+                let x = startX + i*(BTN_W+8);
+                let y = PAL_Y;
+                ctx.fillStyle = "#f0e6d2";
+                ctx.fillRect(x,y,BTN_W,BTN_W);
+                ctx.strokeStyle = "#b0a07c";
+                ctx.strokeRect(x,y,BTN_W,BTN_W);
+                ctx.fillStyle = "#2d3e2b";
+                ctx.font = `28px monospace`;
+                ctx.fillText(SYMBOLS[i], x+BTN_W/2, y+BTN_W/2);
+                symbolAreas.push({x,y,w:BTN_W,h:BTN_W,sym:SYMBOLS[i]});
+            }
+            // botão limpar
+            let eraseX = startX + SYMBOLS.length*(BTN_W+8) + 12;
+            ctx.fillStyle = "#d9c8aa";
+            ctx.fillRect(eraseX, PAL_Y, BTN_W, BTN_W);
+            ctx.strokeRect(eraseX, PAL_Y, BTN_W, BTN_W);
+            ctx.fillStyle = "#3b2a1f";
+            ctx.fillText("⌫", eraseX+BTN_W/2, PAL_Y+BTN_W/2);
+            clearArea = {x:eraseX, y:PAL_Y, w:BTN_W, h:BTN_W};
+            
+            // botões NOVO e VERIFICAR
+            let newX = GRID/2 - 70;
+            let btnY = PAL_Y + 60;
+            ctx.fillStyle = "#4a6741";
+            ctx.fillRect(newX, btnY, 100, 40);
+            ctx.fillStyle = "white";
+            ctx.font = "bold 20px 'Segoe UI'";
+            ctx.fillText("NOVO", newX+50, btnY+26);
+            newArea = {x:newX, y:btnY, w:100, h:40};
+            
+            let checkX = GRID/2 + 30;
+            ctx.fillRect(checkX, btnY, 110, 40);
+            ctx.fillText("VERIFICAR", checkX+55, btnY+26);
+            checkArea = {x:checkX, y:btnY, w:110, h:40};
+        }
+        
+        function drawStatus() {
+            ctx.font = "bold 15px monospace";
+            ctx.fillStyle = "#2c3e2f";
+            ctx.textAlign = "center";
+            ctx.fillText(statusMsg, GRID/2, STATUS_Y);
+        }
+        
+        // ---------- Eventos (toque e mouse) ----------
+        function getCanvasCoords(e) {
+            let rect = canvas.getBoundingClientRect();
+            let scaleX = canvas.width / rect.width;
+            let scaleY = canvas.height / rect.height;
+            let clientX, clientY;
+            if(e.touches){
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            } else {
+                clientX = e.clientX;
+                clientY = e.clientY;
+            }
+            let canvasX = (clientX - rect.left) * scaleX;
+            let canvasY = (clientY - rect.top) * scaleY;
+            return {x:Math.min(Math.max(0,canvasX),canvas.width), y:Math.min(Math.max(0,canvasY),canvas.height)};
+        }
+        
+        function onClick(e) {
+            e.preventDefault();
+            let {x,y} = getCanvasCoords(e);
+            // verifica botões da paleta
+            for(let area of symbolAreas){
+                if(x>=area.x && x<=area.x+area.w && y>=area.y && y<=area.y+area.h){
+                    placeSymbol(area.sym);
+                    return;
+                }
+            }
+            if(clearArea && x>=clearArea.x && x<=clearArea.x+clearArea.w && y>=clearArea.y && y<=clearArea.y+clearArea.h){
+                clearCell();
+                return;
+            }
+            if(newArea && x>=newArea.x && x<=newArea.x+newArea.w && y>=newArea.y && y<=newArea.y+newArea.h){
+                newGame();
+                return;
+            }
+            if(checkArea && x>=checkArea.x && x<=checkArea.x+checkArea.w && y>=checkArea.y && y<=checkArea.y+checkArea.h){
+                verify();
+                return;
+            }
+            // clique no grid
+            if(x>=0 && x<GRID && y>=0 && y<GRID){
+                let col = Math.floor(x/CELL);
+                let row = Math.floor(y/CELL);
+                if(row>=0 && row<SIZE && col>=0 && col<SIZE){
+                    if(gameOver){
+                        statusMsg = "Jogo finalizado. Clique NOVO.";
+                        drawEverything();
+                        return;
+                    }
+                    if(fixed[row][col]){
+                        selectedRow = row;
+                        selectedCol = col;
+                        statusMsg = `Célula fixa: ${board[row][col]} (não editável)`;
+                    } else {
+                        selectedRow = row;
+                        selectedCol = col;
+                        statusMsg = `Célula (${row+1},${col+1}) selecionada. Toque num símbolo.`;
+                    }
+                    drawEverything();
+                }
+            }
+        }
+        
+        canvas.addEventListener('touchstart', onClick, {passive:false});
+        canvas.addEventListener('mousedown', onClick);
+        
+        // Iniciar jogo
+        newGame();
+    })();
 </script>
 </body>
 </html>
+
