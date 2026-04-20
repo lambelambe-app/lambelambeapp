@@ -2,130 +2,434 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>O Caranguejo Perdido - Animação Phaser</title>
-    <script src="https://cdn.jsdelivr.net/npm/phaser@2.6.2/dist/phaser.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Caranguejo Uçá: Coleta de Frutas 🍎 | Tamanho reduzido</title>
     <style>
-        body { margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #f0f8ff; }
+        * {
+            user-select: none;
+            touch-action: manipulation;
+        }
+        body {
+            background: linear-gradient(145deg, #0a2f3a 0%, #064e3b 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            margin: 0;
+            padding: 16px;
+        }
+        .game-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            max-width: 100%;
+        }
+        .game-container {
+            border-radius: 40px;
+            box-shadow: 0 20px 35px rgba(0, 0, 0, 0.5);
+            background: #2b1e0f;
+            padding: 8px;
+        }
+        canvas {
+            display: block;
+            margin: 0 auto;
+            border-radius: 32px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            width: 100%;
+            height: auto;
+        }
+        .touch-controls {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(12px);
+            border-radius: 100px;
+            padding: 12px 20px;
+            width: fit-content;
+            margin: 0 auto;
+            border: 1px solid #ffd966aa;
+        }
+        .ctrl-btn {
+            background: #f4a261;
+            border: none;
+            font-size: 2rem;
+            font-weight: bold;
+            padding: 10px 20px;
+            border-radius: 60px;
+            box-shadow: 0 5px 0 #8b3c1c;
+            transition: all 0.05s linear;
+            cursor: pointer;
+            min-width: 75px;
+            color: #2d3e2b;
+            font-family: monospace;
+        }
+        .ctrl-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px 0 #8b3c1c;
+        }
+        .jump-btn {
+            background: #6ab04c;
+            box-shadow: 0 5px 0 #2c5a2e;
+        }
+        @media (max-width: 600px) {
+            .ctrl-btn { font-size: 1.5rem; padding: 6px 12px; min-width: 60px; }
+            .touch-controls { gap: 12px; padding: 8px 12px; }
+        }
+        .instructions {
+            text-align: center;
+            background: #fef5e0cc;
+            backdrop-filter: blur(4px);
+            padding: 5px 12px;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        .debug-info {
+            background: #000000aa;
+            color: #0f0;
+            font-family: monospace;
+            font-size: 12px;
+            padding: 2px 8px;
+            border-radius: 20px;
+            position: fixed;
+            bottom: 5px;
+            left: 5px;
+            z-index: 999;
+            pointer-events: none;
+        }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
 </head>
 <body>
-    <script>
-        // Configuração do jogo
-        const game = new Phaser.Game(800, 600, Phaser.AUTO, '', { preload: preload, create: create, update: update });
-        let casca; // Personagem principal
-        let grama; // Elemento do cenário
-        let particulas; // Partículas de poeira
-        let gota; // Gota de orvalho
-        let tempo = 0; // Contador de tempo da animação
+<div class="game-wrapper">
+    <div class="game-container">
+        <div id="game-root"></div>
+    </div>
+    <div class="touch-controls" id="touchControls">
+        <button class="ctrl-btn" id="btnLeft">◀ ESQ</button>
+        <button class="ctrl-btn jump-btn" id="btnJump">PULAR ▲</button>
+        <button class="ctrl-btn" id="btnRight">DIR ▶</button>
+    </div>
+    <div class="instructions">
+        🦀 Caranguejo reduzido (20% do tamanho) para ver as frutas! Toque nos botões ou use teclado.
+    </div>
+</div>
+<div class="debug-info" id="debugInfo">🍎 Aguardando frutas...</div>
 
-        function preload() {
-            // Carrega a imagem do personagem (você pode substituir por um arquivo local)
-            game.load.image('casca', 'https://i.imgur.com/9Z7X8QH.png'); // Imagem do Casca sem a tampa
-            game.load.image('grama', 'https://i.imgur.com/4KjZ7xY.png'); // Folha de grama
-            game.load.image('gota', 'https://i.imgur.com/3X9Z7yW.png'); // Gota de água
+<script>
+    (function() {
+        // Configurações - CARANGUEJO BEM MENOR (escala 0.25, redução de 80% comparado ao tamanho original)
+        const CONFIG = {
+            width: 1000,
+            height: 650,
+            gravityY: 1000,
+            groundY: 590,
+            crabScale: 0.25,        // Reduzido em 80% (antes 0.65, agora 0.25)
+            itemSpeedY: 280,         // Velocidade de queda mais rápida para visibilidade
+            spawnIntervalMin: 500,
+            spawnIntervalMax: 900,
+            fruitPoints: 12,
+            pepperPoints: -10,
+            gameOverThreshold: -45,
+            fruitChance: 0.7
+        };
+
+        const CRAB_IMAGE_URL = 'https://raw.githubusercontent.com/lambelambe-app/lambelambeapp/refs/heads/main/caranguejo.png';
+
+        // Variáveis touch
+        let touchLeft = false, touchRight = false, touchJumpRequest = false;
+
+        // ========== BOOT ==========
+        class BootScene extends Phaser.Scene {
+            constructor() { super({ key: 'BootScene' }); }
+            preload() {
+                this.load.image('crab', CRAB_IMAGE_URL);
+                this.load.image('pixel', 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==');
+            }
+            create() { this.scene.start('MenuScene'); }
         }
 
-        function create() {
-            // Fundo do cenário (leito de riacho seco)
-            game.stage.backgroundColor = '#e6d5b8';
-
-            // Adiciona a folha de grama à esquerda
-            grama = game.add.sprite(50, 100, 'grama');
-            grama.scale.setTo(1.5);
-
-            // Cria o personagem Casca, inicialmente escondido
-            casca = game.add.sprite(400, 500, 'casca');
-            casca.anchor.setTo(0.5, 1);
-            casca.scale.setTo(0.8);
-            casca.visible = false; // Começa invisível
-
-            // Cria sistema de partículas para a poeira
-            particulas = game.add.emitter(0, 0, 20);
-            particulas.makeParticles('gota');
-            particulas.setScale(0.1, 0.1);
-            particulas.gravity = 0;
-            particulas.setYSpeed(-20, -50);
-            particulas.setXSpeed(-10, 10);
-            particulas.start(false, 5000, 200);
-
-            // Cria a gota de orvalho, inicialmente invisível
-            gota = game.add.sprite(150, 100, 'gota');
-            gota.visible = false;
-            gota.scale.setTo(0.3);
+        // ========== MENU ==========
+        class MenuScene extends Phaser.Scene {
+            constructor() { super({ key: 'MenuScene' }); }
+            create() {
+                const { width, height } = this.cameras.main;
+                this.add.rectangle(0, 0, width, height, 0x1b4d3e).setOrigin(0);
+                this.add.text(width/2, 90, '🦀  CARANGUEJO UÇÁ  🍎', { fontFamily: '"Fredoka One", cursive', fontSize: '48px', color: '#FFE484', stroke: '#A5661A', strokeThickness: 6 }).setOrigin(0.5);
+                this.add.text(width/2, 160, '— Colete frutas, evite pimentas —', { fontSize: '20px', color: '#FFDE9E' }).setOrigin(0.5);
+                this.add.image(width/2, 270, 'crab').setScale(0.35).setFlipX(true);
+                
+                const rules = ['🍎🍌🍊 Fruta = +12 pts', '🌶️ Pimenta = -10 pts', '⚠️ -45 pts = Game Over', '⬅️ ➡️ mover | ⬆️ pular'];
+                let yOff = 360;
+                rules.forEach(line => {
+                    this.add.text(width/2, yOff, line, { fontSize: '18px', color: '#FCF7E1', backgroundColor: '#1f543ea0', padding: { x: 12, y: 5 }, borderRadius: 40 }).setOrigin(0.5);
+                    yOff += 38;
+                });
+                
+                const startBtn = this.add.rectangle(width/2, 540, 280, 70, 0xF4A261, 1).setInteractive({ useHandCursor: true }).setStrokeStyle(4, 0xFFD966);
+                this.add.text(width/2, 540, '▶  INICIAR JOGO  ▶', { fontSize: '28px', fontWeight: 'bold', color: '#2D3E2B' }).setOrigin(0.5);
+                startBtn.on('pointerdown', () => this.scene.start('GameScene'));
+                startBtn.on('pointerover', () => startBtn.setFillStyle(0xE76F51));
+                startBtn.on('pointerout', () => startBtn.setFillStyle(0xF4A261));
+            }
         }
 
-        function update() {
-            tempo += game.time.elapsed / 1000; // Converte para segundos
+        // ========== GAME SCENE ==========
+        class GameScene extends Phaser.Scene {
+            constructor() {
+                super({ key: 'GameScene' });
+                this.crab = null;
+                this.score = 0;
+                this.scoreText = null;
+                this.itemsGroup = null;
+                this.spawnTimer = null;
+                this.isGameOver = false;
+                this.warningText = null;
+                this.groundPlatform = null;
+                this.cursors = null;
+                this.jumpKey = null;
+                this.debugCounter = 0;
+            }
 
-            // 0-5s: Abertura - Casca surge de trás da "tampa" (posição inicial)
-            if (tempo >= 0 && tempo < 5) {
-                casca.visible = true;
-                // Movimento de surgimento
-                if (tempo < 2) {
-                    casca.y = 500 - (tempo * 100);
-                }
-                // Pisca olhos (simulado com escala)
-                if (Math.floor(tempo * 2) % 2 === 0) {
-                    casca.scale.setTo(0.8);
+            init() {
+                this.score = 0;
+                this.isGameOver = false;
+                if (this.spawnTimer) this.spawnTimer.remove();
+                if (this.itemsGroup) this.itemsGroup.clear(true, true);
+                touchLeft = false; touchRight = false; touchJumpRequest = false;
+                this.debugCounter = 0;
+                this.updateDebugUI("Jogo iniciado. Aguardando spawn...");
+            }
+
+            create() {
+                const { width, height } = this.cameras.main;
+                // fundo
+                this.add.rectangle(0, 0, width, height, 0x7ec8e0).setOrigin(0);
+                this.add.rectangle(0, height-80, width, 100, 0xc2a15b).setOrigin(0);
+                this.add.ellipse(120, 70, 100, 60, 0xf9f7e8, 0.85);
+                this.add.ellipse(800, 100, 140, 65, 0xfefce8, 0.85);
+                
+                this.itemsGroup = this.physics.add.group({ allowGravity: false, removeCallback: (i) => i.destroy() });
+                
+                // CARANGUEJO COM ESCALA REDUZIDA (20% do original)
+                this.crab = this.physics.add.sprite(width/2, CONFIG.groundY - 35, 'crab');
+                this.crab.setScale(CONFIG.crabScale);
+                this.crab.setCollideWorldBounds(true);
+                this.crab.setGravityY(CONFIG.gravityY);
+                this.crab.body.setSize(this.crab.width * 0.7, this.crab.height * 0.7);
+                this.crab.body.setOffset(10, 12);
+                
+                // Chão
+                this.groundPlatform = this.physics.add.staticGroup();
+                this.groundPlatform.create(0, CONFIG.groundY, 'pixel').setScale(width, 10).setOrigin(0).setVisible(false);
+                this.physics.add.collider(this.crab, this.groundPlatform);
+                
+                // Colisão itens
+                this.physics.add.overlap(this.crab, this.itemsGroup, this.collectItem, null, this);
+                
+                // Teclado
+                this.cursors = this.input.keyboard.createCursorKeys();
+                this.jumpKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+                
+                // UI
+                this.scoreText = this.add.text(25, 20, '🐚 CONCHAS: 0', { fontFamily: '"Fredoka One", cursive', fontSize: '32px', color: '#FFEAB3', stroke: '#A8571A', strokeThickness: 4 });
+                this.warningText = this.add.text(width-25, 25, '', { fontSize: '18px', color: '#FF6F61', backgroundColor: '#2f1e0ecc', padding: { x: 8, y: 4 }, borderRadius: 20 }).setOrigin(1,0);
+                this.warningText.setVisible(false);
+                
+                // Inicia spawn de frutas e pimentas
+                this.startSpawning();
+                
+                // Debug visual: mostra quantos itens ativos
+                this.time.addEvent({
+                    delay: 1000,
+                    callback: () => {
+                        if (!this.isGameOver) {
+                            const count = this.itemsGroup.getLength();
+                            this.updateDebugUI(`🍎 Itens caindo: ${count} | Pontos: ${this.score}`);
+                        }
+                    },
+                    loop: true
+                });
+            }
+            
+            startSpawning() {
+                const schedule = () => {
+                    if (this.isGameOver) return;
+                    this.spawnItem();
+                    const delay = Phaser.Math.Between(CONFIG.spawnIntervalMin, CONFIG.spawnIntervalMax);
+                    this.spawnTimer = this.time.delayedCall(delay, schedule, [], this);
+                };
+                schedule();
+            }
+            
+            spawnItem() {
+                if (this.isGameOver) return;
+                const randX = Phaser.Math.Between(50, this.cameras.main.width - 50);
+                const isFruit = Math.random() < CONFIG.fruitChance;
+                let emoji = '';
+                let value = 0;
+                if (isFruit) {
+                    const fruitVariants = ['🍎', '🍌', '🍊', '🍉', '🍒'];
+                    emoji = fruitVariants[Math.floor(Math.random() * fruitVariants.length)];
+                    value = CONFIG.fruitPoints;
                 } else {
-                    casca.scale.setTo(0.78);
+                    emoji = '🌶️';
+                    value = CONFIG.pepperPoints;
                 }
+                
+                // Cria o item como texto (emogi)
+                const item = this.add.text(randX, -25, emoji, {
+                    fontFamily: 'Segoe UI Emoji, "Apple Color Emoji", sans-serif',
+                    fontSize: '48px',
+                    shadow: { offsetX: 2, offsetY: 2, color: '#2f1f0c', blur: 5 }
+                }).setOrigin(0.5);
+                
+                this.physics.add.existing(item);
+                item.body.setAllowGravity(false);
+                item.body.setVelocityY(CONFIG.itemSpeedY);
+                item.body.setSize(40, 45);
+                item.setData('value', value);
+                item.setData('emoji', emoji);
+                this.itemsGroup.add(item);
+                
+                // feedback visual de criação (pisca)
+                this.tweens.add({
+                    targets: item,
+                    scaleX: 1.3,
+                    scaleY: 1.3,
+                    duration: 100,
+                    yoyo: true
+                });
+                
+                // atualiza debug
+                this.updateDebugUI(`✨ Nova fruta/pimenta: ${emoji} no ar`);
             }
-
-            // 5-12s: Descoberta - Casca anda e tenta tocar poeira
-            if (tempo >= 5 && tempo < 12) {
-                // Movimento lateral (tic-tic-tic)
-                casca.x = 400 + Math.sin(tempo * 10) * 20;
-                casca.y = 450;
-                // Movimento de garra para tocar poeira
-                if (tempo > 7 && tempo < 10) {
-                    casca.scale.y = 0.8 + Math.sin(tempo * 15) * 0.05;
+            
+            collectItem(crab, item) {
+                if (this.isGameOver) return;
+                const value = item.getData('value');
+                this.score += value;
+                this.updateScoreUI();
+                
+                // feedback flutuante
+                const pop = this.add.text(item.x, item.y-20, (value>0 ? `+${value}` : `${value}`), {
+                    fontSize: '28px', fontFamily: 'monospace', color: value>0 ? '#D4FFA2' : '#FFA07A',
+                    stroke: '#000000', strokeThickness: 2
+                }).setOrigin(0.5);
+                this.tweens.add({ targets: pop, y: pop.y-40, alpha: 0, duration: 600, onComplete: () => pop.destroy() });
+                
+                // pequeno tremor no caranguejo
+                this.tweens.add({ targets: crab, x: crab.x + (value>0 ? 5 : -5), duration: 40, yoyo: true, repeat: 2 });
+                
+                item.destroy();
+                this.checkGameOver();
+            }
+            
+            updateScoreUI() {
+                this.scoreText.setText(`🐚 CONCHAS: ${this.score}`);
+                if (this.score <= -25 && !this.isGameOver) {
+                    this.warningText.setText('⚠️ CUIDADO! MUITAS PIMENTAS! ⚠️');
+                    this.warningText.setVisible(true);
+                } else if (this.score > -25) this.warningText.setVisible(false);
+            }
+            
+            checkGameOver() {
+                if (!this.isGameOver && this.score <= CONFIG.gameOverThreshold) this.gameOver();
+            }
+            
+            gameOver() {
+                this.isGameOver = true;
+                if (this.spawnTimer) this.spawnTimer.remove();
+                this.physics.pause();
+                const { width, height } = this.cameras.main;
+                const overlay = this.add.rectangle(0, 0, width, height, 0x000000, 0.75).setOrigin(0).setDepth(10).setInteractive();
+                this.add.text(width/2, height/2-110, '💀 GAME OVER 💀', { fontFamily: '"Fredoka One", cursive', fontSize: '58px', color: '#F4C542', stroke: '#741b0c', strokeThickness: 6 }).setOrigin(0.5).setDepth(11);
+                this.add.text(width/2, height/2-40, `🏆 Pontuação: ${this.score}`, { fontSize: '34px', color: '#FFDE9E', backgroundColor: '#1e3a2fa0', padding: { x: 16, y: 8 }, borderRadius: 40 }).setOrigin(0.5).setDepth(11);
+                const restartBtn = this.add.rectangle(width/2, height/2+100, 280, 70, 0xF4A261, 1).setDepth(12).setInteractive({ useHandCursor: true });
+                this.add.text(width/2, height/2+100, '🔄  JOGAR NOVAMENTE  🔄', { fontSize: '28px', fontWeight: 'bold', color: '#2C3E2B' }).setOrigin(0.5).setDepth(13);
+                restartBtn.on('pointerdown', () => this.scene.restart());
+                
+                const menuBtn = this.add.rectangle(width/2, height/2+180, 200, 48, 0x2c5e46, 0.9).setDepth(12).setInteractive({ useHandCursor: true });
+                this.add.text(width/2, height/2+180, '🏠 MENU', { fontSize: '22px', color: '#FFE9B6' }).setOrigin(0.5).setDepth(13);
+                menuBtn.on('pointerdown', () => { this.scene.stop(); this.scene.start('MenuScene'); });
+            }
+            
+            update() {
+                if (this.isGameOver || !this.crab) return;
+                
+                // Movimento (teclado + touch)
+                let move = 0;
+                if (this.cursors.left.isDown || touchLeft) move = -1;
+                else if (this.cursors.right.isDown || touchRight) move = 1;
+                const speed = 380;
+                this.crab.setVelocityX(move * speed);
+                if (move === -1) this.crab.setFlipX(true);
+                else if (move === 1) this.crab.setFlipX(false);
+                
+                // Pulo
+                const onGround = this.crab.body.touching.down || this.crab.body.blocked.down;
+                let jump = (this.cursors.up.isDown || this.jumpKey.isDown);
+                if (touchJumpRequest && onGround) { jump = true; touchJumpRequest = false; }
+                if (jump && onGround) {
+                    this.crab.setVelocityY(-500);
+                    this.tweens.add({ targets: this.crab, scaleY: CONFIG.crabScale * 0.9, duration: 180, yoyo: true });
                 }
-                // Move as partículas de poeira
-                particulas.x = casca.x + 50;
-                particulas.y = casca.y - 50;
+                
+                // Remove itens que saem da tela
+                this.itemsGroup.getChildren().forEach(item => {
+                    if (item.y > CONFIG.height + 80) item.destroy();
+                });
             }
-
-            // 12-20s: Susto - Gota cai e Casca se assusta
-            if (tempo >= 12 && tempo < 20) {
-                // Gota cai
-                gota.visible = true;
-                gota.y += 5;
-                gota.x = 150 + (tempo - 12) * 20;
-                // Quando a gota acerta o Casca
-                if (gota.y >= casca.y - 50) {
-                    gota.kill();
-                    // Casca pula de susto
-                    casca.y = 450 - Math.sin((tempo - 15) * 10) * 30;
-                    casca.scale.setTo(0.9); // Olhos arregalados
-                }
-            }
-
-            // 20-26s: Reação - Casca relaxa e sorri
-            if (tempo >= 20 && tempo < 26) {
-                // Volta ao tamanho normal e relaxa
-                casca.scale.setTo(0.8);
-                casca.y = 450;
-                // Movimento de "limpar" a carapaça
-                casca.x = 400 + Math.sin((tempo - 22) * 8) * 10;
-            }
-
-            // 26-30s: Encerramento - Casca corre para fora da tela
-            if (tempo >= 26 && tempo < 30) {
-                // Corre para a direita
-                casca.x += 5;
-                casca.y = 450 + Math.sin(tempo * 15) * 5;
-                // Levanta as garras
-                casca.scale.y = 0.85;
-            }
-
-            // Fim da animação
-            if (tempo >= 30) {
-                casca.kill();
-                game.camera.fade('#000000', 1000);
+            
+            updateDebugUI(msg) {
+                const debugDiv = document.getElementById('debugInfo');
+                if (debugDiv) debugDiv.innerHTML = `🕹️ ${msg} | 🦀 tamanho reduzido 80%`;
             }
         }
-    </script>
+        
+        // Inicialização do Phaser
+        const gameConfig = {
+            type: Phaser.AUTO,
+            width: CONFIG.width,
+            height: CONFIG.height,
+            parent: 'game-root',
+            backgroundColor: '#2c5a4a',
+            physics: { default: 'arcade', arcade: { gravity: { y: CONFIG.gravityY }, debug: false } },
+            scene: [BootScene, MenuScene, GameScene],
+            scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH }
+        };
+        const game = new Phaser.Game(gameConfig);
+        
+        // Controles touch
+        window.addEventListener('load', () => {
+            const btnLeft = document.getElementById('btnLeft');
+            const btnRight = document.getElementById('btnRight');
+            const btnJump = document.getElementById('btnJump');
+            if (!btnLeft || !btnRight || !btnJump) return;
+            
+            btnLeft.addEventListener('touchstart', (e) => { e.preventDefault(); touchLeft = true; });
+            btnLeft.addEventListener('touchend', (e) => { e.preventDefault(); touchLeft = false; });
+            btnLeft.addEventListener('mousedown', () => { touchLeft = true; });
+            btnLeft.addEventListener('mouseup', () => { touchLeft = false; });
+            
+            btnRight.addEventListener('touchstart', (e) => { e.preventDefault(); touchRight = true; });
+            btnRight.addEventListener('touchend', (e) => { e.preventDefault(); touchRight = false; });
+            btnRight.addEventListener('mousedown', () => { touchRight = true; });
+            btnRight.addEventListener('mouseup', () => { touchRight = false; });
+            
+            const triggerJump = (e) => { if(e) e.preventDefault(); touchJumpRequest = true; };
+            btnJump.addEventListener('touchstart', triggerJump);
+            btnJump.addEventListener('mousedown', triggerJump);
+            
+            [btnLeft, btnRight, btnJump].forEach(btn => {
+                btn.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+            });
+        });
+    })();
+</script>
 </body>
 </html>
