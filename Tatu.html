@@ -3,24 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Caranguejo Uçá: Frutas & Pimentas 🌶️ | Toque ou Teclado</title>
+    <title>Caranguejo Uçá: Coleta de Frutas 🍎 | Tamanho reduzido</title>
     <style>
         * {
             user-select: none;
             touch-action: manipulation;
         }
-
         body {
             background: linear-gradient(145deg, #0a2f3a 0%, #064e3b 100%);
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-family: 'Segoe UI', 'Poppins', system-ui, sans-serif;
+            font-family: 'Segoe UI', system-ui, sans-serif;
             margin: 0;
             padding: 16px;
         }
-
         .game-wrapper {
             display: flex;
             flex-direction: column;
@@ -28,14 +26,12 @@
             gap: 12px;
             max-width: 100%;
         }
-
         .game-container {
             border-radius: 40px;
             box-shadow: 0 20px 35px rgba(0, 0, 0, 0.5);
             background: #2b1e0f;
             padding: 8px;
         }
-
         canvas {
             display: block;
             margin: 0 auto;
@@ -43,10 +39,7 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
             width: 100%;
             height: auto;
-            cursor: pointer;
         }
-
-        /* TOUCH CONTROLS - botões virtuais */
         .touch-controls {
             display: flex;
             justify-content: center;
@@ -60,65 +53,53 @@
             margin: 0 auto;
             border: 1px solid #ffd966aa;
         }
-
         .ctrl-btn {
             background: #f4a261;
             border: none;
-            font-size: 2.5rem;
+            font-size: 2rem;
             font-weight: bold;
-            padding: 12px 24px;
+            padding: 10px 20px;
             border-radius: 60px;
             box-shadow: 0 5px 0 #8b3c1c;
             transition: all 0.05s linear;
             cursor: pointer;
-            touch-action: manipulation;
-            min-width: 85px;
-            text-align: center;
+            min-width: 75px;
             color: #2d3e2b;
             font-family: monospace;
-            font-weight: bold;
         }
-
         .ctrl-btn:active {
             transform: translateY(3px);
             box-shadow: 0 2px 0 #8b3c1c;
         }
-
         .jump-btn {
             background: #6ab04c;
             box-shadow: 0 5px 0 #2c5a2e;
-            color: #1e3a1e;
         }
-
-        @media (max-width: 700px) {
-            .ctrl-btn {
-                font-size: 1.8rem;
-                padding: 8px 18px;
-                min-width: 70px;
-            }
-            .touch-controls {
-                gap: 15px;
-                padding: 10px 15px;
-            }
+        @media (max-width: 600px) {
+            .ctrl-btn { font-size: 1.5rem; padding: 6px 12px; min-width: 60px; }
+            .touch-controls { gap: 12px; padding: 8px 12px; }
         }
-
-        @media (max-width: 500px) {
-            .ctrl-btn {
-                font-size: 1.5rem;
-                padding: 6px 14px;
-                min-width: 60px;
-            }
-        }
-
         .instructions {
             text-align: center;
             background: #fef5e0cc;
             backdrop-filter: blur(4px);
-            padding: 6px 16px;
+            padding: 5px 12px;
             border-radius: 40px;
             font-size: 0.8rem;
             font-weight: bold;
-            color: #2c4b2f;
+        }
+        .debug-info {
+            background: #000000aa;
+            color: #0f0;
+            font-family: monospace;
+            font-size: 12px;
+            padding: 2px 8px;
+            border-radius: 20px;
+            position: fixed;
+            bottom: 5px;
+            left: 5px;
+            z-index: 999;
+            pointer-events: none;
         }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
@@ -134,22 +115,23 @@
         <button class="ctrl-btn" id="btnRight">DIR ▶</button>
     </div>
     <div class="instructions">
-        🦀 <strong>Toque nos botões</strong> ou use <strong>← → ↑</strong> (teclado)
+        🦀 Caranguejo reduzido (20% do tamanho) para ver as frutas! Toque nos botões ou use teclado.
     </div>
 </div>
+<div class="debug-info" id="debugInfo">🍎 Aguardando frutas...</div>
 
 <script>
     (function() {
-        // ========== CONFIGURAÇÕES DO JOGO ==========
+        // Configurações - CARANGUEJO BEM MENOR (escala 0.25, redução de 80% comparado ao tamanho original)
         const CONFIG = {
             width: 1000,
             height: 650,
             gravityY: 1000,
             groundY: 590,
-            crabScale: 0.65,
-            itemSpeedY: 240,
-            spawnIntervalMin: 550,
-            spawnIntervalMax: 1050,
+            crabScale: 0.25,        // Reduzido em 80% (antes 0.65, agora 0.25)
+            itemSpeedY: 280,         // Velocidade de queda mais rápida para visibilidade
+            spawnIntervalMin: 500,
+            spawnIntervalMax: 900,
             fruitPoints: 12,
             pepperPoints: -10,
             gameOverThreshold: -45,
@@ -158,12 +140,10 @@
 
         const CRAB_IMAGE_URL = 'https://raw.githubusercontent.com/lambelambe-app/lambelambeapp/refs/heads/main/caranguejo.png';
 
-        // Variáveis globais para controle touch (comunicam com a cena)
-        let touchLeft = false;
-        let touchRight = false;
-        let touchJumpRequest = false;
+        // Variáveis touch
+        let touchLeft = false, touchRight = false, touchJumpRequest = false;
 
-        // ========== CENA DE CARREGAMENTO ==========
+        // ========== BOOT ==========
         class BootScene extends Phaser.Scene {
             constructor() { super({ key: 'BootScene' }); }
             preload() {
@@ -173,41 +153,32 @@
             create() { this.scene.start('MenuScene'); }
         }
 
-        // ========== MENU INICIAL ==========
+        // ========== MENU ==========
         class MenuScene extends Phaser.Scene {
             constructor() { super({ key: 'MenuScene' }); }
             create() {
                 const { width, height } = this.cameras.main;
                 this.add.rectangle(0, 0, width, height, 0x1b4d3e).setOrigin(0);
-                // decoração
-                this.add.text(width/2, 100, '🦀  CARANGUEJO UÇÁ  🍎', {
-                    fontFamily: '"Fredoka One", cursive', fontSize: '52px', color: '#FFE484',
-                    stroke: '#A5661A', strokeThickness: 6
-                }).setOrigin(0.5);
-                this.add.text(width/2, 180, '—  Aventura das Frutas Caiuçá  —', {
-                    fontSize: '22px', color: '#FFDE9E', fontStyle: 'bold'
-                }).setOrigin(0.5);
-                this.add.image(width/2, 290, 'crab').setScale(0.45).setFlipX(true);
+                this.add.text(width/2, 90, '🦀  CARANGUEJO UÇÁ  🍎', { fontFamily: '"Fredoka One", cursive', fontSize: '48px', color: '#FFE484', stroke: '#A5661A', strokeThickness: 6 }).setOrigin(0.5);
+                this.add.text(width/2, 160, '— Colete frutas, evite pimentas —', { fontSize: '20px', color: '#FFDE9E' }).setOrigin(0.5);
+                this.add.image(width/2, 270, 'crab').setScale(0.35).setFlipX(true);
                 
-                const rules = [
-                    '🍎 🍌 🍊  Frutas: +12 pontos', '🌶️  Pimenta: -10 pontos',
-                    '⚠️  Se chegar a -45 → GAME OVER', '⬅️  ➡️  Movimento  |  ⬆️  Pulo'
-                ];
-                let yOff = 380;
+                const rules = ['🍎🍌🍊 Fruta = +12 pts', '🌶️ Pimenta = -10 pts', '⚠️ -45 pts = Game Over', '⬅️ ➡️ mover | ⬆️ pular'];
+                let yOff = 360;
                 rules.forEach(line => {
                     this.add.text(width/2, yOff, line, { fontSize: '18px', color: '#FCF7E1', backgroundColor: '#1f543ea0', padding: { x: 12, y: 5 }, borderRadius: 40 }).setOrigin(0.5);
                     yOff += 38;
                 });
                 
-                const startBtn = this.add.rectangle(width/2, 550, 280, 70, 0xF4A261, 1).setInteractive({ useHandCursor: true }).setStrokeStyle(4, 0xFFD966);
-                this.add.text(width/2, 550, '▶  INICIAR JOGO  ▶', { fontSize: '28px', fontWeight: 'bold', color: '#2D3E2B' }).setOrigin(0.5);
+                const startBtn = this.add.rectangle(width/2, 540, 280, 70, 0xF4A261, 1).setInteractive({ useHandCursor: true }).setStrokeStyle(4, 0xFFD966);
+                this.add.text(width/2, 540, '▶  INICIAR JOGO  ▶', { fontSize: '28px', fontWeight: 'bold', color: '#2D3E2B' }).setOrigin(0.5);
                 startBtn.on('pointerdown', () => this.scene.start('GameScene'));
                 startBtn.on('pointerover', () => startBtn.setFillStyle(0xE76F51));
                 startBtn.on('pointerout', () => startBtn.setFillStyle(0xF4A261));
             }
         }
 
-        // ========== CENA PRINCIPAL (GAMEPLAY) ==========
+        // ========== GAME SCENE ==========
         class GameScene extends Phaser.Scene {
             constructor() {
                 super({ key: 'GameScene' });
@@ -221,6 +192,7 @@
                 this.groundPlatform = null;
                 this.cursors = null;
                 this.jumpKey = null;
+                this.debugCounter = 0;
             }
 
             init() {
@@ -228,10 +200,9 @@
                 this.isGameOver = false;
                 if (this.spawnTimer) this.spawnTimer.remove();
                 if (this.itemsGroup) this.itemsGroup.clear(true, true);
-                // reset das flags touch
-                touchLeft = false;
-                touchRight = false;
-                touchJumpRequest = false;
+                touchLeft = false; touchRight = false; touchJumpRequest = false;
+                this.debugCounter = 0;
+                this.updateDebugUI("Jogo iniciado. Aguardando spawn...");
             }
 
             create() {
@@ -239,41 +210,50 @@
                 // fundo
                 this.add.rectangle(0, 0, width, height, 0x7ec8e0).setOrigin(0);
                 this.add.rectangle(0, height-80, width, 100, 0xc2a15b).setOrigin(0);
-                // nuvens
                 this.add.ellipse(120, 70, 100, 60, 0xf9f7e8, 0.85);
                 this.add.ellipse(800, 100, 140, 65, 0xfefce8, 0.85);
                 
                 this.itemsGroup = this.physics.add.group({ allowGravity: false, removeCallback: (i) => i.destroy() });
                 
-                // Caranguejo
-                this.crab = this.physics.add.sprite(width/2, CONFIG.groundY - 40, 'crab');
+                // CARANGUEJO COM ESCALA REDUZIDA (20% do original)
+                this.crab = this.physics.add.sprite(width/2, CONFIG.groundY - 35, 'crab');
                 this.crab.setScale(CONFIG.crabScale);
                 this.crab.setCollideWorldBounds(true);
                 this.crab.setGravityY(CONFIG.gravityY);
                 this.crab.body.setSize(this.crab.width * 0.7, this.crab.height * 0.7);
-                this.crab.body.setOffset(20, 25);
+                this.crab.body.setOffset(10, 12);
                 
-                // chão
+                // Chão
                 this.groundPlatform = this.physics.add.staticGroup();
                 this.groundPlatform.create(0, CONFIG.groundY, 'pixel').setScale(width, 10).setOrigin(0).setVisible(false);
                 this.physics.add.collider(this.crab, this.groundPlatform);
                 
-                // colisão com itens
+                // Colisão itens
                 this.physics.add.overlap(this.crab, this.itemsGroup, this.collectItem, null, this);
                 
-                // controles teclado
+                // Teclado
                 this.cursors = this.input.keyboard.createCursorKeys();
                 this.jumpKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
                 
                 // UI
-                this.scoreText = this.add.text(25, 20, '🐚 CONCHAS: 0', {
-                    fontFamily: '"Fredoka One", cursive', fontSize: '32px', color: '#FFEAB3',
-                    stroke: '#A8571A', strokeThickness: 4
-                });
+                this.scoreText = this.add.text(25, 20, '🐚 CONCHAS: 0', { fontFamily: '"Fredoka One", cursive', fontSize: '32px', color: '#FFEAB3', stroke: '#A8571A', strokeThickness: 4 });
                 this.warningText = this.add.text(width-25, 25, '', { fontSize: '18px', color: '#FF6F61', backgroundColor: '#2f1e0ecc', padding: { x: 8, y: 4 }, borderRadius: 20 }).setOrigin(1,0);
                 this.warningText.setVisible(false);
                 
+                // Inicia spawn de frutas e pimentas
                 this.startSpawning();
+                
+                // Debug visual: mostra quantos itens ativos
+                this.time.addEvent({
+                    delay: 1000,
+                    callback: () => {
+                        if (!this.isGameOver) {
+                            const count = this.itemsGroup.getLength();
+                            this.updateDebugUI(`🍎 Itens caindo: ${count} | Pontos: ${this.score}`);
+                        }
+                    },
+                    loop: true
+                });
             }
             
             startSpawning() {
@@ -290,19 +270,43 @@
                 if (this.isGameOver) return;
                 const randX = Phaser.Math.Between(50, this.cameras.main.width - 50);
                 const isFruit = Math.random() < CONFIG.fruitChance;
-                const emoji = isFruit ? (Math.random() < 0.5 ? '🍎' : '🍌') : '🌶️';
-                const value = isFruit ? CONFIG.fruitPoints : CONFIG.pepperPoints;
-                const item = this.add.text(randX, -20, emoji, {
+                let emoji = '';
+                let value = 0;
+                if (isFruit) {
+                    const fruitVariants = ['🍎', '🍌', '🍊', '🍉', '🍒'];
+                    emoji = fruitVariants[Math.floor(Math.random() * fruitVariants.length)];
+                    value = CONFIG.fruitPoints;
+                } else {
+                    emoji = '🌶️';
+                    value = CONFIG.pepperPoints;
+                }
+                
+                // Cria o item como texto (emogi)
+                const item = this.add.text(randX, -25, emoji, {
                     fontFamily: 'Segoe UI Emoji, "Apple Color Emoji", sans-serif',
-                    fontSize: '44px', shadow: { offsetX: 2, offsetY: 2, color: '#2f1f0c', blur: 4 }
+                    fontSize: '48px',
+                    shadow: { offsetX: 2, offsetY: 2, color: '#2f1f0c', blur: 5 }
                 }).setOrigin(0.5);
+                
                 this.physics.add.existing(item);
                 item.body.setAllowGravity(false);
                 item.body.setVelocityY(CONFIG.itemSpeedY);
-                item.body.setSize(35, 40);
+                item.body.setSize(40, 45);
                 item.setData('value', value);
                 item.setData('emoji', emoji);
                 this.itemsGroup.add(item);
+                
+                // feedback visual de criação (pisca)
+                this.tweens.add({
+                    targets: item,
+                    scaleX: 1.3,
+                    scaleY: 1.3,
+                    duration: 100,
+                    yoyo: true
+                });
+                
+                // atualiza debug
+                this.updateDebugUI(`✨ Nova fruta/pimenta: ${emoji} no ar`);
             }
             
             collectItem(crab, item) {
@@ -310,10 +314,17 @@
                 const value = item.getData('value');
                 this.score += value;
                 this.updateScoreUI();
-                // feedback
-                const pop = this.add.text(item.x, item.y-20, (value>0?`+${value}`:`${value}`), { fontSize: '26px', color: value>0?'#C9FF9B':'#FFAC9B', stroke: '#222', strokeThickness: 2 }).setOrigin(0.5);
-                this.tweens.add({ targets: pop, y: pop.y-35, alpha:0, duration: 700, onComplete:()=>pop.destroy() });
-                this.tweens.add({ targets: crab, x: crab.x + (value>0?4:-4), duration: 50, yoyo: true, repeat: 2 });
+                
+                // feedback flutuante
+                const pop = this.add.text(item.x, item.y-20, (value>0 ? `+${value}` : `${value}`), {
+                    fontSize: '28px', fontFamily: 'monospace', color: value>0 ? '#D4FFA2' : '#FFA07A',
+                    stroke: '#000000', strokeThickness: 2
+                }).setOrigin(0.5);
+                this.tweens.add({ targets: pop, y: pop.y-40, alpha: 0, duration: 600, onComplete: () => pop.destroy() });
+                
+                // pequeno tremor no caranguejo
+                this.tweens.add({ targets: crab, x: crab.x + (value>0 ? 5 : -5), duration: 40, yoyo: true, repeat: 2 });
+                
                 item.destroy();
                 this.checkGameOver();
             }
@@ -321,7 +332,7 @@
             updateScoreUI() {
                 this.scoreText.setText(`🐚 CONCHAS: ${this.score}`);
                 if (this.score <= -25 && !this.isGameOver) {
-                    this.warningText.setText('⚠️ PERIGO! PIMENTA DEMAIS! ⚠️');
+                    this.warningText.setText('⚠️ CUIDADO! MUITAS PIMENTAS! ⚠️');
                     this.warningText.setVisible(true);
                 } else if (this.score > -25) this.warningText.setVisible(false);
             }
@@ -337,7 +348,7 @@
                 const { width, height } = this.cameras.main;
                 const overlay = this.add.rectangle(0, 0, width, height, 0x000000, 0.75).setOrigin(0).setDepth(10).setInteractive();
                 this.add.text(width/2, height/2-110, '💀 GAME OVER 💀', { fontFamily: '"Fredoka One", cursive', fontSize: '58px', color: '#F4C542', stroke: '#741b0c', strokeThickness: 6 }).setOrigin(0.5).setDepth(11);
-                this.add.text(width/2, height/2-40, `🏆 Pontuação: ${this.score}`, { fontSize: '36px', color: '#FFDE9E', backgroundColor: '#1e3a2fa0', padding: { x: 16, y: 8 }, borderRadius: 40 }).setOrigin(0.5).setDepth(11);
+                this.add.text(width/2, height/2-40, `🏆 Pontuação: ${this.score}`, { fontSize: '34px', color: '#FFDE9E', backgroundColor: '#1e3a2fa0', padding: { x: 16, y: 8 }, borderRadius: 40 }).setOrigin(0.5).setDepth(11);
                 const restartBtn = this.add.rectangle(width/2, height/2+100, 280, 70, 0xF4A261, 1).setDepth(12).setInteractive({ useHandCursor: true });
                 this.add.text(width/2, height/2+100, '🔄  JOGAR NOVAMENTE  🔄', { fontSize: '28px', fontWeight: 'bold', color: '#2C3E2B' }).setOrigin(0.5).setDepth(13);
                 restartBtn.on('pointerdown', () => this.scene.restart());
@@ -350,31 +361,33 @@
             update() {
                 if (this.isGameOver || !this.crab) return;
                 
-                // MOVIMENTO: unifica teclado + touch
+                // Movimento (teclado + touch)
                 let move = 0;
                 if (this.cursors.left.isDown || touchLeft) move = -1;
                 else if (this.cursors.right.isDown || touchRight) move = 1;
-                const speed = 360;
+                const speed = 380;
                 this.crab.setVelocityX(move * speed);
                 if (move === -1) this.crab.setFlipX(true);
                 else if (move === 1) this.crab.setFlipX(false);
                 
-                // PULO: teclado ou toque (botão jump)
+                // Pulo
                 const onGround = this.crab.body.touching.down || this.crab.body.blocked.down;
-                let jumpPressed = (this.cursors.up.isDown || this.jumpKey.isDown);
-                if (touchJumpRequest && onGround) {
-                    jumpPressed = true;
-                    touchJumpRequest = false; // consome o pulo
-                }
-                if (jumpPressed && onGround) {
-                    this.crab.setVelocityY(-480);
-                    this.tweens.add({ targets: this.crab, scaleY: CONFIG.crabScale * 0.92, duration: 200, yoyo: true });
+                let jump = (this.cursors.up.isDown || this.jumpKey.isDown);
+                if (touchJumpRequest && onGround) { jump = true; touchJumpRequest = false; }
+                if (jump && onGround) {
+                    this.crab.setVelocityY(-500);
+                    this.tweens.add({ targets: this.crab, scaleY: CONFIG.crabScale * 0.9, duration: 180, yoyo: true });
                 }
                 
-                // remover itens fora da tela
+                // Remove itens que saem da tela
                 this.itemsGroup.getChildren().forEach(item => {
-                    if (item.y > CONFIG.height + 100) item.destroy();
+                    if (item.y > CONFIG.height + 80) item.destroy();
                 });
+            }
+            
+            updateDebugUI(msg) {
+                const debugDiv = document.getElementById('debugInfo');
+                if (debugDiv) debugDiv.innerHTML = `🕹️ ${msg} | 🦀 tamanho reduzido 80%`;
             }
         }
         
@@ -391,37 +404,28 @@
         };
         const game = new Phaser.Game(gameConfig);
         
-        // ========== EVENTOS DOS BOTÕES TOUCH ==========
-        // Aguardar o DOM carregar
+        // Controles touch
         window.addEventListener('load', () => {
             const btnLeft = document.getElementById('btnLeft');
             const btnRight = document.getElementById('btnRight');
             const btnJump = document.getElementById('btnJump');
-            
             if (!btnLeft || !btnRight || !btnJump) return;
             
-            // Esquerda (touch start / end)
             btnLeft.addEventListener('touchstart', (e) => { e.preventDefault(); touchLeft = true; });
             btnLeft.addEventListener('touchend', (e) => { e.preventDefault(); touchLeft = false; });
             btnLeft.addEventListener('mousedown', () => { touchLeft = true; });
             btnLeft.addEventListener('mouseup', () => { touchLeft = false; });
-            // Direita
+            
             btnRight.addEventListener('touchstart', (e) => { e.preventDefault(); touchRight = true; });
             btnRight.addEventListener('touchend', (e) => { e.preventDefault(); touchRight = false; });
             btnRight.addEventListener('mousedown', () => { touchRight = true; });
             btnRight.addEventListener('mouseup', () => { touchRight = false; });
             
-            // Pulo: ativa o flag (será consumido no update do jogo)
-            const triggerJump = (e) => {
-                if (e) e.preventDefault();
-                touchJumpRequest = true;
-            };
+            const triggerJump = (e) => { if(e) e.preventDefault(); touchJumpRequest = true; };
             btnJump.addEventListener('touchstart', triggerJump);
             btnJump.addEventListener('mousedown', triggerJump);
             
-            // Previne arrastar da página ao tocar nos botões
-            const allBtns = [btnLeft, btnRight, btnJump];
-            allBtns.forEach(btn => {
+            [btnLeft, btnRight, btnJump].forEach(btn => {
                 btn.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
             });
         });
