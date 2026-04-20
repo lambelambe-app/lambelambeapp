@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>O Caranguejo Perdido - Animação Phaser</title>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@2.6.2/dist/phaser.min.js"></script>
+    <style>
+        body { margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #f0f8ff; }
+    </style>
+</head>
+<body>
+    <script>
+        // Configuração do jogo
+        const game = new Phaser.Game(800, 600, Phaser.AUTO, '', { preload: preload, create: create, update: update });
+        let casca; // Personagem principal
+        let grama; // Elemento do cenário
+        let particulas; // Partículas de poeira
+        let gota; // Gota de orvalho
+        let tempo = 0; // Contador de tempo da animação
+
+        function preload() {
+            // Carrega a imagem do personagem (você pode substituir por um arquivo local)
+            game.load.image('casca', 'https://i.imgur.com/9Z7X8QH.png'); // Imagem do Casca sem a tampa
+            game.load.image('grama', 'https://i.imgur.com/4KjZ7xY.png'); // Folha de grama
+            game.load.image('gota', 'https://i.imgur.com/3X9Z7yW.png'); // Gota de água
+        }
+
+        function create() {
+            // Fundo do cenário (leito de riacho seco)
+            game.stage.backgroundColor = '#e6d5b8';
+
+            // Adiciona a folha de grama à esquerda
+            grama = game.add.sprite(50, 100, 'grama');
+            grama.scale.setTo(1.5);
+
+            // Cria o personagem Casca, inicialmente escondido
+            casca = game.add.sprite(400, 500, 'casca');
+            casca.anchor.setTo(0.5, 1);
+            casca.scale.setTo(0.8);
+            casca.visible = false; // Começa invisível
+
+            // Cria sistema de partículas para a poeira
+            particulas = game.add.emitter(0, 0, 20);
+            particulas.makeParticles('gota');
+            particulas.setScale(0.1, 0.1);
+            particulas.gravity = 0;
+            particulas.setYSpeed(-20, -50);
+            particulas.setXSpeed(-10, 10);
+            particulas.start(false, 5000, 200);
+
+            // Cria a gota de orvalho, inicialmente invisível
+            gota = game.add.sprite(150, 100, 'gota');
+            gota.visible = false;
+            gota.scale.setTo(0.3);
+        }
+
+        function update() {
+            tempo += game.time.elapsed / 1000; // Converte para segundos
+
+            // 0-5s: Abertura - Casca surge de trás da "tampa" (posição inicial)
+            if (tempo >= 0 && tempo < 5) {
+                casca.visible = true;
+                // Movimento de surgimento
+                if (tempo < 2) {
+                    casca.y = 500 - (tempo * 100);
+                }
+                // Pisca olhos (simulado com escala)
+                if (Math.floor(tempo * 2) % 2 === 0) {
+                    casca.scale.setTo(0.8);
+                } else {
+                    casca.scale.setTo(0.78);
+                }
+            }
+
+            // 5-12s: Descoberta - Casca anda e tenta tocar poeira
+            if (tempo >= 5 && tempo < 12) {
+                // Movimento lateral (tic-tic-tic)
+                casca.x = 400 + Math.sin(tempo * 10) * 20;
+                casca.y = 450;
+                // Movimento de garra para tocar poeira
+                if (tempo > 7 && tempo < 10) {
+                    casca.scale.y = 0.8 + Math.sin(tempo * 15) * 0.05;
+                }
+                // Move as partículas de poeira
+                particulas.x = casca.x + 50;
+                particulas.y = casca.y - 50;
+            }
+
+            // 12-20s: Susto - Gota cai e Casca se assusta
+            if (tempo >= 12 && tempo < 20) {
+                // Gota cai
+                gota.visible = true;
+                gota.y += 5;
+                gota.x = 150 + (tempo - 12) * 20;
+                // Quando a gota acerta o Casca
+                if (gota.y >= casca.y - 50) {
+                    gota.kill();
+                    // Casca pula de susto
+                    casca.y = 450 - Math.sin((tempo - 15) * 10) * 30;
+                    casca.scale.setTo(0.9); // Olhos arregalados
+                }
+            }
+
+            // 20-26s: Reação - Casca relaxa e sorri
+            if (tempo >= 20 && tempo < 26) {
+                // Volta ao tamanho normal e relaxa
+                casca.scale.setTo(0.8);
+                casca.y = 450;
+                // Movimento de "limpar" a carapaça
+                casca.x = 400 + Math.sin((tempo - 22) * 8) * 10;
+            }
+
+            // 26-30s: Encerramento - Casca corre para fora da tela
+            if (tempo >= 26 && tempo < 30) {
+                // Corre para a direita
+                casca.x += 5;
+                casca.y = 450 + Math.sin(tempo * 15) * 5;
+                // Levanta as garras
+                casca.scale.y = 0.85;
+            }
+
+            // Fim da animação
+            if (tempo >= 30) {
+                casca.kill();
+                game.camera.fade('#000000', 1000);
+            }
+        }
+    </script>
+</body>
+</html>
