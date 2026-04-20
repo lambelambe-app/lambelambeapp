@@ -81,7 +81,7 @@
         <button class="ctrl-btn" id="btnRight">DIR ▶</button>
     </div>
     <div class="info">
-        Frutas: Manga, Goiaba, Acerola (+12) | Pimenta Malagueta (-10)
+        🦀 Caranguejo gigante | Frutas: Manga, Goiaba, Acerola (+12) | Pimenta Malagueta (-10) | Velocidade aumenta com o tempo!
     </div>
 </div>
 
@@ -94,14 +94,17 @@
         canvas.width = W;
         canvas.height = H;
         
-        // Chão
+        // Chão (linha da areia)
         const GROUND_Y = H - 70;
         
         // Caranguejo (tamanho triplo)
         const CRAB_WIDTH = 210;
         const CRAB_HEIGHT = 210;
+        // Ajuste fino para que a base do caranguejo encoste na areia
+        // A imagem tem altura 210, então a posição Y deve ser GROUND_Y - CRAB_HEIGHT + um pequeno offset
+        // Vamos usar +5 para que ele não flutue
         let crabX = W/2 - CRAB_WIDTH/2;
-        let crabY = GROUND_Y - CRAB_HEIGHT + 8;  // ajuste fino para tocar a areia
+        let crabY = GROUND_Y - CRAB_HEIGHT + 1;  // toca a areia!
         let crabVelX = 0;
         let crabVelY = 0;
         let isOnGround = true;
@@ -114,9 +117,9 @@
         let items = [];
         const ITEM_SIZE = 52;
         let spawnCounter = 0;
-        let spawnDelay = 28;  // inicialmente mais espaçado
+        let spawnDelay = 28;
         
-        // Frutas específicas (sem texto dentro, apenas emoji)
+        // Frutas específicas (sem texto dentro)
         const fruitList = [
             { name: 'Manga', emoji: '🥭', color: '#F4A300', value: 12 },
             { name: 'Goiaba', emoji: '🟢', color: '#6B8E23', value: 12 },
@@ -134,6 +137,7 @@
         // Efeitos
         let dustParticles = [];
         let floatingTexts = [];
+        let shakeAmount = 0;  // tremor ao pegar pimenta
         
         // Nuvens móveis
         let clouds = [
@@ -144,11 +148,11 @@
             { x: 600, y: 120, width: 110, height: 55, speed: 0.6 }
         ];
         
-        // Velocidade da chuva (queda dos itens) - começa baixo e aumenta
+        // Velocidade da chuva (queda) - começa lenta
         let currentFallSpeed = 2.2;
         const MAX_FALL_SPEED = 6.2;
         let speedIncreaseCounter = 0;
-        const SPEED_INCREASE_INTERVAL = 25; // a cada 25 itens coletados, aumenta velocidade
+        const SPEED_INCREASE_INTERVAL = 25;
         
         // Carregar imagem do caranguejo
         const crabImg = new Image();
@@ -252,7 +256,7 @@
                 isOnGround = false;
             }
             
-            // Atualizar itens com velocidade variável (chuva que acelera)
+            // Atualizar itens
             for (let i=0; i<items.length; i++) {
                 items[i].y += currentFallSpeed;
             }
@@ -277,7 +281,12 @@
                     const textColor = item.value > 0 ? '#C9FF9B' : '#FFB7A0';
                     addFloatingText(item.x + ITEM_SIZE/2, item.y, item.name, textColor);
                     
-                    // Aumenta a velocidade da chuva a cada 25 itens coletados (acumula)
+                    // Se for pimenta, ativar tremor
+                    if (item.value < 0) {
+                        shakeAmount = 8;  // tremor de 8 pixels (diminui rapidamente)
+                    }
+                    
+                    // Aumenta velocidade da chuva a cada 25 frutas
                     if (item.value > 0) {
                         speedIncreaseCounter++;
                         if (speedIncreaseCounter >= SPEED_INCREASE_INTERVAL && currentFallSpeed < MAX_FALL_SPEED) {
@@ -294,12 +303,11 @@
             // Remover itens fora da tela
             items = items.filter(item => item.y < H + 100);
             
-            // Spawn em chuva (delay também pode diminuir gradualmente, mas mantemos fixo para não ficar louco)
+            // Spawn
             spawnCounter++;
             if (spawnCounter >= spawnDelay) {
                 spawnCounter = 0;
                 spawnItem();
-                // spawnDelay fica entre 22 e 35 frames
                 spawnDelay = Math.floor(Math.random() * 18) + 22;
             }
             
@@ -318,6 +326,12 @@
             }
             floatingTexts = floatingTexts.filter(t => t.life > 0);
             
+            // Tremor diminui
+            if (shakeAmount > 0) {
+                shakeAmount *= 0.85;
+                if (shakeAmount < 0.5) shakeAmount = 0;
+            }
+            
             // Nuvens
             for (let cloud of clouds) {
                 cloud.x += cloud.speed;
@@ -327,6 +341,15 @@
         }
         
         function draw() {
+            // Aplica tremor (shake) se necessário
+            let offsetX = 0, offsetY = 0;
+            if (shakeAmount > 0) {
+                offsetX = (Math.random() - 0.5) * shakeAmount;
+                offsetY = (Math.random() - 0.5) * shakeAmount * 0.5;
+                ctx.save();
+                ctx.translate(offsetX, offsetY);
+            }
+            
             ctx.clearRect(0, 0, W, H);
             
             // Céu
@@ -351,7 +374,7 @@
                 ctx.fill();
             }
             
-            // Itens (apenas emoji, sem texto)
+            // Itens (apenas emoji)
             for (let item of items) {
                 const x = item.x, y = item.y, size = ITEM_SIZE;
                 ctx.shadowColor = 'rgba(0,0,0,0.4)';
@@ -371,7 +394,7 @@
                 ctx.fillText(item.emoji, x + size/2, y + size/2);
             }
             
-            // Caranguejo com flip
+            // Caranguejo
             if (crabLoaded) {
                 ctx.save();
                 if (!facingRight) {
@@ -398,7 +421,7 @@
                 ctx.fill();
             }
             
-            // Textos flutuantes (nome da fruta/pimenta ao coletar)
+            // Textos flutuantes
             for (let txt of floatingTexts) {
                 ctx.font = 'bold 20px "Segoe UI"';
                 ctx.fillStyle = txt.color;
@@ -407,12 +430,12 @@
             }
             ctx.shadowBlur = 0;
             
-            // Pontuação em PRETO (conforme solicitado)
+            // Pontuação em PRETO
             ctx.font = 'bold 34px "Fredoka One", cursive';
             ctx.fillStyle = '#000000';
             ctx.fillText(`🐚 ${score}`, 20, 55);
             
-            // Aviso de perigo
+            // Aviso
             if (score <= -20 && !gameOver) {
                 ctx.font = 'bold 22px monospace';
                 ctx.fillStyle = '#FF0000';
@@ -433,6 +456,10 @@
                 ctx.fillStyle = '#fff';
                 ctx.fillText('Clique no botão "RECOMEÇAR" abaixo', W/2-200, H/2+100);
             }
+            
+            if (shakeAmount > 0) {
+                ctx.restore();
+            }
         }
         
         function gameLoop() {
@@ -446,7 +473,7 @@
             score = 0;
             items = [];
             crabX = W/2 - CRAB_WIDTH/2;
-            crabY = GROUND_Y - CRAB_HEIGHT + 8;
+            crabY = GROUND_Y - CRAB_HEIGHT + 5;
             crabVelX = 0;
             crabVelY = 0;
             isOnGround = true;
@@ -458,6 +485,7 @@
             dustParticles = [];
             currentFallSpeed = 2.2;
             speedIncreaseCounter = 0;
+            shakeAmount = 0;
             clouds = [
                 { x: 100, y: 60, width: 120, height: 60, speed: 0.3 },
                 { x: 400, y: 90, width: 150, height: 70, speed: 0.5 },
