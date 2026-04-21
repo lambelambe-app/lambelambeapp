@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>LomoCam - Efeito Lomo Instantâneo</title>
-    <!-- Font Awesome 6 (ícones modernos) -->
+    <title>LomoCam - Efeito Lomo + Câmera Mobile</title>
+    <!-- Font Awesome 6 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         * {
@@ -16,12 +16,11 @@
 
         body {
             background: #0a0c12;
-            font-family: 'Segoe UI', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif;
+            font-family: 'Segoe UI', 'Inter', system-ui, -apple-system, 'Roboto', sans-serif;
             overflow-x: hidden;
             color: #f0f0f0;
         }
 
-        /* container principal estilo app câmera */
         .camera-app {
             max-width: 550px;
             margin: 0 auto;
@@ -32,7 +31,6 @@
             box-shadow: 0 0 30px rgba(0,0,0,0.5);
         }
 
-        /* header com nome do app */
         .app-header {
             padding: 16px 20px;
             background: rgba(0,0,0,0.6);
@@ -58,10 +56,8 @@
             font-size: 0.7rem;
             font-weight: 600;
             color: #FFB347;
-            letter-spacing: 0.5px;
         }
 
-        /* viewfinder (área da câmera) */
         .viewfinder {
             background: #000;
             position: relative;
@@ -79,6 +75,17 @@
             object-fit: cover;
             transform: scaleX(1);
         }
+        .camera-error {
+            position: absolute;
+            background: rgba(0,0,0,0.8);
+            color: #ffaa88;
+            padding: 12px;
+            border-radius: 12px;
+            text-align: center;
+            font-size: 0.85rem;
+            width: 80%;
+            backdrop-filter: blur(8px);
+        }
         .viewfinder-overlay {
             position: absolute;
             bottom: 12px;
@@ -92,7 +99,6 @@
             pointer-events: none;
         }
 
-        /* controles principais */
         .capture-bar {
             display: flex;
             justify-content: space-between;
@@ -125,16 +131,9 @@
             box-shadow: 0 0 0 4px rgba(255,107,107,0.3), 0 8px 20px rgba(0,0,0,0.3);
             font-size: 2rem;
         }
-        .btn-capture:active {
-            transform: scale(0.92);
-            background: #ff5252;
-        }
-        .btn-camera:active {
-            background: #3f4252;
-            transform: scale(0.95);
-        }
+        .btn-capture:active { transform: scale(0.92); background: #ff5252; }
+        .btn-camera:active { background: #3f4252; transform: scale(0.95); }
 
-        /* resultado da última foto com lomo */
         .last-shot {
             background: #0f1117;
             padding: 12px 16px;
@@ -148,7 +147,6 @@
             margin-bottom: 8px;
             display: flex;
             justify-content: space-between;
-            align-items: center;
         }
         .preview-lomo {
             display: flex;
@@ -163,7 +161,6 @@
             border-radius: 12px;
             background: #252a36;
             border: 2px solid #FFB347;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
         .save-current {
             background: #2c2e3a;
@@ -177,13 +174,9 @@
             align-items: center;
             gap: 8px;
             cursor: pointer;
-            transition: 0.2s;
         }
-        .save-current:hover {
-            background: #3e4050;
-        }
+        .save-current:hover { background: #3e4050; }
 
-        /* Galeria "Pasta Recente" - fotos tiradas na sessão */
         .recent-folder {
             flex: 1;
             padding: 16px;
@@ -192,14 +185,12 @@
         .folder-header {
             display: flex;
             justify-content: space-between;
-            align-items: baseline;
             margin-bottom: 16px;
             padding-bottom: 8px;
             border-bottom: 2px solid #FFB34730;
         }
         .folder-header h3 {
             font-size: 1rem;
-            font-weight: 600;
             display: flex;
             align-items: center;
             gap: 8px;
@@ -210,8 +201,6 @@
             color: #ff8c5a;
             font-size: 0.7rem;
             cursor: pointer;
-            padding: 5px 8px;
-            border-radius: 20px;
         }
         .recent-grid {
             display: grid;
@@ -222,14 +211,12 @@
             background: #1a1d26;
             border-radius: 16px;
             overflow: hidden;
-            transition: 0.2s;
             border: 1px solid #2e323e;
         }
         .recent-img {
             width: 100%;
             aspect-ratio: 1 / 1;
             object-fit: cover;
-            display: block;
             cursor: pointer;
         }
         .recent-actions {
@@ -245,11 +232,8 @@
             color: #ddd;
             font-size: 0.9rem;
             cursor: pointer;
-            transition: 0.2s;
         }
-        .recent-actions button:hover {
-            color: #FFB347;
-        }
+        .recent-actions button:hover { color: #FFB347; }
         .empty-recent {
             text-align: center;
             padding: 40px 20px;
@@ -262,9 +246,6 @@
             color: #5a5e70;
             padding: 12px;
             border-top: 1px solid #20232e;
-        }
-        button {
-            cursor: pointer;
         }
         .toast-msg {
             position: fixed;
@@ -282,6 +263,17 @@
             transition: opacity 0.2s;
             font-weight: 500;
         }
+        .retry-btn {
+            background: #ff8c5a;
+            border: none;
+            margin-top: 10px;
+            padding: 6px 14px;
+            border-radius: 30px;
+            color: black;
+            font-weight: bold;
+            font-size: 0.7rem;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -291,22 +283,24 @@
         <div class="badge-lomo"><i class="fas fa-magic"></i> Efeito Lomo</div>
     </div>
 
-    <!-- Área do visor (câmera) -->
     <div class="viewfinder">
         <video id="video" autoplay playsinline muted></video>
+        <div id="cameraErrorOverlay" class="camera-error" style="display: none;">
+            <i class="fas fa-exclamation-triangle"></i> Não foi possível acessar a câmera.<br>
+            Verifique as permissões e recarregue a página.<br>
+            <button id="retryCameraBtn" class="retry-btn">Tentar novamente</button>
+        </div>
         <div class="viewfinder-overlay">
-            <i class="fas fa-vignette"></i> vignette + saturação
+            <i class="fas fa-vignette"></i> lomo: vinheta + cores
         </div>
     </div>
 
-    <!-- Botões de captura e troca de câmera -->
     <div class="capture-bar">
         <button class="btn-camera" id="switchCameraBtn" title="Trocar câmera"><i class="fas fa-sync-alt"></i></button>
         <button class="btn-camera btn-capture" id="captureBtn"><i class="fas fa-camera"></i></button>
-        <div style="width: 52px;"></div> <!-- spacer -->
+        <div style="width: 52px;"></div>
     </div>
 
-    <!-- Última foto tirada com preview lomo -->
     <div class="last-shot">
         <div class="last-shot-title">
             <span><i class="fas fa-image"></i> Último Lomo</span>
@@ -318,27 +312,24 @@
         </div>
     </div>
 
-    <!-- Pasta recente (simula álbum de fotos tiradas) -->
     <div class="recent-folder">
         <div class="folder-header">
             <h3><i class="fas fa-folder-open"></i> Pasta Recente · LomoCam</h3>
             <button id="clearRecentBtn" class="clear-recent"><i class="fas fa-trash-alt"></i> limpar</button>
         </div>
         <div id="recentGallery" class="recent-grid">
-            <div class="empty-recent">
-                <i class="fas fa-camera"></i> Nenhuma foto ainda.<br>Toque no botão vermelho e capture!
-            </div>
+            <div class="empty-recent"><i class="fas fa-camera"></i> Nenhuma foto ainda.<br>Toque no botão vermelho e capture!</div>
         </div>
     </div>
     <div class="footer-note">
-        <i class="fas fa-save"></i> As fotos são salvas com o nome "LomoCam_datahora.png" na sua pasta de Downloads (pasta recente do dispositivo).
+        <i class="fas fa-save"></i> As fotos são salvas com o nome "LomoCam_datahora.png" na pasta de Downloads.
     </div>
 </div>
 <div id="toastMsg" class="toast-msg" style="opacity:0;">✔️ Foto salva</div>
 
 <script>
     (function(){
-        // Elementos DOM
+        // Elementos
         const video = document.getElementById('video');
         const captureBtn = document.getElementById('captureBtn');
         const switchCameraBtn = document.getElementById('switchCameraBtn');
@@ -346,197 +337,131 @@
         const saveCurrentBtn = document.getElementById('saveCurrentBtn');
         const recentGalleryDiv = document.getElementById('recentGallery');
         const clearRecentBtn = document.getElementById('clearRecentBtn');
+        const cameraErrorOverlay = document.getElementById('cameraErrorOverlay');
+        const retryCameraBtn = document.getElementById('retryCameraBtn');
 
-        // Estado da câmera
         let currentStream = null;
-        let currentFacingMode = 'environment'; // 'user' (frontal) ou 'environment' (traseira)
+        let currentFacingMode = 'environment'; // 'user' ou 'environment'
         let isCameraActive = false;
+        let recentPhotos = []; // armazena { dataURL, timestamp }
 
-        // Array que simula a "pasta recente" com fotos tiradas na sessão
-        let recentPhotos = []; // cada item: { dataURL, timestamp, fileNameDate }
-
-        // funções auxiliares
         function showToast(msg, duration = 1800) {
             const toast = document.getElementById('toastMsg');
             toast.innerText = msg;
             toast.style.opacity = '1';
-            setTimeout(() => {
-                toast.style.opacity = '0';
-            }, duration);
+            setTimeout(() => toast.style.opacity = '0', duration);
         }
 
-        // gerar nome de arquivo com o nome do app + timestamp
         function generateFileName() {
             const now = new Date();
             const pad = (n) => String(n).padStart(2,'0');
-            const yyyy = now.getFullYear();
-            const mm = pad(now.getMonth()+1);
-            const dd = pad(now.getDate());
-            const hh = pad(now.getHours());
-            const min = pad(now.getMinutes());
-            const ss = pad(now.getSeconds());
-            const ms = String(now.getMilliseconds()).padStart(3,'0');
-            return `LomoCam_${yyyy}${mm}${dd}_${hh}${min}${ss}_${ms}.png`;
+            return `LomoCam_${now.getFullYear()}${pad(now.getMonth()+1)}${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}_${now.getMilliseconds()}.png`;
         }
 
-        // ----- EFEITO LOMO COMPLETO (aplica contraste, saturação, vinheta e tom cinematográfico) -----
+        // --- Efeito Lomo (mesmo robusto) ---
         function applyLomoEffect(imageData, width, height) {
             const data = imageData.data;
             const len = data.length;
-            // Parâmetros do estilo Lomo
-            const contrastFactor = 1.28;    // contraste elevado
-            const saturationFactor = 1.38;  // cores vibrantes
-            const vignetteStrength = 0.68;   // intensidade da vinheta
+            const contrast = 1.28;
+            const saturation = 1.38;
+            const vignetteStrength = 0.68;
             const centerX = width / 2;
             const centerY = height / 2;
-            const maxRadius = Math.sqrt(centerX * centerX + centerY * centerY);
-            
-            // primeiro loop: aplicar contraste e saturação (per-pixel)
+            const maxRadius = Math.sqrt(centerX*centerX + centerY*centerY);
+
             for (let i = 0; i < len; i += 4) {
-                let r = data[i];
-                let g = data[i+1];
-                let b = data[i+2];
-                
-                // 1) Aumento de contraste (fórmula: (c - 128)*k + 128)
-                r = (r - 128) * contrastFactor + 128;
-                g = (g - 128) * contrastFactor + 128;
-                b = (b - 128) * contrastFactor + 128;
-                
-                // 2) Saturação intensa (preservar luminância)
+                let r = data[i], g = data[i+1], b = data[i+2];
+                r = (r - 128) * contrast + 128;
+                g = (g - 128) * contrast + 128;
+                b = (b - 128) * contrast + 128;
                 const gray = 0.299 * r + 0.587 * g + 0.114 * b;
-                r = gray + saturationFactor * (r - gray);
-                g = gray + saturationFactor * (g - gray);
-                b = gray + saturationFactor * (b - gray);
-                
-                // clamp dos valores
+                r = gray + saturation * (r - gray);
+                g = gray + saturation * (g - gray);
+                b = gray + saturation * (b - gray);
                 data[i] = Math.min(255, Math.max(0, r));
                 data[i+1] = Math.min(255, Math.max(0, g));
                 data[i+2] = Math.min(255, Math.max(0, b));
             }
-            
-            // segundo loop: aplicar vinheta + correção de cor (estilo lomo: tons quentes nas bordas e leve cruzamento)
             for (let i = 0; i < len; i += 4) {
                 const x = (i / 4) % width;
                 const y = Math.floor((i / 4) / width);
-                const dx = x - centerX;
-                const dy = y - centerY;
-                const distance = Math.sqrt(dx*dx + dy*dy);
-                let vignette = 1 - (distance / maxRadius) * vignetteStrength;
+                const dx = x - centerX, dy = y - centerY;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                let vignette = 1 - (dist / maxRadius) * vignetteStrength;
                 vignette = Math.min(1.0, Math.max(0.5, vignette));
-                
-                let r = data[i];
-                let g = data[i+1];
-                let b = data[i+2];
-                
-                // Vinheta escurece bordas e adiciona um tom quente nas bordas
+                let r = data[i], g = data[i+1], b = data[i+2];
                 r = r * vignette;
                 g = g * vignette * 0.97;
                 b = b * vignette * 0.92;
-                
-                // toque final: realce nos tons vermelhos/amarelados (típico Lomo)
-                // adiciona um leve "cross-process": aumenta laranja nos médios tons
                 const brightness = (r + g + b) / 3;
                 if (brightness > 100 && brightness < 210) {
                     r = Math.min(255, r * 1.07);
                     g = Math.min(255, g * 1.02);
                 }
-                // sombras levemente azuladas
                 if (brightness < 90) {
                     b = Math.min(255, b * 1.08);
                     g = g * 0.97;
                 }
-                
                 data[i] = Math.min(255, Math.max(0, r));
                 data[i+1] = Math.min(255, Math.max(0, g));
                 data[i+2] = Math.min(255, Math.max(0, b));
             }
-            
             return imageData;
         }
 
-        // Função para capturar frame da câmera, aplicar efeito Lomo e gerar imagem (Blob + DataURL)
         async function captureWithLomoEffect() {
             if (!video.videoWidth || !video.videoHeight) {
-                showToast("Aguardando câmera...", 1000);
+                showToast("Aguardando imagem da câmera...", 1000);
                 return null;
             }
-            
             const width = video.videoWidth;
             const height = video.videoHeight;
-            
-            // cria canvas temporário para extrair frame
-            const tempCanvas = document.createElement('canvas');
-            tempCanvas.width = width;
-            tempCanvas.height = height;
-            const ctx = tempCanvas.getContext('2d');
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
             ctx.drawImage(video, 0, 0, width, height);
-            
-            // obtém os pixels
             let imageData = ctx.getImageData(0, 0, width, height);
-            // APLICA EFEITO LOMO DIRETO NOS PIXELS
             imageData = applyLomoEffect(imageData, width, height);
-            // coloca de volta no canvas
             ctx.putImageData(imageData, 0, 0);
-            
-            // converte para DataURL e Blob (para download)
-            const finalDataURL = tempCanvas.toDataURL('image/png');
-            const blob = await new Promise(resolve => tempCanvas.toBlob(resolve, 'image/png'));
-            
-            return { dataURL: finalDataURL, blob, width, height };
+            const dataURL = canvas.toDataURL('image/png');
+            const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+            return { dataURL, blob };
         }
-        
-        // adiciona foto na galeria recente (simula "pasta recente" do app)
-        function addToRecentGallery(dataURL, timestamp) {
-            const fileNameDate = timestamp || new Date().toLocaleString();
-            const newPhoto = {
-                dataURL: dataURL,
-                timestamp: Date.now(),
-                fileNameDate: fileNameDate
-            };
-            recentPhotos.unshift(newPhoto); // mais recente primeiro
-            // limitar a 24 fotos na pasta recente para não pesar
+
+        function addToRecentGallery(dataURL) {
+            recentPhotos.unshift({ dataURL, timestamp: Date.now() });
             if (recentPhotos.length > 24) recentPhotos.pop();
             renderRecentGallery();
         }
-        
-        // renderiza a grid "Pasta Recente"
+
         function renderRecentGallery() {
             if (!recentGalleryDiv) return;
             if (recentPhotos.length === 0) {
                 recentGalleryDiv.innerHTML = `<div class="empty-recent"><i class="fas fa-camera"></i> Nenhuma foto ainda.<br>Toque no botão vermelho e capture!</div>`;
                 return;
             }
-            
             let html = '';
-            for (let i = 0; i < recentPhotos.length; i++) {
-                const photo = recentPhotos[i];
-                const timestampLabel = new Date(photo.timestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+            recentPhotos.forEach((photo, idx) => {
                 html += `
-                    <div class="recent-item" data-index="${i}">
-                        <img class="recent-img" src="${photo.dataURL}" alt="lomo photo" loading="lazy">
+                    <div class="recent-item" data-index="${idx}">
+                        <img class="recent-img" src="${photo.dataURL}" alt="lomo">
                         <div class="recent-actions">
-                            <button class="download-recent" data-url="${photo.dataURL}" data-time="${timestampLabel}" title="Salvar na pasta do dispositivo"><i class="fas fa-download"></i></button>
+                            <button class="download-recent" data-url="${photo.dataURL}" title="Salvar"><i class="fas fa-download"></i></button>
                         </div>
                     </div>
                 `;
-            }
+            });
             recentGalleryDiv.innerHTML = html;
-            
-            // adicionar eventos de download para cada foto recente
             document.querySelectorAll('.download-recent').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    const dataURL = btn.getAttribute('data-url');
-                    if (dataURL) {
-                        const filename = generateFileName();
-                        downloadFromDataURL(dataURL, filename);
-                        showToast(`📸 "${filename}" salva`, 1500);
-                    }
+                    const url = btn.getAttribute('data-url');
+                    if(url) downloadFromDataURL(url, generateFileName());
                 });
             });
         }
-        
-        // função utilitária de download via dataURL
+
         function downloadFromDataURL(dataURL, filename) {
             const link = document.createElement('a');
             link.href = dataURL;
@@ -544,54 +469,96 @@
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+            showToast(`📸 ${filename} salva`, 1500);
         }
-        
-        // ação de capturar foto (com efeito Lomo obrigatório)
+
         async function takePhoto() {
             if (!isCameraActive || !currentStream) {
-                showToast("⚠️ Câmera não disponível. Verifique permissões.", 2000);
+                showToast("⚠️ Câmera não ativa. Tente reiniciar.", 2000);
                 return;
             }
             try {
                 const result = await captureWithLomoEffect();
                 if (result && result.dataURL) {
-                    // atualiza o preview principal da última foto
                     capturedImg.src = result.dataURL;
-                    // adiciona na pasta recente
-                    addToRecentGallery(result.dataURL);
-                    // armazena a última foto para salvar rapidamente
                     window.__lastPhotoDataURL = result.dataURL;
-                    showToast("✨ Foto com efeito Lomo capturada!", 1200);
+                    addToRecentGallery(result.dataURL);
+                    showToast("✨ Foto Lomo capturada!", 1200);
                 } else {
-                    showToast("Falha ao capturar, tente novamente", 1200);
+                    showToast("Erro na captura, tente novamente", 1200);
                 }
-            } catch (err) {
+            } catch(err) {
                 console.error(err);
-                showToast("Erro na captura", 1200);
+                showToast("Falha ao processar foto", 1200);
             }
         }
-        
-        // Salvar a foto atual (última capturada)
+
         function saveCurrentPhoto() {
             if (!window.__lastPhotoDataURL && capturedImg.src && !capturedImg.src.includes('sem foto')) {
-                // se tiver alguma imagem mostrada que não é placeholder, usa ela
-                if(capturedImg.src && capturedImg.src.startsWith('data:image')) {
-                    window.__lastPhotoDataURL = capturedImg.src;
-                } else {
-                    showToast("Nenhuma foto recente para salvar. Capture primeiro!", 1500);
-                    return;
-                }
+                window.__lastPhotoDataURL = capturedImg.src;
             }
             if (!window.__lastPhotoDataURL) {
-                showToast("Nenhuma foto tirada ainda! Use o botão vermelho.", 1500);
+                showToast("Nenhuma foto tirada ainda! Capture primeiro.", 1500);
                 return;
             }
             const fileName = generateFileName();
             downloadFromDataURL(window.__lastPhotoDataURL, fileName);
-            showToast(`✔️ ${fileName} salvo em Downloads/Pasta recente`, 2000);
         }
-        
-        // Alternar câmera (frontal/traseira)
+
+        // --- Inicialização de câmera ROBUSTA para mobile ---
+        async function initCamera(facingMode) {
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+                currentStream = null;
+            }
+            isCameraActive = false;
+            cameraErrorOverlay.style.display = 'none';
+            
+            // Lista de tentativas: primeiro a facingMode desejada sem "exact" (apenas ideal)
+            // Depois fallback genérico
+            let constraintsList = [];
+            if (facingMode === 'environment') {
+                constraintsList = [
+                    { video: { facingMode: { exact: 'environment' } } },
+                    { video: { facingMode: 'environment' } },
+                    { video: true }
+                ];
+            } else {
+                constraintsList = [
+                    { video: { facingMode: { exact: 'user' } } },
+                    { video: { facingMode: 'user' } },
+                    { video: true }
+                ];
+            }
+            
+            for (let constraints of constraintsList) {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia(constraints);
+                    currentStream = stream;
+                    video.srcObject = stream;
+                    await video.play();
+                    isCameraActive = true;
+                    // Detecta facingMode real (apenas para interface)
+                    const track = stream.getVideoTracks()[0];
+                    if (track && track.getSettings) {
+                        const settings = track.getSettings();
+                        if (settings.facingMode === 'user') currentFacingMode = 'user';
+                        else if (settings.facingMode === 'environment') currentFacingMode = 'environment';
+                    }
+                    showToast(`Câmera ${currentFacingMode === 'environment' ? 'traseira' : 'frontal'} ativa`, 1000);
+                    return true;
+                } catch (err) {
+                    console.warn(`Falha com constraints:`, constraints, err);
+                    continue;
+                }
+            }
+            // Se todas falharem
+            isCameraActive = false;
+            cameraErrorOverlay.style.display = 'flex';
+            showToast("Permissão negada ou câmera indisponível", 3000);
+            return false;
+        }
+
         async function switchCamera() {
             if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
                 showToast("Seu navegador não suporta troca de câmera", 1500);
@@ -600,91 +567,32 @@
             const newMode = currentFacingMode === 'environment' ? 'user' : 'environment';
             await initCamera(newMode);
         }
-        
-        // Inicializar câmera com facingMode específico
-        async function initCamera(facingMode) {
-            if (currentStream) {
-                // para todas as tracks
-                currentStream.getTracks().forEach(track => track.stop());
-            }
-            const constraints = {
-                video: { facingMode: { exact: facingMode } },
-                audio: false
-            };
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia(constraints);
-                currentStream = stream;
-                video.srcObject = stream;
-                await video.play();
-                isCameraActive = true;
-                currentFacingMode = facingMode;
-                // Aguardar dimensões
-                video.onloadedmetadata = () => {
-                    video.play();
-                };
-                showToast(`Câmera ${facingMode === 'environment' ? 'traseira' : 'frontal'} ativa`, 1000);
-            } catch (err) {
-                console.warn(err);
-                // fallback: tenta sem o 'exact' (qualquer câmera)
-                if (facingMode === 'environment') {
-                    try {
-                        const fallbackStream = await navigator.mediaDevices.getUserMedia({ video: true });
-                        currentStream = fallbackStream;
-                        video.srcObject = fallbackStream;
-                        isCameraActive = true;
-                        currentFacingMode = 'environment';
-                        showToast("Câmera padrão ativada", 1000);
-                    } catch (e) {
-                        showToast("Erro: sem permissão ou câmera não encontrada", 2000);
-                        isCameraActive = false;
-                    }
-                } else {
-                    showToast("Não foi possível acessar a câmera frontal", 1500);
-                }
-            }
-        }
-        
-        // Limpar pasta recente (apenas da interface)
+
         function clearRecent() {
-            if (recentPhotos.length === 0) return;
             recentPhotos = [];
             renderRecentGallery();
-            showToast("Pasta recente limpa (apenas visual)", 1200);
-            // não apaga a última foto mostrada, mas opcionalmente podemos manter
+            showToast("Pasta recente limpa (visual)", 1200);
         }
-        
-        // evento de captura + garantir efeito lomo
-        captureBtn.addEventListener('click', () => {
-            takePhoto();
-        });
-        
-        saveCurrentBtn.addEventListener('click', () => {
-            saveCurrentPhoto();
-        });
-        
-        switchCameraBtn.addEventListener('click', () => {
-            switchCamera();
-        });
-        
-        clearRecentBtn.addEventListener('click', () => {
-            clearRecent();
-        });
-        
-        // Inicialização: câmera traseira (environment)
+
+        // Eventos
+        captureBtn.addEventListener('click', takePhoto);
+        saveCurrentBtn.addEventListener('click', saveCurrentPhoto);
+        switchCameraBtn.addEventListener('click', switchCamera);
+        clearRecentBtn.addEventListener('click', clearRecent);
+        retryCameraBtn.addEventListener('click', () => initCamera(currentFacingMode));
+
+        // Iniciar com câmera traseira
         (async () => {
-            await initCamera('environment');
-        })();
-        
-        // Mensagem de boas-vindas
-        setTimeout(() => {
-            showToast("📷 LomoCam: efeito contraste, vinheta e cores vibrantes", 2500);
-        }, 500);
-        
-        // prevenção de recarregar stream em eventos de pagehide (opcional)
-        window.addEventListener('beforeunload', () => {
-            if (currentStream) {
-                currentStream.getTracks().forEach(track => track.stop());
+            const success = await initCamera('environment');
+            if (!success) {
+                // Tenta novamente após clique manual
+                showToast("Toque no botão de câmera para tentar novamente", 3000);
             }
+        })();
+
+        // Prevenir parada do stream quando a página esconde
+        window.addEventListener('beforeunload', () => {
+            if (currentStream) currentStream.getTracks().forEach(t => t.stop());
         });
     })();
 </script>
