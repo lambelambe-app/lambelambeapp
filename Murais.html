@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Autobiografia dos Muros | Jogo Mobile</title>
+    <title>Autobiografia dos Muros | Sem Áudio</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
         body {
@@ -12,17 +12,13 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            font-family: 'Segoe UI', 'Poppins', system-ui, sans-serif;
-            touch-action: pan-x pan-y;
+            font-family: system-ui, 'Segoe UI', sans-serif;
         }
         #game-container {
             position: relative;
             width: 100vw;
             height: 100vh;
-            max-width: 100%;
-            max-height: 100%;
             overflow: hidden;
-            box-shadow: 0 0 0 2px rgba(255,215,0,0.2);
         }
         #loading {
             position: absolute;
@@ -30,95 +26,91 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(145deg, #0a0f1e 0%, #141c2c 100%);
+            background: linear-gradient(145deg, #0a0f1e, #141c2c);
             display: flex;
             justify-content: center;
             align-items: center;
             z-index: 100;
             color: white;
-            font-size: 1.4rem;
-            font-weight: 500;
+            font-size: 1.1rem;
             backdrop-filter: blur(4px);
-            transition: opacity 0.6s ease;
+            transition: opacity 0.4s;
             pointer-events: none;
             font-family: monospace;
         }
         .loader {
-            width: 48px;
-            height: 48px;
-            border: 5px solid rgba(255,215,0,0.3);
-            border-top: 5px solid #ffd966;
+            width: 36px;
+            height: 36px;
+            border: 3px solid rgba(255,215,0,0.3);
+            border-top: 3px solid #ffd966;
             border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-right: 16px;
+            animation: spin 0.7s linear infinite;
+            margin-right: 10px;
         }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes spin { to { transform: rotate(360deg); } }
         .info-mobile {
             position: absolute;
             bottom: 12px;
             left: 12px;
-            background: rgba(0,0,0,0.65);
-            backdrop-filter: blur(8px);
-            padding: 6px 14px;
-            border-radius: 40px;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(6px);
+            padding: 5px 12px;
+            border-radius: 30px;
             color: #f0e6d0;
-            font-size: 12px;
-            font-weight: 500;
+            font-size: 11px;
             z-index: 20;
             pointer-events: none;
-            font-family: monospace;
             border-left: 3px solid #ffb347;
         }
-        @media (max-width: 700px) { .info-mobile { font-size: 10px; bottom: 8px; left: 8px; } }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
 </head>
 <body>
 <div id="game-container"></div>
-<div id="loading">
-    <div class="loader"></div>
-    <span>Carregando memórias urbanas...</span>
-</div>
-<div class="info-mobile">📱 Toque nos muros | 🌆 Autobiografia da Cidade</div>
+<div id="loading"><div class="loader"></div><span>Preparando muros...</span></div>
+<div class="info-mobile">📱 Toque nos murais | 🌆 Autobiografia da Cidade</div>
 
 <script>
-    // ========= CONFIGURAÇÕES =========
-    // Coloque sua imagem na mesma pasta com este nome:
-    const SUA_IMAGEM = 'Muro.jpg';
+    // ========= CONFIGURAÇÃO =========
+    const SUA_IMAGEM = 'Muro.jpg';  // coloque o arquivo na mesma pasta
     
-    // Dados dos muros (coordenadas percentuais)
     const muraisData = [
-        { id: 0, xPct: 0.25, yPct: 0.55, imagemKey: 'mural_principal', texto: "Os muros são as páginas da autobiografia de uma cidade que muitos insistem em não ler.", autor: "Anônimo", corBorda: "#e8b45e" },
-        { id: 1, xPct: 0.72, yPct: 0.68, imagemKey: 'mural_graffiti', texto: "Aqui, em 1922, a poesia virou concreto e as paredes aprenderam a gritar.", autor: "Poeta Urbano", corBorda: "#c44536" },
-        { id: 2, xPct: 0.45, yPct: 0.28, imagemKey: 'mural_azulejo', texto: "Esta praça já foi um rio. As paredes ainda sussurram histórias de água e peixes.", autor: "Memória das Águas", corBorda: "#3a86a5" },
-        { id: 3, xPct: 0.82, yPct: 0.22, imagemKey: 'mural_abstrato', texto: "O asfalto esqueceu, mas o muro guarda o nome de cada pessoa que passou.", autor: "Caminhante", corBorda: "#7d5d42" }
+        { id: 0, xPct: 0.25, yPct: 0.55, texto: "Os muros são as páginas da autobiografia de uma cidade que muitos insistem em não ler.", autor: "Anônimo", corBorda: "#e8b45e" },
+        { id: 1, xPct: 0.72, yPct: 0.68, texto: "Aqui, em 1922, a poesia virou concreto e as paredes aprenderam a gritar.", autor: "Poeta Urbano", corBorda: "#c44536" },
+        { id: 2, xPct: 0.45, yPct: 0.28, texto: "Esta praça já foi um rio. As paredes ainda sussurram histórias de água e peixes.", autor: "Memória das Águas", corBorda: "#3a86a5" },
+        { id: 3, xPct: 0.82, yPct: 0.22, texto: "O asfalto esqueceu, mas o muro guarda o nome de cada pessoa que passou.", autor: "Caminhante", corBorda: "#7d5d42" }
     ];
     
     let totalLidos = 0;
     let dialogoAtivo = false;
+    let jogoPronto = false;
     
-    class CidadeDosMuros extends Phaser.Scene {
-        constructor() { super({ key: 'CidadeDosMuros' }); }
+    class CenaMuros extends Phaser.Scene {
+        constructor() { super({ key: 'CenaMuros' }); }
         
         preload() {
-            // Carrega a imagem principal do usuário
-            this.load.image('mural_principal', SUA_IMAGEM);
+            // Tenta carregar a imagem do usuário (se falhar, usamos fallback)
+            this.load.image('mural0', SUA_IMAGEM);
             
-            // Cria texturas programáticas para os outros murais (sem depender de URLs externas)
-            this.criarTexturaGradiente('mural_graffiti', '#2c1e16', '#e07a5f');
-            this.criarTexturaGradiente('mural_azulejo', '#1a3b47', '#48cae4');
-            this.criarTexturaGradiente('mural_abstrato', '#3e2a2f', '#d4a373');
+            // Gera texturas programáticas para os outros murais (garantido)
+            this.criarTextura('mural1', '#2c1e16', '#e07a5f');
+            this.criarTextura('mural2', '#1a3b47', '#48cae4');
+            this.criarTextura('mural3', '#3e2a2f', '#d4a373');
             
-            // Sons (opcionais, se falharem não travam o jogo)
-            this.load.audio('toque', 'https://cdn.pixabay.com/download/audio/2022/03/10/audio_c8c8f5c6a5.mp3?filename=click-21156.mp3');
-            this.load.audio('revelar', 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_dd6f6a5c4b.mp3?filename=magic-chime-01-5907.mp3');
-            this.load.audio('ambiente', 'https://cdn.pixabay.com/download/audio/2022/05/16/audio_bb6c7e5a3d.mp3?filename=city-ambience-14620.mp3');
+            // Fallback para mural0 se a imagem não existir
+            this.load.on('loaderror', (file) => {
+                if (file.key === 'mural0') {
+                    this.criarTextura('mural0', '#5a3e2b', '#c49a6c');
+                }
+            });
             
-            // Evento de erro nos sons: não quebra o jogo
-            this.load.on('loaderror', (file) => { console.warn('Erro ao carregar:', file.key); });
+            // Força a criação da cena após 1 segundo (evita loading eterno)
+            this.time.delayedCall(1000, () => {
+                if (!jogoPronto) this.forceCreate();
+            });
         }
         
-        criarTexturaGradiente(key, cor1, cor2) {
+        criarTextura(key, cor1, cor2) {
             const canvas = document.createElement('canvas');
             canvas.width = 300;
             canvas.height = 400;
@@ -128,109 +120,98 @@
             grad.addColorStop(1, cor2);
             ctx.fillStyle = grad;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-            // Efeito de spray
-            ctx.fillStyle = 'rgba(255,255,200,0.25)';
+            // textura de spray
+            ctx.fillStyle = 'rgba(255,245,200,0.3)';
             for(let i=0;i<300;i++) ctx.fillRect(Math.random()*canvas.width, Math.random()*canvas.height, 2, 2);
             ctx.strokeStyle = '#ffd966';
-            ctx.lineWidth = 8;
-            ctx.strokeRect(10, 10, canvas.width-20, canvas.height-20);
+            ctx.lineWidth = 6;
+            ctx.strokeRect(8, 8, canvas.width-16, canvas.height-16);
+            if (this.textures.exists(key)) this.textures.remove(key);
             this.textures.addCanvas(key, canvas);
         }
         
+        forceCreate() {
+            if (!jogoPronto && this.scene.isActive('CenaMuros')) {
+                if (!this.sys.settings.isCreated) this.create();
+                else jogoPronto = true;
+            }
+        }
+        
         create() {
-            const self = this;
+            jogoPronto = true;
             const { width, height } = this.cameras.main;
             
-            // ---------- CENÁRIO RICO ----------
-            const bgGrad = this.add.graphics();
-            bgGrad.fillGradientStyle(0x1a2a40, 0x1a2a40, 0x2c3e5c, 0x2c3e5c, 1);
-            bgGrad.fillRect(0, 0, width, height);
+            // ----- Cenário -----
+            const gradBg = this.add.graphics();
+            gradBg.fillGradientStyle(0x1a2a40, 0x1a2a40, 0x2c3e5c, 0x2c3e5c, 1);
+            gradBg.fillRect(0, 0, width, height);
             
-            // Nuvens animadas
-            this.clouds = this.add.particles(0, 0, 'mural_graffiti', {
-                x: { min: 0, max: width }, y: { min: 20, max: 120 },
-                lifespan: 12000, frequency: 400, scale: { start: 0.6, end: 0.2 },
-                alpha: { start: 0.25, end: 0 }, tint: [0xfff5cc, 0xffe0b0], speedX: { min: 5, max: 25 }
+            // Nuvens
+            this.add.particles(0, 0, 'mural1', {
+                x: { min: 0, max: width }, y: { min: 20, max: 100 },
+                lifespan: 14000, frequency: 500, scale: { start: 0.5, end: 0.2 },
+                alpha: { start: 0.3, end: 0 }, tint: [0xfff0cc, 0xffe6b3], speedX: { min: 4, max: 20 }
             });
             
             // Chão
             const ground = this.add.rectangle(0, height-70, width, 80, 0x3e2a2f).setOrigin(0,0);
             ground.setStrokeStyle(2, 0xb87c4f);
-            for(let i=0;i<12;i++) this.add.line(0, height-70 + i*6, 0, height-70 + i*6, width, height-70 + i*6, 0xaa8c64).setAlpha(0.4);
+            for(let i=0;i<10;i++) this.add.line(0, height-70 + i*7, 0, height-70 + i*7, width, height-70 + i*7, 0xaa8c64).setAlpha(0.3);
             
             // Prédios
-            const buildingColors = [0x2c3e50, 0x34495e, 0x4a5b66, 0x2c3e50];
-            for(let i=0;i<8;i++) {
-                const w = 45 + Math.random() * 30, h = 120 + Math.random() * 100;
-                const x = i * 110 + 20, y = height - 70 - h;
-                const rect = this.add.rectangle(x, y, w, h, buildingColors[i%buildingColors.length]).setOrigin(0,0);
-                rect.setStrokeStyle(1, 0xffd966, 0.3);
-                for(let j=0;j<4;j++) this.add.rectangle(x+8+j*10, y+15, 4, 8, 0xf1c40f, 0.5);
+            const predios = [0x2c3e50, 0x34495e, 0x4a5b66];
+            for(let i=0;i<9;i++) {
+                const w = 40 + Math.random()*35, h = 100 + Math.random()*120;
+                const x = i*100 + 20, y = height-70-h;
+                const pred = this.add.rectangle(x, y, w, h, predios[i%3]).setOrigin(0,0);
+                pred.setStrokeStyle(1, 0xffd966, 0.2);
+                for(let j=0;j<4;j++) this.add.rectangle(x+6+j*9, y+12, 4, 7, 0xf1c40f, 0.4);
             }
             
-            // ---------- MURAIS INTERATIVOS ----------
+            // ----- Murais interativos -----
             this.muraisGrupo = this.add.group();
-            muraisData.forEach(data => {
+            muraisData.forEach((data, idx) => {
+                const key = `mural${idx}`;
                 const posX = data.xPct * width;
                 const posY = data.yPct * height;
-                let largura = Math.min(200, width * 0.22);
+                let largura = Math.min(190, width * 0.22);
                 let altura = largura * 1.33;
-                const mural = this.add.image(posX, posY, data.imagemKey)
+                const mural = this.add.image(posX, posY, key)
                     .setDisplaySize(largura, altura)
                     .setInteractive({ useHandCursor: true, cursor: 'pointer' });
                 
                 mural.setStrokeStyle(4, Phaser.Display.Color.HexStringToColor(data.corBorda).color, 0.9);
-                mural.setShadow(4, 4, '#000000', 0.4, 6, 6);
-                mural.setData('id', data.id);
+                mural.setShadow(3, 3, '#000000', 0.5);
                 mural.setData('texto', data.texto);
                 mural.setData('autor', data.autor);
                 mural.setData('lido', false);
                 
-                // Flutuação suave
-                this.tweens.add({ targets: mural, y: posY - 5, duration: 2000, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
-                
-                mural.on('pointerover', () => { this.tweens.add({ targets: mural, scaleX: 1.03, scaleY: 1.03, duration: 120 }); });
-                mural.on('pointerout', () => { this.tweens.add({ targets: mural, scaleX: 1, scaleY: 1, duration: 120 }); });
+                this.tweens.add({ targets: mural, y: posY - 4, duration: 2100, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+                mural.on('pointerover', () => this.tweens.add({ targets: mural, scaleX: 1.04, scaleY: 1.04, duration: 100 }));
+                mural.on('pointerout', () => this.tweens.add({ targets: mural, scaleX: 1, scaleY: 1, duration: 100 }));
                 mural.on('pointerdown', () => { if(!dialogoAtivo) this.lerMural(mural); });
                 
                 this.muraisGrupo.add(mural);
             });
             
-            // ---------- UI ----------
-            this.contadorUI = this.add.text(16, 16, `📜 ${totalLidos}/${muraisData.length} muros lidos`, {
-                fontSize: '18px', fontFamily: 'Poppins, system-ui', fontWeight: 'bold', color: '#f8f3e2',
-                backgroundColor: '#000000aa', padding: { x: 14, y: 6 }, borderRadius: 30
+            // ----- UI -----
+            this.contadorUI = this.add.text(14, 14, `📖 ${totalLidos}/${muraisData.length} lidos`, {
+                fontSize: '16px', fontFamily: 'monospace', fontWeight: 'bold', color: '#f8f3e2',
+                backgroundColor: '#000000aa', padding: { x: 10, y: 5 }, borderRadius: 30
             }).setScrollFactor(0);
             
-            // Botão de som
-            this.musicaAtiva = true;
-            const musicBtn = this.add.text(width-55, 20, '🔊', { fontSize: '28px', backgroundColor: '#00000099', padding: { x: 8, y: 4 }, borderRadius: 40 })
-                .setInteractive({ useHandCursor: true }).setScrollFactor(0);
-            musicBtn.on('pointerdown', () => {
-                this.musicaAtiva = !this.musicaAtiva;
-                if(this.somAmbiente) this.musicaAtiva ? this.somAmbiente.resume() : this.somAmbiente.pause();
-                musicBtn.setText(this.musicaAtiva ? '🔊' : '🔇');
-            });
-            
-            // Sons (com fallback silencioso)
-            this.somToque = this.sound.add('toque', { volume: 0.4, mute: false });
-            this.somRevelar = this.sound.add('revelar', { volume: 0.5 });
-            this.somAmbiente = this.sound.add('ambiente', { loop: true, volume: 0.2 });
-            if(this.somAmbiente && this.musicaAtiva) this.somAmbiente.play();
-            
-            // Partículas de folhas
-            this.add.particles(0, 0, 'mural_abstrato', {
+            // Folhas ao vento
+            this.add.particles(0, 0, 'mural2', {
                 x: { min: 0, max: width }, y: { min: height-80, max: height-30 },
-                lifespan: 5000, frequency: 250, scale: { start: 0.2, end: 0 }, alpha: 0.4, tint: 0xd4a373,
-                speedY: { min: -30, max: -10 }, speedX: { min: -20, max: 20 }
+                lifespan: 6000, frequency: 280, scale: { start: 0.18, end: 0 }, alpha: 0.4, tint: 0xd4a373,
+                speedY: { min: -25, max: -8 }, speedX: { min: -15, max: 15 }
             });
             
-            // Remove o loading com transição
+            // Esconde o loading
             const loadingDiv = document.getElementById('loading');
             if(loadingDiv) {
-                loadingDiv.style.transition = 'opacity 0.5s';
                 loadingDiv.style.opacity = '0';
-                setTimeout(() => loadingDiv.style.display = 'none', 600);
+                setTimeout(() => loadingDiv.style.display = 'none', 400);
             }
         }
         
@@ -238,15 +219,15 @@
             if(!mural.getData('lido')) {
                 mural.setData('lido', true);
                 totalLidos++;
-                this.contadorUI.setText(`📜 ${totalLidos}/${muraisData.length} muros lidos`);
-                if(this.somToque) this.somToque.play();
-                this.cameras.main.shake(100, 0.008);
-                // Efeito de glitter
-                const glitter = this.add.particles(mural.x, mural.y, 'mural_graffiti', {
-                    speed: { min: -50, max: 50 }, angle: { min: 0, max: 360 },
-                    scale: { start: 0.3, end: 0 }, lifespan: 800, frequency: 20, quantity: 8, tint: 0xffcc66
+                this.contadorUI.setText(`📖 ${totalLidos}/${muraisData.length} lidos`);
+                if(navigator.vibrate) navigator.vibrate(50);
+                this.cameras.main.shake(80, 0.006);
+                // glitter
+                const glitter = this.add.particles(mural.x, mural.y, 'mural1', {
+                    speed: { min: -40, max: 40 }, angle: { min: 0, max: 360 },
+                    scale: { start: 0.25, end: 0 }, lifespan: 700, frequency: 18, quantity: 6, tint: 0xffcc77
                 });
-                this.time.delayedCall(400, () => glitter.destroy());
+                this.time.delayedCall(350, () => glitter.destroy());
             }
             this.exibirDialogo(mural.getData('texto'), mural.getData('autor'));
             if(totalLidos === muraisData.length) this.finalEpico();
@@ -255,31 +236,30 @@
         exibirDialogo(texto, autor) {
             if(dialogoAtivo) return;
             dialogoAtivo = true;
-            const larg = this.cameras.main.width * 0.85, alt = 170;
-            const xCentro = this.cameras.main.width/2, yPos = this.cameras.main.height - 100;
-            const bg = this.add.rectangle(xCentro, yPos, larg, alt, 0x0a0a14, 0.92).setStrokeStyle(3, 0xffcc88).setInteractive();
-            const txt = this.add.text(xCentro, yPos-10, `“${texto}”`, { fontSize: '16px', fontFamily: 'Poppins, monospace', color: '#fae6cf', align: 'center', wordWrap: { width: larg-40 } }).setOrigin(0.5);
-            const autorTxt = this.add.text(xCentro, yPos+40, `— ${autor}`, { fontSize: '14px', fontFamily: 'monospace', color: '#e0b081', fontStyle: 'italic' }).setOrigin(0.5);
-            const closeBtn = this.add.text(xCentro+larg/2-35, yPos-alt/2+15, '✕', { fontSize: '22px', color: '#fff', backgroundColor: '#aa7744', padding: { x: 8, y: 4 }, borderRadius: 30 }).setInteractive({ useHandCursor: true });
-            const fechar = () => { bg.destroy(); txt.destroy(); autorTxt.destroy(); closeBtn.destroy(); dialogoAtivo = false; if(this.somRevelar) this.somRevelar.play(); };
+            const larg = this.cameras.main.width * 0.85, alt = 160;
+            const xCentro = this.cameras.main.width/2, yPos = this.cameras.main.height - 90;
+            const bg = this.add.rectangle(xCentro, yPos, larg, alt, 0x0a0a14, 0.94).setStrokeStyle(3, 0xffcc88).setInteractive();
+            const txt = this.add.text(xCentro, yPos-8, `“${texto}”`, { fontSize: '15px', fontFamily: 'monospace', color: '#fae6cf', align: 'center', wordWrap: { width: larg-36 } }).setOrigin(0.5);
+            const autorTxt = this.add.text(xCentro, yPos+38, `— ${autor}`, { fontSize: '13px', fontFamily: 'monospace', color: '#e0b081', fontStyle: 'italic' }).setOrigin(0.5);
+            const closeBtn = this.add.text(xCentro+larg/2-30, yPos-alt/2+12, '✕', { fontSize: '20px', color: '#fff', backgroundColor: '#aa7744', padding: { x: 6, y: 3 }, borderRadius: 30 }).setInteractive({ useHandCursor: true });
+            const fechar = () => { bg.destroy(); txt.destroy(); autorTxt.destroy(); closeBtn.destroy(); dialogoAtivo = false; };
             bg.on('pointerdown', fechar); closeBtn.on('pointerdown', fechar);
-            this.time.delayedCall(5500, () => { if(dialogoAtivo) fechar(); });
+            this.time.delayedCall(5000, () => { if(dialogoAtivo) fechar(); });
         }
         
         finalEpico() {
-            const particles = this.add.particles(0, 0, 'mural_graffiti', {
+            const particles = this.add.particles(0, 0, 'mural1', {
                 x: { min: 0, max: this.cameras.main.width }, y: { min: 0, max: this.cameras.main.height },
-                lifespan: 3000, frequency: 30, scale: { start: 0.4, end: 0 }, tint: [0xff66cc, 0xffaa66, 0x66ffaa]
+                lifespan: 2500, frequency: 25, scale: { start: 0.4, end: 0 }, tint: [0xffaa66, 0xff66cc, 0x66ffaa]
             });
             const msg = this.add.text(this.cameras.main.width/2, this.cameras.main.height/2, 
-                "✨ PARABÉNS! ✨\nVocê leu a autobiografia completa da cidade.\nOs muros agora sussurram segredos para você.",
-                { fontSize: '24px', fontFamily: 'Poppins', color: '#ffeaac', backgroundColor: '#000000aa', padding: 24, align: 'center', borderRadius: 40 }
+                "✨ PARABÉNS! ✨\nVocê leu a autobiografia completa.\nOs muros agora sussurram segredos.",
+                { fontSize: '22px', fontFamily: 'monospace', color: '#ffeaac', backgroundColor: '#000000aa', padding: 20, align: 'center', borderRadius: 30 }
             ).setOrigin(0.5).setDepth(20);
-            this.time.delayedCall(5000, () => { msg.destroy(); particles.destroy(); });
+            this.time.delayedCall(4500, () => { msg.destroy(); particles.destroy(); });
         }
         
         update() {
-            // Reajuste dinâmico para rotação da tela
             const { width, height } = this.cameras.main;
             if(this.muraisGrupo) {
                 let i=0;
@@ -287,26 +267,25 @@
                     const data = muraisData[i++];
                     if(data) { mural.x = data.xPct * width; mural.y = data.yPct * height; }
                 });
-                if(this.contadorUI) this.contadorUI.setPosition(16,16);
+                if(this.contadorUI) this.contadorUI.setPosition(14,14);
             }
         }
     }
     
-    const gameConfig = {
+    const config = {
         type: Phaser.AUTO,
         parent: 'game-container',
         width: window.innerWidth,
         height: window.innerHeight,
-        scene: CidadeDosMuros,
+        scene: CenaMuros,
         scale: { mode: Phaser.Scale.RESIZE, autoCenter: Phaser.Scale.CENTER_BOTH },
-        input: { touch: true, activePointers: 1 },
-        render: { antialias: true, pixelArt: false },
+        input: { touch: true },
+        render: { antialias: true },
         backgroundColor: '#0a0f1e'
     };
     
-    window.addEventListener('load', () => new Phaser.Game(gameConfig));
+    window.addEventListener('load', () => new Phaser.Game(config));
     document.addEventListener('touchmove', (e) => { if(e.scale && e.scale !== 1) e.preventDefault(); }, { passive: false });
 </script>
 </body>
 </html>
-
