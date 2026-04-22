@@ -3,23 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Autobiografia dos Muros - Jogo Final</title>
+    <title>Autobiografia dos Muros</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         body {
             background: #0a0f1e;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            font-family: system-ui, 'Segoe UI', sans-serif;
             overflow: hidden;
         }
         #game-container {
-            position: relative;
             width: 100vw;
             height: 100vh;
-            overflow: hidden;
+            position: relative;
         }
         #loading {
             position: absolute;
@@ -27,317 +29,358 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(145deg, #0a0f1e, #141c2c);
+            background: #0a0f1e;
             display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 100;
             color: white;
-            font-size: 1rem;
-            backdrop-filter: blur(4px);
-            transition: opacity 0.3s;
-            pointer-events: none;
             font-family: monospace;
+            z-index: 100;
+            transition: opacity 0.5s;
+            pointer-events: none;
         }
-        .loader {
-            width: 30px;
-            height: 30px;
-            border: 3px solid rgba(255,215,0,0.3);
-            border-top: 3px solid #ffd966;
-            border-radius: 50%;
-            animation: spin 0.6s linear infinite;
-            margin-right: 10px;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .info-mobile {
+        .info {
             position: absolute;
-            bottom: 12px;
-            left: 12px;
-            background: rgba(0,0,0,0.55);
-            backdrop-filter: blur(5px);
+            bottom: 15px;
+            left: 15px;
+            background: rgba(0,0,0,0.6);
             padding: 5px 12px;
-            border-radius: 30px;
-            color: #f0e6d0;
-            font-size: 11px;
+            border-radius: 20px;
+            color: #ffd966;
+            font-size: 12px;
+            font-family: monospace;
             z-index: 20;
             pointer-events: none;
-            border-left: 3px solid #ffb347;
         }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
 </head>
 <body>
 <div id="game-container"></div>
-<div id="loading"><div class="loader"></div><span>Iniciando...</span></div>
-<div class="info-mobile">📱 Toque nos murais | 🌆 Autobiografia da Cidade</div>
+<div id="loading">
+    <div style="text-align:center">🎨 Carregando cidade...</div>
+</div>
+<div class="info">📱 Toque nos murais | 📖 Autobiografia da Cidade</div>
 
 <script>
-    // ==================== CONFIGURAÇÃO ====================
-    const SUA_IMAGEM = 'Muros.jpg';  // <--- ALTERADO PARA Muros.jpg
-    
-    const muraisData = [
-        { id: 0, xPct: 0.25, yPct: 0.55, texto: "Os muros são as páginas da autobiografia de uma cidade que muitos insistem em não ler.", autor: "Anônimo", corBorda: "#e8b45e", cor1: "#5a3e2b", cor2: "#c49a6c" },
-        { id: 1, xPct: 0.72, yPct: 0.68, texto: "Aqui, em 1922, a poesia virou concreto e as paredes aprenderam a gritar.", autor: "Poeta Urbano", corBorda: "#c44536", cor1: "#2c1e16", cor2: "#e07a5f" },
-        { id: 2, xPct: 0.45, yPct: 0.28, texto: "Esta praça já foi um rio. As paredes ainda sussurram histórias de água e peixes.", autor: "Memória das Águas", corBorda: "#3a86a5", cor1: "#1a3b47", cor2: "#48cae4" },
-        { id: 3, xPct: 0.82, yPct: 0.22, texto: "O asfalto esqueceu, mas o muro guarda o nome de cada pessoa que passou.", autor: "Caminhante", corBorda: "#7d5d42", cor1: "#3e2a2f", cor2: "#d4a373" }
-    ];
-    
-    let totalLidos = 0;
-    let dialogoAtivo = false;
-    let cenaAtiva = null;
-    
-    // ==================== CLASSE PRINCIPAL ====================
-    class CenaMuros extends Phaser.Scene {
-        constructor() { super({ key: 'CenaMuros' }); }
+    (function() {
+        // Nome da sua imagem
+        const IMAGEM_USUARIO = 'Muros.jpg';
         
-        preload() { /* vazio intencionalmente */ }
+        // Dados dos murais (posições percentuais)
+        const muraisData = [
+            { id: 0, x: 0.25, y: 0.55, texto: "Os muros são as páginas da autobiografia de uma cidade que muitos insistem em não ler.", autor: "Anônimo", cor: "#e8b45e" },
+            { id: 1, x: 0.72, y: 0.68, texto: "Aqui, em 1922, a poesia virou concreto e as paredes aprenderam a gritar.", autor: "Poeta Urbano", cor: "#c44536" },
+            { id: 2, x: 0.45, y: 0.28, texto: "Esta praça já foi um rio. As paredes ainda sussurram histórias de água e peixes.", autor: "Memória das Águas", cor: "#3a86a5" },
+            { id: 3, x: 0.82, y: 0.22, texto: "O asfalto esqueceu, mas o muro guarda o nome de cada pessoa que passou.", autor: "Caminhante", cor: "#7d5d42" }
+        ];
         
-        create() {
-            cenaAtiva = this;
-            const { width, height } = this.cameras.main;
-            
-            // ----- CENÁRIO (gráficos ricos) -----
-            const gradBg = this.add.graphics();
-            gradBg.fillGradientStyle(0x1a2a40, 0x1a2a40, 0x2c3e5c, 0x2c3e5c, 1);
-            gradBg.fillRect(0, 0, width, height);
-            
-            // Nuvens com partículas
-            this.cloudEmitter = this.add.particles(0, 0, this.criarTexturaCirculo(), {
-                x: { min: 0, max: width }, y: { min: 20, max: 100 },
-                lifespan: 14000, frequency: 500, scale: { start: 0.5, end: 0.2 },
-                alpha: { start: 0.3, end: 0 }, tint: [0xfff0cc, 0xffe6b3], speedX: { min: 4, max: 20 }
-            });
-            
-            // Chão
-            const ground = this.add.rectangle(0, height-70, width, 80, 0x3e2a2f).setOrigin(0,0);
-            ground.setStrokeStyle(2, 0xb87c4f);
-            for(let i=0;i<10;i++) this.add.line(0, height-70 + i*7, 0, height-70 + i*7, width, height-70 + i*7, 0xaa8c64).setAlpha(0.3);
-            
-            // Prédios
-            const predios = [0x2c3e50, 0x34495e, 0x4a5b66];
-            for(let i=0;i<9;i++) {
-                const w = 40 + Math.random()*35, h = 100 + Math.random()*120;
-                const x = i*100 + 20, y = height-70-h;
-                const pred = this.add.rectangle(x, y, w, h, predios[i%3]).setOrigin(0,0);
-                pred.setStrokeStyle(1, 0xffd966, 0.2);
-                for(let j=0;j<4;j++) this.add.rectangle(x+6+j*9, y+12, 4, 7, 0xf1c40f, 0.4);
+        let totalLidos = 0;
+        let dialogoAtivo = false;
+        
+        class CenaPrincipal extends Phaser.Scene {
+            constructor() {
+                super({ key: 'CenaPrincipal' });
             }
             
-            // ----- MURAIS (gerados programaticamente) -----
-            this.muraisGrupo = this.add.group();
-            
-            // Gerar texturas para todos os murais (padrão)
-            muraisData.forEach((data, idx) => {
-                const key = `mural_${idx}`;
-                this.criarTexturaMural(key, data.cor1, data.cor2);
-            });
-            
-            // Tentar carregar a imagem do usuário para o mural 0 (opcional)
-            this.carregarImagemUsuario();
-            
-            // Criar os sprites interativos
-            muraisData.forEach((data, idx) => {
-                const key = `mural_${idx}`;
-                const posX = data.xPct * width;
-                const posY = data.yPct * height;
-                let largura = Math.min(190, width * 0.22);
-                let altura = largura * 1.33;
-                const mural = this.add.image(posX, posY, key)
-                    .setDisplaySize(largura, altura)
-                    .setInteractive({ useHandCursor: true, cursor: 'pointer' });
-                
-                mural.setStrokeStyle(4, Phaser.Display.Color.HexStringToColor(data.corBorda).color, 0.9);
-                mural.setShadow(3, 3, '#000000', 0.5);
-                mural.setData('texto', data.texto);
-                mural.setData('autor', data.autor);
-                mural.setData('lido', false);
-                mural.setData('idx', idx);
-                
-                // Flutuação suave
-                this.tweens.add({ targets: mural, y: posY - 4, duration: 2100, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
-                mural.on('pointerover', () => this.tweens.add({ targets: mural, scaleX: 1.04, scaleY: 1.04, duration: 100 }));
-                mural.on('pointerout', () => this.tweens.add({ targets: mural, scaleX: 1, scaleY: 1, duration: 100 }));
-                mural.on('pointerdown', () => { if(!dialogoAtivo) this.lerMural(mural); });
-                
-                this.muraisGrupo.add(mural);
-            });
-            
-            // ----- UI -----
-            this.contadorUI = this.add.text(14, 14, `📖 ${totalLidos}/${muraisData.length} lidos`, {
-                fontSize: '16px', fontFamily: 'monospace', fontWeight: 'bold', color: '#f8f3e2',
-                backgroundColor: '#000000aa', padding: { x: 10, y: 5 }, borderRadius: 30
-            }).setScrollFactor(0);
-            
-            // Folhas ao vento
-            this.add.particles(0, 0, this.criarTexturaFolha(), {
-                x: { min: 0, max: width }, y: { min: height-80, max: height-30 },
-                lifespan: 6000, frequency: 280, scale: { start: 0.18, end: 0 }, alpha: 0.4, tint: 0xd4a373,
-                speedY: { min: -25, max: -8 }, speedX: { min: -15, max: 15 }
-            });
-            
-            // ----- FORÇAR REMOÇÃO DO LOADING (garantido) -----
-            const loadingDiv = document.getElementById('loading');
-            if(loadingDiv) {
-                loadingDiv.style.transition = 'opacity 0.3s';
-                loadingDiv.style.opacity = '0';
-                setTimeout(() => loadingDiv.style.display = 'none', 400);
+            preload() {
+                // Tenta carregar a imagem do usuário
+                this.load.image('mural_usuario', IMAGEM_USUARIO);
+                // Carrega uma imagem simples para os outros murais (usaremos retângulos coloridos)
+                // Na verdade, vamos criar texturas via canvas para evitar dependências
             }
-        }
-        
-        // Cria uma textura gradiente para cada mural
-        criarTexturaMural(key, cor1, cor2) {
-            if (this.textures.exists(key)) return;
-            const canvas = document.createElement('canvas');
-            canvas.width = 300;
-            canvas.height = 400;
-            const ctx = canvas.getContext('2d');
-            const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-            grad.addColorStop(0, cor1);
-            grad.addColorStop(1, cor2);
-            ctx.fillStyle = grad;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            // textura de spray
-            ctx.fillStyle = 'rgba(255,245,200,0.35)';
-            for(let i=0;i<300;i++) ctx.fillRect(Math.random()*canvas.width, Math.random()*canvas.height, 2, 2);
-            ctx.strokeStyle = '#ffd966';
-            ctx.lineWidth = 6;
-            ctx.strokeRect(8, 8, canvas.width-16, canvas.height-16);
-            this.textures.addCanvas(key, canvas);
-        }
-        
-        // Textura para nuvens (círculo)
-        criarTexturaCirculo() {
-            const key = 'nuvem';
-            if (this.textures.exists(key)) return key;
-            const canvas = document.createElement('canvas');
-            canvas.width = 32;
-            canvas.height = 32;
-            const ctx = canvas.getContext('2d');
-            ctx.fillStyle = '#ffffff';
-            ctx.beginPath();
-            ctx.arc(16, 16, 14, 0, Math.PI*2);
-            ctx.fill();
-            this.textures.addCanvas(key, canvas);
-            return key;
-        }
-        
-        criarTexturaFolha() {
-            const key = 'folha';
-            if (this.textures.exists(key)) return key;
-            const canvas = document.createElement('canvas');
-            canvas.width = 12;
-            canvas.height = 12;
-            const ctx = canvas.getContext('2d');
-            ctx.fillStyle = '#d4a373';
-            ctx.beginPath();
-            ctx.ellipse(6, 6, 5, 3, 0, 0, Math.PI*2);
-            ctx.fill();
-            this.textures.addCanvas(key, canvas);
-            return key;
-        }
-        
-        // Carrega a imagem do usuário ASSINCRONAMENTE sem travar o jogo
-        carregarImagemUsuario() {
-            const img = new Image();
-            img.onload = () => {
-                if (this.textures.exists('mural_0')) this.textures.remove('mural_0');
+            
+            create() {
+                const { width, height } = this.cameras.main;
+                
+                // --- Fundo simples (céu gradiente manual) ---
+                const graphics = this.add.graphics();
+                graphics.fillGradientStyle(0x1a2a40, 0x1a2a40, 0x2c3e5c, 0x2c3e5c, 1);
+                graphics.fillRect(0, 0, width, height);
+                
+                // --- Chão ---
+                this.add.rectangle(0, height - 60, width, 60, 0x3e2a2f).setOrigin(0,0);
+                // Linhas do chão
+                for(let i=0; i<10; i++) {
+                    this.add.line(0, height - 60 + i*6, width, height - 60 + i*6, 0xaa8c64).setAlpha(0.4);
+                }
+                
+                // --- Prédios simples ---
+                const coresPredios = [0x2c3e50, 0x34495e, 0x4a5b66];
+                for(let i=0; i<8; i++) {
+                    const w = 45 + Math.random() * 35;
+                    const h = 80 + Math.random() * 100;
+                    const x = i * 100 + 20;
+                    const y = height - 60 - h;
+                    const pred = this.add.rectangle(x, y, w, h, coresPredios[i % coresPredios.length]);
+                    pred.setStrokeStyle(1, 0xffd966, 0.3);
+                    // janelas
+                    for(let j=0; j<3; j++) {
+                        this.add.rectangle(x + 8 + j*12, y + 15, 5, 8, 0xf1c40f, 0.5);
+                    }
+                }
+                
+                // --- Preparar texturas dos murais (fallback) ---
+                // Criar texturas coloridas para os murais que não são o principal
+                this.criarTexturaColorida('mural_fallback_1', '#2c1e16', '#e07a5f');
+                this.criarTexturaColorida('mural_fallback_2', '#1a3b47', '#48cae4');
+                this.criarTexturaColorida('mural_fallback_3', '#3e2a2f', '#d4a373');
+                
+                // Verificar se a imagem do usuário carregou
+                let texturaPrincipal = 'mural_usuario';
+                if (!this.textures.exists('mural_usuario')) {
+                    console.warn("Imagem Muros.jpg não encontrada. Usando fallback.");
+                    this.criarTexturaColorida('mural_usuario', '#5a3e2b', '#c49a6c');
+                    texturaPrincipal = 'mural_usuario';
+                }
+                
+                // --- Grupo de murais ---
+                this.murais = [];
+                
+                // Função auxiliar para criar um mural
+                const criarMural = (data, idx, texturaKey) => {
+                    const posX = data.x * width;
+                    const posY = data.y * height;
+                    const largura = Math.min(180, width * 0.22);
+                    const altura = largura * 1.33;
+                    
+                    const sprite = this.add.image(posX, posY, texturaKey)
+                        .setDisplaySize(largura, altura)
+                        .setInteractive({ useHandCursor: true, cursor: 'pointer' });
+                    
+                    sprite.setStrokeStyle(4, Phaser.Display.Color.HexStringToColor(data.cor).color, 0.9);
+                    sprite.setShadow(2, 2, '#000000', 0.6);
+                    
+                    sprite.setData('texto', data.texto);
+                    sprite.setData('autor', data.autor);
+                    sprite.setData('lido', false);
+                    sprite.setData('idx', idx);
+                    
+                    // Efeito de flutuação
+                    this.tweens.add({
+                        targets: sprite,
+                        y: posY - 5,
+                        duration: 2000,
+                        yoyo: true,
+                        repeat: -1,
+                        ease: 'Sine.easeInOut'
+                    });
+                    
+                    // Eventos
+                    sprite.on('pointerover', () => {
+                        this.tweens.add({ targets: sprite, scaleX: 1.05, scaleY: 1.05, duration: 100 });
+                    });
+                    sprite.on('pointerout', () => {
+                        this.tweens.add({ targets: sprite, scaleX: 1, scaleY: 1, duration: 100 });
+                    });
+                    sprite.on('pointerdown', () => {
+                        if (!dialogoAtivo) this.lerMural(sprite);
+                    });
+                    
+                    this.murais.push(sprite);
+                };
+                
+                // Criar os 4 murais: o primeiro com a imagem do usuário, os outros com fallbacks
+                criarMural(muraisData[0], 0, texturaPrincipal);
+                criarMural(muraisData[1], 1, 'mural_fallback_1');
+                criarMural(muraisData[2], 2, 'mural_fallback_2');
+                criarMural(muraisData[3], 3, 'mural_fallback_3');
+                
+                // --- Contador UI ---
+                this.contador = this.add.text(15, 15, `📖 ${totalLidos}/${muraisData.length} lidos`, {
+                    fontSize: '16px',
+                    fontFamily: 'monospace',
+                    fontWeight: 'bold',
+                    color: '#f8f3e2',
+                    backgroundColor: '#000000aa',
+                    padding: { x: 10, y: 5 },
+                    borderRadius: 20
+                }).setScrollFactor(0);
+                
+                // --- Remover loading com segurança ---
+                const loadingDiv = document.getElementById('loading');
+                if (loadingDiv) {
+                    loadingDiv.style.opacity = '0';
+                    setTimeout(() => loadingDiv.style.display = 'none', 500);
+                }
+            }
+            
+            criarTexturaColorida(key, cor1, cor2) {
+                if (this.textures.exists(key)) return;
                 const canvas = document.createElement('canvas');
-                canvas.width = img.width;
-                canvas.height = img.height;
+                canvas.width = 300;
+                canvas.height = 400;
                 const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0);
-                this.textures.addCanvas('mural_0', canvas);
-                // Atualiza o sprite do mural 0 se já existir
-                const mural0 = this.muraisGrupo.getChildren().find(m => m.getData('idx') === 0);
-                if (mural0) mural0.setTexture('mural_0');
-            };
-            img.onerror = () => { console.log("Imagem Muros.jpg não encontrada, mantendo textura padrão."); };
-            img.src = SUA_IMAGEM;
-        }
-        
-        lerMural(mural) {
-            if(!mural.getData('lido')) {
-                mural.setData('lido', true);
-                totalLidos++;
-                this.contadorUI.setText(`📖 ${totalLidos}/${muraisData.length} lidos`);
-                if(navigator.vibrate) navigator.vibrate(50);
-                this.cameras.main.shake(80, 0.006);
-                // efeito glitter
-                const glitter = this.add.particles(mural.x, mural.y, this.criarTexturaCirculo(), {
-                    speed: { min: -40, max: 40 }, angle: { min: 0, max: 360 },
-                    scale: { start: 0.25, end: 0 }, lifespan: 700, frequency: 18, quantity: 6, tint: 0xffcc77
+                const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+                grad.addColorStop(0, cor1);
+                grad.addColorStop(1, cor2);
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                // adiciona textura de pincelada
+                ctx.fillStyle = 'rgba(255,245,200,0.3)';
+                for(let i=0;i<200;i++) {
+                    ctx.fillRect(Math.random()*canvas.width, Math.random()*canvas.height, 2, 2);
+                }
+                ctx.strokeStyle = '#ffd966';
+                ctx.lineWidth = 6;
+                ctx.strokeRect(10, 10, canvas.width-20, canvas.height-20);
+                this.textures.addCanvas(key, canvas);
+            }
+            
+            lerMural(mural) {
+                const jaLido = mural.getData('lido');
+                if (!jaLido) {
+                    mural.setData('lido', true);
+                    totalLidos++;
+                    this.contador.setText(`📖 ${totalLidos}/${muraisData.length} lidos`);
+                    
+                    // Efeito de vibração (se suportado)
+                    if (navigator.vibrate) navigator.vibrate(50);
+                    this.cameras.main.shake(80, 0.005);
+                    
+                    // Efeito de glitter simples
+                    const x = mural.x;
+                    const y = mural.y;
+                    const glitter = this.add.particles(x, y, 'mural_usuario', {
+                        speed: { min: -30, max: 30 },
+                        angle: { min: 0, max: 360 },
+                        scale: { start: 0.2, end: 0 },
+                        lifespan: 500,
+                        quantity: 6,
+                        tint: 0xffcc66
+                    });
+                    this.time.delayedCall(300, () => glitter.destroy());
+                }
+                
+                this.exibirDialogo(mural.getData('texto'), mural.getData('autor'));
+                
+                if (totalLidos === muraisData.length) {
+                    this.finalEpico();
+                }
+            }
+            
+            exibirDialogo(texto, autor) {
+                if (dialogoAtivo) return;
+                dialogoAtivo = true;
+                const { width, height } = this.cameras.main;
+                const larg = width * 0.85;
+                const alt = 150;
+                const xCentro = width/2;
+                const yPos = height - 90;
+                
+                const bg = this.add.rectangle(xCentro, yPos, larg, alt, 0x0a0a14, 0.95)
+                    .setStrokeStyle(3, 0xffcc88)
+                    .setInteractive();
+                
+                const txt = this.add.text(xCentro, yPos-10, `“${texto}”`, {
+                    fontSize: '15px',
+                    fontFamily: 'monospace',
+                    color: '#fae6cf',
+                    align: 'center',
+                    wordWrap: { width: larg - 40 }
+                }).setOrigin(0.5);
+                
+                const autorTxt = this.add.text(xCentro, yPos+35, `— ${autor}`, {
+                    fontSize: '13px',
+                    fontFamily: 'monospace',
+                    color: '#e0b081',
+                    fontStyle: 'italic'
+                }).setOrigin(0.5);
+                
+                const closeBtn = this.add.text(xCentro + larg/2 - 30, yPos - alt/2 + 15, '✕', {
+                    fontSize: '20px',
+                    color: '#fff',
+                    backgroundColor: '#aa7744',
+                    padding: { x: 8, y: 4 },
+                    borderRadius: 30
+                }).setInteractive({ useHandCursor: true });
+                
+                const fechar = () => {
+                    bg.destroy();
+                    txt.destroy();
+                    autorTxt.destroy();
+                    closeBtn.destroy();
+                    dialogoAtivo = false;
+                };
+                
+                bg.on('pointerdown', fechar);
+                closeBtn.on('pointerdown', fechar);
+                
+                this.time.delayedCall(5000, () => {
+                    if (dialogoAtivo) fechar();
                 });
-                this.time.delayedCall(350, () => glitter.destroy());
             }
-            this.exibirDialogo(mural.getData('texto'), mural.getData('autor'));
-            if(totalLidos === muraisData.length) this.finalEpico();
-        }
-        
-        exibirDialogo(texto, autor) {
-            if(dialogoAtivo) return;
-            dialogoAtivo = true;
-            const larg = this.cameras.main.width * 0.85, alt = 160;
-            const xCentro = this.cameras.main.width/2, yPos = this.cameras.main.height - 90;
-            const bg = this.add.rectangle(xCentro, yPos, larg, alt, 0x0a0a14, 0.94).setStrokeStyle(3, 0xffcc88).setInteractive();
-            const txt = this.add.text(xCentro, yPos-8, `“${texto}”`, { fontSize: '15px', fontFamily: 'monospace', color: '#fae6cf', align: 'center', wordWrap: { width: larg-36 } }).setOrigin(0.5);
-            const autorTxt = this.add.text(xCentro, yPos+38, `— ${autor}`, { fontSize: '13px', fontFamily: 'monospace', color: '#e0b081', fontStyle: 'italic' }).setOrigin(0.5);
-            const closeBtn = this.add.text(xCentro+larg/2-30, yPos-alt/2+12, '✕', { fontSize: '20px', color: '#fff', backgroundColor: '#aa7744', padding: { x: 6, y: 3 }, borderRadius: 30 }).setInteractive({ useHandCursor: true });
-            const fechar = () => { bg.destroy(); txt.destroy(); autorTxt.destroy(); closeBtn.destroy(); dialogoAtivo = false; };
-            bg.on('pointerdown', fechar); closeBtn.on('pointerdown', fechar);
-            this.time.delayedCall(5000, () => { if(dialogoAtivo) fechar(); });
-        }
-        
-        finalEpico() {
-            const particles = this.add.particles(0, 0, this.criarTexturaCirculo(), {
-                x: { min: 0, max: this.cameras.main.width }, y: { min: 0, max: this.cameras.main.height },
-                lifespan: 2500, frequency: 25, scale: { start: 0.4, end: 0 }, tint: [0xffaa66, 0xff66cc, 0x66ffaa]
-            });
-            const msg = this.add.text(this.cameras.main.width/2, this.cameras.main.height/2, 
-                "✨ PARABÉNS! ✨\nVocê leu a autobiografia completa.\nOs muros agora sussurram segredos.",
-                { fontSize: '22px', fontFamily: 'monospace', color: '#ffeaac', backgroundColor: '#000000aa', padding: 20, align: 'center', borderRadius: 30 }
-            ).setOrigin(0.5).setDepth(20);
-            this.time.delayedCall(4500, () => { msg.destroy(); particles.destroy(); });
-        }
-        
-        update() {
-            const { width, height } = this.cameras.main;
-            if(this.muraisGrupo) {
-                let i=0;
-                this.muraisGrupo.getChildren().forEach(mural => {
-                    const data = muraisData[i++];
-                    if(data) { mural.x = data.xPct * width; mural.y = data.yPct * height; }
+            
+            finalEpico() {
+                const { width, height } = this.cameras.main;
+                const msg = this.add.text(width/2, height/2, 
+                    "✨ PARABÉNS! ✨\nVocê leu a autobiografia completa da cidade.\nOs muros agora sorriem para você.",
+                    { fontSize: '22px', fontFamily: 'monospace', color: '#ffeaac', backgroundColor: '#000000aa', padding: 20, align: 'center', borderRadius: 25 }
+                ).setOrigin(0.5).setDepth(20);
+                
+                // efeito de partículas coloridas
+                const particles = this.add.particles(0, 0, 'mural_usuario', {
+                    x: { min: 0, max: width },
+                    y: { min: 0, max: height },
+                    lifespan: 2000,
+                    frequency: 30,
+                    scale: { start: 0.3, end: 0 },
+                    tint: [0xffaa66, 0xff66cc, 0x66ffaa]
                 });
-                if(this.contadorUI) this.contadorUI.setPosition(14,14);
+                this.time.delayedCall(4500, () => {
+                    msg.destroy();
+                    particles.destroy();
+                });
+            }
+            
+            update() {
+                // Ajusta posições dos murais quando a tela redimensionar (mobile)
+                const { width, height } = this.cameras.main;
+                if (this.murais) {
+                    this.murais.forEach((mural, idx) => {
+                        const data = muraisData[idx];
+                        if (data) {
+                            mural.x = data.x * width;
+                            mural.y = data.y * height;
+                        }
+                    });
+                }
+                if (this.contador) this.contador.setPosition(15, 15);
             }
         }
-    }
-    
-    // Configuração do Phaser
-    const config = {
-        type: Phaser.AUTO,
-        parent: 'game-container',
-        width: window.innerWidth,
-        height: window.innerHeight,
-        scene: CenaMuros,
-        scale: { mode: Phaser.Scale.RESIZE, autoCenter: Phaser.Scale.CENTER_BOTH },
-        input: { touch: true, activePointers: 1 },
-        render: { antialias: true },
-        backgroundColor: '#0a0f1e'
-    };
-    
-    window.addEventListener('load', () => {
-        new Phaser.Game(config);
-        // Fallback extra: remove loading após 1s se algo falhar
-        setTimeout(() => {
-            const ld = document.getElementById('loading');
-            if(ld && ld.style.display !== 'none') {
-                ld.style.opacity = '0';
-                setTimeout(() => ld.style.display = 'none', 300);
-            }
-        }, 1000);
-    });
-    
-    document.addEventListener('touchmove', (e) => { if(e.scale && e.scale !== 1) e.preventDefault(); }, { passive: false });
+        
+        const config = {
+            type: Phaser.AUTO,
+            parent: 'game-container',
+            width: window.innerWidth,
+            height: window.innerHeight,
+            scene: CenaPrincipal,
+            scale: {
+                mode: Phaser.Scale.RESIZE,
+                autoCenter: Phaser.Scale.CENTER_BOTH
+            },
+            input: { touch: true, activePointers: 1 },
+            render: { antialias: true },
+            backgroundColor: '#0a0f1e'
+        };
+        
+        window.addEventListener('load', () => {
+            new Phaser.Game(config);
+            // Fallback para sumir com loading em 2 segundos (caso algo dê erro)
+            setTimeout(() => {
+                const ld = document.getElementById('loading');
+                if (ld && ld.style.display !== 'none') {
+                    ld.style.opacity = '0';
+                    setTimeout(() => ld.style.display = 'none', 300);
+                }
+            }, 2000);
+        });
+        
+        // Previne zoom por pinça
+        document.addEventListener('touchmove', (e) => {
+            if (e.scale && e.scale !== 1) e.preventDefault();
+        }, { passive: false });
+    })();
 </script>
 </body>
 </html>
