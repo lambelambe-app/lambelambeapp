@@ -5,21 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Autobiografia dos Muros | Jogo Mobile</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
         body {
             background: #0a0f1e;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            font-family: 'Segoe UI', 'Poppins', system-ui, -apple-system, sans-serif;
-            touch-action: pan-x pan-y; /* permite scroll apenas se necessário */
+            font-family: 'Segoe UI', 'Poppins', system-ui, sans-serif;
+            touch-action: pan-x pan-y;
         }
         #game-container {
             position: relative;
@@ -27,11 +21,9 @@
             height: 100vh;
             max-width: 100%;
             max-height: 100%;
-            box-shadow: 0 0 0 2px rgba(255,215,0,0.2), 0 20px 40px rgba(0,0,0,0.5);
-            border-radius: 0px;
             overflow: hidden;
+            box-shadow: 0 0 0 2px rgba(255,215,0,0.2);
         }
-        /* Overlay de carregamento (estilo moderno) */
         #loading {
             position: absolute;
             top: 0;
@@ -47,8 +39,9 @@
             font-size: 1.4rem;
             font-weight: 500;
             backdrop-filter: blur(4px);
-            transition: opacity 0.8s ease;
+            transition: opacity 0.6s ease;
             pointer-events: none;
+            font-family: monospace;
         }
         .loader {
             width: 48px;
@@ -71,15 +64,12 @@
             color: #f0e6d0;
             font-size: 12px;
             font-weight: 500;
-            letter-spacing: 0.5px;
             z-index: 20;
             pointer-events: none;
             font-family: monospace;
             border-left: 3px solid #ffb347;
         }
-        @media (max-width: 700px) {
-            .info-mobile { font-size: 10px; bottom: 8px; left: 8px; }
-        }
+        @media (max-width: 700px) { .info-mobile { font-size: 10px; bottom: 8px; left: 8px; } }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
 </head>
@@ -92,407 +82,230 @@
 <div class="info-mobile">📱 Toque nos muros | 🌆 Autobiografia da Cidade</div>
 
 <script>
-    // ========================= CONFIGURAÇÕES AVANÇADAS =========================
-    // Substitua 'Screenshot_20260422_151300_Instagram.jpg' pelo caminho da sua imagem
+    // ========= CONFIGURAÇÕES =========
+    // Coloque sua imagem na mesma pasta com este nome:
     const SUA_IMAGEM = 'Muro.jpg';
     
-    // Dados dos muros (posições relativas à tela, ajustadas dinamicamente)
-    // Usaremos coordenadas percentuais para se adaptar a qualquer resolução
+    // Dados dos muros (coordenadas percentuais)
     const muraisData = [
-        {
-            id: 0,
-            xPct: 0.25, yPct: 0.55,
-            imagem: 'mural_principal',  // será sua imagem
-            texto: "Os muros são as páginas da autobiografia de uma cidade que muitos insistem em não ler.",
-            autor: "Anônimo",
-            corBorda: "#e8b45e"
-        },
-        {
-            id: 1,
-            xPct: 0.72, yPct: 0.68,
-            imagem: 'mural_graffiti',
-            texto: "Aqui, em 1922, a poesia virou concreto e as paredes aprenderam a gritar.",
-            autor: "Poeta Urbano",
-            corBorda: "#c44536"
-        },
-        {
-            id: 2,
-            xPct: 0.45, yPct: 0.28,
-            imagem: 'mural_azulejo',
-            texto: "Esta praça já foi um rio. As paredes ainda sussurram histórias de água e peixes.",
-            autor: "Memória das Águas",
-            corBorda: "#3a86a5"
-        },
-        {
-            id: 3,
-            xPct: 0.82, yPct: 0.22,
-            imagem: 'mural_abstrato',
-            texto: "O asfalto esqueceu, mas o muro guarda o nome de cada pessoa que passou.",
-            autor: "Caminhante",
-            corBorda: "#7d5d42"
-        }
+        { id: 0, xPct: 0.25, yPct: 0.55, imagemKey: 'mural_principal', texto: "Os muros são as páginas da autobiografia de uma cidade que muitos insistem em não ler.", autor: "Anônimo", corBorda: "#e8b45e" },
+        { id: 1, xPct: 0.72, yPct: 0.68, imagemKey: 'mural_graffiti', texto: "Aqui, em 1922, a poesia virou concreto e as paredes aprenderam a gritar.", autor: "Poeta Urbano", corBorda: "#c44536" },
+        { id: 2, xPct: 0.45, yPct: 0.28, imagemKey: 'mural_azulejo', texto: "Esta praça já foi um rio. As paredes ainda sussurram histórias de água e peixes.", autor: "Memória das Águas", corBorda: "#3a86a5" },
+        { id: 3, xPct: 0.82, yPct: 0.22, imagemKey: 'mural_abstrato', texto: "O asfalto esqueceu, mas o muro guarda o nome de cada pessoa que passou.", autor: "Caminhante", corBorda: "#7d5d42" }
     ];
     
-    let gameScene;
     let totalLidos = 0;
     let dialogoAtivo = false;
-    let currentWidth, currentHeight;
     
-    // Classe principal da cena (Phaser 3)
-    class CidadeDosMurosScene extends Phaser.Scene {
-        constructor() {
-            super({ key: 'CidadeDosMuros' });
-        }
+    class CidadeDosMuros extends Phaser.Scene {
+        constructor() { super({ key: 'CidadeDosMuros' }); }
         
         preload() {
-            // ========== CARREGAMENTO DE ASSETS (gráficos ricos) ==========
-            // Imagem principal do usuário
+            // Carrega a imagem principal do usuário
             this.load.image('mural_principal', SUA_IMAGEM);
             
-            // Murais adicionais (placeholders modernos com gradientes + texturas)
-            // Geramos texturas programáticas para evitar dependência externa (perfeito para mobile)
-            this.load.image('mural_graffiti', this.generateGradientTexture('mural_graffiti', '#2c1e16', '#e07a5f'));
-            this.load.image('mural_azulejo', this.generateGradientTexture('mural_azulejo', '#1a3b47', '#48cae4'));
-            this.load.image('mural_abstrato', this.generateGradientTexture('mural_abstrato', '#3e2a2f', '#d4a373'));
+            // Cria texturas programáticas para os outros murais (sem depender de URLs externas)
+            this.criarTexturaGradiente('mural_graffiti', '#2c1e16', '#e07a5f');
+            this.criarTexturaGradiente('mural_azulejo', '#1a3b47', '#48cae4');
+            this.criarTexturaGradiente('mural_abstrato', '#3e2a2f', '#d4a373');
             
-            // Elementos do cenário
-            this.load.image('ceu', 'https://www.transparenttextures.com/patterns/60-lines.png'); // textura fina
-            this.load.image('predio1', 'https://picsum.photos/id/104/200/300'); // alternativa visual
-            // Mas para maior controle, criaremos prédios via gráficos vetoriais (mais leve)
+            // Sons (opcionais, se falharem não travam o jogo)
+            this.load.audio('toque', 'https://cdn.pixabay.com/download/audio/2022/03/10/audio_c8c8f5c6a5.mp3?filename=click-21156.mp3');
+            this.load.audio('revelar', 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_dd6f6a5c4b.mp3?filename=magic-chime-01-5907.mp3');
+            this.load.audio('ambiente', 'https://cdn.pixabay.com/download/audio/2022/05/16/audio_bb6c7e5a3d.mp3?filename=city-ambience-14620.mp3');
             
-            // Sons (curtos, estilo indie)
-            this.load.audio('toque', 'https://assets.mixkit.co/sfx/preview/mixkit-soft-interface-click-1126.mp3');
-            this.load.audio('revelar', 'https://assets.mixkit.co/sfx/preview/mixkit-magic-sweep-1307.mp3');
-            this.load.audio('ambiente', 'https://assets.mixkit.co/sfx/preview/mixkit-city-ambience-1321.mp3');
+            // Evento de erro nos sons: não quebra o jogo
+            this.load.on('loaderror', (file) => { console.warn('Erro ao carregar:', file.key); });
         }
         
-        // Helper: cria textura gradiente para murais alternativos (design moderno)
-        generateGradientTexture(key, color1, color2) {
+        criarTexturaGradiente(key, cor1, cor2) {
             const canvas = document.createElement('canvas');
             canvas.width = 300;
             canvas.height = 400;
             const ctx = canvas.getContext('2d');
             const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-            grad.addColorStop(0, color1);
-            grad.addColorStop(1, color2);
+            grad.addColorStop(0, cor1);
+            grad.addColorStop(1, cor2);
             ctx.fillStyle = grad;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-            // Adiciona efeito de spray (pontos)
-            ctx.fillStyle = 'rgba(255,255,200,0.2)';
-            for(let i=0;i<300;i++) {
-                ctx.fillRect(Math.random()*canvas.width, Math.random()*canvas.height, 2, 2);
-            }
-            // borda estilizada
+            // Efeito de spray
+            ctx.fillStyle = 'rgba(255,255,200,0.25)';
+            for(let i=0;i<300;i++) ctx.fillRect(Math.random()*canvas.width, Math.random()*canvas.height, 2, 2);
             ctx.strokeStyle = '#ffd966';
             ctx.lineWidth = 8;
             ctx.strokeRect(10, 10, canvas.width-20, canvas.height-20);
             this.textures.addCanvas(key, canvas);
-            return canvas;
         }
         
         create() {
             const self = this;
-            currentWidth = this.cameras.main.width;
-            currentHeight = this.cameras.main.height;
+            const { width, height } = this.cameras.main;
             
-            // ========== CENÁRIO MODERNO E RICO ==========
-            // Céu gradiente dinâmico (sem imagem externa)
-            const graphics = this.add.graphics();
-            graphics.fillGradientStyle(0x1a2a40, 0x1a2a40, 0x2c3e5c, 0x2c3e5c, 1);
-            graphics.fillRect(0, 0, currentWidth, currentHeight);
+            // ---------- CENÁRIO RICO ----------
+            const bgGrad = this.add.graphics();
+            bgGrad.fillGradientStyle(0x1a2a40, 0x1a2a40, 0x2c3e5c, 0x2c3e5c, 1);
+            bgGrad.fillRect(0, 0, width, height);
             
-            // Nuvens animadas (partículas de luz)
+            // Nuvens animadas
             this.clouds = this.add.particles(0, 0, 'mural_graffiti', {
-                x: { min: 0, max: currentWidth },
-                y: { min: 20, max: 120 },
-                lifespan: 12000,
-                frequency: 400,
-                scale: { start: 0.6, end: 0.2 },
-                alpha: { start: 0.25, end: 0 },
-                tint: [0xfff5cc, 0xffe0b0],
-                speedX: { min: 5, max: 25 }
+                x: { min: 0, max: width }, y: { min: 20, max: 120 },
+                lifespan: 12000, frequency: 400, scale: { start: 0.6, end: 0.2 },
+                alpha: { start: 0.25, end: 0 }, tint: [0xfff5cc, 0xffe0b0], speedX: { min: 5, max: 25 }
             });
             
-            // Chão com textura de paralelepípedo
-            const ground = this.add.rectangle(0, currentHeight - 70, currentWidth, 80, 0x3e2a2f);
-            ground.setOrigin(0,0);
+            // Chão
+            const ground = this.add.rectangle(0, height-70, width, 80, 0x3e2a2f).setOrigin(0,0);
             ground.setStrokeStyle(2, 0xb87c4f);
-            // Linhas de perspectiva
-            for(let i=0;i<12;i++) {
-                this.add.line(0, currentHeight-70 + i*6, 0, currentHeight-70 + i*6, currentWidth, currentHeight-70 + i*6, 0xaa8c64).setAlpha(0.4);
-            }
+            for(let i=0;i<12;i++) this.add.line(0, height-70 + i*6, 0, height-70 + i*6, width, height-70 + i*6, 0xaa8c64).setAlpha(0.4);
             
-            // Prédios estilizados (silhuetas modernas)
+            // Prédios
             const buildingColors = [0x2c3e50, 0x34495e, 0x4a5b66, 0x2c3e50];
             for(let i=0;i<8;i++) {
-                const w = 45 + Math.random() * 30;
-                const h = 120 + Math.random() * 100;
-                const x = i * 110 + 20;
-                const y = currentHeight - 70 - h;
-                const rect = this.add.rectangle(x, y, w, h, buildingColors[i%buildingColors.length]);
-                rect.setOrigin(0,0);
+                const w = 45 + Math.random() * 30, h = 120 + Math.random() * 100;
+                const x = i * 110 + 20, y = height - 70 - h;
+                const rect = this.add.rectangle(x, y, w, h, buildingColors[i%buildingColors.length]).setOrigin(0,0);
                 rect.setStrokeStyle(1, 0xffd966, 0.3);
-                // janelas
-                for(let j=0;j<4;j++) {
-                    this.add.rectangle(x+8+j*10, y+15, 4, 8, 0xf1c40f, 0.5);
-                }
+                for(let j=0;j<4;j++) this.add.rectangle(x+8+j*10, y+15, 4, 8, 0xf1c40f, 0.5);
             }
             
-            // ========== MURAIS INTERATIVOS (com design moderno e responsivo) ==========
+            // ---------- MURAIS INTERATIVOS ----------
             this.muraisGrupo = this.add.group();
-            
             muraisData.forEach(data => {
-                const posX = data.xPct * currentWidth;
-                const posY = data.yPct * currentHeight;
-                
-                // Criar sprite com tamanho adaptável (180-220px de largura)
-                let largura = Math.min(200, currentWidth * 0.22);
-                let altura = largura * 1.33; // proporção 3:4
-                const muralSprite = this.add.image(posX, posY, data.imagem)
+                const posX = data.xPct * width;
+                const posY = data.yPct * height;
+                let largura = Math.min(200, width * 0.22);
+                let altura = largura * 1.33;
+                const mural = this.add.image(posX, posY, data.imagemKey)
                     .setDisplaySize(largura, altura)
                     .setInteractive({ useHandCursor: true, cursor: 'pointer' });
                 
-                // Efeito de brilho externo (glow)
-                muralSprite.setPipeline('Light2D');
-                this.lights.enable().setAmbientColor(0x222222);
-                const light = this.lights.addLight(posX, posY, 150, 0xffaa66, 0.6);
+                mural.setStrokeStyle(4, Phaser.Display.Color.HexStringToColor(data.corBorda).color, 0.9);
+                mural.setShadow(4, 4, '#000000', 0.4, 6, 6);
+                mural.setData('id', data.id);
+                mural.setData('texto', data.texto);
+                mural.setData('autor', data.autor);
+                mural.setData('lido', false);
                 
-                // Borda artística + sombra
-                muralSprite.setStrokeStyle(4, Phaser.Display.Color.HexStringToColor(data.corBorda).color, 0.9);
-                muralSprite.setShadow(4, 4, '#000000', 0.4, 6, 6);
+                // Flutuação suave
+                this.tweens.add({ targets: mural, y: posY - 5, duration: 2000, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
                 
-                // Guardar dados
-                muralSprite.setData('id', data.id);
-                muralSprite.setData('texto', data.texto);
-                muralSprite.setData('autor', data.autor);
-                muralSprite.setData('lido', false);
-                muralSprite.setData('light', light);
+                mural.on('pointerover', () => { this.tweens.add({ targets: mural, scaleX: 1.03, scaleY: 1.03, duration: 120 }); });
+                mural.on('pointerout', () => { this.tweens.add({ targets: mural, scaleX: 1, scaleY: 1, duration: 120 }); });
+                mural.on('pointerdown', () => { if(!dialogoAtivo) this.lerMural(mural); });
                 
-                // Animação suave de flutuação (efeito vivo)
-                this.tweens.add({
-                    targets: muralSprite,
-                    y: posY - 5,
-                    duration: 2000,
-                    yoyo: true,
-                    repeat: -1,
-                    ease: 'Sine.easeInOut'
-                });
-                
-                // Eventos touch/mouse
-                muralSprite.on('pointerover', () => {
-                    this.tweens.add({ targets: muralSprite, scaleX: 1.03, scaleY: 1.03, duration: 120 });
-                    light.intensity = 1.0;
-                });
-                muralSprite.on('pointerout', () => {
-                    this.tweens.add({ targets: muralSprite, scaleX: 1, scaleY: 1, duration: 120 });
-                    light.intensity = 0.5;
-                });
-                muralSprite.on('pointerdown', (pointer, localX, localY, event) => {
-                    event.stopPropagation();
-                    if (dialogoAtivo) return;
-                    this.lerMural(muralSprite);
-                });
-                
-                this.muraisGrupo.add(muralSprite);
+                this.muraisGrupo.add(mural);
             });
             
-            // ========== UI MODERNA ==========
-            // Contador estilizado
+            // ---------- UI ----------
             this.contadorUI = this.add.text(16, 16, `📜 ${totalLidos}/${muraisData.length} muros lidos`, {
-                fontSize: '18px',
-                fontFamily: 'Poppins, "Segoe UI", system-ui',
-                fontWeight: 'bold',
-                color: '#f8f3e2',
-                backgroundColor: '#000000aa',
-                padding: { x: 14, y: 6 },
-                borderRadius: 30,
-                backdrop: true
+                fontSize: '18px', fontFamily: 'Poppins, system-ui', fontWeight: 'bold', color: '#f8f3e2',
+                backgroundColor: '#000000aa', padding: { x: 14, y: 6 }, borderRadius: 30
             }).setScrollFactor(0);
-            this.contadorUI.setShadow(2,2,'#000',0.5);
             
-            // Botão de música (toggle)
+            // Botão de som
             this.musicaAtiva = true;
-            const musicBtn = this.add.text(currentWidth - 55, 20, '🔊', {
-                fontSize: '28px',
-                backgroundColor: '#00000099',
-                padding: { x: 8, y: 4 },
-                borderRadius: 40
-            }).setInteractive({ useHandCursor: true }).setScrollFactor(0);
+            const musicBtn = this.add.text(width-55, 20, '🔊', { fontSize: '28px', backgroundColor: '#00000099', padding: { x: 8, y: 4 }, borderRadius: 40 })
+                .setInteractive({ useHandCursor: true }).setScrollFactor(0);
             musicBtn.on('pointerdown', () => {
                 this.musicaAtiva = !this.musicaAtiva;
-                if (this.somAmbiente) {
-                    this.musicaAtiva ? this.somAmbiente.resume() : this.somAmbiente.pause();
-                }
+                if(this.somAmbiente) this.musicaAtiva ? this.somAmbiente.resume() : this.somAmbiente.pause();
                 musicBtn.setText(this.musicaAtiva ? '🔊' : '🔇');
             });
             
-            // Sons
-            this.somToque = this.sound.add('toque', { volume: 0.4 });
+            // Sons (com fallback silencioso)
+            this.somToque = this.sound.add('toque', { volume: 0.4, mute: false });
             this.somRevelar = this.sound.add('revelar', { volume: 0.5 });
-            this.somAmbiente = this.sound.add('ambiente', { loop: true, volume: 0.25 });
-            if (this.somAmbiente) this.somAmbiente.play();
+            this.somAmbiente = this.sound.add('ambiente', { loop: true, volume: 0.2 });
+            if(this.somAmbiente && this.musicaAtiva) this.somAmbiente.play();
             
-            // Efeito de partículas ambiente (folhas ao vento)
-            const folhas = this.add.particles(0, 0, 'mural_abstrato', {
-                x: { min: 0, max: currentWidth },
-                y: { min: currentHeight-80, max: currentHeight-30 },
-                lifespan: 5000,
-                frequency: 250,
-                scale: { start: 0.2, end: 0 },
-                alpha: 0.4,
-                tint: 0xd4a373,
-                speedY: { min: -30, max: -10 },
-                speedX: { min: -20, max: 20 }
+            // Partículas de folhas
+            this.add.particles(0, 0, 'mural_abstrato', {
+                x: { min: 0, max: width }, y: { min: height-80, max: height-30 },
+                lifespan: 5000, frequency: 250, scale: { start: 0.2, end: 0 }, alpha: 0.4, tint: 0xd4a373,
+                speedY: { min: -30, max: -10 }, speedX: { min: -20, max: 20 }
             });
             
-            // Esconder loading com fade
+            // Remove o loading com transição
             const loadingDiv = document.getElementById('loading');
-            if(loadingDiv) loadingDiv.style.opacity = '0';
-            setTimeout(() => { if(loadingDiv) loadingDiv.style.display = 'none'; }, 800);
+            if(loadingDiv) {
+                loadingDiv.style.transition = 'opacity 0.5s';
+                loadingDiv.style.opacity = '0';
+                setTimeout(() => loadingDiv.style.display = 'none', 600);
+            }
         }
         
         lerMural(mural) {
-            if (mural.getData('lido') === false) {
+            if(!mural.getData('lido')) {
                 mural.setData('lido', true);
                 totalLidos++;
                 this.contadorUI.setText(`📜 ${totalLidos}/${muraisData.length} muros lidos`);
-                // Efeito de desbloqueio: estrelas e som
-                if (this.somToque) this.somToque.play();
+                if(this.somToque) this.somToque.play();
                 this.cameras.main.shake(100, 0.008);
-                
-                // Efeito de partículas douradas
-                const x = mural.x, y = mural.y;
-                const glitter = this.add.particles(x, y, 'mural_graffiti', {
-                    speed: { min: -50, max: 50 },
-                    angle: { min: 0, max: 360 },
-                    scale: { start: 0.3, end: 0 },
-                    lifespan: 800,
-                    frequency: 20,
-                    quantity: 8,
-                    tint: 0xffcc66
+                // Efeito de glitter
+                const glitter = this.add.particles(mural.x, mural.y, 'mural_graffiti', {
+                    speed: { min: -50, max: 50 }, angle: { min: 0, max: 360 },
+                    scale: { start: 0.3, end: 0 }, lifespan: 800, frequency: 20, quantity: 8, tint: 0xffcc66
                 });
                 this.time.delayedCall(400, () => glitter.destroy());
             }
-            // Exibir diálogo (sempre, mesmo se já lido, repete)
-            this.exibirDialogoModerno(mural.getData('texto'), mural.getData('autor'));
-            
-            if (totalLidos === muraisData.length) {
-                this.finalEpico();
-            }
+            this.exibirDialogo(mural.getData('texto'), mural.getData('autor'));
+            if(totalLidos === muraisData.length) this.finalEpico();
         }
         
-        exibirDialogoModerno(texto, autor) {
-            if (dialogoAtivo) return;
+        exibirDialogo(texto, autor) {
+            if(dialogoAtivo) return;
             dialogoAtivo = true;
-            
-            const larg = this.cameras.main.width * 0.85;
-            const alt = 170;
-            const xCentro = this.cameras.main.width/2;
-            const yPos = this.cameras.main.height - 100;
-            
-            const bg = this.add.rectangle(xCentro, yPos, larg, alt, 0x0a0a14, 0.92);
-            bg.setStrokeStyle(3, 0xffcc88);
-            bg.setInteractive();
-            bg.setShadow(0, 4, '#000', 0.6);
-            
-            const txt = this.add.text(xCentro, yPos - 10, `“${texto}”`, {
-                fontSize: '16px',
-                fontFamily: 'Poppins, monospace',
-                color: '#fae6cf',
-                align: 'center',
-                wordWrap: { width: larg - 40 },
-                fontWeight: '500'
-            }).setOrigin(0.5);
-            
-            const autorTxt = this.add.text(xCentro, yPos + 40, `— ${autor}`, {
-                fontSize: '14px',
-                fontFamily: 'monospace',
-                color: '#e0b081',
-                fontStyle: 'italic'
-            }).setOrigin(0.5);
-            
-            const closeBtn = this.add.text(xCentro + larg/2 - 35, yPos - alt/2 + 15, '✕', {
-                fontSize: '22px',
-                color: '#fff',
-                backgroundColor: '#aa7744',
-                padding: { x: 8, y: 4 },
-                borderRadius: 30
-            }).setInteractive({ useHandCursor: true });
-            
-            const fechar = () => {
-                bg.destroy(); txt.destroy(); autorTxt.destroy(); closeBtn.destroy();
-                dialogoAtivo = false;
-                if(this.somRevelar) this.somRevelar.play();
-            };
-            bg.on('pointerdown', fechar);
-            closeBtn.on('pointerdown', fechar);
+            const larg = this.cameras.main.width * 0.85, alt = 170;
+            const xCentro = this.cameras.main.width/2, yPos = this.cameras.main.height - 100;
+            const bg = this.add.rectangle(xCentro, yPos, larg, alt, 0x0a0a14, 0.92).setStrokeStyle(3, 0xffcc88).setInteractive();
+            const txt = this.add.text(xCentro, yPos-10, `“${texto}”`, { fontSize: '16px', fontFamily: 'Poppins, monospace', color: '#fae6cf', align: 'center', wordWrap: { width: larg-40 } }).setOrigin(0.5);
+            const autorTxt = this.add.text(xCentro, yPos+40, `— ${autor}`, { fontSize: '14px', fontFamily: 'monospace', color: '#e0b081', fontStyle: 'italic' }).setOrigin(0.5);
+            const closeBtn = this.add.text(xCentro+larg/2-35, yPos-alt/2+15, '✕', { fontSize: '22px', color: '#fff', backgroundColor: '#aa7744', padding: { x: 8, y: 4 }, borderRadius: 30 }).setInteractive({ useHandCursor: true });
+            const fechar = () => { bg.destroy(); txt.destroy(); autorTxt.destroy(); closeBtn.destroy(); dialogoAtivo = false; if(this.somRevelar) this.somRevelar.play(); };
+            bg.on('pointerdown', fechar); closeBtn.on('pointerdown', fechar);
             this.time.delayedCall(5500, () => { if(dialogoAtivo) fechar(); });
         }
         
         finalEpico() {
-            // Efeito de arco-íris de luzes
-            const particlesFinal = this.add.particles(0, 0, 'mural_graffiti', {
-                x: { min: 0, max: this.cameras.main.width },
-                y: { min: 0, max: this.cameras.main.height },
-                lifespan: 3000,
-                frequency: 30,
-                scale: { start: 0.4, end: 0 },
-                tint: [0xff66cc, 0xffaa66, 0x66ffaa, 0xff6666]
+            const particles = this.add.particles(0, 0, 'mural_graffiti', {
+                x: { min: 0, max: this.cameras.main.width }, y: { min: 0, max: this.cameras.main.height },
+                lifespan: 3000, frequency: 30, scale: { start: 0.4, end: 0 }, tint: [0xff66cc, 0xffaa66, 0x66ffaa]
             });
             const msg = this.add.text(this.cameras.main.width/2, this.cameras.main.height/2, 
                 "✨ PARABÉNS! ✨\nVocê leu a autobiografia completa da cidade.\nOs muros agora sussurram segredos para você.",
                 { fontSize: '24px', fontFamily: 'Poppins', color: '#ffeaac', backgroundColor: '#000000aa', padding: 24, align: 'center', borderRadius: 40 }
             ).setOrigin(0.5).setDepth(20);
-            this.time.delayedCall(5000, () => { msg.destroy(); particlesFinal.destroy(); });
+            this.time.delayedCall(5000, () => { msg.destroy(); particles.destroy(); });
         }
         
         update() {
-            // Ajuste dinâmico se a tela for redimensionada (mobile rotação)
-            if (this.cameras.main.width !== currentWidth || this.cameras.main.height !== currentHeight) {
-                currentWidth = this.cameras.main.width;
-                currentHeight = this.cameras.main.height;
-                // Reajustar posições dos murais (percentuais)
-                let idx=0;
+            // Reajuste dinâmico para rotação da tela
+            const { width, height } = this.cameras.main;
+            if(this.muraisGrupo) {
+                let i=0;
                 this.muraisGrupo.getChildren().forEach(mural => {
-                    const data = muraisData[idx];
-                    if(data) {
-                        mural.x = data.xPct * currentWidth;
-                        mural.y = data.yPct * currentHeight;
-                        const light = mural.getData('light');
-                        if(light) light.x = mural.x;
-                    }
-                    idx++;
+                    const data = muraisData[i++];
+                    if(data) { mural.x = data.xPct * width; mural.y = data.yPct * height; }
                 });
-                // reposicionar UI
-                this.contadorUI.setPosition(16,16);
+                if(this.contadorUI) this.contadorUI.setPosition(16,16);
             }
         }
     }
     
-    // Configuração do Phaser otimizada para mobile
     const gameConfig = {
         type: Phaser.AUTO,
         parent: 'game-container',
         width: window.innerWidth,
         height: window.innerHeight,
-        scene: CidadeDosMurosScene,
-        scale: {
-            mode: Phaser.Scale.RESIZE,
-            autoCenter: Phaser.Scale.CENTER_BOTH
-        },
+        scene: CidadeDosMuros,
+        scale: { mode: Phaser.Scale.RESIZE, autoCenter: Phaser.Scale.CENTER_BOTH },
         input: { touch: true, activePointers: 1 },
         render: { antialias: true, pixelArt: false },
         backgroundColor: '#0a0f1e'
     };
     
-    window.addEventListener('load', () => {
-        new Phaser.Game(gameConfig);
-    });
-    
-    // Impedir zoom com dois dedos (opcional, mantém UX)
-    document.addEventListener('touchmove', function(e) {
-        if (e.scale && e.scale !== 1) e.preventDefault();
-    }, { passive: false });
+    window.addEventListener('load', () => new Phaser.Game(gameConfig));
+    document.addEventListener('touchmove', (e) => { if(e.scale && e.scale !== 1) e.preventDefault(); }, { passive: false });
 </script>
 </body>
 </html>
