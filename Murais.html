@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Autobiografia dos Muros | Sem Áudio</title>
+    <title>Autobiografia dos Muros - Jogo Final</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
         body {
@@ -13,6 +13,7 @@
             align-items: center;
             min-height: 100vh;
             font-family: system-ui, 'Segoe UI', sans-serif;
+            overflow: hidden;
         }
         #game-container {
             position: relative;
@@ -32,19 +33,19 @@
             align-items: center;
             z-index: 100;
             color: white;
-            font-size: 1.1rem;
+            font-size: 1rem;
             backdrop-filter: blur(4px);
-            transition: opacity 0.4s;
+            transition: opacity 0.3s;
             pointer-events: none;
             font-family: monospace;
         }
         .loader {
-            width: 36px;
-            height: 36px;
+            width: 30px;
+            height: 30px;
             border: 3px solid rgba(255,215,0,0.3);
             border-top: 3px solid #ffd966;
             border-radius: 50%;
-            animation: spin 0.7s linear infinite;
+            animation: spin 0.6s linear infinite;
             margin-right: 10px;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
@@ -52,8 +53,8 @@
             position: absolute;
             bottom: 12px;
             left: 12px;
-            background: rgba(0,0,0,0.6);
-            backdrop-filter: blur(6px);
+            background: rgba(0,0,0,0.55);
+            backdrop-filter: blur(5px);
             padding: 5px 12px;
             border-radius: 30px;
             color: #f0e6d0;
@@ -67,87 +68,41 @@
 </head>
 <body>
 <div id="game-container"></div>
-<div id="loading"><div class="loader"></div><span>Preparando muros...</span></div>
+<div id="loading"><div class="loader"></div><span>Iniciando...</span></div>
 <div class="info-mobile">📱 Toque nos murais | 🌆 Autobiografia da Cidade</div>
 
 <script>
-    // ========= CONFIGURAÇÃO =========
-    const SUA_IMAGEM = 'Muro.jpg';  // coloque o arquivo na mesma pasta
+    // ==================== CONFIGURAÇÃO ====================
+    const SUA_IMAGEM = 'Muros.jpg';  // <--- ALTERADO PARA Muros.jpg
     
     const muraisData = [
-        { id: 0, xPct: 0.25, yPct: 0.55, texto: "Os muros são as páginas da autobiografia de uma cidade que muitos insistem em não ler.", autor: "Anônimo", corBorda: "#e8b45e" },
-        { id: 1, xPct: 0.72, yPct: 0.68, texto: "Aqui, em 1922, a poesia virou concreto e as paredes aprenderam a gritar.", autor: "Poeta Urbano", corBorda: "#c44536" },
-        { id: 2, xPct: 0.45, yPct: 0.28, texto: "Esta praça já foi um rio. As paredes ainda sussurram histórias de água e peixes.", autor: "Memória das Águas", corBorda: "#3a86a5" },
-        { id: 3, xPct: 0.82, yPct: 0.22, texto: "O asfalto esqueceu, mas o muro guarda o nome de cada pessoa que passou.", autor: "Caminhante", corBorda: "#7d5d42" }
+        { id: 0, xPct: 0.25, yPct: 0.55, texto: "Os muros são as páginas da autobiografia de uma cidade que muitos insistem em não ler.", autor: "Anônimo", corBorda: "#e8b45e", cor1: "#5a3e2b", cor2: "#c49a6c" },
+        { id: 1, xPct: 0.72, yPct: 0.68, texto: "Aqui, em 1922, a poesia virou concreto e as paredes aprenderam a gritar.", autor: "Poeta Urbano", corBorda: "#c44536", cor1: "#2c1e16", cor2: "#e07a5f" },
+        { id: 2, xPct: 0.45, yPct: 0.28, texto: "Esta praça já foi um rio. As paredes ainda sussurram histórias de água e peixes.", autor: "Memória das Águas", corBorda: "#3a86a5", cor1: "#1a3b47", cor2: "#48cae4" },
+        { id: 3, xPct: 0.82, yPct: 0.22, texto: "O asfalto esqueceu, mas o muro guarda o nome de cada pessoa que passou.", autor: "Caminhante", corBorda: "#7d5d42", cor1: "#3e2a2f", cor2: "#d4a373" }
     ];
     
     let totalLidos = 0;
     let dialogoAtivo = false;
-    let jogoPronto = false;
+    let cenaAtiva = null;
     
+    // ==================== CLASSE PRINCIPAL ====================
     class CenaMuros extends Phaser.Scene {
         constructor() { super({ key: 'CenaMuros' }); }
         
-        preload() {
-            // Tenta carregar a imagem do usuário (se falhar, usamos fallback)
-            this.load.image('mural0', SUA_IMAGEM);
-            
-            // Gera texturas programáticas para os outros murais (garantido)
-            this.criarTextura('mural1', '#2c1e16', '#e07a5f');
-            this.criarTextura('mural2', '#1a3b47', '#48cae4');
-            this.criarTextura('mural3', '#3e2a2f', '#d4a373');
-            
-            // Fallback para mural0 se a imagem não existir
-            this.load.on('loaderror', (file) => {
-                if (file.key === 'mural0') {
-                    this.criarTextura('mural0', '#5a3e2b', '#c49a6c');
-                }
-            });
-            
-            // Força a criação da cena após 1 segundo (evita loading eterno)
-            this.time.delayedCall(1000, () => {
-                if (!jogoPronto) this.forceCreate();
-            });
-        }
-        
-        criarTextura(key, cor1, cor2) {
-            const canvas = document.createElement('canvas');
-            canvas.width = 300;
-            canvas.height = 400;
-            const ctx = canvas.getContext('2d');
-            const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-            grad.addColorStop(0, cor1);
-            grad.addColorStop(1, cor2);
-            ctx.fillStyle = grad;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            // textura de spray
-            ctx.fillStyle = 'rgba(255,245,200,0.3)';
-            for(let i=0;i<300;i++) ctx.fillRect(Math.random()*canvas.width, Math.random()*canvas.height, 2, 2);
-            ctx.strokeStyle = '#ffd966';
-            ctx.lineWidth = 6;
-            ctx.strokeRect(8, 8, canvas.width-16, canvas.height-16);
-            if (this.textures.exists(key)) this.textures.remove(key);
-            this.textures.addCanvas(key, canvas);
-        }
-        
-        forceCreate() {
-            if (!jogoPronto && this.scene.isActive('CenaMuros')) {
-                if (!this.sys.settings.isCreated) this.create();
-                else jogoPronto = true;
-            }
-        }
+        preload() { /* vazio intencionalmente */ }
         
         create() {
-            jogoPronto = true;
+            cenaAtiva = this;
             const { width, height } = this.cameras.main;
             
-            // ----- Cenário -----
+            // ----- CENÁRIO (gráficos ricos) -----
             const gradBg = this.add.graphics();
             gradBg.fillGradientStyle(0x1a2a40, 0x1a2a40, 0x2c3e5c, 0x2c3e5c, 1);
             gradBg.fillRect(0, 0, width, height);
             
-            // Nuvens
-            this.add.particles(0, 0, 'mural1', {
+            // Nuvens com partículas
+            this.cloudEmitter = this.add.particles(0, 0, this.criarTexturaCirculo(), {
                 x: { min: 0, max: width }, y: { min: 20, max: 100 },
                 lifespan: 14000, frequency: 500, scale: { start: 0.5, end: 0.2 },
                 alpha: { start: 0.3, end: 0 }, tint: [0xfff0cc, 0xffe6b3], speedX: { min: 4, max: 20 }
@@ -168,10 +123,21 @@
                 for(let j=0;j<4;j++) this.add.rectangle(x+6+j*9, y+12, 4, 7, 0xf1c40f, 0.4);
             }
             
-            // ----- Murais interativos -----
+            // ----- MURAIS (gerados programaticamente) -----
             this.muraisGrupo = this.add.group();
+            
+            // Gerar texturas para todos os murais (padrão)
             muraisData.forEach((data, idx) => {
-                const key = `mural${idx}`;
+                const key = `mural_${idx}`;
+                this.criarTexturaMural(key, data.cor1, data.cor2);
+            });
+            
+            // Tentar carregar a imagem do usuário para o mural 0 (opcional)
+            this.carregarImagemUsuario();
+            
+            // Criar os sprites interativos
+            muraisData.forEach((data, idx) => {
+                const key = `mural_${idx}`;
                 const posX = data.xPct * width;
                 const posY = data.yPct * height;
                 let largura = Math.min(190, width * 0.22);
@@ -185,7 +151,9 @@
                 mural.setData('texto', data.texto);
                 mural.setData('autor', data.autor);
                 mural.setData('lido', false);
+                mural.setData('idx', idx);
                 
+                // Flutuação suave
                 this.tweens.add({ targets: mural, y: posY - 4, duration: 2100, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
                 mural.on('pointerover', () => this.tweens.add({ targets: mural, scaleX: 1.04, scaleY: 1.04, duration: 100 }));
                 mural.on('pointerout', () => this.tweens.add({ targets: mural, scaleX: 1, scaleY: 1, duration: 100 }));
@@ -201,18 +169,90 @@
             }).setScrollFactor(0);
             
             // Folhas ao vento
-            this.add.particles(0, 0, 'mural2', {
+            this.add.particles(0, 0, this.criarTexturaFolha(), {
                 x: { min: 0, max: width }, y: { min: height-80, max: height-30 },
                 lifespan: 6000, frequency: 280, scale: { start: 0.18, end: 0 }, alpha: 0.4, tint: 0xd4a373,
                 speedY: { min: -25, max: -8 }, speedX: { min: -15, max: 15 }
             });
             
-            // Esconde o loading
+            // ----- FORÇAR REMOÇÃO DO LOADING (garantido) -----
             const loadingDiv = document.getElementById('loading');
             if(loadingDiv) {
+                loadingDiv.style.transition = 'opacity 0.3s';
                 loadingDiv.style.opacity = '0';
                 setTimeout(() => loadingDiv.style.display = 'none', 400);
             }
+        }
+        
+        // Cria uma textura gradiente para cada mural
+        criarTexturaMural(key, cor1, cor2) {
+            if (this.textures.exists(key)) return;
+            const canvas = document.createElement('canvas');
+            canvas.width = 300;
+            canvas.height = 400;
+            const ctx = canvas.getContext('2d');
+            const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+            grad.addColorStop(0, cor1);
+            grad.addColorStop(1, cor2);
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            // textura de spray
+            ctx.fillStyle = 'rgba(255,245,200,0.35)';
+            for(let i=0;i<300;i++) ctx.fillRect(Math.random()*canvas.width, Math.random()*canvas.height, 2, 2);
+            ctx.strokeStyle = '#ffd966';
+            ctx.lineWidth = 6;
+            ctx.strokeRect(8, 8, canvas.width-16, canvas.height-16);
+            this.textures.addCanvas(key, canvas);
+        }
+        
+        // Textura para nuvens (círculo)
+        criarTexturaCirculo() {
+            const key = 'nuvem';
+            if (this.textures.exists(key)) return key;
+            const canvas = document.createElement('canvas');
+            canvas.width = 32;
+            canvas.height = 32;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(16, 16, 14, 0, Math.PI*2);
+            ctx.fill();
+            this.textures.addCanvas(key, canvas);
+            return key;
+        }
+        
+        criarTexturaFolha() {
+            const key = 'folha';
+            if (this.textures.exists(key)) return key;
+            const canvas = document.createElement('canvas');
+            canvas.width = 12;
+            canvas.height = 12;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#d4a373';
+            ctx.beginPath();
+            ctx.ellipse(6, 6, 5, 3, 0, 0, Math.PI*2);
+            ctx.fill();
+            this.textures.addCanvas(key, canvas);
+            return key;
+        }
+        
+        // Carrega a imagem do usuário ASSINCRONAMENTE sem travar o jogo
+        carregarImagemUsuario() {
+            const img = new Image();
+            img.onload = () => {
+                if (this.textures.exists('mural_0')) this.textures.remove('mural_0');
+                const canvas = document.createElement('canvas');
+                canvas.width = img.width;
+                canvas.height = img.height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0);
+                this.textures.addCanvas('mural_0', canvas);
+                // Atualiza o sprite do mural 0 se já existir
+                const mural0 = this.muraisGrupo.getChildren().find(m => m.getData('idx') === 0);
+                if (mural0) mural0.setTexture('mural_0');
+            };
+            img.onerror = () => { console.log("Imagem Muros.jpg não encontrada, mantendo textura padrão."); };
+            img.src = SUA_IMAGEM;
         }
         
         lerMural(mural) {
@@ -222,8 +262,8 @@
                 this.contadorUI.setText(`📖 ${totalLidos}/${muraisData.length} lidos`);
                 if(navigator.vibrate) navigator.vibrate(50);
                 this.cameras.main.shake(80, 0.006);
-                // glitter
-                const glitter = this.add.particles(mural.x, mural.y, 'mural1', {
+                // efeito glitter
+                const glitter = this.add.particles(mural.x, mural.y, this.criarTexturaCirculo(), {
                     speed: { min: -40, max: 40 }, angle: { min: 0, max: 360 },
                     scale: { start: 0.25, end: 0 }, lifespan: 700, frequency: 18, quantity: 6, tint: 0xffcc77
                 });
@@ -248,7 +288,7 @@
         }
         
         finalEpico() {
-            const particles = this.add.particles(0, 0, 'mural1', {
+            const particles = this.add.particles(0, 0, this.criarTexturaCirculo(), {
                 x: { min: 0, max: this.cameras.main.width }, y: { min: 0, max: this.cameras.main.height },
                 lifespan: 2500, frequency: 25, scale: { start: 0.4, end: 0 }, tint: [0xffaa66, 0xff66cc, 0x66ffaa]
             });
@@ -272,6 +312,7 @@
         }
     }
     
+    // Configuração do Phaser
     const config = {
         type: Phaser.AUTO,
         parent: 'game-container',
@@ -279,12 +320,23 @@
         height: window.innerHeight,
         scene: CenaMuros,
         scale: { mode: Phaser.Scale.RESIZE, autoCenter: Phaser.Scale.CENTER_BOTH },
-        input: { touch: true },
+        input: { touch: true, activePointers: 1 },
         render: { antialias: true },
         backgroundColor: '#0a0f1e'
     };
     
-    window.addEventListener('load', () => new Phaser.Game(config));
+    window.addEventListener('load', () => {
+        new Phaser.Game(config);
+        // Fallback extra: remove loading após 1s se algo falhar
+        setTimeout(() => {
+            const ld = document.getElementById('loading');
+            if(ld && ld.style.display !== 'none') {
+                ld.style.opacity = '0';
+                setTimeout(() => ld.style.display = 'none', 300);
+            }
+        }, 1000);
+    });
+    
     document.addEventListener('touchmove', (e) => { if(e.scale && e.scale !== 1) e.preventDefault(); }, { passive: false });
 </script>
 </body>
