@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Autobiografia dos Muros</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #0a0a0a;
+            overflow: hidden;
+            font-family: 'Courier New', monospace;
+        }
+        #game-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: #000;
+        }
+        /* Tooltip personalizado para dicas */
+        .info {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.7);
+            color: #ddd;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            pointer-events: none;
+            z-index: 10;
+            font-family: monospace;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
+</head>
+<body>
+<div id="game-container"></div>
+<div class="info" id="game-info">🏙️ Clique nos muros para ler a autobiografia da cidade</div>
+
+<script>
+    // ========================
+    // CONFIGURAÇÃO DO JOGO
+    // ========================
+    const config = {
+        type: Phaser.AUTO,
+        parent: 'game-container',
+        width: 1024,
+        height: 640,
+        scene: CidadeDosMuros,
+        backgroundColor: '#1a2a32',
+        pixelArt: false,
+        scale: {
+            mode: Phaser.Scale.FIT,
+            autoCenter: Phaser.Scale.CENTER_BOTH
+        }
+    };
+
+    // Dados dos muros (posições, textos e imagens)
+    const muraisData = [
+        {
+            id: 0,
+            x: 300, y: 400,
+            imagem: 'mural1',   // será carregada com o mesmo nome do asset
+            texto: "Os muros são as páginas da autobiografia de uma cidade que muitos insistem em não ler.",
+            autor: "Anônimo"
+        },
+        {
+            id: 1,
+            x: 700, y: 480,
+            imagem: 'mural2',
+            texto: "Aqui, em 1922, a poesia virou concreto e as paredes aprenderam a gritar.",
+            autor: "Poeta Urbano"
+        },
+        {
+            id: 2,
+            x: 520, y: 200,
+            imagem: 'mural3',
+            texto: "Esta praça já foi um rio. As paredes ainda sussurram histórias de água e peixes.",
+            autor: "Memória das Águas"
+        },
+        {
+            id: 3,
+            x: 850, y: 150,
+            imagem: 'mural4',
+            texto: "O asfalto esqueceu, mas o muro guarda o nome de cada pessoa que passou.",
+            autor: "Caminhante"
+        }
+    ];
+
+    let jogo;          // referência à cena
+    let muraisLidos = 0;
+    let dialogoAtivo = false;
+
+    function CidadeDosMuros() {
+        Phaser.Scene.call(this, { key: 'CidadeDosMuros' });
+    }
+
+    CidadeDosMuros.prototype = Object.create(Phaser.Scene.prototype);
+    CidadeDosMuros.prototype.constructor = CidadeDosMuros;
+
+    CidadeDosMuros.prototype.preload = function() {
+        // Carrega o fundo da cidade (um céu + chão simples ou use uma imagem)
+        this.load.image('ceu', 'https://www.transparenttextures.com/patterns/cartographer.png'); // textura genérica
+        this.load.image('chao', 'https://www.transparenttextures.com/patterns/old-mat.png');
+        
+        // Carrega as imagens dos murais (SUBSTITUA PELOS SEUS ARQUIVOS LOCAIS)
+        // IMPORTANTE: coloque as imagens na mesma pasta que este HTML, ou use URLs.
+        // Exemplo: use a sua imagem "Screenshot_20260422_151300_Instagram.jpg" para o primeiro mural.
+        this.load.image('mural1', 'Screenshot_20260422_151300_Instagram.jpg');  // <-- sua imagem principal
+        // Para os demais, crie imagens ou reuse a mesma (pode usar placeholders)
+        this.load.image('mural2', 'https://picsum.photos/id/104/300/400');  // placeholder
+        this.load.image('mural3', 'https://picsum.photos/id/169/300/400');
+        this.load.image('mural4', 'https://picsum.photos/id/42/300/400');
+        
+        // Carrega sons (opcional - pode remover se não tiver arquivos)
+        this.load.audio('click', 'https://assets.mixkit.co/sfx/preview/mixkit-interface-click-1126.mp3');
+        this.load.audio('revelar', 'https://assets.mixkit.co/sfx/preview/mixkit-soft-bell-531.mp3');
+    };
+
+    CidadeDosMuros.prototype.create = function() {
+        const self = this;
+        jogo = this;
+        
+        // Fundo gradiente manual (simula céu)
+        this.add.rectangle(0, 0, this.cameras.main.width, this.cameras.main.height, 0x87CEEB).setOrigin(0,0);
+        
+        // Chão com textura
+        this.add.tileSprite(0, this.cameras.main.height - 80, this.cameras.main.width, 80, 'chao').setOrigin(0,0).setTint(0x8B5A2B);
+        
+        // Alguns elementos decorativos (nuvens, postes)
+        for(let i=0;i<3;i++) {
+            this.add.circle(150 + i*300, 80, 40, 0xffffff, 0.6);
+        }
+        
+        // Grupo para armazenar os murais interativos
+        this.muraisGrupo = this.add.group();
+        
+        // Cria cada mural
+        muraisData.forEach(data => {
+            // Adiciona a imagem
+            const mural = this.add.image(data.x, data.y, data.imagem)
+                .setOrigin(0.5)
+                .setDisplaySize(180, 240)  // tamanho padrão
+                .setInteractive({ useHandCursor: true });
+            
+            // Borda e sombra para destacar
+            mural.setStrokeStyle(4, 0xffffff, 0.8);
+            mural.setShadow(3, 3, '#000000', 0.5);
+            
+            // Guarda metadados no próprio objeto
+            mural.setData('id', data.id);
+            mural.setData('texto', data.texto);
+            mural.setData('autor', data.autor);
+            mural.setData('lido', false);
+            
+            // Efeito de hover (aumenta ligeiramente)
+            mural.on('pointerover', () => {
+                this.tweens.add({
+                    targets: mural,
+                    scaleX: 1.05,
+                    scaleY: 1.05,
+                    duration: 150,
+                    ease: 'Power1'
+                });
+            });
+            mural.on('pointerout', () => {
+                this.tweens.add({
+                    targets: mural,
+                    scaleX: 1,
+                    scaleY: 1,
+                    duration: 150
+                });
+            });
+            
+            // Clique no mural
+            mural.on('pointerdown', () => {
+                if (dialogoAtivo) return;
+                this.lerMural(mural);
+            });
+            
+            this.muraisGrupo.add(mural);
+        });
+        
+        // Texto de contador (quantos muros já leu)
+        this.contadorTexto = this.add.text(20, 20, `📖 Muros lidos: 0/${muraisData.length}`, {
+            fontSize: '18px',
+            fill: '#fff',
+            backgroundColor: '#000000aa',
+            padding: { x: 8, y: 4 },
+            borderRadius: 12
+        }).setScrollFactor(0);
+        
+        // Adiciona uma partícula suave (pólen ou poeira)
+        const particles = this.add.particles('ceu'); // usa textura qualquer
+        particles.createEmitter({
+            x: { min: 0, max: this.cameras.main.width },
+            y: 0,
+            speedY: { min: 20, max: 60 },
+            scale: { start: 0.2, end: 0 },
+            lifespan: 8000,
+            frequency: 300,
+            tint: 0xccaa88
+        });
+        
+        // Sons (se falharem, não quebram o jogo)
+        this.somClick = this.sound.add('click', { volume: 0.3 });
+        this.somRevelar = this.sound.add('revelar', { volume: 0.5 });
+        
+        // Câmera com leve shake ao ler o primeiro mural? (opcional)
+    };
+    
+    CidadeDosMuros.prototype.lerMural = function(mural) {
+        if (mural.getData('lido')) {
+            // Se já leu, apenas repete o texto (pode exibir novamente)
+            this.exibirDialogo(mural.getData('texto'), mural.getData('autor'));
+            return;
+        }
+        
+        // Marca como lido
+        mural.setData('lido', true);
+        muraisLidos++;
+        
+        // Atualiza contador
+        this.contadorTexto.setText(`📖 Muros lidos: ${muraisLidos}/${muraisData.length}`);
+        
+        // Efeito sonoro
+        if (this.somClick) this.somClick.play();
+        
+        // Efeito visual: flash branco rápido
+        const flash = this.add.rectangle(0, 0, this.cameras.main.width, this.cameras.main.height, 0xffffff, 0.5);
+        flash.setOrigin(0,0);
+        this.tweens.add({
+            targets: flash,
+            alpha: 0,
+            duration: 300,
+            onComplete: () => flash.destroy()
+        });
+        
+        // Pequena animação no mural (pula)
+        this.tweens.add({
+            targets: mural,
+            y: mural.y - 8,
+            duration: 80,
+            yoyo: true,
+            repeat: 1,
+            ease: 'Power2'
+        });
+        
+        // Exibe o texto com a "autobiografia"
+        this.exibirDialogo(mural.getData('texto'), mural.getData('autor'));
+        
+        // Verifica se todos os muros foram lidos
+        if (muraisLidos === muraisData.length) {
+            this.finalFeliz();
+        }
+    };
+    
+    CidadeDosMuros.prototype.exibirDialogo = function(texto, autor) {
+        dialogoAtivo = true;
+        
+        // Caixa de diálogo escura semi-transparente
+        const larguraCaixa = 700;
+        const alturaCaixa = 150;
+        const xCentro = this.cameras.main.width / 2;
+        const yCaixa = this.cameras.main.height - 100;
+        
+        const caixaFundo = this.add.rectangle(xCentro, yCaixa, larguraCaixa, alturaCaixa, 0x000000, 0.85);
+        caixaFundo.setStrokeStyle(2, 0xcdb38c);
+        caixaFundo.setInteractive(); // clicar fecha
+        
+        const textoFormatado = `"${texto}"\n— ${autor}`;
+        const textoDialogo = this.add.text(xCentro, yCaixa, textoFormatado, {
+            fontSize: '18px',
+            fill: '#f5e6d3',
+            fontFamily: 'Courier New, monospace',
+            align: 'center',
+            wordWrap: { width: larguraCaixa - 40 },
+            lineSpacing: 8
+        }).setOrigin(0.5);
+        
+        // Pequeno ícone de fechar
+        const fecharBtn = this.add.text(xCentro + larguraCaixa/2 - 25, yCaixa - alturaCaixa/2 + 10, '✖', {
+            fontSize: '20px',
+            fill: '#fff',
+            backgroundColor: '#444',
+            padding: { x: 6, y: 2 }
+        }).setInteractive({ useHandCursor: true });
+        
+        const fecharDialogo = () => {
+            caixaFundo.destroy();
+            textoDialogo.destroy();
+            fecharBtn.destroy();
+            dialogoAtivo = false;
+            if (this.somRevelar) this.somRevelar.play();
+        };
+        
+        caixaFundo.on('pointerdown', fecharDialogo);
+        fecharBtn.on('pointerdown', fecharDialogo);
+        
+        // Auto-fecha após 6 segundos (opcional)
+        this.time.delayedCall(6000, () => {
+            if (dialogoAtivo) fecharDialogo();
+        });
+    };
+    
+    CidadeDosMuros.prototype.finalFeliz = function() {
+        // Cria um texto de parabéns e uma transformação na cidade
+        const msg = this.add.text(this.cameras.main.width/2, this.cameras.main.height/2, 
+            "📜 Você leu a autobiografia completa da cidade.\nAgora os muros sorriem para você.", {
+            fontSize: '28px',
+            fill: '#ffdd99',
+            backgroundColor: '#000000aa',
+            align: 'center',
+            padding: { x: 20, y: 20 },
+            fontFamily: 'monospace'
+        }).setOrigin(0.5).setDepth(10);
+        
+        // Efeito de flores ou partículas coloridas
+        const flores = this.add.particles('mural1'); // reutiliza textura
+        const emitter = flores.createEmitter({
+            x: this.cameras.main.width/2,
+            y: this.cameras.main.height/2,
+            speed: { min: -100, max: 100 },
+            angle: { min: 0, max: 360 },
+            scale: { start: 0.4, end: 0 },
+            lifespan: 2000,
+            frequency: 50,
+            tint: [0xffaa66, 0xff6666, 0x66ff66]
+        });
+        
+        this.time.delayedCall(4000, () => {
+            emitter.stop();
+            msg.destroy();
+        });
+    };
+
+    // Inicia o jogo
+    window.onload = () => {
+        new Phaser.Game(config);
+    };
+</script>
+</body>
+</html>
