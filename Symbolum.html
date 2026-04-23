@@ -3,17 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    
-    <!-- Metadados de segurança -->
     <meta name="rating" content="General">
     <meta name="audience" content="Everyone">
     <meta name="child-directed" content="true">
     <meta name="max-ad-content-rating" content="G">
-    
     <title>Symbolum - Sudoku de Símbolos</title>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -30,6 +25,7 @@
             align-items: flex-start;
             padding: 16px 12px;
             font-family: 'Inter', sans-serif;
+            overflow-x: hidden; /* garante que não haja rolagem horizontal */
         }
 
         .game-container {
@@ -41,31 +37,29 @@
         .game-panel {
             background: #ffffff;
             border-radius: 40px;
-            padding: 16px 12px 20px;
+            padding: 16px 10px 20px;
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
             border: 1px solid #f0f0f0;
         }
 
         h1 {
             text-align: center;
-            font-size: 2.2rem;
+            font-size: 2rem;
             font-weight: 800;
-            letter-spacing: -0.02em;
             color: #2c3e2f;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
 
         .status-area {
             background: #f8f9fa;
             border-radius: 50px;
-            padding: 8px 16px;
-            margin: 4px 0 16px 0;
+            padding: 6px 12px;
+            margin: 4px 0 14px 0;
             text-align: center;
-            border: 1px solid #e9ecef;
         }
 
         .status {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             font-weight: 600;
             color: #2c3e2f;
         }
@@ -77,17 +71,16 @@
             gap: 1px;
             width: 100%;
             aspect-ratio: 1 / 1;
-            margin: 0 auto 18px auto;
-            border-radius: 18px;
+            margin: 0 auto 16px auto;
+            border-radius: 16px;
             overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
         }
 
         .cell {
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: clamp(0.9rem, 5vw, 1.4rem);
+            font-size: clamp(0.85rem, 4.5vw, 1.3rem);
             font-weight: 600;
             font-family: 'JetBrains Mono', monospace;
             background: #ffffff;
@@ -111,28 +104,24 @@
             text-decoration: line-through;
         }
 
-        /* Paleta de símbolos: linha única com rolagem horizontal suave */
+        /* Paleta de símbolos - todos em uma linha, sem overflow, botões pequenos */
         .symbol-palette {
             display: flex;
             flex-direction: row;
-            justify-content: flex-start;
+            justify-content: center;
             align-items: center;
-            gap: 8px;
-            margin: 12px 0 20px;  /* mais espaço abaixo */
-            padding-bottom: 6px;
-            overflow-x: auto;
-            overflow-y: hidden;
-            -webkit-overflow-scrolling: touch;
-            scrollbar-width: thin;
+            gap: 5px;
+            margin: 8px 0 18px 0;
+            flex-wrap: nowrap;
         }
 
         .symbol-btn {
             background: #f0f2f5;
             border: 1px solid #e0e4e8;
-            font-size: 1.3rem;
+            font-size: 1.1rem;
             font-weight: bold;
-            width: 46px;
-            height: 46px;
+            width: 38px;
+            height: 38px;
             border-radius: 30px;
             cursor: pointer;
             font-family: 'JetBrains Mono', monospace;
@@ -143,7 +132,6 @@
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
-            touch-action: manipulation;
         }
 
         .symbol-btn:active {
@@ -157,41 +145,41 @@
             color: white;
         }
 
-        /* Botões de operação em linha reta, com espaçamento adequado */
+        /* Botões de operação em linha reta, justos, sem quebrar */
         .controls {
             display: flex;
             justify-content: center;
-            gap: 20px;
+            gap: 12px;
             flex-wrap: nowrap;
-            margin-top: 8px;
+            margin-top: 4px;
         }
 
         button.action {
             background: #4a6741;
             border: none;
-            font-size: 0.85rem;
+            font-size: 0.75rem;
             font-weight: 600;
-            padding: 10px 20px;
+            padding: 8px 14px;
             border-radius: 36px;
             color: white;
             cursor: pointer;
             font-family: 'Inter', sans-serif;
             letter-spacing: 0.3px;
             transition: 0.1s;
-            box-shadow: 0 3px 0 #2c3e2f;
+            box-shadow: 0 2px 0 #2c3e2f;
             flex: 1;
             text-align: center;
-            max-width: 120px;
+            white-space: nowrap;
         }
 
         button.action:active {
             transform: translateY(2px);
-            box-shadow: 0 1px 0 #2c3e2f;
+            box-shadow: 0 0px 0 #2c3e2f;
         }
 
         #clearBtn {
             background: #8b5a2b;
-            box-shadow: 0 3px 0 #5a3a1a;
+            box-shadow: 0 2px 0 #5a3a1a;
         }
 
         .confetti-canvas {
@@ -206,7 +194,7 @@
 
         .symbol-confetti {
             position: absolute;
-            font-size: 1rem;
+            font-size: 0.9rem;
             font-weight: bold;
             animation: fall linear forwards;
             pointer-events: none;
@@ -217,57 +205,56 @@
             100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
         }
 
-        @media (max-width: 540px) {
+        /* Telas muito pequenas: reduz ainda mais os botões de símbolos */
+        @media (max-width: 520px) {
             .symbol-btn {
-                width: 42px;
-                height: 42px;
-                font-size: 1.2rem;
-            }
-            .controls {
-                gap: 12px;
-            }
-            button.action {
-                padding: 8px 12px;
-                font-size: 0.75rem;
-                max-width: 100px;
-            }
-            h1 {
-                font-size: 1.9rem;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .symbol-btn {
-                width: 38px;
-                height: 38px;
-                font-size: 1rem;
+                width: 34px;
+                height: 34px;
+                font-size: 0.95rem;
             }
             .controls {
                 gap: 8px;
+            }
+            button.action {
+                padding: 6px 10px;
+                font-size: 0.7rem;
+            }
+            h1 {
+                font-size: 1.7rem;
+            }
+        }
+
+        @media (max-width: 450px) {
+            .symbol-btn {
+                width: 30px;
+                height: 30px;
+                font-size: 0.85rem;
+            }
+            .symbol-palette {
+                gap: 3px;
             }
         }
     </style>
 </head>
 <body>
-
 <div class="game-container">
     <div class="game-panel">
         <h1>SYMBOLUM</h1>
         <div class="status-area">
-            <div class="status" id="statusMsg">✨ Toque numa célula e depois num símbolo ✨</div>
+            <div class="status" id="statusMsg">✨ Toque numa célula e num símbolo ✨</div>
         </div>
         <div class="sudoku-grid" id="sudokuGrid"></div>
         <div class="symbol-palette" id="symbolPalette"></div>
         <div class="controls">
             <button class="action" id="clearBtn">🗑️ LIMPAR</button>
             <button class="action" id="newGameBtn">🔄 NOVO</button>
-            <button class="action" id="checkBtn">✅ CHECAR</button>  <!-- renomeado -->
+            <button class="action" id="checkBtn">✅ CHECAR</button>
         </div>
     </div>
 </div>
 
 <script>
-    // Configuração de segurança (simplificada)
+    // Configuração de segurança
     (function() {
         window.google_tag_for_child_directed_treatment = 1;
         window.google_max_ad_content_rating = "G";
@@ -327,13 +314,11 @@
     function generateNewPuzzle() {
         let full = Array(SIZE).fill().map(() => Array(SIZE).fill(""));
         if (!solveSudoku(full)) {
-            // fallback simples
             for (let i = 0; i < SIZE; i++)
                 for (let j = 0; j < SIZE; j++)
                     full[i][j] = SYMBOLS[(i * 3 + j) % SYMBOLS.length];
             solveSudoku(full);
         }
-        // Copiar solução e remover células
         let puzzle = full.map(row => [...row]);
         const toRemove = 48 + Math.floor(Math.random() * 12);
         let removed = 0;
@@ -369,8 +354,8 @@
     }
 
     function launchConfetti() {
-        const oldCanvas = document.querySelector('.confetti-canvas');
-        if (oldCanvas) oldCanvas.remove();
+        const old = document.querySelector('.confetti-canvas');
+        if (old) old.remove();
         const container = document.createElement('div');
         container.className = 'confetti-canvas';
         document.body.appendChild(container);
@@ -379,15 +364,15 @@
             const el = document.createElement('div');
             el.className = 'symbol-confetti';
             el.textContent = sym;
-            el.style.fontSize = (0.8 + Math.random() * 1.2) + 'rem';
+            el.style.fontSize = (0.7 + Math.random() * 1) + 'rem';
             el.style.left = Math.random() * 100 + '%';
-            el.style.animationDuration = (2 + Math.random() * 2) + 's';
-            el.style.animationDelay = (Math.random() * 0.6) + 's';
+            el.style.animationDuration = (1.5 + Math.random() * 2) + 's';
+            el.style.animationDelay = (Math.random() * 0.5) + 's';
             el.style.color = `hsl(${Math.random() * 360}, 85%, 65%)`;
             container.appendChild(el);
-            setTimeout(() => el.remove(), 5000);
+            setTimeout(() => el.remove(), 4000);
         }
-        setTimeout(() => container.remove(), 5500);
+        setTimeout(() => container.remove(), 4500);
     }
 
     function updateStatus(msg) {
@@ -398,7 +383,7 @@
 
     function placeSymbol(symbol) {
         if (currentGameOver) { updateStatus("Jogo finalizado! Comece um novo."); return; }
-        if (selectedRow === -1 || selectedCol === -1) { updateStatus("🔍 Primeiro, toque em uma célula."); return; }
+        if (selectedRow === -1 || selectedCol === -1) { updateStatus("🔍 Primeiro, toque numa célula."); return; }
         const row = selectedRow, col = selectedCol;
         if (fixedCells[row][col]) { updateStatus("🔒 Célula fixa!"); return; }
         board[row][col] = symbol;
@@ -416,7 +401,7 @@
     function clearCell() {
         if (currentGameOver) { updateStatus("Jogo vencido, inicie novo."); return; }
         if (selectedRow === -1 || selectedCol === -1) { updateStatus("Selecione uma célula."); return; }
-        if (fixedCells[selectedRow][selectedCol]) { updateStatus("Célula fixa não pode ser limpa!"); return; }
+        if (fixedCells[selectedRow][selectedCol]) { updateStatus("Célula fixa!"); return; }
         if (board[selectedRow][selectedCol] !== "") {
             board[selectedRow][selectedCol] = "";
             updateStatus("🧹 Célula limpa.");
@@ -444,7 +429,6 @@
                 if (isFixed) cell.classList.add("preset");
                 if (isSelected) cell.classList.add("selected");
                 if (hasError && !isFixed) cell.classList.add("error");
-                // destaque linha/coluna/bloco
                 if (selectedRow !== -1 && selectedCol !== -1) {
                     if (i === selectedRow || j === selectedCol) cell.style.backgroundColor = "#fef9e6";
                     const br = Math.floor(selectedRow / 3) * 3, bc = Math.floor(selectedCol / 3) * 3;
