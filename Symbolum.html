@@ -3,18 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    
+    <!-- Metadados de segurança -->
     <meta name="rating" content="General">
-    <meta name="distribution" content="Global">
     <meta name="audience" content="Everyone">
-    <meta name="content-language" content="pt-br">
-    <meta name="googlebot" content="index, follow">
-    <meta name="age-rating" content="General Audiences">
-    <meta name="category" content="Puzzle Game">
-    <meta name="suitable-for-children" content="yes">
     <meta name="child-directed" content="true">
     <meta name="max-ad-content-rating" content="G">
+    
     <title>Symbolum - Sudoku de Símbolos</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    
     <style>
         * {
             margin: 0;
@@ -22,6 +21,7 @@
             box-sizing: border-box;
             user-select: none;
         }
+
         body {
             background: #ffffff;
             min-height: 100vh;
@@ -31,39 +31,45 @@
             padding: 16px 12px;
             font-family: 'Inter', sans-serif;
         }
+
         .game-container {
-            max-width: 550px;
+            max-width: 560px;
             width: 100%;
             margin: 0 auto;
         }
+
         .game-panel {
             background: #ffffff;
-            border-radius: 32px;
+            border-radius: 40px;
             padding: 16px 12px 20px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.04);
-            border: 1px solid #eceef2;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+            border: 1px solid #f0f0f0;
         }
+
         h1 {
             text-align: center;
             font-size: 2.2rem;
             font-weight: 800;
+            letter-spacing: -0.02em;
             color: #2c3e2f;
             margin-bottom: 8px;
-            letter-spacing: -0.5px;
         }
+
         .status-area {
             background: #f8f9fa;
-            border-radius: 40px;
-            padding: 8px 12px;
+            border-radius: 50px;
+            padding: 8px 16px;
             margin: 4px 0 16px 0;
             text-align: center;
             border: 1px solid #e9ecef;
         }
+
         .status {
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             font-weight: 600;
             color: #2c3e2f;
         }
+
         .sudoku-grid {
             display: grid;
             grid-template-columns: repeat(9, 1fr);
@@ -72,98 +78,122 @@
             width: 100%;
             aspect-ratio: 1 / 1;
             margin: 0 auto 18px auto;
-            border-radius: 16px;
+            border-radius: 18px;
             overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
         }
+
         .cell {
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: clamp(0.9rem, 4.5vw, 1.4rem);
+            font-size: clamp(0.9rem, 5vw, 1.4rem);
             font-weight: 600;
             font-family: 'JetBrains Mono', monospace;
             background: #ffffff;
             color: #2c3e2f;
             cursor: pointer;
-            transition: 0.05s linear;
         }
+
         .cell.preset {
             background: #f1f0e8;
             color: #5a3e1b;
         }
+
         .cell.selected {
             background: #ffe0a3;
             box-shadow: inset 0 0 0 2px #f39c12;
-            transform: scale(0.98);
         }
+
         .cell.error {
             background: #ffe0e0;
             color: #c0392b;
             text-decoration: line-through;
         }
-        /* Paleta de símbolos - grid responsivo para caber em linha única */
+
+        /* Paleta de símbolos: linha única com rolagem horizontal suave */
         .symbol-palette {
-            display: grid;
-            grid-template-columns: repeat(10, minmax(0, 1fr));
-            gap: 6px;
-            margin: 12px 0 12px;
+            display: flex;
+            flex-direction: row;
+            justify-content: flex-start;
+            align-items: center;
+            gap: 8px;
+            margin: 12px 0 20px;  /* mais espaço abaixo */
+            padding-bottom: 6px;
+            overflow-x: auto;
+            overflow-y: hidden;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: thin;
         }
+
         .symbol-btn {
             background: #f0f2f5;
             border: 1px solid #e0e4e8;
-            font-size: 1.2rem;
+            font-size: 1.3rem;
             font-weight: bold;
-            border-radius: 40px;
+            width: 46px;
+            height: 46px;
+            border-radius: 30px;
             cursor: pointer;
             font-family: 'JetBrains Mono', monospace;
             color: #2c3e2f;
-            padding: 8px 0;
-            text-align: center;
+            box-shadow: 0 2px 0 #d0d4d8;
             transition: 0.05s linear;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
             touch-action: manipulation;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
         }
+
         .symbol-btn:active {
-            background: #e2e6ea;
-            transform: scale(0.96);
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 #d0d4d8;
         }
+
         .symbol-btn.active-tool {
             background: #ffb347;
             border-color: #ff9f1c;
             color: white;
         }
-        /* Botões de ação em linha reta */
+
+        /* Botões de operação em linha reta, com espaçamento adequado */
         .controls {
             display: flex;
             justify-content: center;
-            gap: 12px;
-            margin-top: 8px;
+            gap: 20px;
             flex-wrap: nowrap;
+            margin-top: 8px;
         }
+
         button.action {
             background: #4a6741;
             border: none;
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             font-weight: 600;
-            padding: 10px 16px;
-            border-radius: 40px;
+            padding: 10px 20px;
+            border-radius: 36px;
             color: white;
             cursor: pointer;
             font-family: 'Inter', sans-serif;
+            letter-spacing: 0.3px;
+            transition: 0.1s;
+            box-shadow: 0 3px 0 #2c3e2f;
             flex: 1;
             text-align: center;
-            max-width: 110px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            transition: 0.05s linear;
+            max-width: 120px;
         }
+
         button.action:active {
-            transform: translateY(1px);
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 #2c3e2f;
         }
+
         #clearBtn {
             background: #8b5a2b;
+            box-shadow: 0 3px 0 #5a3a1a;
         }
-        /* Confetes */
+
         .confetti-canvas {
             position: fixed;
             top: 0;
@@ -173,31 +203,53 @@
             pointer-events: none;
             z-index: 1000;
         }
+
         .symbol-confetti {
             position: absolute;
             font-size: 1rem;
             font-weight: bold;
-            font-family: monospace;
             animation: fall linear forwards;
             pointer-events: none;
         }
+
         @keyframes fall {
             0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
             100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
         }
-        @media (max-width: 500px) {
-            .symbol-btn { font-size: 1rem; padding: 6px 0; }
-            .controls button.action { font-size: 0.7rem; padding: 8px 12px; max-width: 95px; }
-            h1 { font-size: 1.9rem; }
-            .status { font-size: 0.7rem; }
+
+        @media (max-width: 540px) {
+            .symbol-btn {
+                width: 42px;
+                height: 42px;
+                font-size: 1.2rem;
+            }
+            .controls {
+                gap: 12px;
+            }
+            button.action {
+                padding: 8px 12px;
+                font-size: 0.75rem;
+                max-width: 100px;
+            }
+            h1 {
+                font-size: 1.9rem;
+            }
         }
-        @media (max-width: 420px) {
-            .symbol-palette { gap: 4px; }
-            .symbol-btn { font-size: 0.85rem; }
+
+        @media (max-width: 480px) {
+            .symbol-btn {
+                width: 38px;
+                height: 38px;
+                font-size: 1rem;
+            }
+            .controls {
+                gap: 8px;
+            }
         }
     </style>
 </head>
 <body>
+
 <div class="game-container">
     <div class="game-panel">
         <h1>SYMBOLUM</h1>
@@ -209,76 +261,80 @@
         <div class="controls">
             <button class="action" id="clearBtn">🗑️ LIMPAR</button>
             <button class="action" id="newGameBtn">🔄 NOVO</button>
-            <button class="action" id="checkBtn">🔍 CHECAR</button>
+            <button class="action" id="checkBtn">✅ CHECAR</button>  <!-- renomeado -->
         </div>
     </div>
 </div>
+
 <script>
+    // Configuração de segurança (simplificada)
     (function() {
         window.google_tag_for_child_directed_treatment = 1;
-        window.google_tag_for_under_age_of_consent = 1;
         window.google_max_ad_content_rating = "G";
         window.SYMBOLUM_CHILD_SAFE = true;
     })();
 
+    // ---------- JOGO ----------
     const SYMBOLS = ["@", "#", "$", "%", "&", "?", "*", "+", "~"];
-    const SIZE = 9, BOX = 3;
+    const SIZE = 9;
+    const BOX_SIZE = 3;
+
     let board = Array(SIZE).fill().map(() => Array(SIZE).fill(""));
-    let fixed = Array(SIZE).fill().map(() => Array(SIZE).fill(false));
+    let fixedCells = Array(SIZE).fill().map(() => Array(SIZE).fill(false));
     let selectedRow = -1, selectedCol = -1;
-    let gameOver = false;
+    let currentGameOver = false;
+
     const gridEl = document.getElementById("sudokuGrid");
     const statusEl = document.getElementById("statusMsg");
 
-    function isValid(board_, r, c, sym) {
-        for (let i = 0; i < SIZE; i++) {
-            if (i !== c && board_[r][i] === sym) return false;
-            if (i !== r && board_[i][c] === sym) return false;
-        }
-        const br = Math.floor(r / BOX) * BOX, bc = Math.floor(c / BOX) * BOX;
-        for (let i = br; i < br + BOX; i++)
-            for (let j = bc; j < bc + BOX; j++)
-                if ((i !== r || j !== c) && board_[i][j] === sym) return false;
+    function isValidPlacement(boardTemp, row, col, symbol) {
+        for (let c = 0; c < SIZE; c++) if (c !== col && boardTemp[row][c] === symbol) return false;
+        for (let r = 0; r < SIZE; r++) if (r !== row && boardTemp[r][col] === symbol) return false;
+        const startRow = Math.floor(row / BOX_SIZE) * BOX_SIZE;
+        const startCol = Math.floor(col / BOX_SIZE) * BOX_SIZE;
+        for (let r = startRow; r < startRow + BOX_SIZE; r++)
+            for (let c = startCol; c < startCol + BOX_SIZE; c++)
+                if ((r !== row || c !== col) && boardTemp[r][c] === symbol) return false;
         return true;
     }
 
-    function findEmpty(board_) {
+    function findEmpty(boardArr) {
         for (let i = 0; i < SIZE; i++)
             for (let j = 0; j < SIZE; j++)
-                if (board_[i][j] === "") return [i, j];
+                if (boardArr[i][j] === "") return [i, j];
         return null;
     }
 
-    function solve(board_) {
-        const empty = findEmpty(board_);
+    function solveSudoku(boardArr) {
+        const empty = findEmpty(boardArr);
         if (!empty) return true;
-        const [r, c] = empty;
+        const [row, col] = empty;
         const shuffled = [...SYMBOLS];
         for (let i = shuffled.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
         }
         for (let sym of shuffled) {
-            if (isValid(board_, r, c, sym)) {
-                board_[r][c] = sym;
-                if (solve(board_)) return true;
-                board_[r][c] = "";
+            if (isValidPlacement(boardArr, row, col, sym)) {
+                boardArr[row][col] = sym;
+                if (solveSudoku(boardArr)) return true;
+                boardArr[row][col] = "";
             }
         }
         return false;
     }
 
-    function generatePuzzle() {
+    function generateNewPuzzle() {
         let full = Array(SIZE).fill().map(() => Array(SIZE).fill(""));
-        if (!solve(full)) {
+        if (!solveSudoku(full)) {
             // fallback simples
             for (let i = 0; i < SIZE; i++)
                 for (let j = 0; j < SIZE; j++)
                     full[i][j] = SYMBOLS[(i * 3 + j) % SYMBOLS.length];
-            solve(full);
+            solveSudoku(full);
         }
-        // copia solução
-        const puzzle = full.map(row => [...row]);
+        // Copiar solução e remover células
+        let puzzle = full.map(row => [...row]);
         const toRemove = 48 + Math.floor(Math.random() * 12);
         let removed = 0;
         while (removed < toRemove) {
@@ -292,30 +348,29 @@
         for (let i = 0; i < SIZE; i++) {
             for (let j = 0; j < SIZE; j++) {
                 board[i][j] = puzzle[i][j];
-                fixed[i][j] = puzzle[i][j] !== "";
+                fixedCells[i][j] = (puzzle[i][j] !== "");
             }
         }
-        gameOver = false;
+        currentGameOver = false;
         selectedRow = -1;
         selectedCol = -1;
-        updateMsg("🎲 Novo jogo! Selecione uma célula.");
-        render();
+        updateStatus("🎲 Novo desafio! Escolha uma célula.");
+        renderGrid();
     }
 
     function checkVictory() {
-        for (let i = 0; i < SIZE; i++) {
+        for (let i = 0; i < SIZE; i++)
             for (let j = 0; j < SIZE; j++) {
                 const val = board[i][j];
                 if (val === "") return false;
-                if (!isValid(board, i, j, val)) return false;
+                if (!isValidPlacement(board, i, j, val)) return false;
             }
-        }
         return true;
     }
 
     function launchConfetti() {
-        const old = document.querySelector('.confetti-canvas');
-        if (old) old.remove();
+        const oldCanvas = document.querySelector('.confetti-canvas');
+        if (oldCanvas) oldCanvas.remove();
         const container = document.createElement('div');
         container.className = 'confetti-canvas';
         document.body.appendChild(container);
@@ -324,159 +379,161 @@
             const el = document.createElement('div');
             el.className = 'symbol-confetti';
             el.textContent = sym;
-            const size = 0.8 + Math.random() * 1.2;
-            const left = Math.random() * 100;
-            const dur = 2 + Math.random() * 2;
-            const delay = Math.random() * 0.5;
-            el.style.fontSize = `${size}rem`;
-            el.style.left = `${left}%`;
-            el.style.animationDuration = `${dur}s`;
-            el.style.animationDelay = `${delay}s`;
-            el.style.top = '-10vh';
-            el.style.position = 'absolute';
-            const hue = Math.random() * 360;
-            el.style.color = `hsl(${hue}, 80%, 60%)`;
+            el.style.fontSize = (0.8 + Math.random() * 1.2) + 'rem';
+            el.style.left = Math.random() * 100 + '%';
+            el.style.animationDuration = (2 + Math.random() * 2) + 's';
+            el.style.animationDelay = (Math.random() * 0.6) + 's';
+            el.style.color = `hsl(${Math.random() * 360}, 85%, 65%)`;
             container.appendChild(el);
-            setTimeout(() => el.remove(), (dur + delay) * 1000);
+            setTimeout(() => el.remove(), 5000);
         }
-        setTimeout(() => container.remove(), 5000);
+        setTimeout(() => container.remove(), 5500);
     }
 
-    function updateMsg(msg) {
-        if (!gameOver) statusEl.innerHTML = msg;
+    function updateStatus(msg) {
+        if (!currentGameOver) statusEl.innerHTML = msg;
         else statusEl.innerHTML = "🏆 Vitória! Clique em NOVO.";
         statusEl.style.color = "#2c3e2f";
     }
 
-    function render() {
-        gridEl.innerHTML = "";
-        for (let i = 0; i < SIZE; i++) {
-            for (let j = 0; j < SIZE; j++) {
-                const val = board[i][j];
-                const isFixed = fixed[i][j];
-                const isSelected = (selectedRow === i && selectedCol === j);
-                let conflict = false;
-                if (val !== "" && !isValid(board, i, j, val)) conflict = true;
-                const cell = document.createElement("div");
-                cell.className = "cell";
-                if (isFixed) cell.classList.add("preset");
-                if (isSelected) cell.classList.add("selected");
-                if (conflict && !isFixed) cell.classList.add("error");
-                // destaque linha/coluna e bloco
-                if (selectedRow !== -1 && selectedCol !== -1) {
-                    if ((i === selectedRow || j === selectedCol) && !isSelected)
-                        cell.style.backgroundColor = "#fef9e6";
-                    const br = Math.floor(selectedRow / BOX) * BOX;
-                    const bc = Math.floor(selectedCol / BOX) * BOX;
-                    if (i >= br && i < br+BOX && j >= bc && j < bc+BOX && !isSelected && !(i === selectedRow || j === selectedCol))
-                        cell.style.backgroundColor = "#faf5e0";
-                }
-                cell.textContent = val === "" ? "·" : val;
-                if (val === "") cell.style.color = "#8b7a5b";
-                cell.addEventListener("click", (() => {
-                    if (gameOver) { updateMsg("Jogo finalizado. Clique em NOVO."); return; }
-                    if (isFixed) {
-                        selectedRow = i; selectedCol = j;
-                        updateMsg(`🔷 Célula fixa: ${board[i][j]} (não editável)`);
-                    } else {
-                        selectedRow = i; selectedCol = j;
-                        updateMsg(`🎯 Célula selecionada. Toque num símbolo.`);
-                    }
-                    render();
-                }));
-                gridEl.appendChild(cell);
-            }
-        }
-        if (gameOver) statusEl.innerHTML = "🏆 VITÓRIA! Parabéns! 🏆";
-    }
-
-    function placeSymbol(sym) {
-        if (gameOver) { updateMsg("Jogo acabou. Novo jogo para continuar."); return; }
-        if (selectedRow === -1 || selectedCol === -1) { updateMsg("Primeiro, selecione uma célula."); return; }
-        const r = selectedRow, c = selectedCol;
-        if (fixed[r][c]) { updateMsg("Célula fixa não pode ser alterada."); return; }
-        board[r][c] = sym;
-        if (!isValid(board, r, c, sym)) updateMsg(`⚠️ Conflito! Símbolo ${sym} causa erro.`);
-        else updateMsg(`✅ Símbolo ${sym} inserido.`);
-        render();
+    function placeSymbol(symbol) {
+        if (currentGameOver) { updateStatus("Jogo finalizado! Comece um novo."); return; }
+        if (selectedRow === -1 || selectedCol === -1) { updateStatus("🔍 Primeiro, toque em uma célula."); return; }
+        const row = selectedRow, col = selectedCol;
+        if (fixedCells[row][col]) { updateStatus("🔒 Célula fixa!"); return; }
+        board[row][col] = symbol;
+        const ok = isValidPlacement(board, row, col, symbol);
+        updateStatus(ok ? `✅ ${symbol} inserido!` : `⚠️ Conflito! ${symbol} inválido.`);
+        renderGrid();
         if (checkVictory()) {
-            gameOver = true;
+            currentGameOver = true;
             statusEl.innerHTML = "🎉✨ VITÓRIA! ✨🎉";
             launchConfetti();
-            render();
+            renderGrid();
         }
     }
 
     function clearCell() {
-        if (gameOver) { updateMsg("Jogo vencido, inicie novo."); return; }
-        if (selectedRow === -1 || selectedCol === -1) { updateMsg("Selecione uma célula para limpar."); return; }
-        const r = selectedRow, c = selectedCol;
-        if (fixed[r][c]) { updateMsg("Célula fixa não pode ser limpa."); return; }
-        if (board[r][c] !== "") {
-            board[r][c] = "";
-            updateMsg("🧹 Célula limpa.");
-            render();
+        if (currentGameOver) { updateStatus("Jogo vencido, inicie novo."); return; }
+        if (selectedRow === -1 || selectedCol === -1) { updateStatus("Selecione uma célula."); return; }
+        if (fixedCells[selectedRow][selectedCol]) { updateStatus("Célula fixa não pode ser limpa!"); return; }
+        if (board[selectedRow][selectedCol] !== "") {
+            board[selectedRow][selectedCol] = "";
+            updateStatus("🧹 Célula limpa.");
+            renderGrid();
             if (checkVictory()) {
-                gameOver = true;
+                currentGameOver = true;
                 statusEl.innerHTML = "🎉✨ VITÓRIA! ✨🎉";
                 launchConfetti();
-                render();
+                renderGrid();
             }
-        } else updateMsg("Célula já está vazia.");
+        } else updateStatus("Célula já vazia.");
     }
 
-    function checkBoard() {
-        if (gameOver) { updateMsg("Já venceu! Inicie um novo."); return; }
-        let empty = false, conflicts = 0;
+    function renderGrid() {
+        gridEl.innerHTML = "";
         for (let i = 0; i < SIZE; i++) {
             for (let j = 0; j < SIZE; j++) {
                 const val = board[i][j];
-                if (val === "") empty = true;
-                else if (!isValid(board, i, j, val)) conflicts++;
+                const isFixed = fixedCells[i][j];
+                const isSelected = (selectedRow === i && selectedCol === j);
+                let hasError = false;
+                if (val !== "" && !isValidPlacement(board, i, j, val)) hasError = true;
+                const cell = document.createElement("div");
+                cell.className = "cell";
+                if (isFixed) cell.classList.add("preset");
+                if (isSelected) cell.classList.add("selected");
+                if (hasError && !isFixed) cell.classList.add("error");
+                // destaque linha/coluna/bloco
+                if (selectedRow !== -1 && selectedCol !== -1) {
+                    if (i === selectedRow || j === selectedCol) cell.style.backgroundColor = "#fef9e6";
+                    const br = Math.floor(selectedRow / 3) * 3, bc = Math.floor(selectedCol / 3) * 3;
+                    if (i >= br && i < br+3 && j >= bc && j < bc+3) cell.style.backgroundColor = "#faf5e0";
+                    if (isSelected) cell.style.backgroundColor = "#ffe0a3";
+                }
+                cell.textContent = val === "" ? "·" : val;
+                if (val === "") cell.style.color = "#8b7a5b";
+                cell.addEventListener("click", (() => {
+                    if (currentGameOver) { updateStatus("Jogo encerrado. NOVO jogo."); return; }
+                    if (fixedCells[i][j]) {
+                        selectedRow = i; selectedCol = j;
+                        updateStatus(`🔷 Fixa: ${board[i][j]}`);
+                    } else {
+                        selectedRow = i; selectedCol = j;
+                        updateStatus("🎯 Célula selecionada. Toque num símbolo.");
+                    }
+                    renderGrid();
+                }));
+                gridEl.appendChild(cell);
             }
         }
-        if (conflicts === 0 && !empty) {
-            statusEl.innerHTML = "🎉✨ PERFEITO! Você venceu! ✨🎉";
-            gameOver = true;
-            launchConfetti();
-            render();
-        } else if (conflicts === 0 && empty) {
-            updateMsg("✅ Nenhum conflito. Continue preenchendo!");
-        } else {
-            updateMsg(`⚠️ ${conflicts} célula(s) em conflito. Reveja.`);
-        }
-        render();
-    }
-
-    function newGame() {
-        generatePuzzle();
-        render();
+        if (currentGameOver) statusEl.innerHTML = "🏆 VITÓRIA! Parabéns! 🏆";
     }
 
     function buildPalette() {
-        const pal = document.getElementById("symbolPalette");
-        pal.innerHTML = "";
+        const palette = document.getElementById("symbolPalette");
+        palette.innerHTML = "";
         SYMBOLS.forEach(sym => {
             const btn = document.createElement("button");
             btn.textContent = sym;
             btn.className = "symbol-btn";
-            btn.addEventListener("click", () => placeSymbol(sym));
-            pal.appendChild(btn);
+            btn.addEventListener("click", () => {
+                if (currentGameOver) { updateStatus("Partida encerrada. NOVO jogo."); return; }
+                placeSymbol(sym);
+                btn.classList.add("active-tool");
+                setTimeout(() => btn.classList.remove("active-tool"), 150);
+            });
+            palette.appendChild(btn);
         });
         const erase = document.createElement("button");
         erase.textContent = "⌫";
         erase.className = "symbol-btn";
         erase.addEventListener("click", () => clearCell());
-        pal.appendChild(erase);
+        palette.appendChild(erase);
+    }
+
+    function newGame() {
+        generateNewPuzzle();
+        selectedRow = -1;
+        selectedCol = -1;
+        currentGameOver = false;
+        renderGrid();
+        updateStatus("✨ Novo jogo! Divirta-se.");
+    }
+
+    function checkBoard() {
+        if (currentGameOver) { updateStatus("Já venceu! Comece um novo."); return; }
+        let empty = false, conflicts = 0;
+        for (let i = 0; i < SIZE; i++) {
+            for (let j = 0; j < SIZE; j++) {
+                const v = board[i][j];
+                if (v === "") empty = true;
+                else if (!isValidPlacement(board, i, j, v)) conflicts++;
+            }
+        }
+        if (conflicts === 0 && !empty) {
+            statusEl.innerHTML = "🎉✨ PERFEITO! VITÓRIA! ✨🎉";
+            currentGameOver = true;
+            launchConfetti();
+            renderGrid();
+        } else if (conflicts === 0 && empty) {
+            statusEl.innerHTML = "✅ Nenhum conflito! Continue preenchendo.";
+        } else {
+            statusEl.innerHTML = `⚠️ ${conflicts} célula(s) em conflito!`;
+        }
+        renderGrid();
     }
 
     document.getElementById("newGameBtn").addEventListener("click", newGame);
     document.getElementById("clearBtn").addEventListener("click", clearCell);
     document.getElementById("checkBtn").addEventListener("click", checkBoard);
 
-    buildPalette();
-    generatePuzzle();
-    render();
+    function init() {
+        buildPalette();
+        generateNewPuzzle();
+        renderGrid();
+    }
+    init();
 </script>
 </body>
 </html>
