@@ -276,7 +276,7 @@
   </div>
 
   <footer>
-    <span>fobias.txt · busca semântica por palavras relacionadas</span>
+    <span>busca semântica por palavras relacionadas</span>
   </footer>
 </div>
 
@@ -316,7 +316,7 @@
     try {
       const response = await fetch('fobias.txt');
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: Não foi possível carregar o arquivo fobias.txt`);
+        throw new Error(`HTTP ${response.status}: Não foi possível carregar o banco de dados`);
       }
       const text = await response.text();
       
@@ -358,7 +358,7 @@
         }
       }
       
-      console.log(`Carregadas ${phobiaDatabase.length} fobias do arquivo fobias.txt`);
+      console.log(`Carregadas ${phobiaDatabase.length} fobias do banco de dados`);
       isDataLoaded = true;
       
       // Exibir estado inicial
@@ -371,8 +371,8 @@
       resultsContainer.innerHTML = `
         <div class="error-message">
           <span>⚠️</span>
-          <p><strong>Erro ao carregar o arquivo fobias.txt</strong></p>
-          <p>Certifique-se de que o arquivo <strong>fobias.txt</strong> está na mesma pasta que esta página HTML.</p>
+          <p><strong>Erro ao carregar o dicionário de dados</strong></p>
+          <p>Certifique-se de ter acesso à rede <strong>fobias.txt</strong> ou atualização da base de dados</p>
           <p style="font-size:0.85rem; margin-top:0.5rem;">Detalhe: ${error.message}</p>
         </div>
       `;
@@ -474,7 +474,7 @@
     if (e.key === 'Enter') performSearch();
   });
 
-  // Inicializar carregando o arquivo .txt
+  // Inicializar carregando o banco de dados
   loadPhobiasFromFile();
 </script>
 </body>
