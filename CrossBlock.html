@@ -2,206 +2,293 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Dado Modular | Entrelaçamento sem Cruzamentos</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>CrossBlock · Entrelace Modular</title>
     <style>
-        body {
+        * {
             margin: 0;
             padding: 0;
-            background: linear-gradient(145deg, #0a0f1e 0%, #0c1222 100%);
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: radial-gradient(circle at 20% 30%, #0a0f1e, #03060c);
+            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
-            font-family: 'Segoe UI', 'Poppins', 'Inter', system-ui, -apple-system, sans-serif;
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            padding: 20px;
         }
-        .game-container {
-            border-radius: 2rem;
-            background: rgba(18, 25, 45, 0.6);
-            backdrop-filter: blur(2px);
-            padding: 1.5rem;
-            box-shadow: 0 25px 40px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.1);
+
+        /* Container principal estilo app */
+        .app-container {
+            max-width: 650px;
+            width: 100%;
+            background: rgba(12, 20, 30, 0.65);
+            backdrop-filter: blur(20px);
+            border-radius: 56px;
+            padding: 20px 20px 28px;
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(72, 187, 255, 0.25);
+        }
+
+        /* Canvas responsivo */
+        .canvas-wrapper {
+            display: flex;
+            justify-content: center;
+            border-radius: 32px;
+            background: #010a15;
+            padding: 8px;
+            box-shadow: inset 0 0 8px #00000030, 0 12px 24px rgba(0,0,0,0.3);
         }
         canvas {
             display: block;
             margin: 0 auto;
-            border-radius: 1.5rem;
-            box-shadow: 0 12px 28px rgba(0,0,0,0.5);
+            border-radius: 24px;
             cursor: pointer;
+            width: 100%;
+            height: auto;
         }
+
+        /* Painel inferior */
         .info-panel {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-top: 1.5rem;
-            gap: 1.2rem;
             flex-wrap: wrap;
+            gap: 14px;
+            margin-top: 24px;
+            padding: 0 8px;
         }
+
         .score-card {
-            background: #010814cc;
-            backdrop-filter: blur(8px);
-            border-radius: 2rem;
-            padding: 0.6rem 1.6rem;
-            border: 1px solid rgba(0, 255, 255, 0.3);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            background: #03060cee;
+            border-radius: 48px;
+            padding: 8px 22px;
+            border: 1px solid #2dd4bfaa;
+            backdrop-filter: blur(4px);
+            text-align: center;
+            min-width: 130px;
         }
         .score-label {
-            font-size: 0.85rem;
+            font-size: 0.7rem;
             letter-spacing: 2px;
+            color: #7bc5f0;
             font-weight: 500;
-            color: #8dd0ff;
             text-transform: uppercase;
         }
         .score-value {
             font-size: 2.6rem;
             font-weight: 800;
-            color: #f0f9ff;
-            text-shadow: 0 0 8px #00ccffaa;
             line-height: 1;
+            color: #f0fcff;
+            text-shadow: 0 0 6px #00ccff;
         }
+
         .piece-selector {
             display: flex;
-            gap: 1rem;
-            background: #0a0f1ccc;
-            padding: 0.6rem 1.2rem;
-            border-radius: 3rem;
+            gap: 14px;
+            background: #0b111fcc;
+            padding: 6px 12px;
+            border-radius: 60px;
             backdrop-filter: blur(8px);
-            border: 1px solid #2c3e66;
         }
         .piece-btn {
-            background: #1e2a3e;
+            background: #1e2b3c;
             border: none;
-            font-size: 1.5rem;
-            font-weight: bold;
-            padding: 0.5rem 1.8rem;
-            border-radius: 2.5rem;
+            font-size: 1.3rem;
+            font-weight: 600;
+            padding: 10px 24px;
+            border-radius: 40px;
+            color: white;
             cursor: pointer;
             transition: all 0.2s ease;
-            color: white;
             font-family: monospace;
-            letter-spacing: 1px;
-            box-shadow: 0 2px 5px black;
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 6px black;
         }
         .piece-btn.active {
-            background: #00a6c4;
-            box-shadow: 0 0 12px #00e0ff;
-            border: 1px solid white;
-            transform: scale(0.97);
+            background: #0e7c8c;
+            box-shadow: 0 0 14px #00ddff;
+            transform: scale(0.96);
+            border: 1px solid #b2f0ff;
         }
-        .piece-btn.cube {
-            background: #2c3e66;
-        }
-        .piece-btn.connector {
-            background: #1e4a3b;
-        }
+        .piece-btn.cube { background: #2c5270; }
+        .piece-btn.connector { background: #1f6e5c; }
+
         .reset-btn {
-            background: #dc2626cc;
+            background: #c2410cbb;
             border: none;
-            padding: 0.6rem 1.8rem;
-            border-radius: 2rem;
+            padding: 10px 24px;
+            border-radius: 40px;
             font-weight: bold;
             color: white;
             cursor: pointer;
             backdrop-filter: blur(4px);
             transition: 0.2s;
             font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
-        .reset-btn:hover {
-            background: #ef4444;
-            transform: scale(1.02);
-        }
+        .reset-btn:active { transform: scale(0.96); background: #e25822; }
+
         .victory-toast {
             position: fixed;
-            bottom: 2rem;
+            bottom: 30px;
             left: 50%;
             transform: translateX(-50%);
             background: #00e5ffdd;
-            backdrop-filter: blur(12px);
+            backdrop-filter: blur(28px);
             color: #001d2b;
             font-weight: bold;
-            padding: 0.8rem 2rem;
-            border-radius: 3rem;
+            padding: 12px 28px;
+            border-radius: 60px;
             font-size: 1.2rem;
             pointer-events: none;
-            z-index: 100;
+            z-index: 200;
+            white-space: nowrap;
             font-family: monospace;
-            border: 1px solid white;
             transition: 0.2s;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
         }
-        @media (max-width: 700px) {
-            .piece-btn { padding: 0.3rem 1.2rem; font-size: 1.2rem; }
+
+        @media (max-width: 550px) {
+            .app-container { padding: 14px; }
+            .piece-btn { padding: 6px 16px; font-size: 1rem; }
             .score-value { font-size: 2rem; }
+            .reset-btn { padding: 6px 16px; }
         }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/phaser@2.6.2/phaser.js"></script>
 </head>
 <body>
-<div>
-    <div class="game-container">
-        <div id="phaser-canvas"></div>
-        <div class="info-panel">
-            <div class="score-card">
-                <div class="score-label">ENTRELACE • PONTOS</div>
-                <div class="score-value" id="scoreDisplay">0</div>
-            </div>
-            <div class="piece-selector">
-                <button id="btnCube" class="piece-btn cube active">🧊 CUBO</button>
-                <button id="btnConnector" class="piece-btn connector">⚡ CONECTOR</button>
-            </div>
-            <button id="resetGame" class="reset-btn">⟳ REINICIAR</button>
-        </div>
+<div class="app-container">
+    <div class="canvas-wrapper">
+        <div id="gameCanvasContainer"></div>
     </div>
-    <div id="victoryMessage" class="victory-toast" style="display: none;">🎉 DADO GIGANTE FORMADO! VITÓRIA 🎉</div>
+    <div class="info-panel">
+        <div class="score-card">
+            <div class="score-label">ENTRELACE</div>
+            <div class="score-value" id="scoreDisplay">0</div>
+        </div>
+        <div class="piece-selector">
+            <button id="btnCube" class="piece-btn cube active">🧊 CUBO</button>
+            <button id="btnConnector" class="piece-btn connector">⚡ CONECTOR</button>
+        </div>
+        <button id="resetGame" class="reset-btn">⟳ REINICIAR</button>
+    </div>
 </div>
+<div id="victoryMessage" class="victory-toast" style="display: none;">🎲 DADO GIGANTE! VITÓRIA 🎉</div>
 
 <script>
-    (function() {
-        // Configurações do grid
-        const GRID_SIZE = 7;        // 7x7
-        const CELL_SIZE = 70;       // pixels
+    (function(){
+        // ---------- CONFIGURAÇÕES ----------
+        const GRID_SIZE = 7;
+        const CELL_SIZE = 70;       // 70px cada célula → 490x490 board
         const BOARD_WIDTH = GRID_SIZE * CELL_SIZE;
         const BOARD_HEIGHT = GRID_SIZE * CELL_SIZE;
 
-        // Estados do jogo
+        // Estado do jogo
         let currentPieceType = 'cube';   // 'cube' ou 'connector'
         let score = 0;
-        let board = Array(GRID_SIZE).fill().map(() => Array(GRID_SIZE).fill(null)); // null, 'cube', 'connector'
+        let board = Array(GRID_SIZE).fill().map(() => Array(GRID_SIZE).fill(null));
 
-        // Referências DOM
+        // Elementos DOM
         const scoreSpan = document.getElementById('scoreDisplay');
         const victoryDiv = document.getElementById('victoryMessage');
+        let gameInstance = null;
+        let graphicsLayer = null;
 
-        // Atualiza placa
+        // Funções auxiliares
         function updateScoreUI() {
             scoreSpan.innerText = score;
         }
 
-        // Mostrar vitória temporariamente
         function showVictory() {
             victoryDiv.style.display = 'block';
+            victoryDiv.style.opacity = '1';
             setTimeout(() => {
                 victoryDiv.style.opacity = '0';
                 setTimeout(() => {
                     victoryDiv.style.display = 'none';
                     victoryDiv.style.opacity = '1';
-                }, 600);
+                }, 500);
             }, 2500);
         }
 
-        // Verifica se a maior estrutura conectada tem pelo menos 10 peças (vitória)
-        function checkVictory() {
+        // Contar vizinhos ortogonais (conexões reais)
+        function countNeighbors(x, y) {
+            let count = 0;
+            const dirs = [[-1,0],[1,0],[0,-1],[0,1]];
+            for(let [dx,dy] of dirs) {
+                let nx = x+dx, ny = y+dy;
+                if(nx>=0 && nx<GRID_SIZE && ny>=0 && ny<GRID_SIZE && board[nx][ny] !== null) count++;
+            }
+            return count;
+        }
+
+        // Detectar conflito de "cruzamento" entre conectores nas diagonais
+        function hasCrossConflict(x, y, pieceType) {
+            if(pieceType !== 'connector') return false;
+            const diagOff = [[-1,-1],[-1,1],[1,-1],[1,1]];
+            for(let [dx,dy] of diagOff) {
+                let nx = x+dx, ny = y+dy;
+                if(nx>=0 && nx<GRID_SIZE && ny>=0 && ny<GRID_SIZE && board[nx][ny] === 'connector') {
+                    return true;   // dois conectores em diagonal = cabos cruzados
+                }
+            }
+            return false;
+        }
+
+        // Colocar peça (lógica de pontuação e atualização)
+        function tryPlacePiece(row, col) {
+            if(row<0 || row>=GRID_SIZE || col<0 || col>=GRID_SIZE) return false;
+            if(board[row][col] !== null) return false;
+
+            let neighbors = countNeighbors(row, col);
+            let isolated = (neighbors === 0);
+            let conflict = hasCrossConflict(row, col, currentPieceType);
+
+            let delta = 0;
+            if(isolated) {
+                delta = -5;   // cabo solto
+            } else {
+                delta = 10;   // conexão bem sucedida
+            }
+            if(conflict) {
+                delta -= 15;  // cruzamento indevido
+            }
+
+            // Aplica mudança
+            board[row][col] = currentPieceType;
+            score += delta;
+            updateScoreUI();
+
+            // Redesenha o tabuleiro via Phaser
+            redrawBoard();
+
+            // Verifica vitória (estrutura principal com tamanho >=10)
+            checkVictoryCondition();
+            return true;
+        }
+
+        // Verifica o maior componente conectado (BFS/DFS)
+        function getLargestClusterSize() {
             let visited = Array(GRID_SIZE).fill().map(() => Array(GRID_SIZE).fill(false));
             let maxSize = 0;
-            for (let i = 0; i < GRID_SIZE; i++) {
-                for (let j = 0; j < GRID_SIZE; j++) {
-                    if (board[i][j] !== null && !visited[i][j]) {
+            for(let i=0; i<GRID_SIZE; i++) {
+                for(let j=0; j<GRID_SIZE; j++) {
+                    if(board[i][j] !== null && !visited[i][j]) {
                         let queue = [[i,j]];
                         visited[i][j] = true;
                         let compSize = 0;
                         while(queue.length) {
                             let [x,y] = queue.shift();
                             compSize++;
-                            // verifica 4 vizinhos ortogonais
                             const dirs = [[-1,0],[1,0],[0,-1],[0,1]];
                             for(let [dx,dy] of dirs) {
                                 let nx = x+dx, ny = y+dy;
@@ -215,83 +302,17 @@
                     }
                 }
             }
-            if(maxSize >= 10) {
+            return maxSize;
+        }
+
+        function checkVictoryCondition() {
+            let biggest = getLargestClusterSize();
+            if(biggest >= 10) {
                 showVictory();
             }
         }
 
-        // Conta quantos vizinhos compatíveis uma peça tem (conexão válida)
-        // Conexão: se for cubo -> qualquer vizinho (cubo ou conector) é compatível
-        // Se for conector -> vizinho pode ser cubo ou conector, mas sempre contado como conexão.
-        // Para penalidade de isolamento, verificamos se pelo menos um vizinho existe.
-        function countCompatibleNeighbors(x, y, pieceType) {
-            let count = 0;
-            const dirs = [[-1,0],[1,0],[0,-1],[0,1]];
-            for(let [dx,dy] of dirs) {
-                let nx = x+dx, ny = y+dy;
-                if(nx>=0 && nx<GRID_SIZE && ny>=0 && ny<GRID_SIZE && board[nx][ny] !== null) {
-                    count++;
-                }
-            }
-            return count;
-        }
-
-        // Verifica conflito de "cruzamento de cabos": dois conectores em posições diagonais (sem contato ortogonal)
-        // mas que formariam um X. A regra: para cada par de conectores em (x1,y1) e (x2,y2) com distância diagonal (1,1),
-        // se não houver nenhum conector ou cubo na ortogonal entre eles, penalizamos.
-        // Simplificação: após adicionar uma peça, checamos todas diagonais ao redor dela com outros conectores.
-        function hasCrossConflict(newX, newY, pieceType) {
-            if(pieceType !== 'connector') return false; // só conectores causam cruzamento
-            // Verificar nas 4 diagonais: se existir outro conector na diagonal, há cruzamento (cabos se interceptam)
-            const diagOffsets = [[-1,-1], [-1,1], [1,-1], [1,1]];
-            for(let [dx,dy] of diagOffsets) {
-                let nx = newX + dx, ny = newY + dy;
-                if(nx>=0 && nx<GRID_SIZE && ny>=0 && ny<GRID_SIZE && board[nx][ny] === 'connector') {
-                    // conflito: dois conectores na diagonal sem um nó central? Simulamos cruzamento de cabos.
-                    // mas evitamos dupla penalidade: a verificação é feita uma vez por adição.
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        // Função principal ao colocar peça
-        function tryPlacePiece(gridX, gridY) {
-            if(gridX < 0 || gridX >= GRID_SIZE || gridY < 0 || gridY >= GRID_SIZE) return false;
-            if(board[gridX][gridY] !== null) return false; // célula ocupada
-
-            // Simula colocação para calcular penalidades
-            let neighborsCount = countCompatibleNeighbors(gridX, gridY, currentPieceType);
-            let isIsolated = (neighborsCount === 0);
-            let hasConflict = hasCrossConflict(gridX, gridY, currentPieceType);
-
-            // Aplica pontuação conforme regras
-            let delta = 0;
-            if(isIsolated) {
-                delta -= 5;   // cabo solto / peça isolada
-            } else {
-                delta += 10;  // conexão bem sucedida (entrelaçamento)
-            }
-
-            if(hasConflict) {
-                delta -= 15;  // cruzamento proibido de cabos
-            }
-
-            // Atualiza tabuleiro e score
-            board[gridX][gridY] = currentPieceType;
-            score += delta;
-            updateScoreUI();
-
-            // Feedback visual extra (pequena animação pode ser feita mas não obrigatória)
-            // Renderizamos novamente o grid via Phaser
-            redrawBoard();
-
-            // Verifica vitória
-            checkVictory();
-            return true;
-        }
-
-        // Função para reiniciar jogo
+        // Reiniciar jogo
         function resetGame() {
             board = Array(GRID_SIZE).fill().map(() => Array(GRID_SIZE).fill(null));
             score = 0;
@@ -301,70 +322,71 @@
             victoryDiv.style.opacity = '1';
         }
 
-        // ---------- Phaser 2 Renderização ----------
-        let gameInstance = null;
-        let graphicsLayer;
-
+        // ---------- RENDERIZAÇÃO PHASER 2 (ULTRA PROFISSIONAL) ----------
         function redrawBoard() {
             if(!graphicsLayer) return;
             graphicsLayer.clear();
-            // Desenha grid e peças
+            // fundo da grade
             for(let i=0; i<GRID_SIZE; i++) {
                 for(let j=0; j<GRID_SIZE; j++) {
                     let x = j * CELL_SIZE;
                     let y = i * CELL_SIZE;
-                    // fundo da célula
-                    graphicsLayer.lineStyle(1, 0x2c3e66, 0.5);
-                    graphicsLayer.fillStyle(0x0f172a, 0.7);
+                    graphicsLayer.lineStyle(1.2, 0x2c4f7a, 0.7);
+                    graphicsLayer.fillStyle(0x0a1220, 0.85);
                     graphicsLayer.fillRect(x, y, CELL_SIZE-1, CELL_SIZE-1);
                     graphicsLayer.strokeRect(x, y, CELL_SIZE-1, CELL_SIZE-1);
 
                     let piece = board[i][j];
                     if(piece === 'cube') {
-                        // desenha cubo 3D falso / isométrico flat com estilo
-                        graphicsLayer.fillStyle(0x3b82f6, 0.9);
+                        // Cubo 3D estilizado
+                        graphicsLayer.fillStyle(0x3b82f6, 0.95);
                         graphicsLayer.fillRect(x+8, y+6, CELL_SIZE-16, CELL_SIZE-16);
-                        graphicsLayer.fillStyle(0x60a5fa, 0.7);
+                        graphicsLayer.fillStyle(0x60a5fa, 0.8);
                         graphicsLayer.fillRect(x+12, y+10, CELL_SIZE-24, CELL_SIZE-24);
-                        // brilho
-                        graphicsLayer.fillStyle(0xffffff, 0.3);
-                        graphicsLayer.fillRect(x+10, y+8, 8, 8);
+                        graphicsLayer.fillStyle(0xa5f0ff, 0.5);
+                        graphicsLayer.fillRect(x+14, y+12, 8, 8);
+                        // textura
+                        graphicsLayer.fillStyle(0xffffff30);
+                        graphicsLayer.fillRect(x+22, y+18, 12, 4);
                     } else if(piece === 'connector') {
-                        // desenha conector tubular com traços (+)
-                        graphicsLayer.lineStyle(5, 0x2dd4bf, 1);
-                        let centerX = x + CELL_SIZE/2;
-                        let centerY = y + CELL_SIZE/2;
-                        graphicsLayer.moveTo(centerX - 20, centerY);
-                        graphicsLayer.lineTo(centerX + 20, centerY);
-                        graphicsLayer.moveTo(centerX, centerY - 20);
-                        graphicsLayer.lineTo(centerX, centerY + 20);
-                        // pontos de conexão (metálicos)
-                        graphicsLayer.fillStyle(0xffaa44, 1);
-                        graphicsLayer.fillCircle(centerX - 18, centerY, 4);
-                        graphicsLayer.fillCircle(centerX + 18, centerY, 4);
-                        graphicsLayer.fillCircle(centerX, centerY - 18, 4);
-                        graphicsLayer.fillCircle(centerX, centerY + 18, 4);
-                        graphicsLayer.fillStyle(0x88aaff, 0.7);
-                        graphicsLayer.fillCircle(centerX, centerY, 6);
+                        let cx = x + CELL_SIZE/2;
+                        let cy = y + CELL_SIZE/2;
+                        graphicsLayer.lineStyle(6, 0x2dd4bf, 1);
+                        graphicsLayer.moveTo(cx-22, cy);
+                        graphicsLayer.lineTo(cx+22, cy);
+                        graphicsLayer.moveTo(cx, cy-22);
+                        graphicsLayer.lineTo(cx, cy+22);
+                        // conectores dourados
+                        graphicsLayer.fillStyle(0xf5b042, 1);
+                        graphicsLayer.fillCircle(cx-20, cy, 5);
+                        graphicsLayer.fillCircle(cx+20, cy, 5);
+                        graphicsLayer.fillCircle(cx, cy-20, 5);
+                        graphicsLayer.fillCircle(cx, cy+20, 5);
+                        graphicsLayer.fillStyle(0x88ccff, 0.9);
+                        graphicsLayer.fillCircle(cx, cy, 8);
                     }
                 }
             }
-            // destaque nas bordas
-            graphicsLayer.lineStyle(2, 0x44ccff, 0.6);
-            graphicsLayer.strokeRect(0,0, BOARD_WIDTH, BOARD_HEIGHT);
+            // borda neon
+            graphicsLayer.lineStyle(2.5, 0x2dd4bf, 0.7);
+            graphicsLayer.strokeRect(2,2, BOARD_WIDTH-4, BOARD_HEIGHT-4);
         }
 
+        // Inicialização Phaser e eventos
         window.onload = () => {
-            // Configuração Phaser
-            gameInstance = new Phaser.Game(BOARD_WIDTH, BOARD_HEIGHT, Phaser.CANVAS, 'phaser-canvas', {
+            // Cria o jogo Phaser
+            gameInstance = new Phaser.Game(BOARD_WIDTH, BOARD_HEIGHT, Phaser.CANVAS, 'gameCanvasContainer', {
                 create: function() {
                     graphicsLayer = this.add.graphics(0, 0);
                     redrawBoard();
-                    // input da grade
+
+                    // Input: clique/toque no canvas
                     this.input.onDown.add((pointer) => {
-                        let rect = this.canvas.getBoundingClientRect();
-                        let scaleX = this.canvas.width / rect.width;
-                        let scaleY = this.canvas.height / rect.height;
+                        // coordenadas relativas ao canvas
+                        let canvasElem = this.canvas;
+                        let rect = canvasElem.getBoundingClientRect();
+                        let scaleX = canvasElem.width / rect.width;
+                        let scaleY = canvasElem.height / rect.height;
                         let clickX = (pointer.clientX - rect.left) * scaleX;
                         let clickY = (pointer.clientY - rect.top) * scaleY;
                         let col = Math.floor(clickX / CELL_SIZE);
@@ -373,10 +395,13 @@
                             tryPlacePiece(row, col);
                         }
                     });
+                },
+                render: function() {
+                    // garantia de redraw se necessário
                 }
             });
 
-            // Botões de seleção de peça
+            // Botões UI
             const cubeBtn = document.getElementById('btnCube');
             const connectorBtn = document.getElementById('btnConnector');
             const resetBtn = document.getElementById('resetGame');
@@ -394,9 +419,6 @@
             resetBtn.addEventListener('click', () => {
                 resetGame();
             });
-
-            // Inicial: removendo possível vitória fantasma
-            victoryDiv.style.display = 'none';
         };
     })();
 </script>
