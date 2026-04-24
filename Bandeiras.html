@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>📜 Evolução das Bandeiras | Brasil · África do Sul · EUA</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(145deg, #f5f7fc 0%, #eef2f8 100%);
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            min-height: 100vh;
+            padding: 2rem 1.5rem;
+            color: #1a2c3e;
+        }
+
+        /* container principal */
+        .app-container {
+            max-width: 1300px;
+            margin: 0 auto;
+            background: rgba(255,255,255,0.75);
+            backdrop-filter: blur(2px);
+            border-radius: 3rem;
+            box-shadow: 0 25px 45px -12px rgba(0,0,0,0.2), 0 2px 5px rgba(0,0,0,0.02);
+            padding: 1.8rem 2rem 2.5rem;
+            transition: all 0.2s ease;
+        }
+
+        h1 {
+            font-size: 2.4rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #1F4A5C, #2C6E4F);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            letter-spacing: -0.01em;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        h1 small {
+            font-size: 0.9rem;
+            font-weight: 400;
+            background: none;
+            color: #7f8c8d;
+            letter-spacing: normal;
+        }
+
+        .sub {
+            color: #4b6b7e;
+            margin-top: 0.3rem;
+            margin-bottom: 2rem;
+            border-left: 4px solid #2C6E4F;
+            padding-left: 1rem;
+            font-weight: 450;
+        }
+
+        /* seletor de país - estilo moderno */
+        .country-selector {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 2.8rem;
+            justify-content: center;
+        }
+
+        .country-btn {
+            background: #ffffffcc;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(44, 110, 79, 0.2);
+            padding: 0.85rem 2rem;
+            border-radius: 60px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1F4A5C;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+        }
+
+        .country-btn img {
+            width: 32px;
+            height: 24px;
+            object-fit: cover;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+
+        .country-btn.active {
+            background: #1F4A5C;
+            border-color: #1F4A5C;
+            color: white;
+            box-shadow: 0 12px 18px -8px rgba(31,74,92,0.4);
+        }
+
+        .country-btn:hover:not(.active) {
+            background: #e9f0f0;
+            border-color: #2C6E4F;
+            transform: translateY(-2px);
+        }
+
+        /* painel principal da bandeira */
+        .flag-panel {
+            background: white;
+            border-radius: 2rem;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            box-shadow: 0 20px 35px -12px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+
+        .flag-display {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .flag-img {
+            width: 100%;
+            max-width: 480px;
+            background: #f8fafc;
+            border-radius: 32px;
+            box-shadow: 0 15px 30px -12px rgba(0,0,0,0.2);
+            padding: 1rem;
+            margin-bottom: 1.8rem;
+            transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+        }
+
+        .flag-img img {
+            width: 100%;
+            height: auto;
+            max-height: 280px;
+            object-fit: contain;
+            border-radius: 20px;
+            background: #fef9e8;
+        }
+
+        .version-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: #0f2b36;
+        }
+
+        .year-badge {
+            background: #2C6E4F20;
+            display: inline-block;
+            padding: 0.3rem 1rem;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 1.2rem;
+            color: #1F4A5C;
+            margin-bottom: 1rem;
+            backdrop-filter: blur(2px);
+        }
+
+        .description {
+            max-width: 650px;
+            margin: 0 auto;
+            font-size: 1.05rem;
+            line-height: 1.5;
+            color: #2c3e40;
+            background: #f9fafb;
+            padding: 1rem 1.6rem;
+            border-radius: 2rem;
+        }
+
+        /* controles de navegação */
+        .nav-controls {
+            display: flex;
+            justify-content: center;
+            gap: 1.2rem;
+            margin-top: 1.5rem;
+        }
+
+        .nav-btn {
+            background: #1F4A5C;
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 600;
+            padding: 0.6rem 1.8rem;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 8px 14px -6px #1F4A5C50;
+        }
+
+        .nav-btn:active {
+            transform: scale(0.96);
+        }
+
+        .nav-btn:hover {
+            background: #0f3a48;
+            transform: translateY(-2px);
+        }
+
+        /* timeline horizontal */
+        .timeline-section {
+            margin-top: 2rem;
+        }
+
+        .timeline-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            padding-left: 0.5rem;
+            color: #1e4a62;
+        }
+
+        .timeline-strip {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.9rem;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .timeline-node {
+            background: #eef3f1;
+            padding: 0.6rem 1.2rem;
+            border-radius: 60px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+            font-size: 0.9rem;
+            backdrop-filter: blur(2px);
+        }
+
+        .timeline-node.active-node {
+            background: #2C6E4F;
+            color: white;
+            border-color: #1F4A5C;
+            box-shadow: 0 5px 12px rgba(44,110,79,0.3);
+        }
+
+        .timeline-node:hover {
+            background: #cfdfd9;
+            transform: scale(1.02);
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 2rem;
+            font-size: 0.8rem;
+            color: #5f7f8c;
+            border-top: 1px solid #dce5e8;
+            padding-top: 1.4rem;
+        }
+
+        @media (max-width: 680px) {
+            body {
+                padding: 1rem;
+            }
+            .app-container {
+                padding: 1.2rem;
+            }
+            .version-title {
+                font-size: 1.6rem;
+            }
+            .country-btn {
+                padding: 0.5rem 1.2rem;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="app-container">
+    <h1>🗺️ EVOLUÇÃO DAS BANDEIRAS <small>história visual</small></h1>
+    <div class="sub">Brasil · África do Sul · Estados Unidos | viagem pela herança e símbolos</div>
+
+    <div class="country-selector" id="countrySelector"></div>
+
+    <div class="flag-panel">
+        <div class="flag-display" id="flagDisplay">
+            <!-- dinâmico via JS -->
+        </div>
+        <div class="nav-controls">
+            <button class="nav-btn" id="prevBtn">◀ Anterior</button>
+            <button class="nav-btn" id="nextBtn">Próximo ▶</button>
+        </div>
+    </div>
+
+    <div class="timeline-section">
+        <div class="timeline-title">📅 LINHA DO TEMPO · clique em cada marco</div>
+        <div class="timeline-strip" id="timelineStrip"></div>
+    </div>
+    <footer>
+        🌍 Dados históricos e imagens: acervo público (Wikimedia/Flags of the World) | Projeto "Evolução das Bandeiras"
+    </footer>
+</div>
+
+<script>
+    // --------------------------------------------------------------
+    // BASE DE DADOS: Brasil, África do Sul, EUA - versões históricas
+    // Imagens via Wikimedia Commons (alta qualidade e domínio público)
+    // --------------------------------------------------------------
+    const flagsData = {
+        brasil: {
+            name: "Brasil",
+            versions: [
+                {
+                    id: "br_imp1",
+                    year: "1822–1870",
+                    title: "Bandeira do Império (1822)",
+                    imgUrl: "https://upload.wikimedia.org/wikipedia/commons/2/2e/Flag_of_Empire_of_Brazil_%281822-1870%29.svg",
+                    desc: "Primeira bandeira do Brasil independente, desenhada por Jean-Baptiste Debret. Fundo verde (Casa de Bragança) e losango amarelo (Casa de Habsburgo), com brasão imperial coroado."
+                },
+                {
+                    id: "br_imp2",
+                    year: "1870–1889",
+                    title: "Bandeira Imperial (estrelas adicionadas)",
+                    imgUrl: "https://upload.wikimedia.org/wikipedia/commons/7/79/Flag_of_Brazil_%281870-1889%29.svg",
+                    desc: "Versão modificada com 20 estrelas representando as províncias. Mantém o brasão imperial com ramos de café e tabaco."
+                },
+                {
+                    id: "br_prov",
+                    year: "1889 (15–19 nov)",
+                    title: "Bandeira Provisória da República",
+                    imgUrl: "https://upload.wikimedia.org/wikipedia/commons/0/05/Flag_of_Brazil_%2815-19_November_1889%29.svg",
+                    desc: "Criada após a Proclamação da República. Listras verde-amarelas inspiradas na bandeira dos EUA, durou apenas 4 dias."
+                },
+                {
+                    id: "br_atual",
+                    year: "1889–atual",
+                    title: "Bandeira do Brasil (República)",
+                    imgUrl: "https://upload.wikimedia.org/wikipedia/commons/0/05/Flag_of_Brazil.svg",
+                    desc: "Decreto de 19 de novembro de 1889. Círculo azul com 27 estrelas e lema 'Ordem e Progresso'. Design de Raimundo Teixeira Mendes."
+                }
+            ]
+        },
+        africaSul: {
+            name: "África do Sul",
+            versions: [
+                {
+                    id: "za_old",
+                    year: "1928–1994",
+                    title: "Bandeira da União Sul-Africana",
+                    imgUrl: "https://upload.wikimedia.org/wikipedia/commons/a/af/Flag_of_South_Africa_%281928-1994%29.svg",
+                    desc: "Baseada na 'Prinsenvlag' (bandeira principesca) com três pequenas bandeiras internas (Reino Unido, Orange Free State, República Sul-Africana). Símbolo do apartheid."
+                },
+                {
+                    id: "za_new",
+                    year: "1994–atual",
+                    title: "Bandeira do Arco-Íris",
+                    imgUrl: "https://upload.wikimedia.org/wikipedia/commons/a/af/Flag_of_South_Africa.svg",
+                    desc: "Adotada após o fim do apartheid, projetada por Frederick Brownell. Cores representam unidade: vermelho (sangue), azul (céu), verde (terra), amarelo (recursos), branco (paz), preto (povo)."
+                }
+            ]
+        },
+        eua: {
+            name: "Estados Unidos",
+            versions: [
+                {
+                    id: "us_13",
+                    year: "1777–1795",
+                    title: "Betsy Ross / 13 estrelas",
+                    imgUrl: "https://upload.wikimedia.org/wikipedia/commons/d/d7/Flag_of_the_United_States_%281777-1795%29.svg",
+                    desc: "Primeira bandeira oficial com 13 listras e 13 estrelas em círculo, representando as Treze Colônias."
+                },
+                {
+                    id: "us_15",
+                    year: "1795–1818",
+                    title: "Estrelas e Listras (15/15)",
+                    imgUrl: "https://upload.wikimedia.org/wikipedia/commons/6/6a/Flag_of_the_United_States_%281795-1818%29.svg",
+                    desc: "Após adesão de Vermont e Kentucky, adotaram 15 estrelas e 15 listras. Inspirou o hino 'The Star-Spangled Banner'."
+                },
+                {
+                    id: "us_48",
+                    year: "1912–1959",
+                    title: "48 estrelas",
+                    imgUrl: "https://upload.wikimedia.org/wikipedia/commons/f/f5/Flag_of_the_United_States_%281912-1959%29.svg",
+                    desc: "Após incorporação de Arizona e Novo México, o padrão de 48 estrelas tornou-se icônico (usado nas duas guerras mundiais)."
+                },
+                {
+                    id: "us_50",
+                    year: "1960–atual",
+                    title: "50 estrelas (havia 49 em 1959)",
+                    imgUrl: "https://upload.wikimedia.org/wikipedia/commons/a/a4/Flag_of_the_United_States.svg",
+                    desc: "Atual bandeira, desenhada por Robert Heft. 13 listras horizontais e 50 estrelas representando os estados atuais."
+                }
+            ]
+        }
+    };
+
+    // estado da aplicação
+    let currentCountry = "brasil";    // chave do objeto
+    let currentIndex = 0;
+
+    // helpers para obter dados atuais
+    function getCurrentCountryData() {
+        return flagsData[currentCountry];
+    }
+
+    function getCurrentVersion() {
+        const countryData = getCurrentCountryData();
+        return countryData.versions[currentIndex];
+    }
+
+    function getTotalVersions() {
+        return getCurrentCountryData().versions.length;
+    }
+
+    // renderizar todo o conteúdo: bandeira, descrição, timeline, atualizar botões ativos
+    function renderAll() {
+        renderFlagPanel();
+        renderTimeline();
+        updateNavButtons();
+        updateActiveCountryButton();
+    }
+
+    function renderFlagPanel() {
+        const version = getCurrentVersion();
+        const countryObj = getCurrentCountryData();
+        const html = `
+            <div class="flag-img">
+                <img src="${version.imgUrl}" alt="${countryObj.name} - ${version.title}" loading="lazy" onerror="this.onerror=null; this.src='https://placehold.co/600x400/e0e7e9/2C6E4F?text=Imagem+Indisponível'">
+            </div>
+            <div class="version-title">${version.title}</div>
+            <div class="year-badge">📆 ${version.year}</div>
+            <div class="description">${version.desc}</div>
+        `;
+        document.getElementById("flagDisplay").innerHTML = html;
+    }
+
+    function renderTimeline() {
+        const versions = getCurrentCountryData().versions;
+        const timelineContainer = document.getElementById("timelineStrip");
+        if (!timelineContainer) return;
+        let timelineHtml = "";
+        versions.forEach((ver, idx) => {
+            const activeClass = (idx === currentIndex) ? "active-node" : "";
+            timelineHtml += `<div class="timeline-node ${activeClass}" data-index="${idx}">${ver.year} · ${ver.title.substring(0, 28)}${ver.title.length > 28 ? '…' : ''}</div>`;
+        });
+        timelineContainer.innerHTML = timelineHtml;
+
+        // adicionar eventos a cada node
+        document.querySelectorAll(".timeline-node").forEach(node => {
+            node.addEventListener("click", (e) => {
+                const idx = parseInt(node.dataset.index, 10);
+                if (!isNaN(idx) && idx !== currentIndex) {
+                    currentIndex = idx;
+                    renderAll();
+                }
+            });
+        });
+    }
+
+    function updateNavButtons() {
+        const total = getTotalVersions();
+        // apenas feedback visual, não desabilitamos por estilo, mas prevenimos erros
+        const prevBtn = document.getElementById("prevBtn");
+        const nextBtn = document.getElementById("nextBtn");
+        // não desabilita mas garante lógica nos cliques
+    }
+
+    function goPrev() {
+        if (currentIndex > 0) {
+            currentIndex--;
+            renderAll();
+        } else {
+            // bounce suave: se quiser indicar
+            const flagDiv = document.querySelector(".flag-panel");
+            flagDiv.style.transform = "scale(0.99)";
+            setTimeout(() => flagDiv.style.transform = "", 150);
+        }
+    }
+
+    function goNext() {
+        const total = getTotalVersions();
+        if (currentIndex < total - 1) {
+            currentIndex++;
+            renderAll();
+        } else {
+            const flagDiv = document.querySelector(".flag-panel");
+            flagDiv.style.transform = "scale(0.99)";
+            setTimeout(() => flagDiv.style.transform = "", 150);
+        }
+    }
+
+    function setCountry(countryKey) {
+        if (countryKey === currentCountry) return;
+        currentCountry = countryKey;
+        // resetar índice para a primeira versão histórica
+        currentIndex = 0;
+        renderAll();
+    }
+
+    function updateActiveCountryButton() {
+        const buttons = document.querySelectorAll(".country-btn");
+        buttons.forEach(btn => {
+            const countryVal = btn.getAttribute("data-country");
+            if (countryVal === currentCountry) {
+                btn.classList.add("active");
+            } else {
+                btn.classList.remove("active");
+            }
+        });
+    }
+
+    function buildCountrySelector() {
+        const selectorDiv = document.getElementById("countrySelector");
+        const countriesList = [
+            { key: "brasil", label: "🇧🇷 Brasil", icon: "https://flagcdn.com/w40/br.png" },
+            { key: "africaSul", label: "🇿🇦 África do Sul", icon: "https://flagcdn.com/w40/za.png" },
+            { key: "eua", label: "🇺🇸 Estados Unidos", icon: "https://flagcdn.com/w40/us.png" }
+        ];
+        let btnsHtml = "";
+        countriesList.forEach(c => {
+            btnsHtml += `
+                <button class="country-btn" data-country="${c.key}">
+                    <img src="${c.icon}" alt="${c.label}" onerror="this.style.display='none'">
+                    ${c.label}
+                </button>
+            `;
+        });
+        selectorDiv.innerHTML = btnsHtml;
+        // eventos
+        document.querySelectorAll(".country-btn").forEach(btn => {
+            btn.addEventListener("click", (e) => {
+                const countryKey = btn.getAttribute("data-country");
+                setCountry(countryKey);
+            });
+        });
+        updateActiveCountryButton();
+    }
+
+    // inicializar eventos e UI
+    function init() {
+        buildCountrySelector();
+        // garantir dados iniciais
+        currentCountry = "brasil";
+        currentIndex = 0;
+        renderAll();
+
+        const prevBtn = document.getElementById("prevBtn");
+        const nextBtn = document.getElementById("nextBtn");
+        prevBtn.addEventListener("click", goPrev);
+        nextBtn.addEventListener("click", goNext);
+    }
+
+    init();
+</script>
+</body>
+</html>
