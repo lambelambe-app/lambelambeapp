@@ -1,0 +1,544 @@
+Aracnofobia|Medo intenso e irracional de aranhas.|aranha,aranhas,teia,tarântula,aracnídeo,veneno,artrópode
+Claustrofobia|Medo de espaços fechados ou confinados, como elevadores, túneis ou quartos pequenos.|elevador,quarto pequeno,túnel,caverna,lugar fechado,confinado
+Agorafobia|Medo de lugares ou situações onde escapar pode ser difícil, como multidões ou transporte público.|multidão,transporte público,ônibus,metrô,espaço aberto,shopping
+Acrofobia|Medo extremo de alturas, com tontura e náusea em locais elevados.|altura,montanha,penhasco,ponte alta,prédio alto,escada,varanda
+Aerofobia|Medo de viajar de avião. Ansiedade antes e durante o voo.|avião,voo,aeroporto,turbulência,aeronave,voar,viagem aérea
+Cinofobia|Medo persistente de cães, mesmo os dóceis.|cachorro,cão,canino,pet,lobo,cachorros,latido,canil
+Ofidiofobia|Medo específico de cobras, podendo causar pânico ao ver imagens.|cobra,serpente,víbora,sucuri,jararaca,cascavel,réptil,ofídio,naja
+Nictofobia|Medo excessivo da escuridão ou da noite.|escuro,noite,breu,sombra,luz apagada,quarto escuro
+Tanatofobia|Medo mórbido da própria morte ou do processo de morrer.|morte,morrer,falecimento,óbito,sepultura,enterro
+Hemofobia|Medo de sangue, podendo causar desmaios.|sangue,sangramento,hemorragia,corte,ferida,veia,sangrar
+Tripofobia|Aversão ou medo de padrões de buracos aglomerados.|buracos,colmeia,favos,couro,pele,textura,orifícios
+Misofobia|Medo de germes, sujeira ou contaminação.|germes,sujeira,bactéria,vírus,contaminação,imundo,limpeza,mofo
+Glossofobia|Medo intenso de falar em público ou de ser julgado.|falar público,oratória,apresentação,palco,plateia,discursar
+Fobia Social|Ansiedade extrema em situações sociais, medo de ser humilhado.|social,interação,festa,encontro,pessoas,julgamento,grupo
+Dentofobia|Medo de dentistas e procedimentos odontológicos.|dentista,dente,cárie,tratamento dental,broca,extração
+Emetofobia|Medo de vomitar ou de ver outras pessoas vomitando.|vômito,vomitar,enjoo,náusea,regurgitar,passar mal
+Coulrofobia|Medo irracional de palhaços, maquiagens ou comportamento imprevisível.|palhaço,circo,maquiagem,payaso,clown,nariz vermelho
+Talassofobia|Medo de águas profundas, oceanos ou grandes massas de água.|oceano,mar profundo,abismo marítimo,águas escuras,mergulho
+Aicmofobia|Medo de agulhas ou objetos pontiagudos em procedimentos médicos.|agulha,seringa,injeção,picada,vacina,punção
+Astrafobia|Medo de trovões, relâmpagos e tempestades.|trovão,relâmpago,tempestade,raio,chuva forte,céu escuro
+Atelofobia|Medo de imperfeições, falhas ou de não ser bom o suficiente.|imperfeição,falhar,erro,defeito,fracasso
+Autofobia|Medo de ficar sozinho, sensação de abandono.|solidão,sozinho,abandono,isolamento,solitário
+Batofobia|Medo de profundidades, abismos ou lugares muito fundos.|profundidade,abismo,despenhadeiro,precipício
+Belonofobia|Medo de alfinetes e agulhas.|alfinete,agulha,pontada,picar,alfinetada
+Carcinofobia|Medo persistente de desenvolver câncer.|câncer,tumor,malignidade,carcinoma,quimioterapia
+Catagelofobia|Medo de ser ridicularizado ou motivo de risos.|ridículo,zombaria,risada,gozação,piadas,humilhação
+Cronofobia|Medo da passagem do tempo ou de relógios.|tempo,relógio,envelhecer,prazos,data,horário
+Ciberfobia|Aversão ou medo de computadores ou tecnologia digital.|computador,tecnologia,internet,digital,robô,tela
+Decidofobia|Medo de tomar decisões, paralisia diante de escolhas.|decisão,escolher,optar,indecisão,alternativas
+Ergofobia|Medo irracional de trabalhar ou do ambiente laboral.|trabalho,emprego,escritório,laboral,profissão
+Eritrofobia|Medo de corar (enrubescer) em público.|corar,rubor,vermelhidão,face vermelha,timidez
+Gamofobia|Medo de casamento ou compromissos sérios.|casamento,noivado,compromisso,casar,cerimônia,cônjuge
+Gefirofobia|Medo de atravessar pontes.|ponte,viaduto,travessia,passarela
+Gerascofobia|Medo de envelhecer e consequências da idade.|envelhecer,velhice,idoso,terceira idade,rugas
+Haphefobia|Medo de ser tocado por outras pessoas.|toque,contato físico,tocar,abraço,carícia,encostar
+Iatrofobia|Medo de médicos ou de consultas médicas.|médico,doutor,consulta,hospital,clínico
+Nomofobia|Medo de ficar sem o celular ou sem conectividade.|celular,smartphone,conectividade,wifi,sinal,bateria
+Nosocomefobia|Medo de hospitais e ambientes clínicos.|hospital,enfermaria,clínica,UTI,pronto-socorro
+Pirofobia|Medo de fogo, chamas ou queimaduras.|fogo,chama,queimadura,incêndio,ignição,labareda
+Triskaidekafobia|Medo do número 13, considerado azarento.|13,número 13,sexta-feira 13,azar,superstição
+Xenofobia|Medo ou aversão a pessoas estrangeiras ou diferentes.|estrangeiro,forasteiro,imigrante,diferente,cultura
+Zoofobia|Medo generalizado de animais (qualquer espécie).|animal,bicho,feras,fauna,animais selvagens
+Aquafobia|Medo de água, pânico em rios, piscinas ou mar.|água,piscina,rio,mar,lago,nadar,afogar
+Eisoptrofobia|Medo de espelhos ou de ver o próprio reflexo.|espelho,reflexo,vidro,imagem
+Filofobia|Medo de amar ou estabelecer vínculos emocionais profundos.|amor,apaixonar,sentimento,vínculo,relacionamento
+Kinemortofobia|Medo de zumbis ou mortos-vivos.|zumbi,morto-vivo,apocalipse,cadáver
+Pogonofobia|Medo de barbas ou homens barbudos.|barba,barbudo,pelos faciais,barbicha
+Porphyrofobia|Medo da cor roxa ou púrpura.|roxo,púrpura,violeta,magenta
+Tachofobia|Medo de velocidade, andar rápido em carros.|velocidade,rápido,aceleração,carro veloz,corrida
+Xilofobia|Medo de objetos de madeira ou florestas densas.|madeira,floresta,árvores,bosque,lenha
+Hipopotomonstrosesquipedaliofobia|Medo de palavras longas e complexas.|palavra longa,termo extenso,sílaba,vocábulo
+Ablutofobia|Medo de lavar-se ou banhar-se.|banho,lavar,chuveiro,higiene,sabão
+Acousticofobia|Medo de sons ou ruídos específicos.|som,barulho,ruído,alto falante,volume
+Agrizoofobia|Medo de animais selvagens ou ferozes.|animal selvagem,fera,leão,tigre,urso
+Amaxofobia|Medo de dirigir ou estar em veículos.|dirigir,carro,volante,veículo,automóvel
+Anemofobia|Medo de vento ou correntes de ar.|vento,rajada,furacão,brisa forte
+Antofobia|Medo de flores.|flor,pétalas,jardim,arranjo floral,botão
+Apifobia|Medo de abelhas.|abelha,vespa,mel,colmeia,ferrão
+Astrapofobia|Medo de raios e relâmpagos.|relâmpago,raio,tempestade elétrica,clarão
+Atychifobia|Medo de falhar ou do fracasso.|fracasso,falhar,errar,derrota,insucesso
+Bibliophobia|Medo de livros.|livro,ler,biblioteca,volume,encadernação
+Cacofobia|Medo de feiura ou coisas feias.|feio,aparência,desagradável,horrível
+Caliginefobia|Medo de mulheres bonitas.|bela mulher,beleza feminina,atraente,sedução
+Catoptrofobia|Medo de espelhos.|espelho,reflexo,vidro,superfície refletora
+Cibofobia|Medo de alimentos.|comida,alimento,comer,refeição,nutrição
+Climacofobia|Medo de escadas ou subir degraus.|escada,degraus,subir,lance,corrimão
+Dikephobia|Medo de justiça ou julgamentos legais.|justiça,juiz,tribunal,julgamento,lei
+Dromofobia|Medo de atravessar ruas.|rua,faixa,atravessar,pedestre,trânsito
+Escatofobia|Medo de sujeira ou fezes.|fezes,excremento,sujeira,impureza,toalete
+Frigofobia|Medo de frio ou coisas geladas.|frio,gelo,baixa temperatura,neve,friagem
+Gatofobia|Medo de gatos.|gato,felino,bichano,miau,gatil
+Geofobia|Medo de terra ou solo.|terra,solo,chão,lama,barro
+Heliofobia|Medo do sol ou luz solar intensa.|sol,luz solar,claridade,raios solares,verão
+Hodofobia|Medo de viajar ou percorrer longas distâncias.|viajar,estrada,jornada,itinerário,percurso
+Hoplofobia|Medo de armas de fogo.|arma,revólver,tiro,fogo,pistola
+Hypengyophobia|Medo de responsabilidade.|responsabilidade,dever,obrigação,encargo,compromisso
+Ideofobia|Medo de ideias ou pensamentos próprios.|ideia,pensamento,mente,conceito,raciocínio
+Kakorrhaphiophobia|Medo de falhar ou ser derrotado.|derrota,falha,perder,malogro,insucesso
+Kinesofobia|Medo de movimento ou agitação.|movimento,agitação,mexer,deslocamento,atividade
+Lalofobia|Medo de falar ou de gaguejar.|falar,gagueira,dicção,palavra,discurso
+Leucofobia|Medo da cor branca.|branco,cor clara,alvo,palidez
+Ligyrofobia|Medo de barulhos altos e repentinos.|barulho,estrondo,explosão,ruído forte
+Megalofobia|Medo de objetos grandes.|grande,enorme,gigante,monumental,descomunal
+Melanofobia|Medo da cor preta.|preto,escuro,negro,cor escura,trevas
+Musofobia|Medo de ratos ou camundongos.|rato,camundongo,roedor,ratoeira,ratazana
+Necrofobia|Medo de cadáveres ou mortos.|cadáver,defunto,corpo morto,morto,funerária
+Oikofobia|Medo do ambiente doméstico ou de casa.|casa,domicílio,lar,ambiente caseiro,residência
+Onomatofobia|Medo de nomes ou palavras específicas.|nome,palavra,vocábulo,termo,denominação
+Ostraconofobia|Medo de conchas ou moluscos.|concha,marisco,ostra,molusco,bivalve
+Panofobia|Medo de tudo ou medo generalizado.|tudo,absoluto,onipresente,completo,integral
+Parasitofobia|Medo de parasitas.|parasita,verme,lombriga,tênia,infestação
+Peccatofobia|Medo de pecar ou cometer pecados.|pecado,culpa,religião,transgressão,moral
+Peniofobia|Medo de pobreza ou falta de dinheiro.|pobreza,miséria,falta,escassez,dificuldade financeira
+Phagofobia|Medo de engolir ou de comer.|engolir,comer,alimentar,mastigar,deglutição
+Pharmacofobia|Medo de medicamentos ou drogas.|remédio,medicamento,droga,fármaco,comprimido
+Rupofobia|Medo de sujeira ou imundície.|sujeira,lama,imundície,porcaria,sujidade
+Scopofobia|Medo de ser observado ou encarado.|observado,olhar,encarado,vigilância,atenção alheia
+Siderodromofobia|Medo de trens ou ferrovias.|trem,ferrovia,trilho,vagão,locomotiva
+Somnifobia|Medo de dormir ou adormecer.|dormir,sono,adormecer,cama,noite
+Telefonofobia|Medo de fazer ou receber ligações telefônicas.|telefone,ligação,chamada,aparelho
+Tomofobia|Medo de procedimentos cirúrgicos ou cortes.|cirurgia,bisturi,operação,intervenção,incisão
+Achondroplasiafobia|Medo de anões ou pessoas de baixa estatura.|anão,baixa estatura,pequeno,nanismo
+Acarofobia|Medo de ácaros ou pequenos insetos.|ácaro,inseto pequeno,ácaros,alergia
+Acerfobia|Medo de acidez ou substâncias ácidas.|ácido,acidez,cítrico,azedo,corrosivo
+Acnofobia|Medo de acne ou lesões na pele.|acne,espinha,cravo,pele oleosa,lesão
+Agorafobia sem pânico|Medo de lugares abertos sem histórico de pânico.|campo,descampado,espaço aberto,planície
+Agraphobia|Medo de abuso sexual ou violência sexual.|abuso,estupro,violência sexual,assédio
+Agyrophobia|Medo de atravessar ruas ou estradas.|atravessar,rua,estrada,faixa de pedestre
+Aichmophobia|Medo de facas ou objetos cortantes.|faca,objeto cortante,lâmina,punhal
+Ailurofobia|Medo de gatos (variante).|gato,felino,miado,gatil
+Algofobia|Medo de dor.|dor,sofrimento,dolorido,incômodo
+Allodoxafobia|Medo de opiniões diferentes ou de discutir.|opinião,discussão,ideia contrária,debate
+Altocalcifobia|Medo de sapatos ou calçados altos.|sapato,salto alto,calçado,sapatênis
+Amakafobia|Medo de ser carregado ou de andar de carona.|carona,ser carregado,abraço forçado
+Amnesifobia|Medo de amnésia ou de perder a memória.|amnésia,perda de memória,esquecer,memória
+Amychofobia|Medo de arranhões ou ser arranhado.|arranhão,unhada,raspão,ferimento superficial
+Anablefobia|Medo de olhar para cima.|olhar para cima,levantar os olhos,olhar o céu
+Ancraofobia|Medo de vento ou correntes de ar (repetição).|vento,rajada,corrente de ar
+Androfobia|Medo de homens adultos.|homem,macho,figura masculina,adulto homem
+Anglofobia|Medo ou aversão à Inglaterra ou cultura inglesa.|inglês,Inglaterra,cultura inglesa,britânico
+Ankylofobia|Medo de imobilidade articular ou rigidez.|articulação travada,rigidez,junta imóvel
+Anthofobia|Medo de flores (repetição).|flor,pétalas,jardim
+Antlofobia|Medo de enchentes ou inundações.|enchente,inundação,água transbordando,aluvião
+Anuptafobia|Medo de permanecer solteiro ou nunca se casar.|solteiro,casamento,ficar sozinho,solitude
+Apeirophobia|Medo do infinito ou do ilimitado.|infinito,eternidade,sem limites,infinitude
+Aphenphosmphobia|Medo de ser tocado (variante).|toque,tocar,contato físico
+Apiphobia|Medo de abelhas (repetição).|abelha,vespa,colmeia
+Aporofobia|Medo de pessoas pobres ou em situação de rua.|pobre,mendigo,desabrigado,miséria
+Apotemnofobia|Medo de amputação ou membros amputados.|amputação,membro cortado,prótese
+Arachibutyrophobia|Medo de manteiga de amendoim grudar no céu da boca.|manteiga de amendoim,grudar,palato
+Asthenofobia|Medo de fraqueza ou desmaio.|fraqueza,desmaio,desfalecimento,vertigem
+Asymmetriphobia|Medo de coisas assimétricas.|assimetria,desequilíbrio,forma irregular
+Ataxiophobia|Medo de ataxia (falta de coordenação motora).|ataxia,desequilíbrio,coordenação motora
+Atazagorafobia|Medo de ser esquecido ou ignorado.|esquecido,ignorado,abandonado,desprezado
+Athazagoraphobia|Medo de ser esquecido (variante).|esquecimento,ignorância,abandono social
+Atomosophobia|Medo de explosões atômicas ou radiação.|explosão atômica,bomba nuclear,radiação
+Aulofobia|Medo de flautas ou instrumentos de sopro.|flauta,pífano,instrumento de sopro
+Aurofobia|Medo do ouro ou objetos dourados.|ouro,dourado,metal precioso,joia
+Aurorafobia|Medo da aurora boreal ou luzes do norte.|aurora boreal,luzes do norte,fenômeno celeste
+Automatonofobia|Medo de estátuas de cera, manequins ou autômatos.|estátua de cera,manequim,robô,autômato
+Automysophobia|Medo de estar sujo ou de sujar-se.|sujeira,imundice,contaminação pessoal
+Autophobia (reforço)|Medo de si mesmo ou da solidão.|solidão,estar sozinho,isolamento
+Aviophobia|Medo de voar (outro nome para aerofobia).|avião,voo,aeroporto
+Bacillofobia|Medo de bactérias ou germes.|bactéria,germe,microbio,infecção
+Bacteriofobia|Medo de bactérias (variante).|bactéria,contaminação,microorganismo
+Ballistofobia|Medo de mísseis ou projéteis.|míssil,projétil,bala,arma de fogo
+Barofobia|Medo da gravidade ou peso excessivo.|gravidade,peso,pressão,força G
+Basofobia|Medo de cair ou perder equilíbrio.|cair,queda,equilíbrio,tropeço
+Bathmofobia|Medo de escadas ou rampas íngremes.|escada,rampa,declive,íngreme
+Bathofobia|Medo de profundidades (mesmo que batofobia).|profundidade,abismo,fundo do mar
+Batrachofobia|Medo de anfíbios como sapos ou rãs.|sapo,rã,perereca,anfíbio
+Belonephobia|Medo de alfinetes e agulhas (repetição).|alfinete,agulha,picada
+Bibliophobia|Medo de livros (repetição).|livro,biblioteca,leitura
+Blennofobia|Medo de muco ou secreções.|muco,catarro,secreção,gosma
+Bogifobia|Medo de fantasmas ou aparições (popular).|fantasma,assombração,aparição,espírito
+Bolshefobia|Medo de comunistas ou ideologias socialistas.|comunista,socialismo,esquerda
+Botanofobia|Medo de plantas.|planta,vegetação,flora,ervas
+Bromidrosifobia|Medo de cheiro corporal ou suor.|cheiro corporal,suor,transpiração,odor
+Brontofobia|Medo de trovões (sinônimo de astrafobia).|trovão,tempestade,relâmpago
+Bufonofobia|Medo de sapos (mesmo que batrachofobia).|sapo,rã,anfíbio
+Cacophobia|Medo de feiura (repetição).|feio,horroroso,repugnante
+Cainofobia|Medo de novidades (neofobia).|novo,novidade,mudança
+Caliginefobia|Medo de mulheres bonitas (já incluída).|beleza feminina,atraente
+Cancerofobia|Medo de câncer (carcinofobia).|câncer,tumor,neoplasia
+Canofobia|Medo de cães (cinofobia).|cachorro,cão,vira-lata
+Capnofobia|Medo de fumaça.|fumaça,fumo,cigarro,incêndio,nevoeiro
+Carcinofobia|Medo de câncer (já incluída).|câncer,malignidade
+Cardiofobia|Medo de doenças cardíacas ou do coração.|coração,ataque cardíaco,infarto
+Carnofobia|Medo de carne.|carne,animal morto,abate
+Catoptrofobia|Medo de espelhos (repetição).|espelho,reflexo
+Cenofobia|Medo de espaços vazios ou vazios.|vazio,lugar vazio,solidão
+Centofobia|Medo do número 100 (cem).|cem,100,centena
+Cepahalofobia|Medo de cabeças ou de ter a cabeça cortada.|cabeça,crânio,decapitação
+Chaetofobia|Medo de cabelos ou pelos.|cabelo,pelo,fios,calvície
+Cheimofobia|Medo de frio (frigofobia).|frio,geada,inverno
+Chemofobia|Medo de produtos químicos.|químico,substância,veneno,produto tóxico
+Cherofobia|Medo de alegria ou felicidade excessiva.|alegria,felicidade,humor bom
+Chionofobia|Medo de neve.|neve,inverno,tempestade de neve
+Chiraptofobia|Medo de ser tocado (haphefobia).|toque,contato,carícia
+Cholerofobia|Medo de cólera ou raiva extrema.|cólera,raiva,ira,ódio
+Chrematofobia|Medo de dinheiro ou tocar em dinheiro.|dinheiro,moeda,nota,valor
+Chrometofobia|Medo de dinheiro (variação).|moeda,dinheiro,capital
+Chromofobia|Medo de cores específicas.|cor,vermelho,azul,amarelo
+Chronomentrophobia|Medo de relógios (específico).|relógio,ampulheta,marcador de tempo
+Chrysanthemumfobia|Medo de crisântemos.|crisântemo,flor,outono
+Cibofobia|Medo de comer (outro nome para phagofobia).|comer,alimentar,engolir
+Climacofobia|Medo de escadas (repetição).|escada,degraus,subir
+Clinofobia|Medo de dormir ou ir para a cama.|cama,dormir,deitar
+Cnidofobia|Medo de picadas de insetos ou de animais peçonhentos.|picada,inseto,mosquito,abelha
+Cometofobia|Medo de cometas ou meteoros.|cometa,meteoro,astro
+Consecotaleophobia|Medo de pauzinhos de comida (hashi).|hashi,pauzinho,comida asiática
+Contreltofobia|Medo de abuso sexual (repetição).|abuso,assédio,violência
+Coprastasofobia|Medo de constipação ou prisão de ventre.|constipação,prisão de ventre,intestino
+Coptrofobia|Medo de fezes (escatofobia).|fezes,excremento,cocô
+Cremnofobia|Medo de precipícios ou desfiladeiros.|precipício,desfiladeiro,penhasco
+Cryofobia|Medo de frio extremo (mesmo que frigofobia).|frio,gelo,neve
+Crystallofobia|Medo de cristais ou vidros.|cristal,vidro,transparente
+Cyanofobia|Medo da cor azul.|azul,cor azul,celeste
+Cyclofobia|Medo de bicicletas.|bicicleta,pedalar,velocípede
+Cymofobia|Medo de ondas do mar ou mar agitado.|onda,mar agitado,tsunami
+Decidophobia|Medo de tomar decisões (repetição).|decisão,escolha,alternativa
+Defecaloesiophobia|Medo de evacuação dolorosa.|evacuação,fezes,dor ao defecar
+Deipnofobia|Medo de jantar ou conversar durante refeições.|jantar,refeição,conversa à mesa
+Dementophobia|Medo de loucura ou insanidade.|loucura,insanidade,doença mental
+Demonofobia|Medo de demônios ou entidades malignas.|demônio,diabo,possessão
+Dendrofobia|Medo de árvores.|árvore,floresta,madeira
+Dental fobia (dentofobia repetida).|dentista,dente,tratamento
+Deontofobia|Medo de deveres ou obrigações.|dever,obrigação,responsabilidade
+Dermatofobia|Medo de doenças de pele.|pele,erupção,doença cutânea
+Dextrofobia|Medo de objetos à direita.|direita,lado direito,orientação
+Diabetofobia|Medo de diabetes ou açúcar no sangue.|diabetes,açúcar,insulina
+Didymofobia|Medo de gêmeos ou gemelidade.|gêmeos,gémeos,duplicidade
+Digitofobia|Medo de dedos ou tocar os dedos.|dedo,toque,mão
+Dikephobia|Medo de justiça (repetição).|juiz,tribunal,sentença
+Dinofobia|Medo de tontura ou vertigem.|tontura,vertigem,desmaio
+Diplopobia|Medo de visão dupla (diplopia).|visão dupla,imagens dobradas
+Dipsophobia|Medo de beber álcool.|álcool,bebida alcoólica,embriaguez
+Dishabiliophobia|Medo de se despir na frente de outros.|despir,nudez,nu,vestir
+Domatofobia|Medo de casas (oikofobia).|casa,lar,residência
+Dorafobia|Medo de pêlos ou pele de animais.|pelo,pele animal,toque felpudo
+Doxofobia|Medo de expressar opiniões ou elogios.|opinião,elogio,expressão
+Dromofobia (repetição).|atravessar rua,caminho
+Dysmorphofobia|Medo de deformidade física.|deformidade,defeito físico,aparência
+Dystichiphobia|Medo de acidentes com veículos.|acidente,carro,colisão,veículo
+Ecclesiophobia|Medo de igrejas ou lugares sagrados.|igreja,templo,sagrado,religião
+Efebifobia|Medo de adolescentes.|adolescente,jovem,juventude
+Eisoptrofobia (repetição).|espelho,reflexo
+Electrofobia|Medo de eletricidade.|eletricidade,choque,tomada,raio
+Eleutherophobia|Medo de liberdade.|liberdade,autonomia,independência
+Elurofobia|Medo de gatos (ailurofobia).|gato,felino
+Enetofobia|Medo de alfinetes (belonofobia).|alfinete,agulha
+Enissophobia|Medo de críticas ou julgamento negativo.|crítica,julgamento,reprovado
+Entomofobia|Medo de insetos.|inseto,barata,besouro,formiga
+Eosofobia|Medo do amanhecer ou aurora.|amanhecer,aurora,luz do dia
+Epistaxiophobia|Medo de sangramento nasal (hemorragia nariz).|sangramento nasal,hemorragia,nariz
+Equinofobia|Medo de cavalos.|cavalo,equino,potro
+Eremofobia|Medo de solidão ou lugares ermos.|solidão,deserto,lugar isolado
+Ereutofobia|Medo de corar (eritrofobia).|corar,vermelhidão
+Ergasiophobia|Medo de trabalhar (ergofobia).|trabalho, laboral
+Erotophobia|Medo de sexo ou questões sexuais.|sexo,erotismo,intimidade
+Euphobia|Medo de boa notícia ou felicidade.|boa notícia,felicidade,alegria
+Eurotophobia|Medo de genitália feminina.|genitália,órgão sexual
+Febrifobia|Medo de febre.|febre,temperatura alta,calor
+Felinofobia|Medo de gatos (ailurofobia).|gato,miado
+Fengofobia|Medo de luz solar (heliofobia).|sol,luz solar
+Ficofobia|Medo de algas.|alga,vegetação aquática,lodo
+Fissifobia|Medo de fendas ou rachaduras.|fenda,rachadura,trinca
+Flammifobia|Medo de chamas (pirofobia).|fogo,chamas,queimar
+Flavofobia|Medo da cor amarela.|amarelo,cor amarela
+Flectofobia|Medo de flexão ou dobrar o corpo.|flexão,curvar,articulação
+Flogofobia|Medo de fogo (pirofobia).|fogo,incêndio
+Fonofobia|Medo de sons altos (ligirofobia).|som alto,barulho,estrondo
+Fornicofobia|Medo de abóbadas ou arcos.|abóbada,arco,teto curvo
+Fotofobia|Medo de luz intensa.|luz,claridade,fotofobia é real
+Frenofobia|Medo de loucura (dementophobia).|loucura,mente perturbada
+Frigofobia (repetição).|frio,baixa temperatura
+Fronemofobia|Medo de pensamento ou raciocínio.|pensar,raciocínio,lógica
+Fumofobia|Medo de fumaça (capnofobia).|fumaça,incêndio
+Galeofobia|Medo de tubarões.|tubarão,peixe predador,oceano
+Gamofobia (repetição).|casamento
+Geliophobia|Medo de riso ou de ser ridicularizado.|riso,risada,zombaria
+Geniofobia|Medo de queixos ou barba (pogonofobia).|queixo,barba
+Genufobia|Medo de joelhos.|joelho,articulação do joelho
+Genuphobia|Medo de joelhos (variante).|joelho
+Geofobia (repetição).|terra,solo
+Gephyrofobia|Medo de pontes (gefirofobia).|ponte,viaduto
+Germanofobia|Medo da Alemanha ou cultura alemã.|alemão,alemanha,cultura germânica
+Gerascophobia (repetição).|envelhecer,idade
+Globofobia|Medo de balões ou objetos infláveis.|balão,bexiga,inflável
+Glossophobia (repetição).|falar público
+Gnosiophobia|Medo de conhecimento ou aprender.|conhecimento,aprender,estudo
+Graphofobia|Medo de escrever em público.|escrever,escrita,caligrafia
+Gymnofobia|Medo de nudez.|nudez,nu,despido
+Gynofobia|Medo de mulheres.|mulher,feminino
+Hadefobia|Medo do inferno.|inferno,diabo,condenação
+Hagiophobia|Medo de santos ou coisas sagradas.|santo,sagrado,relíquia
+Hamartophobia|Medo de pecar (peccatofobia).|pecado,erro moral
+Haphefobia (repetição).|toque
+Harpaxofobia|Medo de ladrões ou assaltos.|ladrão,roubo,assalto
+Hedonofobia|Medo de prazer ou alegria.|prazer,alegria,felicidade
+Heliofobia (repetição).|sol
+Hellenologofobia|Medo de termos gregos ou palavras complicadas.|grego,termo grego,palavra estranha
+Hemofobia (repetição).|sangue
+Herpetofobia|Medo de répteis ou anfíbios.|réptil,cobra,lacertílio
+Heterofobia|Medo do sexo oposto ou diferenças.|hetero,oposto
+Hierofobia|Medo de padres ou objetos religiosos.|padre,sacerdote,religião
+Hippofobia|Medo de cavalos (equinofobia).|cavalo,equino
+Hodofobia (repetição).|viajar,percurso
+Homichlofobia|Medo de neblina ou nevoeiro.|neblina,nevoeiro,bruma
+Homilofobia|Medo de sermões ou discursos religiosos.|sermão,discurso,igreja
+Hominofobia|Medo de homens (androfobia).|homem,pessoa
+Hoplofobia (repetição).|arma,revólver
+Hormefobia|Medo de choque ou colisão.|choque,colisão,impacto
+Hydrargyrofobia|Medo de mercúrio ou metal líquido.|mercúrio,metal,veneno
+Hydrofobia (medo de água, menos comum).|água,hidrofobia
+Hydrophobophobia|Medo de raiva (doença) ou hidrofobia clínica.|raiva,doença,hidrofobia clínica
+Hyelophobia|Medo de vidro ou objetos de vidro.|vidro,copo,objeto cortante
+Hygrofobia|Medo de umidade ou líquidos.|umidade,líquido,molhado
+Hylephobia|Medo de florestas ou madeira (xilofobia).|floresta,madeira,árvores
+Hylofobia|Mesmo que anterior.|floresta
+Hypnofobia|Medo de dormir (somnifobia).|dormir,sono,adormecer
+Iatrophobia (repetição).|médico,doutor
+Ichthyophobia|Medo de peixes.|peixe,escama,cardume
+Ideofobia (repetição).|ideia,pensamento
+Illyngophobia|Medo de tontura ou vertigem ao olhar para baixo.|vertigem,tontura,altura
+Insomnifobia|Medo de insônia ou não conseguir dormir.|insônia,dormir,noite em claro
+Iophobia|Medo de veneno ou envenenamento.|veneno,envenenar,toxina
+Ipidelphobia|Medo de insetos ou lagartas.|lagarta,inseto,traça
+Islaminfobia|Medo do Islã ou muçulmanos.|Islã,muçulmano,religião
+Isolofobia|Medo de ficar sozinho (autofobia).|isolado,solidão
+Ittiphobia|Medo de desastre ou calamidade.|desastre,calamidade,tragédia
+Judeofobia|Medo ou aversão a judeus.|judeu,hebreu,judaísmo
+Kainolofobia|Medo de novidades (neofobia).|novo,mudança
+Kakofobia|Medo de feiura (cacofobia).|feio
+Kakosfobia|Mesmo que anterior.|feiúra
+Katagelofobia|Medo de ser ridicularizado (catagelofobia).|ridículo,zombaria
+Keraunofobia|Medo de raios (astrapofobia).|raio,relâmpago
+Kinetofobia|Medo de movimento (kinesofobia).|movimento,agitação
+Koinonifobia|Medo de multidões (agorafobia).|multidão,muita gente
+Kopofobia|Medo de fadiga ou cansaço.|cansaço,fadiga,exaustão
+Kosmikofobia|Medo de fenômenos cósmicos.|cósmico,espaço,astros
+Koumpounofobia|Medo de botões de roupa.|botão,roupa,botão de camisa
+Kymophobia|Medo de ondas (cynofobia não, cymo).|onda,mar,tsunami
+Lachanofobia|Medo de vegetais.|vegetal,legume,hortaliça
+Laliophobia|Medo de falar (lalofobia).|falar,gaguejar
+Leprofobia|Medo de lepra ou manchas na pele.|lepra,mancha,doença de pele
+Leukofobia|Medo da cor branca (leucofobia).|branco
+Levofobia|Medo de objetos à esquerda.|esquerda,lado esquerdo
+Ligyrofobia (repetição).|barulho alto
+Lilapsofobia|Medo da cor lilás ou roxa.|roxo,lilás,púrpura
+Limnofobia|Medo de lagos.|lago,água doce,pântano
+Linonofobia|Medo de barbantes ou cordas.|barbante,corda,fio
+Liticafobia|Medo de processos judiciais.|processo,julgamento,advogado
+Lockiofobia|Medo de parto ou dar à luz.|parto,gestação,nascimento
+Logofobia|Medo de palavras (verbos).|palavra,termo,verbo
+Luifobia|Medo de sífilis ou doenças venéreas.|sífilis,DST,doença venérea
+Lutrafobia|Medo de lontras.|lontra,animal aquático
+Lygofobia|Medo de escuridão (nictofobia).|escuro,breu
+Macrofobia|Medo de espera ou filas longas.|espera,fila,demora
+Mageirocofobia|Medo de cozinhar.|cozinhar,culinária,preparar comida
+Malaxofobia|Medo de jogos amorosos ou carícias.|carícia,amor,preliminares
+Maniafobia|Medo de insanidade (dementophobia).|loucura,doença mental
+Mastigofobia|Medo de chicotadas ou punições físicas.|chicote,punição,castigo
+Mecanofobia|Medo de máquinas.|máquina,engrenagem,ferramenta
+Medomalacufobia|Medo de perder a ereção (disfunção erétil).|ereção,impotência,sexual
+Medorthofobia|Medo de pênis ereto (variação).|pênis,ereção
+Megalofobia (repetição).|grande,enorme
+Melissophobia|Medo de abelhas (apifobia).|abelha,mel
+Melofobia|Medo de música ou sons melódicos.|música,melodia
+Meningitofobia|Medo de meningite ou doenças cerebrais.|meningite,inflamação
+Menofobia|Medo de menstruação ou fluxo menstrual.|menstruação,sangramento,período
+Merinthofobia|Medo de ser amarrado ou preso.|amarrar,algema,prisão
+Metalofobia|Medo de metais.|metal,objeto metálico
+Metathesiofobia|Medo de mudanças (tropofobia).|mudança,transição
+Meteorofobia|Medo de meteoros ou estrelas cadentes.|meteoro,estrela cadente
+Methyphobia|Medo de álcool (dipsophobia).|álcool,bebida
+Metrofobia|Medo de poesia.|poesia,verso,rima
+Microfobia|Medo de objetos pequenos.|pequeno,micróbio,minúsculo
+Mnemofobia|Medo de memórias ou lembranças.|memória,lembrança,recordação
+Molysmofobia|Medo de contaminação (misofobia).|contaminação,sujeira
+Monofobia|Medo de ficar sozinho (autofobia).|solidão,isolamento
+Monopatofobia|Medo de doenças incuráveis (nosofobia).|doença incurável,terminal
+Motorfobia|Medo de automóveis ou veículos.|carro,motocicleta,veículo
+Mottephobia|Medo de mariposas ou traças.|mariposa,traça,bicho-da-seda
+Musofobia (repetição).|rato,roedor
+Myctofobia|Medo de escuridão (nictofobia).|escuro,noite
+Myrmecofobia|Medo de formigas.|formiga,inseto,colônia
+Mythofobia|Medo de mentiras ou falsidades.|mentira,falsidade,engano
+Naufragofobia|Medo de naufrágio.|naufrágio,barco,afundar
+Necrofobia (repetição).|cadáver,morte
+Nelofobia|Medo de vidro (hyelophobia).|vidro
+Neofobia (repetição).|novidade
+Nephofobia|Medo de nuvens.|nuvem,céu,temporal
+Noctifobia|Medo da noite (nictofobia).|noite
+Nosofobia|Medo de doenças.|doença,contágio,infecção
+Nostofobia|Medo de voltar para casa.|voltar,casa,lar
+Novercafobia|Medo de madrasta.|madrasta,enteada
+Nucleomitufobia|Medo de armas nucleares.|arma nuclear,bomba atômica
+Nyctofobia (repetição).|escuridão
+Obesofobia|Medo de engordar (obesofobia).|ganhar peso,obesidade,gordo
+Ochlofobia|Medo de multidões (agorafobia).|multidão,aglomeração
+Odontofobia|Medo de dentes (dentofobia).|dente,tratamento dental
+Odynofobia|Medo de dor (algofobia).|dor,doloroso
+Oenofobia|Medo de vinho ou bebidas alcoólicas.|vinho,álcool
+Oikofobia (repetição).|casa,residência
+Olfactofobia|Medo de cheiros.|cheiro,odor,perfume
+Ombrofobia|Medo de chuva.|chuva,aguaceiro,temporal
+Ommetafobia|Medo de olhos.|olho,visão,globo ocular
+Oneirofobia|Medo de sonhos ou pesadelos.|sonho,pesadelo,dormir
+Onofobia|Medo de aviões (aerofobia).|avião
+Ophidiofobia (repetição).|cobra
+Ophthalmofobia|Medo de ser encarado (scopofobia).|encarado,olhar fixo
+Optofobia|Medo de abrir os olhos.|olhos,abrir olhos
+Ornitofobia|Medo de pássaros.|pássaro,ave,pena
+Osmofobia|Medo de odores (olfactofobia).|cheiro,odor
+Ostraconofobia|Medo de crustáceos ou conchas.|craca,crustáceo,concha
+Ouranofobia|Medo do céu ou do paraíso.|céu,paraíso,alturas
+Pagofobia|Medo de gelo ou geada (cryofobia).|gelo,geada
+Panthophobia|Medo de tudo (panofobia).|tudo,absoluto
+Papafobia|Medo do Papa ou da igreja católica.|Papa,catolicismo
+Papyrofobia|Medo de papel.|papel,fólha,página
+Paralipofobia|Medo de negligência ou deveres negligenciados.|negligência,dever,omissão
+Parasitofobia (repetição).|parasita,verme
+Paraskavedekatriafobia|Medo de sexta-feira 13.|sexta-feira 13,13,terça-feira
+Parthenofobia|Medo de virgens ou meninas jovens.|virgem,menina,castidade
+Pathofobia|Medo de doenças (nosofobia).|doença,patologia
+Patroiofobia|Medo de hereditariedade ou genes.|hereditariedade,genética,ancestral
+Peccatofobia (repetição).|pecado
+Pediculofobia|Medo de piolhos.|piolho,infestação,coceira
+Pediophobia|Medo de bonecas.|boneca,brinquedo,manequim
+Peladofobia|Medo de pessoas carecas ou calvas.|careca,calvície,sem cabelo
+Peniofobia (repetição).|pobreza
+Pentherafobia|Medo de sogra (sogra).|sogra,sogro,família política
+Phagofobia (repetição).|comer,engolir
+Pharmacofobia (repetição).|remédio
+Phasmofobia|Medo de fantasmas (bogifobia).|fantasma,assombração
+Phengofobia|Medo de luz do dia (heliofobia).|luz do dia,sol
+Philofobia|Medo de amar (filofobia).|amor
+Philosophobia|Medo de filosofia ou sabedoria.|filosofia,conhecimento
+Phobofobia|Medo de sentir medo (medo do medo).|medo,fobia,ansiedade
+Phonofobia|Medo de vozes ou ruídos humanos.|voz,ruído,fala
+Photoaugliafobia|Medo de luzes brilhantes.|luz forte,clarão
+Phtiriophobia|Medo de piolhos (pediculofobia).|piolho
+Pingufobia|Medo de coisas gordurosas ou engordar.|gordura,obesidade
+Piretrofobia|Medo de fogo (pirofobia).|fogo
+Placofobia|Medo de lápides ou túmulos.|lápide,tumba,cemitério
+Plectrofobia|Medo de galos ou frangos.|galo,frango,aves
+Plutofobia|Medo de riqueza ou pessoas ricas.|riqueza,dinheiro,abastado
+Pluviofobia|Medo de chuva (ombrofobia).|chuva
+Pneumatiphobia|Medo de espíritos ou fantasmas.|espírito,alma
+Pnigofobia|Medo de sufocamento ou asfixia.|sufocar,asfixia,estrangulamento
+Pocrescophobia|Medo de engordar (obesofobia).|ganhar peso
+Podofobia|Medo de pés.|pé,calcanhar,dedos do pé
+Pogonofobia (repetição).|barba
+Poinefobia|Medo de punição ou castigo.|punição,castigo,pena
+Poliofobia|Medo de pólio ou paralisia infantil.|pólio,paralisia,vírus
+Politicofobia|Medo de políticos ou política.|política,político,governo
+Polyfobia|Medo de muitas coisas (geral).|muitas coisas,variedade
+Porphyrofobia (repetição).|roxo,púrpura
+Potamofobia|Medo de rios (limnofobia).|rio,água corrente
+Potofobia|Medo de bebidas alcoólicas (oenofobia).|bebida,álcool
+Proctofobia|Medo de reto ou evacuação.|reto,ânus,evacuação
+Prosopofobia|Medo de rostos ou fisionomias.|rosto,face,fisionomia
+Psellismofobia|Medo de gagueira (lalofobia).|gagueira,tartamudear
+Psychrofobia|Medo de frio (frigofobia).|frio
+Pteridofobia|Medo de samambaias.|samambaia,planta,folhagem
+Pteromerhanofobia|Medo de voar (aerofobia).|avião,voar
+Pupafobia|Medo de bonecos ou marionetes.|boneco,marionete,fantoche
+Pyrexiophobia|Medo de febre (febrifobia).|febre,calor
+Pyrifobia|Medo de fogo (pirofobia).|chamas
+Radiophobia|Medo de radiação ou raios X.|radiação,raios X,nuclear
+Ranidafobia|Medo de sapos (bufonofobia).|sapo,rã
+Rectofobia|Medo de reto (proctofobia).|reto
+Rhabdofobia|Medo de varinhas ou objetos mágicos.|varinha,magia,fé
+Rhypofobia|Medo de sujeira (rupofobia).|sujeira
+Rhytifobia|Medo de rugas.|ruga,envelhecimento,pele
+Rupofobia (repetição).|sujeira
+Russophobia|Medo da Rússia ou cultura russa.|Rússia,russo,cultura
+Samhainofobia|Medo do Halloween.|halloween,abóboras,fantasias
+Sarmassofobia|Medo de jogos amorosos (malaxofobia).|carícias,amor
+Satanofobia|Medo de Satanás (demonofobia).|satanás,diabo
+Scabiophobia|Medo de sarna (coceira).|sarna,coceira,ácaro
+Scelerophibia|Medo de ladrões (harpaxofobia).|ladrão,bandido
+Sciophobia|Medo de sombras.|sombra,escuro,breu
+Scoleciphobia|Medo de minhocas ou vermes.|verme,minhoca,lombriga
+Scombrofobia|Medo de peixes (ictiofobia).|peixe,cardume
+Scotomafobia|Medo de cegueira ou manchas na visão.|cegueira,visão turva,escotoma
+Scriptofobia|Medo de escrever em público (graphofobia).|escrever,publicamente
+Selachofobia|Medo de tubarões (galeofobia).|tubarão
+Selanofobia|Medo da lua.|lua,luar,noite
+Selenofobia|Medo da lua (repetição).|lua
+Seplofobia|Medo de matéria em decomposição.|decomposição,apodrecer,putrefação
+Sesquipedalofobia|Medo de palavras longas (hipopotomonstro...).|palavra longa
+Sexofobia|Medo do sexo oposto (heterofobia).|sexo,gênero
+Siderodromofobia (repetição).|trem
+Siderofobia|Medo de estrelas.|estrela,astro,céu
+Sinistrofobia|Medo de coisas à esquerda (levofobia).|esquerda
+Sitofobia|Medo de comida (cibofobia).|comida,alimento
+Socerafobia|Medo de sogros (sogro/sogra).|sogro,sogra
+Social fobia (repetição).|social
+Somniphobia|Medo de dormir (hipnofobia).|dormir
+Sophofobia|Medo de aprender (gnosiophobia).|aprender,conhecimento
+Soteriophobia|Medo de dependência emocional.|dependência,apego
+Spacefobia|Medo do espaço sideral (kosmikofobia).|espaço,cosmos
+Spectrofobia|Medo de fantasmas (phasmofobia).|fantasma
+Spermatofobia|Medo de esperma ou sêmen.|sêmen,esperma,ejaculação
+Stasibasifobia|Medo de ficar em pé ou andar.|ficar em pé,andar,equilíbrio
+Staurofobia|Medo de cruzes ou crucifixos.|cruz,crucifixo,religião
+Stenofobia|Medo de lugares estreitos (claustrofobia).|estreito,apertado,corredor
+Stygiophobia|Medo do inferno (hadefobia).|inferno,diabo
+Suriphobia|Medo de ratos (musofobia).|rato
+Symmetrophobia|Medo de simetria.|simetria,equilíbrio
+Syngenesofobia|Medo de parentes ou família.|parente,família,parentesco
+Tachofobia (repetição).|velocidade
+Taeniophobia|Medo de tênias ou vermes (scoleciphobia).|tênia,verme
+Taphephobia|Medo de ser enterrado vivo.|enterrado vivo,caixão,sepultamento
+Tapinofobia|Medo de doenças contagiosas.|contágio,doença,infeccioso
+Taurofobia|Medo de touros.|touro,boi,gado
+Technofobia|Medo de tecnologia (ciberfobia).|tecnologia,aparelhos
+Teleophobia|Medo de planos ou finalidades (medo de objetivos).|plano,objetivo,propósito
+Telephonophobia (repetição).|telefone
+Testofobia|Medo de testosterona ou hormônios masculinos.|testosterona,hormônio
+Tetanofobia|Medo de tétano ou ferrugem.|tétano,ferrugem,doença
+Textofobia|Medo de tecidos ou panos (roupas).|tecido,roupa,pano
+Thalassofobia (repetição).|mar,oceano
+Thanatofobia (repetição).|morte
+Theatrophobia|Medo de teatros ou plateias.|teatro,plateia,público
+Theologicophobia|Medo de teologia ou religião.|teologia,religião,doutrina
+Theophobia|Medo de Deus ou divindades.|Deus,divindade,religião
+Thermofobia|Medo de calor (termofobia).|calor,temperatura alta
+Tocofobia|Medo de gravidez ou parto (lockiofobia).|gravidez,parto,gestação
+Tomofobia (repetição).|cirurgia,incisão
+Tonitrophobia|Medo de trovões (brontofobia).|trovão
+Topofobia|Medo de certos lugares ou situações (lugar).|lugar,ambiente,local
+Toxifobia|Medo de veneno (iofobia).|veneno
+Traumatofobia|Medo de ferimentos ou lesões.|ferimento,lesão,trauma
+Tremofobia|Medo de tremores ou terremotos.|tremor,terremoto,abalos
+Trichofobia|Medo de cabelo (chaetofobia).|cabelo,pelo
+Tropofobia|Medo de mudanças (metathesiofobia).|mudança,transição
+Trypanofobia|Medo de injeções (belonofobia).|injeção,agulha
+Tuberculofobia|Medo de tuberculose.|tuberculose,doença pulmonar
+Tyrannofobia|Medo de tiranos ou ditadores.|tirano,ditador,opressão
+Ufofobia|Medo de OVNIs ou discos voadores.|OVNI,disco voador,extraterrestre
+Ulgofobia|Medo de dor (algofobia).|dor
+Uranofobia|Medo do céu (ouranofobia).|céu
+Urophobia|Medo de urina ou urinar.|urina,mijar,micção
+Vaccinofobia|Medo de vacinas (belonofobia).|vacina,injeção
+Venerofobia|Medo de doenças venéreas (luifobia).|DST,venérea
+Verbofobia|Medo de palavras (logofobia).|palavras
+Verminofobia|Medo de vermes (scoleciphobia).|verme,parasita
+Vestifobia|Medo de roupas (textofobia).|roupa,vestuário
+Virginitifobia|Medo de virgindade ou virgens (parthenofobia).|virgindade,castidade
+Vitricofobia|Medo de padrasto.|padrasto,enteado
+Wallonofobia|Medo de pessoas da Valônia (humor).|valão,belga
+Wiccafobia|Medo de bruxaria ou bruxas.|bruxaria,bruxa,wicca
+Xanthofobia|Medo da cor amarela (flavofobia).|amarelo
+Xenoglossofobia|Medo de línguas estrangeiras.|língua estrangeira,idioma
+Xerofobia|Medo de seca ou aridez.|seca,aridez,deserto
+Xylofobia (repetição).|madeira,floresta
+Yellowfobia|Medo da cor amarela (xanthofobia).|amarelo
+Zelofobia|Medo de ciúmes ou inveja.|ciúmes,inveja
+Zemmiphobia|Medo de toupeiras ou ratos-cegos.|toupeira,rato-cego
+Zeusofobia|Medo de Zeus ou deuses gregos.|Zeus,deus grego
+Zoofobia (repetição).|animais
