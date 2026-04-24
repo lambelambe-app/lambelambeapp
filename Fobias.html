@@ -314,7 +314,7 @@
   // Carregar o arquivo .txt externo
   async function loadPhobiasFromFile() {
     try {
-      const response = await fetch('fobias.txt');
+      const response = await fetch('*');
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: Não foi possível carregar o banco de dados`);
       }
