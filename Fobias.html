@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Dicionário de Fobias | Consulta dinâmica</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #ffffff;
+      font-family: system-ui, -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+      line-height: 1.5;
+      color: #111827;
+      padding: 1.5rem;
+    }
+
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+
+    /* header & search */
+    .header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      background: linear-gradient(135deg, #1e293b, #2d3a4e);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      margin-bottom: 0.5rem;
+    }
+
+    .sub {
+      color: #4b5563;
+      font-size: 1rem;
+      border-bottom: 2px solid #e9eef3;
+      display: inline-block;
+      padding-bottom: 0.3rem;
+    }
+
+    .search-section {
+      max-width: 560px;
+      margin: 0 auto 2rem auto;
+    }
+
+    .search-wrapper {
+      display: flex;
+      align-items: center;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 48px;
+      padding: 0.5rem 1rem;
+      transition: all 0.2s ease;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+    }
+
+    .search-wrapper:focus-within {
+      border-color: #94a3b8;
+      box-shadow: 0 0 0 3px rgba(148,163,184,0.2);
+      background: white;
+    }
+
+    .search-icon {
+      color: #6c757d;
+      margin-right: 0.75rem;
+      font-size: 1.2rem;
+      line-height: 1;
+    }
+
+    #searchInput {
+      flex: 1;
+      border: none;
+      background: transparent;
+      font-size: 1rem;
+      padding: 0.6rem 0;
+      outline: none;
+      font-weight: 450;
+      color: #0f172a;
+    }
+
+    #searchInput::placeholder {
+      color: #9ca3af;
+      font-weight: 400;
+    }
+
+    .clear-btn {
+      background: none;
+      border: none;
+      font-size: 1.25rem;
+      cursor: pointer;
+      color: #9ca3af;
+      padding: 0 0.25rem;
+      transition: color 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .clear-btn:hover {
+      color: #1e293b;
+    }
+
+    .info-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      flex-wrap: wrap;
+      margin: 1rem 0 1.5rem 0;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid #eef2f6;
+    }
+
+    .counter {
+      font-size: 0.85rem;
+      background: #f1f5f9;
+      padding: 0.25rem 0.9rem;
+      border-radius: 40px;
+      color: #1e293b;
+      font-weight: 500;
+    }
+
+    .legend {
+      font-size: 0.75rem;
+      color: #5b6e8c;
+    }
+
+    /* Grid cards */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1.25rem;
+      margin-top: 0.5rem;
+    }
+
+    .card {
+      background: #ffffff;
+      border: 1px solid #edf2f7;
+      border-radius: 20px;
+      padding: 1.25rem 1.25rem 1.25rem 1.5rem;
+      transition: all 0.2s ease-in-out;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.02), 0 1px 2px rgba(0,0,0,0.03);
+    }
+
+    .card:hover {
+      border-color: #cbd5e1;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.03), 0 2px 4px rgba(0,0,0,0.05);
+      transform: translateY(-2px);
+      background: #fefefe;
+    }
+
+    .fobia-name {
+      font-size: 1.35rem;
+      font-weight: 600;
+      letter-spacing: -0.2px;
+      color: #0f172a;
+      margin-bottom: 0.6rem;
+      border-left: 3px solid #9bb5d4;
+      padding-left: 0.7rem;
+    }
+
+    .fobia-desc {
+      font-size: 0.92rem;
+      color: #2c3e50;
+      line-height: 1.45;
+      margin-top: 0.3rem;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 3rem 1.5rem;
+      background: #fafcff;
+      border-radius: 2rem;
+      border: 1px dashed #cbd5e1;
+      margin-top: 1rem;
+    }
+
+    .empty-state p {
+      font-size: 1rem;
+      color: #475569;
+    }
+
+    .empty-state span {
+      font-size: 2rem;
+      display: block;
+      margin-bottom: 0.75rem;
+    }
+
+    footer {
+      margin-top: 3rem;
+      text-align: center;
+      font-size: 0.75rem;
+      color: #7c8ca0;
+      border-top: 1px solid #eef2f8;
+      padding-top: 1.8rem;
+    }
+
+    @media (max-width: 640px) {
+      body {
+        padding: 1rem;
+      }
+      h1 {
+        font-size: 1.8rem;
+      }
+      .grid {
+        gap: 1rem;
+      }
+      .card {
+        padding: 1rem;
+      }
+      .fobia-name {
+        font-size: 1.2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>📖 Dicionário de Fobias</h1>
+    <div class="sub">consulta dinâmica · design claro · retorno imediato</div>
+  </div>
+
+  <div class="search-section">
+    <div class="search-wrapper">
+      <div class="search-icon">🔍</div>
+      <input type="text" id="searchInput" placeholder="Pesquise por nome da fobia ou sintoma... ex: altura, sangue, palhaços" autocomplete="off">
+      <button class="clear-btn" id="clearSearchBtn" aria-label="Limpar busca">✕</button>
+    </div>
+  </div>
+
+  <div class="info-bar">
+    <div class="counter" id="resultCount">Carregando...</div>
+    <div class="legend">🔎 mais de 70 fobias · filtro por nome e descrição</div>
+  </div>
+
+  <div id="cardsContainer" class="grid">
+    <!-- cards gerados dinamicamente via JS -->
+  </div>
+
+  <footer>
+    <span>⚡ resultados instantâneos · banco de fobias atualizado</span>
+  </footer>
+</div>
+
+<script>
+  // --------------------------------------------------------------
+  // Base de dados do dicionário (nome científico + definição clara)
+  // --------------------------------------------------------------
+  const phobias = [
+    { name: "Aracnofobia", description: "Medo intenso e irracional de aranhas. Pode causar sudorese, taquicardia e evitação de lugares onde possam existir." },
+    { name: "Claustrofobia", description: "Medo de espaços fechados ou confinados, como elevadores, túneis ou quartos pequenos." },
+    { name: "Agorafobia", description: "Medo de lugares ou situações onde escapar pode ser difícil, como multidões, transporte público ou espaços abertos." },
+    { name: "Acrofobia", description: "Medo extremo de alturas, podendo gerar tontura, náusea e sensação de desmaio em locais elevados." },
+    { name: "Aerofobia", description: "Medo de viajar de avião. Envolve ansiedade antes e durante o voo, com sintomas físicos intensos." },
+    { name: "Cinofobia", description: "Medo persistente e irracional de cães, mesmo de raças pequenas ou dóceis." },
+    { name: "Ofidiofobia", description: "Fobia específica de cobras, uma das mais comuns, podendo levar a pânico ao ver imagens ou répteis." },
+    { name: "Nictofobia", description: "Medo excessivo da escuridão ou da noite, comum em crianças mas pode persistir na vida adulta." },
+    { name: "Tanatofobia", description: "Medo mórbido da própria morte ou do processo de morrer, com pensamentos recorrentes." },
+    { name: "Hemofobia", description: "Medo de sangue. Pode causar queda da pressão arterial, desmaios ao ver sangue ou ferimentos." },
+    { name: "Tripofobia", description: "Aversão ou medo de padrões de buracos aglomerados (colmeias, favos, buracos na pele). Causa arrepios e desconforto." },
+    { name: "Misofobia", description: "Medo de germes, sujeira ou contaminação. Relacionado a comportamentos excessivos de limpeza." },
+    { name: "Glossofobia", description: "Medo intenso de falar em público ou de ser julgado ao discursar para uma plateia." },
+    { name: "Fobia Social", description: "Ansiedade extrema em situações sociais, medo de ser humilhado ou avaliado negativamente." },
+    { name: "Dentofobia", description: "Medo de dentistas e procedimentos odontológicos. Evita tratamentos básicos." },
+    { name: "Emetofobia", description: "Medo de vomitar ou de ver outras pessoas vomitando, pode levar a restrições alimentares." },
+    { name: "Coulrofobia", description: "Medo irracional de palhaços, suas maquiagens ou comportamento imprevisível." },
+    { name: "Talassofobia", description: "Medo de águas profundas, oceanos ou grandes massas de água, especialmente do desconhecido submerso." },
+    { name: "Aicmofobia", description: "Medo de agulhas ou objetos pontiagudos usados em procedimentos médicos." },
+    { name: "Astrafobia", description: "Medo de trovões, relâmpagos e tempestades. Sintomas como esconder-se e tamponar os ouvidos." },
+    { name: "Atelofobia", description: "Medo de imperfeições, falhas ou de não ser bom o suficiente em tarefas cotidianas." },
+    { name: "Autofobia", description: "Medo de ficar sozinho, seja em casa ou em qualquer ambiente, sensação de abandono." },
+    { name: "Batofobia", description: "Medo de profundidades, seja em ambientes naturais (abismos) ou artificiais." },
+    { name: "Belonofobia", description: "Medo de alfinetes e agulhas, similar à aicmofobia, mas foco em objetos finos." },
+    { name: "Carcinofobia", description: "Medo persistente de desenvolver câncer, mesmo sem sintomas, com verificações médicas excessivas." },
+    { name: "Catagelofobia", description: "Medo de ser ridicularizado, alvo de piadas ou motivo de risos por outras pessoas." },
+    { name: "Cronofobia", description: "Medo da passagem do tempo, de relógios ou prazos, podendo provocar ansiedade." },
+    { name: "Ciberfobia", description: "Aversão ou medo de computadores, tecnologia ou realidade digital." },
+    { name: "Decidofobia", description: "Medo de tomar decisões, gerando paralisia diante de escolhas simples." },
+    { name: "Ergofobia", description: "Medo irracional de trabalhar ou do ambiente laboral, podendo levar à evitação profissional." },
+    { name: "Eritrofobia", description: "Medo de corar (enrubescer) em público, gerando ciclo de ansiedade e vermelhidão facial." },
+    { name: "Gamofobia", description: "Medo de casamento ou de compromissos sérios duradouros." },
+    { name: "Gefirofobia", description: "Medo de atravessar pontes, podendo gerar ataques de pânico durante a travessia." },
+    { name: "Gerascofobia", description: "Medo de envelhecer e das consequências físicas e psicológicas da idade." },
+    { name: "Haphefobia", description: "Medo de ser tocado por outras pessoas, evitando contato físico e abraços." },
+    { name: "Iatrofobia", description: "Medo de médicos ou de consultas médicas, atrasando diagnósticos importantes." },
+    { name: "Ligirofobia", description: "Fobia de barulhos altos, explosões ou sons repentinos (fogos, buzinas)." },
+    { name: "Metathesiofobia", description: "Medo exagerado de mudanças, alterações na rotina ou transições de vida." },
+    { name: "Neofobia", description: "Medo de novidades, coisas novas ou experiências desconhecidas." },
+    { name: "Nomofobia", description: "Medo de ficar sem o celular ou sem conectividade, gerando angústia e fissura." },
+    { name: "Nosocomefobia", description: "Medo de hospitais, ambientes clínicos ou de contrair doenças em instituições de saúde." },
+    { name: "Obesofobia", description: "Medo de ganhar peso ou de se tornar obeso, podendo levar a transtornos alimentares." },
+    { name: "Ombrofobia", description: "Medo de chuva ou de se molhar, incluindo aversão a dias chuvosos." },
+    { name: "Onicofobia", description: "Medo de unhas (crescer, cortar ou sujeira nas unhas)." },
+    { name: "Pirofobia", description: "Medo de fogo, chamas ou queimaduras, com reações extremas a qualquer fonte de calor." },
+    { name: "Turofobia", description: "Medo incomum de queijo, seja pelo cheiro, textura ou aparência." },
+    { name: "Xenofobia", description: "Medo ou aversão a pessoas estrangeiras ou diferentes culturalmente." },
+    { name: "Zoofobia", description: "Medo generalizado de animais (qualquer espécie, não específica)." },
+    { name: "Ancraofobia", description: "Medo de vento ou correntes de ar, podendo evitar janelas abertas." },
+    { name: "Aquafobia", description: "Medo de água, muitas vezes confundido com hidrofobia, envolve pânico em rios, piscinas ou mar." },
+    { name: "Didascaleinofobia", description: "Medo de ir à escola ou ambiente de aprendizado, frequente em crianças." },
+    { name: "Eisoptrofobia", description: "Medo de espelhos ou de ver o próprio reflexo." },
+    { name: "Filofobia", description: "Medo de amar ou estabelecer vínculos emocionais profundos." },
+    { name: "Hidrofobia", description: "Medo mórbido de água (diferente da aquafobia), associado ao tétano ou afogamento." },
+    { name: "Kinemortofobia", description: "Medo de zumbis ou mortos-vivos, amplificado pela cultura pop." },
+    { name: "Metrofobia", description: "Medo de poesia ou de versos, ansiedade diante de textos literários poéticos." },
+    { name: "Nucleomitufobia", description: "Medo de armas nucleares ou de uma guerra atômica." },
+    { name: "Porphyrofobia", description: "Medo de roxo ou da cor púrpura." },
+    { name: "Socerafobia", description: "Medo de sogros ou da relação com os pais do cônjuge." },
+    { name: "Tachofobia", description: "Medo de velocidade, viajar rápido em carros ou montanhas-russas." },
+    { name: "Verminofobia", description: "Medo de vermes, parasitas ou pequenos animais rastejantes." },
+    { name: "Xilofobia", description: "Medo de objetos de madeira ou florestas densas." },
+    { name: "Epistaxiophobia", description: "Medo de sangramentos nasais (hemorragias do nariz)." },
+    { name: "Chromofobia", description: "Medo intenso de cores específicas, podendo gerar pânico ao ver tons muito vivos." },
+    { name: "Atychifobia", description: "Medo de falhar ou do fracasso, comum em altas performers." },
+    { name: "Dismorfofobia", description: "Medo de ter algum defeito físico imaginário ou exagerado, relacionado ao TDC." },
+    { name: "Hipopotomonstrosesquipedaliofobia", description: "Medo de palavras longas e complexas (ironicamente uma das palavras mais longas)." },
+    { name: "Koinonifobia", description: "Medo de ambientes com grande concentração de pessoas, sem ser agorafobia." },
+    { name: "Pogonofobia", description: "Medo de barbas ou de homens barbudos." },
+    { name: "Triskaidekafobia", description: "Medo do número 13, considerado azarento, evitando datas e andares." }
+  ];
+
+  // ordenar alfabeticamente por nome para melhor experiência
+  phobias.sort((a, b) => a.name.localeCompare(b.name));
+
+  // elementos DOM
+  const searchInput = document.getElementById('searchInput');
+  const clearBtn = document.getElementById('clearSearchBtn');
+  const cardsContainer = document.getElementById('cardsContainer');
+  const resultCountSpan = document.getElementById('resultCount');
+
+  // função render dinâmica (filtro e retorno imediato)
+  function renderPhobiaList(filterText = '') {
+    const lowerFilter = filterText.trim().toLowerCase();
+    let filteredArray = [];
+
+    if (lowerFilter === '') {
+      filteredArray = phobias;
+    } else {
+      filteredArray = phobias.filter(item => {
+        const inName = item.name.toLowerCase().includes(lowerFilter);
+        const inDesc = item.description.toLowerCase().includes(lowerFilter);
+        return inName || inDesc;
+      });
+    }
+
+    // atualizar contador
+    const total = filteredArray.length;
+    resultCountSpan.innerText = total === 1 ? `1 fobia encontrada` : `${total} fobias encontradas`;
+
+    // se não houver resultados
+    if (filteredArray.length === 0) {
+      cardsContainer.innerHTML = `
+        <div class="empty-state">
+          <span>🔎🧩</span>
+          <p>Nenhuma fobia corresponde à sua pesquisa.<br>Tente outro termo ou veja a lista completa.</p>
+        </div>
+      `;
+      return;
+    }
+
+    // gerar cards dinamicamente com grid
+    let cardsHTML = '';
+    for (let phobia of filteredArray) {
+      cardsHTML += `
+        <div class="card">
+          <div class="fobia-name">${escapeHtml(phobia.name)}</div>
+          <div class="fobia-desc">${escapeHtml(phobia.description)}</div>
+        </div>
+      `;
+    }
+    cardsContainer.innerHTML = cardsHTML;
+  }
+
+  // pequena função de segurança para evitar XSS (embora o conteúdo seja seguro, boa prática)
+  function escapeHtml(str) {
+    return str.replace(/[&<>]/g, function(m) {
+      if (m === '&') return '&amp;';
+      if (m === '<') return '&lt;';
+      if (m === '>') return '&gt;';
+      return m;
+    }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
+      return c;
+    });
+  }
+
+  // evento de busca AO DIGITAR (retorno imediato)
+  let debounceTimeout;
+  function handleSearch() {
+    if (debounceTimeout) clearTimeout(debounceTimeout);
+    debounceTimeout = setTimeout(() => {
+      const query = searchInput.value;
+      renderPhobiaList(query);
+    }, 10); // delay mínimo para fluidez, praticamente instantâneo
+  }
+
+  searchInput.addEventListener('input', handleSearch);
+
+  // botão limpar busca
+  clearBtn.addEventListener('click', () => {
+    searchInput.value = '';
+    renderPhobiaList('');
+    searchInput.focus();
+  });
+
+  // inicializar primeiro carregamento (todas as fobias)
+  renderPhobiaList('');
+
+  // opcional: ao clicar no ícone de lupa ou no wrapper não faz ação extra, já está ok
+  // pequeno toque para garantir acessibilidade e comportamento suave
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && document.activeElement === searchInput) {
+      searchInput.value = '';
+      renderPhobiaList('');
+    }
+  });
+</script>
+</body>
+</html>
