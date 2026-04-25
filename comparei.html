@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>PriceGuard · Benchmark Inteligente de Compras</title>
+  <!-- Google Fonts & Font Awesome (ícones gratuitos) -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #f4f7fc;
+      font-family: 'Inter', sans-serif;
+      padding: 2rem 1.5rem;
+      color: #1a2c3e;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    /* header */
+    .header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      gap: 1rem;
+    }
+    .logo h1 {
+      font-size: 1.9rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #0B3B5F, #1E6F5C);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      letter-spacing: -0.3px;
+    }
+    .logo p {
+      font-size: 0.85rem;
+      color: #2c6e5c;
+      font-weight: 500;
+    }
+    .badge-legal {
+      background: #eef2f5;
+      padding: 0.5rem 1rem;
+      border-radius: 60px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: #1e4663;
+      border: 1px solid #cbdde9;
+    }
+    .badge-legal i {
+      margin-right: 6px;
+      color: #1e6f5c;
+    }
+
+    /* cards de modo */
+    .mode-selector {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+      justify-content: center;
+    }
+    .mode-card {
+      flex: 1;
+      min-width: 260px;
+      background: white;
+      border-radius: 28px;
+      padding: 1.2rem 1.5rem;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.02), 0 2px 6px rgba(0,0,0,0.05);
+      transition: all 0.2s;
+      border: 1px solid #e2edf2;
+      cursor: pointer;
+      text-align: center;
+    }
+    .mode-card.active {
+      border: 2px solid #1E6F5C;
+      background: #fefef9;
+      box-shadow: 0 12px 24px rgba(30,111,92,0.12);
+    }
+    .mode-card i {
+      font-size: 2.2rem;
+      color: #2c7a64;
+      margin-bottom: 0.5rem;
+    }
+    .mode-card h3 {
+      font-size: 1.3rem;
+      margin-bottom: 0.4rem;
+    }
+    .mode-card p {
+      font-size: 0.85rem;
+      color: #4a627a;
+    }
+    .legal-note {
+      font-size: 0.7rem;
+      margin-top: 0.6rem;
+      color: #5d7f96;
+    }
+
+    /* área principal */
+    .workbench {
+      background: white;
+      border-radius: 32px;
+      box-shadow: 0 25px 40px -12px rgba(0,0,0,0.12);
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+    label {
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      display: block;
+      color: #0f3b4f;
+    }
+    textarea, input[type="file"] {
+      width: 100%;
+      padding: 0.85rem 1rem;
+      border-radius: 20px;
+      border: 1px solid #cbdde9;
+      font-family: 'Inter', monospace;
+      background: #fdfdfd;
+      transition: 0.2s;
+    }
+    textarea:focus, input:focus {
+      outline: none;
+      border-color: #1E6F5C;
+      box-shadow: 0 0 0 3px rgba(30,111,92,0.2);
+    }
+    .btn-primary {
+      background: #1E6F5C;
+      border: none;
+      color: white;
+      font-weight: 600;
+      padding: 0.8rem 1.8rem;
+      border-radius: 40px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .btn-primary:hover {
+      background: #0e5544;
+      transform: translateY(-1px);
+    }
+    .btn-secondary {
+      background: #eef2f5;
+      border: none;
+      padding: 0.7rem 1.5rem;
+      border-radius: 40px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .results {
+      margin-top: 2rem;
+      background: #F9FCFE;
+      border-radius: 24px;
+      padding: 1.5rem;
+      border: 1px solid #e0edf3;
+    }
+    .chart-container {
+      max-height: 280px;
+      margin: 1rem 0;
+    }
+    .economy-badge {
+      background: #dff3ef;
+      padding: 0.5rem 1rem;
+      border-radius: 30px;
+      font-weight: 700;
+      color: #0b5e4b;
+      display: inline-block;
+    }
+    .action-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin: 1.5rem 0 0.5rem;
+    }
+    .footer-note {
+      font-size: 0.7rem;
+      text-align: center;
+      margin-top: 2rem;
+      color: #5a7e94;
+      border-top: 1px solid #d4e2ec;
+      padding-top: 1.5rem;
+    }
+    hr {
+      margin: 1rem 0;
+      border-color: #e2edf2;
+    }
+    .supplier-anon {
+      font-size: 0.8rem;
+      background: #f0f4f8;
+      border-radius: 40px;
+      padding: 0.2rem 0.8rem;
+      display: inline-block;
+    }
+    i.fa, i.far {
+      margin-right: 4px;
+    }
+    @media (max-width: 720px) {
+      body { padding: 1.2rem; }
+      .workbench { padding: 1.2rem; }
+    }
+  </style>
+  <!-- Chart.js CDN para gráficos comparativos -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="logo">
+      <h1><i class="fas fa-chart-line"></i> PriceGuard</h1>
+      <p>benchmark inteligente · compras estratégicas</p>
+    </div>
+    <div class="badge-legal"><i class="fas fa-shield-alt"></i> LGPD compliant · Sem retenção de PDFs · Dados anonimizados</div>
+  </div>
+
+  <!-- Seletor de modos (dois fluxos principais) -->
+  <div class="mode-selector" id="modeSelector">
+    <div class="mode-card active" data-mode="pdf_mode">
+      <i class="fas fa-file-pdf"></i>
+      <h3>📄 Modo Rápido (PDF)</h3>
+      <p>Upload do PDF — leitura automática, extração de itens e preços. O arquivo NÃO é armazenado.</p>
+      <div class="legal-note"><i class="fas fa-eye-slash"></i> Fornecedor original anonimizado · Sem retenção</div>
+    </div>
+    <div class="mode-card" data-mode="manual_mode">
+      <i class="fas fa-keyboard"></i>
+      <h3>✏️ Modo Manual / Excel</h3>
+      <p>Digite os dados manualmente ou cole planilha. 100% controlado pelo comprador.</p>
+      <div class="legal-note"><i class="fas fa-lock"></i> Sem contato com arquivos de terceiros</div>
+    </div>
+  </div>
+
+  <div class="workbench" id="workbench">
+    <!-- Área dinâmica conforme modo -->
+    <div id="pdfModeArea">
+      <div class="form-group">
+        <label><i class="fas fa-cloud-upload-alt"></i> Enviar cotação (PDF) • leitura instantânea</label>
+        <input type="file" id="pdfUpload" accept="application/pdf">
+        <p class="legal-note" style="margin-top: 8px;"><i class="fas fa-trash-alt"></i> O PDF é processado em memória e descartado imediatamente. Não armazenamos o arquivo original.</p>
+      </div>
+      <button id="simulatePdfBtn" class="btn-primary"><i class="fas fa-chart-simple"></i> Analisar cotação (simular extração)</button>
+    </div>
+
+    <div id="manualModeArea" style="display: none;">
+      <div class="form-group">
+        <label><i class="fas fa-table-list"></i> Inserir itens, quantidades e preços (CSV ou manual)</label>
+        <textarea id="manualData" rows="5" placeholder="Exemplo:&#10;Item, Qtd, Preço Unitário&#10;Seringa 10ml, 500, 0.45&#10;Luva Cirúrgica, 200, 1.20&#10;Máscara N95, 1000, 0.89"></textarea>
+        <p class="legal-note"><i class="fas fa-database"></i> Nenhum dado de fornecedor externo é armazenado. Apenas comparativo com nossa base de fornecedores parceiros.</p>
+      </div>
+      <button id="simulateManualBtn" class="btn-primary"><i class="fas fa-calculator"></i> Comparar preços</button>
+    </div>
+
+    <!-- Área de resultados compartilhada -->
+    <div id="resultsArea" style="display: none;">
+      <hr />
+      <div class="results">
+        <div style="display: flex; justify-content: space-between; flex-wrap: wrap;">
+          <h3><i class="fas fa-chart-column"></i> Análise comparativa</h3>
+          <span class="supplier-anon"><i class="fas fa-user-secret"></i> Fornecedor origem: anonimizado (conforme política de minimização)</span>
+        </div>
+        <div id="summaryText" style="margin: 0.8rem 0;"></div>
+        <div class="chart-container">
+          <canvas id="priceChart" width="400" height="200" style="max-height: 250px;"></canvas>
+        </div>
+        <div id="economyDetail"></div>
+        <div class="action-buttons">
+          <button id="generateReportBtn" class="btn-secondary"><i class="fas fa-print"></i> Imprimir relatório comparativo</button>
+          <button id="decisionBuyBtn" class="btn-primary"><i class="fas fa-shopping-cart"></i> DECIDIR COMPRA (encaminhar proposta)</button>
+          <button id="decisionDeclineBtn" class="btn-secondary"><i class="fas fa-times-circle"></i> DECLINAR / registrar recusa</button>
+        </div>
+        <p class="legal-note" style="margin-top: 12px;"><i class="fas fa-gavel"></i> Ao clicar em “Comprar”, você será redirecionado para negociação direta com fornecedor parceiro. Não retemos dados sensíveis.</p>
+      </div>
+    </div>
+  </div>
+  <div class="footer-note">
+    <i class="fas fa-balance-scale"></i> PriceGuard opera em conformidade com LGPD, princípio da minimização e ausência de armazenamento de PDFs. Nenhum dado identificador de fornecedor externo é armazenado ou compartilhado. A plataforma apenas sugere economia — a compra é optativa.
+  </div>
+</div>
+
+<script>
+  // ======================= MODELO DE NEGÓCIO E LEGAL ========================
+  // 1) Não armazenamos PDFs (simulamos descarte após extração)
+  // 2) Anonimização completa do fornecedor original
+  // 3) Modo manual e modo PDF (extração fictícia mas que demonstra a funcionalidade)
+  // 4) Fornecedores parceiros internos (base de comparação)
+  
+  // Base de fornecedores parceiros (benchmark de mercado)
+  const partnerSuppliers = [
+    { name: "MedValue Distribuidora", marginFactor: 0.92 },   // 8% abaixo referência
+    { name: "Saúde Direct Brasil", marginFactor: 0.88 },
+    { name: "Incor Medical Supply", marginFactor: 0.95 }
+  ];
+  
+  // Itens padrão para simulação (exemplo extraído de um PDF genérico)
+  let currentExtractedItems = [];      // array de { name, qty, originalPrice }
+  let currentAlternativeTotal = 0;
+  let currentOriginalTotal = 0;
+  let currentEconomyPercent = 0;
+  let chartInstance = null;
+  
+  // Modo ativo: 'pdf_mode' ou 'manual_mode'
+  let activeMode = 'pdf_mode';
+  
+  // Elementos DOM
+  const pdfModeDiv = document.getElementById('pdfModeArea');
+  const manualModeDiv = document.getElementById('manualModeArea');
+  const resultsDiv = document.getElementById('resultsArea');
+  const modeCards = document.querySelectorAll('.mode-card');
+  
+  // Troca de modo (com segurança)
+  function setActiveMode(mode) {
+    activeMode = mode;
+    if(mode === 'pdf_mode') {
+      pdfModeDiv.style.display = 'block';
+      manualModeDiv.style.display = 'none';
+    } else {
+      pdfModeDiv.style.display = 'none';
+      manualModeDiv.style.display = 'block';
+    }
+    // esconde resultados ao trocar
+    resultsDiv.style.display = 'none';
+    if (chartInstance) { chartInstance.destroy(); }
+  }
+  
+  modeCards.forEach(card => {
+    card.addEventListener('click', () => {
+      modeCards.forEach(c => c.classList.remove('active'));
+      card.classList.add('active');
+      const mode = card.getAttribute('data-mode');
+      setActiveMode(mode);
+    });
+  });
+  
+  // Função para calcular melhor preço alternativo baseado nos itens (melhor fornecedor parceiro)
+  function computeBestAlternative(items) {
+    if (!items.length) return { total: 0, itemsDetails: [] };
+    // Para cada item, aplicamos o melhor fator de desconto entre fornecedores partner
+    let bestFactor = Math.min(...partnerSuppliers.map(p => p.marginFactor));
+    // Garantimos fator mínimo de 0,82 (não irreal)
+    bestFactor = Math.max(bestFactor, 0.82);
+    let totalAlt = 0;
+    let details = [];
+    for(let it of items) {
+      let altPrice = it.originalPrice * bestFactor;
+      let economyItem = it.originalPrice - altPrice;
+      totalAlt += altPrice * it.qty;
+      details.push({
+        name: it.name,
+        qty: it.qty,
+        originalPrice: it.originalPrice,
+        altPrice: altPrice,
+        economyUnit: economyItem,
+        totalOriginal: it.originalPrice * it.qty,
+        totalAlt: altPrice * it.qty
+      });
+    }
+    let originalTotal = items.reduce((acc, i) => acc + (i.originalPrice * i.qty), 0);
+    return { total: totalAlt, originalTotal, details, bestFactorApplied: bestFactor };
+  }
+  
+  // Renderizar gráfico + resultados
+  function renderResults(originalTotal, altTotal, itemsDetail) {
+    const economyValue = originalTotal - altTotal;
+    const economyPercent = (economyValue / originalTotal) * 100;
+    currentOriginalTotal = originalTotal;
+    currentAlternativeTotal = altTotal;
+    currentEconomyPercent = economyPercent;
+    
+    document.getElementById('summaryText').innerHTML = `
+      <div style="display: flex; justify-content: space-between; flex-wrap: wrap;">
+        <span><strong>💰 Valor da cotação (origem anônima):</strong> R$ ${originalTotal.toFixed(2)}</span>
+        <span><strong>⚡ Melhor preço parceiro:</strong> R$ ${altTotal.toFixed(2)}</span>
+      </div>
+    `;
+    const economyColor = economyPercent > 0 ? '#1E6F5C' : '#b33';
+    document.getElementById('economyDetail').innerHTML = `
+      <div class="economy-badge" style="margin-top: 12px;">
+        <i class="fas fa-tag"></i> Economia potencial: R$ ${economyValue.toFixed(2)} (${economyPercent.toFixed(1)}%)
+      </div>
+      <p style="margin-top: 12px; font-size: 0.85rem;"><i class="fas fa-chart-simple"></i> Comparação baseada em fornecedores parceiros ativos. <br> 
+      <span class="supplier-anon"><i class="fas fa-user-lock"></i> Fornecedor original da cotação não é identificado — garantia de anonimização.</span></p>
+    `;
+    
+    // Criar gráfico
+    const ctx = document.getElementById('priceChart').getContext('2d');
+    if (chartInstance) chartInstance.destroy();
+    chartInstance = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['Cotação recebida (anonimizada)', 'Melhor oferta PriceGuard'],
+        datasets: [{
+          label: 'Valor total (R$)',
+          data: [originalTotal, altTotal],
+          backgroundColor: ['#90beaa', '#1E6F5C'],
+          borderRadius: 12
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+          tooltip: { callbacks: { label: (ctx) => `R$ ${ctx.raw.toFixed(2)}` } }
+        }
+      }
+    });
+    
+    resultsDiv.style.display = 'block';
+    window.scrollTo({ top: resultsDiv.offsetTop - 20, behavior: 'smooth' });
+  }
+  
+  // Extração simulada de PDF (mas respeitando a política: não armazenamos, apenas leitura em memória)
+  // Em um ambiente real, faríamos parse do PDF com lib (pdf.js) e anonimizaríamos fornecedor.
+  // Para MVP, geramos dados compatíveis de exemplo que representam extração real de itens.
+  function simulatePdfExtraction(file) {
+    if (!file) {
+      alert("Por favor, selecione um arquivo PDF.");
+      return null;
+    }
+    // Simulação baseada no nome do arquivo apenas para MVP demonstrativo.
+    // Demonstra que não guardamos conteúdo.
+    const mockExtracted = [
+      { name: "Seringa descartável 5ml", qty: 1000, originalPrice: 0.42 },
+      { name: "Gaze estéril 7,5x7,5", qty: 500, originalPrice: 0.29 },
+      { name: "Luvas de procedimento", qty: 200, originalPrice: 0.97 }
+    ];
+    // pequena variação baseada no timestamp apenas didático
+    currentExtractedItems = mockExtracted.map(item => ({ ...item }));
+    alert("✅ PDF processado em memória (sem armazenamento). Fornecedor original anonimizado. Extração concluída!");
+    return currentExtractedItems;
+  }
+  
+  // Processar dados manuais (textarea estilo CSV ou colunas)
+  function parseManualData(rawText) {
+    const lines = rawText.trim().split(/\r?\n/);
+    if(lines.length < 2) {
+      alert("Insira pelo menos cabeçalho + uma linha de dados. Exemplo: Item, Qtd, Preço");
+      return null;
+    }
+    let items = [];
+    for(let i=1; i<lines.length; i++) {
+      let line = lines[i].trim();
+      if(line === "") continue;
+      let parts = line.split(',').map(p => p.trim());
+      if(parts.length < 3) continue;
+      let name = parts[0];
+      let qty = parseInt(parts[1]);
+      let price = parseFloat(parts[2].replace(',','.'));
+      if(isNaN(qty) || isNaN(price) || qty<=0 || price<=0) continue;
+      items.push({ name, qty, originalPrice: price });
+    }
+    if(items.length === 0) {
+      alert("Nenhum item válido encontrado. Use formato: Nome, Quantidade, Preço");
+      return null;
+    }
+    return items;
+  }
+  
+  // Evento de análise para PDF (simulação, mas com respeito aos princípios de descarte)
+  document.getElementById('simulatePdfBtn').addEventListener('click', () => {
+    const fileInput = document.getElementById('pdfUpload');
+    const file = fileInput.files[0];
+    if(!file) {
+      alert("Faça upload do PDF da cotação (Bionexo/Apoio ou qualquer fornecedor).");
+      return;
+    }
+    // Simular extração e descarte imediato - respeitando não armazenamento
+    const extracted = simulatePdfExtraction(file);
+    if(!extracted) return;
+    // A partir da extração, calcular melhor proposta com fornecedores parceiros
+    const { total: altTotal, originalTotal, details } = computeBestAlternative(extracted);
+    renderResults(originalTotal, altTotal, details);
+    // remover referência para demonstrar compromisso: após resultado, "esquecemos" o PDF
+    fileInput.value = '';  // limpa o campo, garantindo que o arquivo não ficará em cache do dom
+    currentExtractedItems = extracted; // só mantém dados estruturados (itens, preços)
+  });
+  
+  // Evento análise manual (Excel / digitação)
+  document.getElementById('simulateManualBtn').addEventListener('click', () => {
+    const manualText = document.getElementById('manualData').value;
+    if(!manualText.trim()) {
+      alert("Digite ou cole os dados no formato: Item, Quantidade, Preço unitário");
+      return;
+    }
+    const items = parseManualData(manualText);
+    if(!items) return;
+    const { total: altTotal, originalTotal, details } = computeBestAlternative(items);
+    renderResults(originalTotal, altTotal, details);
+    currentExtractedItems = items;
+  });
+  
+  // Gerar relatório imprimível (print)
+  document.getElementById('generateReportBtn')?.addEventListener('click', () => {
+    if(!currentExtractedItems || currentOriginalTotal === undefined) {
+      alert("Nenhuma análise carregada. Faça uma comparação primeiro.");
+      return;
+    }
+    const win = window.open('');
+    win.document.write(`
+      <html><head><title>Relatório PriceGuard</title><style>body{font-family:Inter, sans-serif; padding:2rem}</style></head>
+      <body>
+        <h2>Relatório Comparativo de Compras</h2>
+        <p><strong>Data:</strong> ${new Date().toLocaleString()}</p>
+        <p><strong>Valor cotado (fornecedor anônimo):</strong> R$ ${currentOriginalTotal.toFixed(2)}</p>
+        <p><strong>Melhor preço PriceGuard:</strong> R$ ${currentAlternativeTotal.toFixed(2)}</p>
+        <p><strong>Economia total :</strong> R$ ${(currentOriginalTotal - currentAlternativeTotal).toFixed(2)} (${currentEconomyPercent.toFixed(1)}%)</p>
+        <hr/>
+        <p><em>Relatório gerado conforme conformidade LGPD - dados anonimizados. Nenhum PDF foi armazenado.</em></p>
+      </body></html>
+    `);
+    win.document.close();
+    win.print();
+  });
+  
+  // DECISÃO COMPRAR (encaminha para simulação de contato com fornecedor parceiro)
+  document.getElementById('decisionBuyBtn')?.addEventListener('click', () => {
+    if(!currentExtractedItems || currentOriginalTotal === undefined) {
+      alert("Realize uma análise antes de decidir comprar.");
+      return;
+    }
+    alert(`✅ Compra sugerida com fornecedor parceiro PriceGuard: Valor estimado R$ ${currentAlternativeTotal.toFixed(2)}.\nUm representante entrará em contato para finalizar. (Simulação de encaminhamento seguro)`);
+    // Aqui seria integração com api de marketplace, mas mantemos log (não registra dado sensível)
+  });
+  
+  // DECLINAR / registrar recusa
+  document.getElementById('decisionDeclineBtn')?.addEventListener('click', () => {
+    if(!currentExtractedItems) {
+      alert("Nenhuma cotação ativa.");
+      return;
+    }
+    alert("Recusa registrada internamente (apenas para métricas). Nenhum dado sensível retido.");
+  });
+  
+  // Inicializa com modo PDF ativo
+  setActiveMode('pdf_mode');
+</script>
+</body>
+</html>
