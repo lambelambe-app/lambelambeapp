@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blueprint NOVAMED SAÚDE - Processo de Compras e Estoque</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Calibri', 'Segoe UI', Arial, sans-serif;
+            background-color: #e6e6e6;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 0;
+        }
+
+        /* Página A4 */
+        .page {
+            width: 21cm;
+            min-height: 29.7cm;
+            background: white;
+            margin: 0 auto 20px auto;
+            padding: 1.8cm 1.5cm;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            position: relative;
+            break-after: page;
+            page-break-after: always;
+        }
+
+        /* Cabeçalho do documento (estilo blueprint) */
+        .blueprint-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 3px solid #2c3e50;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .blueprint-header .title-section h1 {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2c3e50;
+            letter-spacing: 1px;
+        }
+        .blueprint-header .title-section h2 {
+            font-size: 14px;
+            font-weight: normal;
+            color: #555;
+        }
+        .blueprint-header .version-section {
+            text-align: right;
+            font-size: 12px;
+        }
+
+        /* Estilos para títulos */
+        h3 {
+            font-size: 16px;
+            margin: 20px 0 10px 0;
+            color: #2c3e50;
+            border-left: 4px solid #2c3e50;
+            padding-left: 10px;
+        }
+        h4 {
+            font-size: 14px;
+            margin: 15px 0 8px 0;
+            color: #34495e;
+        }
+        .section-title {
+            background-color: #f0f0f0;
+            font-size: 15px;
+            font-weight: bold;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            padding: 6px 10px;
+            border-left: 5px solid #2c3e50;
+        }
+
+        /* Tabelas */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: 12px;
+        }
+        th, td {
+            border: 1px solid #aaa;
+            padding: 8px 10px;
+            vertical-align: top;
+        }
+        th {
+            background-color: #e9ecef;
+            font-weight: bold;
+            text-align: center;
+        }
+        .checklist-table td:first-child {
+            width: 40%;
+            font-weight: 600;
+        }
+        .comparativo-table td, .comparativo-table th {
+            text-align: left;
+        }
+        .assinatura-table td {
+            border: none;
+            border-bottom: 1px solid #000;
+            width: 25%;
+            text-align: center;
+        }
+        .assinatura-table {
+            border: none;
+            margin-top: 30px;
+        }
+
+        /* Listas */
+        ul, .riscos-list {
+            margin: 10px 0 10px 25px;
+            font-size: 12px;
+        }
+        li {
+            margin: 5px 0;
+        }
+        .highlight {
+            background-color: #fef9e4;
+            padding: 8px 12px;
+            border-left: 4px solid #f39c12;
+            font-size: 12px;
+            margin: 15px 0;
+        }
+
+        /* Rodapé com número de página */
+        .page-footer {
+            position: absolute;
+            bottom: 1.5cm;
+            left: 1.5cm;
+            right: 1.5cm;
+            font-size: 10px;
+            color: #777;
+            text-align: center;
+            border-top: 1px solid #ddd;
+            padding-top: 8px;
+        }
+
+        /* Quebra de página manual */
+        .page-break {
+            page-break-before: always;
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+                margin: 0;
+            }
+            .page {
+                box-shadow: none;
+                margin: 0;
+                padding: 1.5cm;
+                page-break-after: always;
+            }
+            .page-footer {
+                position: fixed;
+                bottom: 0;
+            }
+            .blueprint-header {
+                border-bottom: 2px solid #000;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- PÁGINA 1 - CAPA e SUMÁRIO -->
+    <div class="page">
+        <div class="blueprint-header">
+            <div class="title-section">
+                <h1>BUSINESS BLUEPRINT</h1>
+                <h2>Processo de Compras e Controle de Estoque</h2>
+                <h2>NOVAMED SAÚDE</h2>
+            </div>
+            <div class="version-section">
+                Versão: 01<br>
+                Revisão: 04/2026<br>
+                Status: Em aprovação<br>
+                Autor: [Consultoria]
+            </div>
+        </div>
+
+        <div style="text-align: center; margin: 80px 0 40px 0;">
+            <h3 style="border-left: none; font-size: 22px;">DOCUMENTO DE ANÁLISE DE PROCESSOS</h3>
+            <h3 style="border-left: none; font-size: 18px;">AS IS (atual) × TO BE (com sistema)</h3>
+            <hr style="width: 50%; margin: 20px auto;">
+            <p style="font-size: 14px;">Base metodológica: Blueprint Irmandade Santa Casa de Sorocaba</p>
+            <p style="font-size: 12px; color: #555;">26 de abril de 2026</p>
+        </div>
+
+        <div class="page-footer">Página 1 / 5</div>
+    </div>
+
+    <!-- PÁGINA 2 - Sumário + Introdução + AS IS -->
+    <div class="page">
+        <h3>Sumário</h3>
+        <ul style="margin-bottom: 25px;">
+            <li>1. Introdução</li>
+            <li>2. Descrição “AS IS” – Processo Atual Manual</li>
+            <li>3. Riscos Identificados</li>
+            <li>4. Descrição “TO BE” – Processo Futuro com Sistema</li>
+            <li>5. Comparativo Direto – AS IS vs. TO BE</li>
+            <li>6. Fluxo Simplificado – TO BE</li>
+            <li>7. Aprovação</li>
+        </ul>
+
+        <div class="section-title">1. Introdução</div>
+        <p style="font-size: 12px; margin-bottom: 10px;"><strong>Área analisada:</strong> Compras e Estoque da NOVAMED SAÚDE. Atualmente, todo o processo – do controle de estoque à reposição por compras – é realizado de forma <strong>manual e descentralizada</strong>, utilizando planilhas, e-mails, telefonemas e documentos físicos. Não há sistema integrado.</p>
+        <p style="font-size: 12px;"><strong>Objetivo deste documento:</strong> Registrar o cenário “AS IS”, apresentar checklist de diagnóstico, riscos e propor o modelo “TO BE” alinhado a um sistema de gestão (ERP) com módulo de compras e estoque, seguindo o padrão do blueprint da Santa Casa.</p>
+        <p style="font-size: 12px;"><strong>Escopo:</strong> Matriz e filiais da Novamed. Processos: controle de estoque, solicitação de compras, aprovação, cotação, ordem de compra, recebimento e atualização de estoque.</p>
+
+        <div class="section-title">2. Descrição “AS IS” – Processo Atual Manual</div>
+        <p style="font-size: 12px;">Atualmente, a Novamed Saúde não utiliza nenhum sistema de gestão. O diagnóstico abaixo foi levantado por meio de checklist aplicado com os responsáveis.</p>
+
+        <h4>2.1 Checklist de Diagnóstico (AS IS)</h4>
+        <table class="checklist-table">
+            <tr><th>Etapa</th><th>Pergunta</th><th>Resposta atual</th></tr>
+            <tr><td>Estoque</td><td>Controlado por planilha ou apontamento visual?</td><td>Sim, Excel compartilhado</td></tr>
+            <tr><td>Estoque</td><td>Existe estoque mínimo/máximo definido?</td><td>Não</td></tr>
+            <tr><td>Estoque</td><td>Há alerta quando atinge o ponto de pedido?</td><td>Não, apenas verificação visual</td></tr>
+            <tr><td>Solicitação</td><td>Registrada em papel, e-mail ou verbal?</td><td>E-mail ou mensagem WhatsApp</td></tr>
+            <tr><td>Solicitação</td><td>Possui formulário padrão?</td><td>Não</td></tr>
+            <tr><td>Aprovação</td><td>Necessita aprovação antes da cotação?</td><td>Sim, gerente aprova por e-mail</td></tr>
+            <tr><td>Aprovação</td><td>Hierarquia de aprovação (ex.: > R$ 5 mil)?</td><td>Não, todos vão para o mesmo aprovador</td></tr>
+            <tr><td>Cotação</td><td>Realizada por telefone/WhatsApp?</td><td>Sim, em média 2-3 fornecedores</td></tr>
+            <tr><td>Cotação</td><td>Comparação de preços é manual?</td><td>Sim, planilha avulsa</td></tr>
+            <tr><td>Histórico</td><td>Registra-se preço histórico por produto?</td><td>Não</td></tr>
+            <tr><td>Ordem de Compra</td><td>Emitida como documento avulso (Word)?</td><td>Sim, sem numeração padrão</td></tr>
+            <tr><td>Ordem de Compra</td><td>Aprovação final da OC é manual?</td><td>Assinatura física ou e-mail</td></tr>
+            <tr><td>Recebimento</td><td>Entrada no estoque é manual?</td><td>Planilha separada, sem vínculo com OC</td></tr>
+            <tr><td>Rastreabilidade</td><td>É possível saber quem pediu, aprovou, recebeu?</td><td>Difícil, informações dispersas</td></tr>
+        </table>
+
+        <div class="section-title">3. Riscos Atuais Identificados</div>
+        <ul class="riscos-list">
+            <li>✗ Perda de solicitações (e-mails não visualizados, papéis extraviados).</li>
+            <li>✗ Compras duplicadas – mesmo item pedido por pessoas diferentes sem coordenação.</li>
+            <li>✗ Estoque irregular – falta de produtos essenciais por demora na reposição.</li>
+            <li>✗ Aprovações pendentes sem visibilidade – ninguém sabe que precisa aprovar.</li>
+            <li>✗ Preços inconsistentes – pagamento acima do mercado por falta de histórico.</li>
+            <li>✗ Falta de auditoria – impossibilidade de rastrear quem fez o quê.</li>
+        </ul>
+
+        <div class="page-footer">Página 2 / 5</div>
+    </div>
+
+    <!-- PÁGINA 3 - TO BE + BENEFÍCIOS -->
+    <div class="page">
+        <div class="section-title">4. Descrição “TO BE” – Processo Futuro com Sistema</div>
+        <p style="font-size: 12px;">Após a implantação de um sistema ERP (ex.: MV, Soul MV, ou similar) com módulo de compras e estoque, todas as unidades (matriz e filiais) operarão na <strong>mesma base sistêmica</strong>, eliminando planilhas e retrabalho.</p>
+
+        <h4>4.1 Visão Geral do Processo TO BE</h4>
+        <div class="highlight">
+            <strong>Fluxo resumido:</strong><br>
+            📌 Solicitante da unidade → registra pedido no sistema (estoque mínimo alerta) → aprovação eletrônica → comprador realiza cotação integrada → sistema gera OC automaticamente → OC aprovada eletronicamente → fornecedor recebe OC → unidade recebe mercadoria e dá entrada → estoque atualizado em tempo real.
+        </div>
+
+        <h4>4.2 Principais mudanças em relação ao AS IS</h4>
+        <ul>
+            <li>✔ <strong>Fim das planilhas</strong> – registro único e obrigatório no sistema.</li>
+            <li>✔ <strong>Controle de estoque ativo</strong> – parâmetros de mínimo/máximo; sistema alerta no ponto de pedido.</li>
+            <li>✔ <strong>Cotações comparadas automaticamente</strong> – histórico de preços por produto/fornecedor.</li>
+            <li>✔ <strong>Aprovações eletrônicas</strong> – com notificação e trilha completa de auditoria.</li>
+            <li>✔ <strong>OC numerada e integrada</strong> – vinculada ao pedido de compra e ao recebimento.</li>
+            <li>✔ <strong>Estoque atualizado em tempo real</strong> – entrada da nota fiscal já movimenta o estoque.</li>
+            <li>✔ <strong>Visibilidade para as unidades</strong> – acompanham o status do pedido sem telefonar para compras.</li>
+        </ul>
+
+        <h4>4.3 Benefícios Esperados por Área</h4>
+        <table>
+            <tr><th>Área</th><th>Benefício</th></tr>
+            <tr><td>Estoque</td><td>Redução de ruptura e excesso. Reposição no momento certo.</td></tr>
+            <tr><td>Compras</td><td>Processo mais rápido, cotações comparáveis e melhor preço.</td></tr>
+            <tr><td>Financeiro</td><td>Evita pagamento de notas fiscais sem OC válida.</td></tr>
+            <tr><td>Auditoria</td><td>Rastreabilidade total: do pedido ao pagamento.</td></tr>
+            <tr><td>Unidades assistenciais</td><td>Sabem quando o material chega, sem retrabalho de comunicação.</td></tr>
+        </table>
+
+        <div class="section-title">5. Comparativo Direto – AS IS vs. TO BE</div>
+        <table class="comparativo-table">
+            <tr><th>Atividade</th><th>AS IS (manual)</th><th>TO BE (com sistema)</th></tr>
+            <tr><td>Controle de estoque</td><td>Planilha / apontamento visual</td><td>Parametrizado com mínimo/máximo. Sugestão automática de pedido.</td></tr>
+            <tr><td>Solicitação de compra</td><td>Papel, e-mail ou verbal</td><td>Formulário eletrônico padronizado com campos obrigatórios.</td></tr>
+            <tr><td>Aprovação da solicitação</td><td>E-mail ou assinatura física sem rastro</td><td>Fluxo eletrônico com níveis de aprovação e notificação.</td></tr>
+            <tr><td>Cotação</td><td>Telefone/WhatsApp. Comparação manual.</td><td>Envio integrado para fornecedores. Comparação automática.</td></tr>
+            <tr><td>Preço histórico</td><td>Nenhum registro</td><td>Banco de preços por produto/fornecedor. Alerta de variação.</td></tr>
+            <tr><td>Ordem de Compra</td><td>Documento avulso (Word) sem numeração</td><td>OC gerada automaticamente, numerada e vinculada ao pedido.</td></tr>
+            <tr><td>Aprovação final da OC</td><td>Assinatura manual → atrasos</td><td>Aprovação eletrônica com um clique e registro de data/hora.</td></tr>
+            <tr><td>Comunicação com unidade</td><td>Unidade pergunta por e-mail/telefone</td><td>Unidade visualiza status no sistema em tempo real.</td></tr>
+            <tr><td>Recebimento e estoque</td><td>Conferência manual, planilha separada</td><td>Entrada de nota fiscal atualiza estoque automaticamente.</td></tr>
+            <tr><td>Rastreabilidade</td><td>Baixa ou nenhuma</td><td>Completa: quem pediu, aprovou, cotou, recebeu.</td></tr>
+        </table>
+
+        <div class="page-footer">Página 3 / 5</div>
+    </div>
+
+    <!-- PÁGINA 4 - Fluxo TO BE detalhado + Próximos passos -->
+    <div class="page">
+        <div class="section-title">6. Fluxo Detalhado (TO BE) – Entradas e Saídas</div>
+        <table>
+            <tr><th>Etapa</th><th>Responsável</th><th>Ação no sistema</th></tr>
+            <tr><td>1. Identificação da necessidade</td><td>Sistema (ou solicitante)</td><td>Estoque atinge parâmetro mínimo → sistema gera alerta/sugestão de pedido.</td></tr>
+            <tr><td>2. Solicitação de compras</td><td>Solicitante da unidade</td><td>Registra pedido no sistema MV (ou similar) informando produto, quantidade, urgência.</td></tr>
+            <tr><td>3. Aprovação da solicitação</td><td>Gestor imediato (nível 1)</td><td>Aprovador recebe notificação; aprova com um clique – histórico registrado.</td></tr>
+            <tr><td>4. Processo de cotação</td><td>Comprador matriz</td><td>Seleciona fornecedores cadastrados, envia pedido de cotação via sistema; fornecedores respondem por e-mail integrado.</td></tr>
+            <tr><td>5. Escolha da melhor proposta</td><td>Comprador</td><td>Sistema compara preços, prazos; comprador define vencedor.</td></tr>
+            <tr><td>6. Geração da Ordem de Compra</td><td>Sistema (automático)</td><td>OC gerada com numeração única, vinculada ao pedido e ao fornecedor.</td></tr>
+            <tr><td>7. Aprovação da OC</td><td>Gerente de compras (nível 2)</td><td>Aprovação eletrônica; após aprovada, OC é enviada ao fornecedor por e-mail.</td></tr>
+            <tr><td>8. Recebimento de materiais</td><td>Recebedor da unidade</td><td>Confere nota fiscal com a OC no sistema; registra entrada e divergências (se houver).</td></tr>
+            <tr><td>9. Atualização do estoque</td><td>Sistema (automático)</td><td>Quantidades recebidas somadas ao estoque; pedido é encerrado.</td></tr>
+        </table>
+
+        <div class="highlight">
+            <strong>Eliminação de dependências:</strong> O comprador não precisará acessar sistemas diferentes de cada unidade. Todas as informações estarão em uma única base.
+        </div>
+
+        <div class="section-title">Próximos Passos Recomendados</div>
+        <ul>
+            <li>✓ Aplicar o checklist completo com os times de estoque, compras e enfermagem (já parcialmente feito neste documento).</li>
+            <li>✓ Validar os riscos mais urgentes (ex.: falta de EPI ou medicamento crítico).</li>
+            <li>✓ Definir os parâmetros de estoque (mínimo/máximo/ponto de pedido) para os 50 itens de maior giro.</li>
+            <li>✓ Selecionar o sistema ERP (MV, Soul MV, Totvs, etc.) com módulo de compras e estoque.</li>
+            <li>✓ Planejar implantação piloto em uma unidade e depois expandir.</li>
+            <li>✓ Treinar todos os envolvidos: solicitantes, aprovadores, compradores e recebedores.</li>
+        </ul>
+
+        <div class="page-footer">Página 4 / 5</div>
+    </div>
+
+    <!-- PÁGINA 5 - Aprovação e rodapé final -->
+    <div class="page">
+        <div class="section-title">7. Aprovação</div>
+        <p style="font-size: 12px; margin-bottom: 25px;">O presente documento reflete o levantamento do processo atual (AS IS) e a proposta de futuro (TO BE) para a NOVAMED SAÚDE. As partes abaixo aprovam o conteúdo e autorizam os próximos passos.</p>
+
+        <table class="assinatura-table" style="margin-top: 20px;">
+            <tr>
+                <th style="border: none;">Cliente / Nome</th>
+                <th style="border: none;">Cargo</th>
+                <th style="border: none;">Assinatura</th>
+                <th style="border: none;">Data</th>
+            </tr>
+            <tr><td style="border: none; border-bottom: 1px solid black;">&nbsp;</td><td style="border: none; border-bottom: 1px solid black;">&nbsp;</td><td style="border: none; border-bottom: 1px solid black;">&nbsp;</td><td style="border: none; border-bottom: 1px solid black;">&nbsp;</td></tr>
+            <tr><td style="border: none;">Diretor Administrativo</td><td style="border: none;">&nbsp;</td><td style="border: none;">&nbsp;</td><td style="border: none;">&nbsp;</td></tr>
+            <tr><td style="border: none; border-bottom: 1px solid black;">&nbsp;</td><td style="border: none; border-bottom: 1px solid black;">&nbsp;</td><td style="border: none; border-bottom: 1px solid black;">&nbsp;</td><td style="border: none; border-bottom: 1px solid black;">&nbsp;</td></tr>
+            <tr><td style="border: none;">Gerente de Compras</td><td style="border: none;">&nbsp;</td><td style="border: none;">&nbsp;</td><td style="border: none;">&nbsp;</td></tr>
+        </table>
+        <table class="assinatura-table" style="margin-top: 20px;">
+            <tr>
+                <th style="border: none;">Consultoria / Nome</th>
+                <th style="border: none;">Cargo</th>
+                <th style="border: none;">Assinatura</th>
+                <th style="border: none;">Data</th>
+            </tr>
+            <tr><td style="border: none; border-bottom: 1px solid black;">&nbsp;</td><td style="border: none; border-bottom: 1px solid black;">&nbsp;</td><td style="border: none; border-bottom: 1px solid black;">&nbsp;</td><td style="border: none; border-bottom: 1px solid black;">&nbsp;</td></tr>
+            <tr><td style="border: none;">[Seu Nome]</td><td style="border: none;">Analista de Processos</td><td style="border: none;">&nbsp;</td><td style="border: none;">&nbsp;</td></tr>
+        </table>
+
+        <p style="font-size: 11px; text-align: center; margin-top: 40px;">Documento elaborado em 26 de abril de 2026<br>Base metodológica: Blueprint Irmandade Santa Casa de Sorocaba – Processo Compras UPA Éden e Zona Leste</p>
+        <div class="page-footer">Página 5 / 5</div>
+    </div>
+</body>
+                                                                                                                                                       </html>
