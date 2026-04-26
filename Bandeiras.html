@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>📜 Evolução das Bandeiras | Brasil · África do Sul · EUA</title>
+    <title>⚽ CREST EVOLUTION | História dos Escudos de Futebol</title>
     <style>
         * {
             margin: 0;
@@ -12,444 +12,508 @@
         }
 
         body {
-            background: linear-gradient(145deg, #f5f7fc 0%, #eef2f8 100%);
-            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background: linear-gradient(135deg, #0a1a1f 0%, #1a2a2f 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             min-height: 100vh;
-            padding: 2rem 1.5rem;
-            color: #1a2c3e;
+            padding: 1.5rem;
+            color: #f0f0f0;
         }
 
-        /* container principal */
         .app-container {
-            max-width: 1300px;
+            max-width: 1200px;
             margin: 0 auto;
-            background: rgba(255,255,255,0.75);
-            backdrop-filter: blur(2px);
-            border-radius: 3rem;
-            box-shadow: 0 25px 45px -12px rgba(0,0,0,0.2), 0 2px 5px rgba(0,0,0,0.02);
-            padding: 1.8rem 2rem 2.5rem;
-            transition: all 0.2s ease;
         }
 
-        h1 {
-            font-size: 2.4rem;
+        /* header */
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
             font-weight: 700;
-            background: linear-gradient(135deg, #1F4A5C, #2C6E4F);
+            background: linear-gradient(135deg, #FFD700, #FFA500);
             background-clip: text;
             -webkit-background-clip: text;
             color: transparent;
-            letter-spacing: -0.01em;
-            display: inline-flex;
-            align-items: center;
-            gap: 12px;
+            letter-spacing: -0.5px;
         }
 
-        h1 small {
+        .header p {
+            color: #8aa0a8;
             font-size: 0.9rem;
-            font-weight: 400;
-            background: none;
-            color: #7f8c8d;
-            letter-spacing: normal;
+            margin-top: 0.5rem;
         }
 
-        .sub {
-            color: #4b6b7e;
-            margin-top: 0.3rem;
-            margin-bottom: 2rem;
-            border-left: 4px solid #2C6E4F;
-            padding-left: 1rem;
-            font-weight: 450;
-        }
-
-        /* seletor de país - estilo moderno */
-        .country-selector {
+        /* grid de clubes */
+        .clubs-grid {
             display: flex;
             flex-wrap: wrap;
-            gap: 1rem;
-            margin-bottom: 2.8rem;
             justify-content: center;
+            gap: 0.8rem;
+            margin-bottom: 2rem;
         }
 
-        .country-btn {
-            background: #ffffffcc;
-            backdrop-filter: blur(4px);
-            border: 1px solid rgba(44, 110, 79, 0.2);
-            padding: 0.85rem 2rem;
-            border-radius: 60px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: #1F4A5C;
-            cursor: pointer;
-            transition: all 0.2s ease;
+        .club-card {
+            background: rgba(30, 45, 50, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            border-radius: 1.5rem;
+            padding: 0.7rem 1.2rem;
             display: flex;
             align-items: center;
-            gap: 12px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+            gap: 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
         }
 
-        .country-btn img {
-            width: 32px;
-            height: 24px;
-            object-fit: cover;
-            border-radius: 4px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        .club-card:hover {
+            transform: translateY(-3px);
+            background: rgba(50, 70, 75, 0.9);
+            border-color: #FFD700;
         }
 
-        .country-btn.active {
-            background: #1F4A5C;
-            border-color: #1F4A5C;
-            color: white;
-            box-shadow: 0 12px 18px -8px rgba(31,74,92,0.4);
+        .club-card.active {
+            background: linear-gradient(135deg, #2c5f2d, #1a3a2a);
+            border-color: #FFD700;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
         }
 
-        .country-btn:hover:not(.active) {
-            background: #e9f0f0;
-            border-color: #2C6E4F;
-            transform: translateY(-2px);
-        }
-
-        /* painel principal da bandeira */
-        .flag-panel {
+        .club-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: contain;
             background: white;
+            padding: 4px;
+        }
+
+        .club-name {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        /* painel principal do escudo */
+        .crest-panel {
+            background: rgba(20, 35, 40, 0.6);
+            backdrop-filter: blur(12px);
             border-radius: 2rem;
             padding: 2rem;
-            margin-bottom: 2.5rem;
-            box-shadow: 0 20px 35px -12px rgba(0,0,0,0.1);
-            transition: transform 0.2s;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(255,215,0,0.15);
         }
 
-        .flag-display {
+        .crest-display {
             display: flex;
             flex-direction: column;
             align-items: center;
             text-align: center;
         }
 
-        .flag-img {
+        .crest-image {
             width: 100%;
-            max-width: 480px;
-            background: #f8fafc;
-            border-radius: 32px;
-            box-shadow: 0 15px 30px -12px rgba(0,0,0,0.2);
-            padding: 1rem;
-            margin-bottom: 1.8rem;
-            transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            max-width: 320px;
+            margin-bottom: 1rem;
         }
 
-        .flag-img img {
+        .crest-image img {
             width: 100%;
             height: auto;
-            max-height: 280px;
-            object-fit: contain;
-            border-radius: 20px;
-            background: #fef9e8;
-        }
-
-        .version-title {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-            color: #0f2b36;
-        }
-
-        .year-badge {
-            background: #2C6E4F20;
-            display: inline-block;
-            padding: 0.3rem 1rem;
-            border-radius: 40px;
-            font-weight: 600;
-            font-size: 1.2rem;
-            color: #1F4A5C;
-            margin-bottom: 1rem;
-            backdrop-filter: blur(2px);
-        }
-
-        .description {
-            max-width: 650px;
-            margin: 0 auto;
-            font-size: 1.05rem;
-            line-height: 1.5;
-            color: #2c3e40;
-            background: #f9fafb;
-            padding: 1rem 1.6rem;
+            filter: drop-shadow(0 8px 20px rgba(0,0,0,0.4));
             border-radius: 2rem;
+            background: rgba(255,255,255,0.05);
+            padding: 1rem;
         }
 
-        /* controles de navegação */
-        .nav-controls {
+        .version-badge {
+            background: #FFD70020;
+            backdrop-filter: blur(4px);
+            padding: 0.3rem 1.2rem;
+            border-radius: 40px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #FFD700;
+            margin-bottom: 0.5rem;
+        }
+
+        .year {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 0.5rem;
+        }
+
+        /* navegação */
+        .nav-buttons {
             display: flex;
             justify-content: center;
-            gap: 1.2rem;
+            gap: 1rem;
             margin-top: 1.5rem;
         }
 
         .nav-btn {
-            background: #1F4A5C;
+            background: #FFD700;
             border: none;
-            color: white;
-            font-size: 1.2rem;
-            font-weight: 600;
-            padding: 0.6rem 1.8rem;
-            border-radius: 40px;
+            color: #1a2a2f;
+            font-weight: bold;
+            padding: 0.7rem 1.8rem;
+            border-radius: 2rem;
             cursor: pointer;
-            transition: 0.2s;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            box-shadow: 0 8px 14px -6px #1F4A5C50;
-        }
-
-        .nav-btn:active {
-            transform: scale(0.96);
+            transition: all 0.2s;
+            font-size: 1rem;
         }
 
         .nav-btn:hover {
-            background: #0f3a48;
-            transform: translateY(-2px);
+            background: #FFA500;
+            transform: scale(1.02);
         }
 
-        /* timeline horizontal */
-        .timeline-section {
-            margin-top: 2rem;
+        /* timeline */
+        .timeline {
+            margin-top: 1.5rem;
         }
 
         .timeline-title {
-            font-size: 1.2rem;
-            font-weight: 600;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #FFD700;
             margin-bottom: 1rem;
-            padding-left: 0.5rem;
-            color: #1e4a62;
+            text-align: center;
         }
 
         .timeline-strip {
             display: flex;
             flex-wrap: wrap;
-            gap: 0.9rem;
             justify-content: center;
-            align-items: center;
+            gap: 0.6rem;
         }
 
         .timeline-node {
-            background: #eef3f1;
-            padding: 0.6rem 1.2rem;
-            border-radius: 60px;
-            font-weight: 500;
+            background: rgba(40, 60, 65, 0.8);
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            font-size: 0.8rem;
             cursor: pointer;
             transition: all 0.2s;
             border: 1px solid transparent;
-            font-size: 0.9rem;
-            backdrop-filter: blur(2px);
         }
 
         .timeline-node.active-node {
-            background: #2C6E4F;
-            color: white;
-            border-color: #1F4A5C;
-            box-shadow: 0 5px 12px rgba(44,110,79,0.3);
+            background: #FFD700;
+            color: #1a2a2f;
+            font-weight: bold;
+            border-color: #fff;
         }
 
         .timeline-node:hover {
-            background: #cfdfd9;
-            transform: scale(1.02);
+            background: #FFD70080;
+            color: #1a2a2f;
         }
 
         footer {
             text-align: center;
             margin-top: 2rem;
-            font-size: 0.8rem;
-            color: #5f7f8c;
-            border-top: 1px solid #dce5e8;
-            padding-top: 1.4rem;
+            font-size: 0.7rem;
+            color: #6a8a95;
         }
 
         @media (max-width: 680px) {
-            body {
-                padding: 1rem;
+            .club-name {
+                display: none;
             }
-            .app-container {
+            .club-card {
+                padding: 0.5rem;
+            }
+            .year {
+                font-size: 1.3rem;
+            }
+            .crest-panel {
                 padding: 1.2rem;
-            }
-            .version-title {
-                font-size: 1.6rem;
-            }
-            .country-btn {
-                padding: 0.5rem 1.2rem;
-                font-size: 0.9rem;
             }
         }
     </style>
 </head>
 <body>
 <div class="app-container">
-    <h1>🗺️ EVOLUÇÃO DAS BANDEIRAS <small>história visual</small></h1>
-    <div class="sub">Brasil · África do Sul · Estados Unidos | viagem pela herança e símbolos</div>
+    <div class="header">
+        <h1>⚡ CREST EVOLUTION</h1>
+        <p>Linha do tempo histórica dos escudos de futebol</p>
+    </div>
 
-    <div class="country-selector" id="countrySelector"></div>
+    <div class="clubs-grid" id="clubsGrid"></div>
 
-    <div class="flag-panel">
-        <div class="flag-display" id="flagDisplay">
-            <!-- dinâmico via JS -->
-        </div>
-        <div class="nav-controls">
-            <button class="nav-btn" id="prevBtn">◀ Anterior</button>
-            <button class="nav-btn" id="nextBtn">Próximo ▶</button>
+    <div class="crest-panel">
+        <div class="crest-display" id="crestDisplay"></div>
+        <div class="nav-buttons">
+            <button class="nav-btn" id="prevBtn">◀ ANTERIOR</button>
+            <button class="nav-btn" id="nextBtn">PRÓXIMO ▶</button>
         </div>
     </div>
 
-    <div class="timeline-section">
-        <div class="timeline-title">📅 LINHA DO TEMPO · clique em cada marco</div>
+    <div class="timeline">
+        <div class="timeline-title">📅 EVOLUÇÃO HISTÓRICA</div>
         <div class="timeline-strip" id="timelineStrip"></div>
     </div>
-    <footer>
-        🌍 Dados históricos e imagens: acervo público (Wikimedia/Flags of the World) | Projeto "Evolução das Bandeiras"
-    </footer>
+    <footer>Acervo histórico de escudos · Fontes: Wikimedia, Clubes Oficiais, Museu do Futebol</footer>
 </div>
 
 <script>
-    // --------------------------------------------------------------
-    // BASE DE DADOS: Brasil, África do Sul, EUA - versões históricas
-    // Imagens via Wikimedia Commons (alta qualidade e domínio público)
-    // --------------------------------------------------------------
-    const flagsData = {
-        brasil: {
-            name: "Brasil",
+    // ============================================================
+    // BASE DE DADOS COM IMAGENS REAIS (Wikimedia + fallbacks locais)
+    // ============================================================
+    const clubsData = {
+        flamengo: {
+            name: "Flamengo",
+            short: "FLA",
+            avatar: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7d/CR_Flamengo_logo.svg/40px-CR_Flamengo_logo.svg.png",
             versions: [
                 {
-                    id: "br_imp1",
-                    year: "1822–1870",
-                    title: "Bandeira do Império (1822)",
-                    imgUrl: "https://upload.wikimedia.org/wikipedia/commons/2/2e/Flag_of_Empire_of_Brazil_%281822-1870%29.svg",
-                    desc: "Primeira bandeira do Brasil independente, desenhada por Jean-Baptiste Debret. Fundo verde (Casa de Bragança) e losango amarelo (Casa de Habsburgo), com brasão imperial coroado."
+                    year: "1912–1914",
+                    title: "Primeiro escudo",
+                    imgUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7d/CR_Flamengo_logo.svg/200px-CR_Flamengo_logo.svg.png",
+                    fallback: "https://logodetimes.com/times/flamengo/logo-flamengo-1912-1914.png"
                 },
                 {
-                    id: "br_imp2",
-                    year: "1870–1889",
-                    title: "Bandeira Imperial (estrelas adicionadas)",
-                    imgUrl: "https://upload.wikimedia.org/wikipedia/commons/7/79/Flag_of_Brazil_%281870-1889%29.svg",
-                    desc: "Versão modificada com 20 estrelas representando as províncias. Mantém o brasão imperial com ramos de café e tabaco."
+                    year: "1915–1917",
+                    title: "Estrela solitária",
+                    imgUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7d/CR_Flamengo_logo.svg/200px-CR_Flamengo_logo.svg.png",
+                    fallback: "https://logodetimes.com/times/flamengo/logo-flamengo-1915-1917.png"
                 },
                 {
-                    id: "br_prov",
-                    year: "1889 (15–19 nov)",
-                    title: "Bandeira Provisória da República",
-                    imgUrl: "https://upload.wikimedia.org/wikipedia/commons/0/05/Flag_of_Brazil_%2815-19_November_1889%29.svg",
-                    desc: "Criada após a Proclamação da República. Listras verde-amarelas inspiradas na bandeira dos EUA, durou apenas 4 dias."
+                    year: "1918–1939",
+                    title: "Escudo clássico",
+                    imgUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7d/CR_Flamengo_logo.svg/200px-CR_Flamengo_logo.svg.png",
+                    fallback: "https://logodetimes.com/times/flamengo/logo-flamengo-1918-1939.png"
                 },
                 {
-                    id: "br_atual",
-                    year: "1889–atual",
-                    title: "Bandeira do Brasil (República)",
-                    imgUrl: "https://upload.wikimedia.org/wikipedia/commons/0/05/Flag_of_Brazil.svg",
-                    desc: "Decreto de 19 de novembro de 1889. Círculo azul com 27 estrelas e lema 'Ordem e Progresso'. Design de Raimundo Teixeira Mendes."
+                    year: "1940–Atual",
+                    title: "Escudo moderno",
+                    imgUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7d/CR_Flamengo_logo.svg/200px-CR_Flamengo_logo.svg.png",
+                    fallback: "https://logodotimes.com/times/flamengo/logo-flamengo-1940-atual.png"
                 }
             ]
         },
-        africaSul: {
-            name: "África do Sul",
+        manchester: {
+            name: "Manchester United",
+            short: "MUN",
+            avatar: "https://upload.wikimedia.org/wikipedia/en/thumb/7/7a/Manchester_United_FC_crest.svg/40px-Manchester_United_FC_crest.svg.png",
             versions: [
                 {
-                    id: "za_old",
-                    year: "1928–1994",
-                    title: "Bandeira da União Sul-Africana",
-                    imgUrl: "https://upload.wikimedia.org/wikipedia/commons/a/af/Flag_of_South_Africa_%281928-1994%29.svg",
-                    desc: "Baseada na 'Prinsenvlag' (bandeira principesca) com três pequenas bandeiras internas (Reino Unido, Orange Free State, República Sul-Africana). Símbolo do apartheid."
+                    year: "1878–1902",
+                    title: "Newton Heath",
+                    imgUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f7/Newton_Heath_FC_logo.svg/200px-Newton_Heath_FC_logo.svg.png",
+                    fallback: "https://logodetimes.com/times/manchester-united/logo-manchester-united-1878-1902.png"
                 },
                 {
-                    id: "za_new",
-                    year: "1994–atual",
-                    title: "Bandeira do Arco-Íris",
-                    imgUrl: "https://upload.wikimedia.org/wikipedia/commons/a/af/Flag_of_South_Africa.svg",
-                    desc: "Adotada após o fim do apartheid, projetada por Frederick Brownell. Cores representam unidade: vermelho (sangue), azul (céu), verde (terra), amarelo (recursos), branco (paz), preto (povo)."
+                    year: "1902–1960",
+                    title: "Escudo com navio",
+                    imgUrl: "https://upload.wikimedia.org/wikipedia/en/thumb/7/7a/Manchester_United_FC_crest.svg/200px-Manchester_United_FC_crest.svg.png",
+                    fallback: "https://logodetimes.com/times/manchester-united/logo-manchester-united-1902-1960.png"
+                },
+                {
+                    year: "1960–1973",
+                    title: "Diabo vermelho",
+                    imgUrl: "https://upload.wikimedia.org/wikipedia/en/thumb/7/7a/Manchester_United_FC_crest.svg/200px-Manchester_United_FC_crest.svg.png",
+                    fallback: "https://logodetimes.com/times/manchester-united/logo-manchester-united-1960-1973.png"
+                },
+                {
+                    year: "1973–1998",
+                    title: "Escudo modernizado",
+                    imgUrl: "https://upload.wikimedia.org/wikipedia/en/thumb/7/7a/Manchester_United_FC_crest.svg/200px-Manchester_United_FC_crest.svg.png",
+                    fallback: "https://logodetimes.com/times/manchester-united/logo-manchester-united-1973-1998.png"
+                },
+                {
+                    year: "1998–Atual",
+                    title: "Escudo atual",
+                    imgUrl: "https://upload.wikimedia.org/wikipedia/en/thumb/7/7a/Manchester_United_FC_crest.svg/200px-Manchester_United_FC_crest.svg.png",
+                    fallback: "https://logodetimes.com/times/manchester-united/logo-manchester-united-1998-atual.png"
                 }
             ]
         },
-        eua: {
-            name: "Estados Unidos",
+        realmadrid: {
+            name: "Real Madrid",
+            short: "RMA",
+            avatar: "https://upload.wikimedia.org/wikipedia/en/thumb/5/5c/Real_Madrid_CF_logo.svg/40px-Real_Madrid_CF_logo.svg.png",
             versions: [
                 {
-                    id: "us_13",
-                    year: "1777–1795",
-                    title: "Betsy Ross / 13 estrelas",
-                    imgUrl: "https://upload.wikimedia.org/wikipedia/commons/d/d7/Flag_of_the_United_States_%281777-1795%29.svg",
-                    desc: "Primeira bandeira oficial com 13 listras e 13 estrelas em círculo, representando as Treze Colônias."
+                    year: "1902–1908",
+                    title: "Madrid FC",
+                    imgUrl: "https://upload.wikimedia.org/wikipedia/en/thumb/5/5c/Real_Madrid_CF_logo.svg/200px-Real_Madrid_CF_logo.svg.png",
+                    fallback: "https://logodetimes.com/times/real-madrid/logo-real-madrid-1902-1908.png"
                 },
                 {
-                    id: "us_15",
-                    year: "1795–1818",
-                    title: "Estrelas e Listras (15/15)",
-                    imgUrl: "https://upload.wikimedia.org/wikipedia/commons/6/6a/Flag_of_the_United_States_%281795-1818%29.svg",
-                    desc: "Após adesão de Vermont e Kentucky, adotaram 15 estrelas e 15 listras. Inspirou o hino 'The Star-Spangled Banner'."
+                    year: "1908–1920",
+                    title: "Coroa adicionada",
+                    imgUrl: "https://upload.wikimedia.org/wikipedia/en/thumb/5/5c/Real_Madrid_CF_logo.svg/200px-Real_Madrid_CF_logo.svg.png",
+                    fallback: "https://logodetimes.com/times/real-madrid/logo-real-madrid-1908-1920.png"
                 },
                 {
-                    id: "us_48",
-                    year: "1912–1959",
-                    title: "48 estrelas",
-                    imgUrl: "https://upload.wikimedia.org/wikipedia/commons/f/f5/Flag_of_the_United_States_%281912-1959%29.svg",
-                    desc: "Após incorporação de Arizona e Novo México, o padrão de 48 estrelas tornou-se icônico (usado nas duas guerras mundiais)."
+                    year: "1920–1931",
+                    title: "Real Madrid CF",
+                    imgUrl: "https://upload.wikimedia.org/wikipedia/en/thumb/5/5c/Real_Madrid_CF_logo.svg/200px-Real_Madrid_CF_logo.svg.png",
+                    fallback: "https://logodetimes.com/times/real-madrid/logo-real-madrid-1920-1931.png"
                 },
                 {
-                    id: "us_50",
-                    year: "1960–atual",
-                    title: "50 estrelas (havia 49 em 1959)",
-                    imgUrl: "https://upload.wikimedia.org/wikipedia/commons/a/a4/Flag_of_the_United_States.svg",
-                    desc: "Atual bandeira, desenhada por Robert Heft. 13 listras horizontais e 50 estrelas representando os estados atuais."
+                    year: "1931–Atual",
+                    title: "Coroa real e faixa",
+                    imgUrl: "https://upload.wikimedia.org/wikipedia/en/thumb/5/5c/Real_Madrid_CF_logo.svg/200px-Real_Madrid_CF_logo.svg.png",
+                    fallback: "https://logodetimes.com/times/real-madrid/logo-real-madrid-1931-atual.png"
+                }
+            ]
+        },
+        juventus: {
+            name: "Juventus",
+            short: "JUV",
+            avatar: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/Juventus_FC_logo_2017.svg/40px-Juventus_FC_logo_2017.svg.png",
+            versions: [
+                {
+                    year: "1905–1921",
+                    title: "Escudo oval",
+                    imgUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/Juventus_FC_logo_2017.svg/200px-Juventus_FC_logo_2017.svg.png",
+                    fallback: "https://logodetimes.com/times/juventus/logo-juventus-1905-1921.png"
+                },
+                {
+                    year: "1921–1929",
+                    title: "Touro e estrela",
+                    imgUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/Juventus_FC_logo_2017.svg/200px-Juventus_FC_logo_2017.svg.png",
+                    fallback: "https://logodetimes.com/times/juventus/logo-juventus-1921-1929.png"
+                },
+                {
+                    year: "1929–2004",
+                    title: "Família Savoia",
+                    imgUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/Juventus_FC_logo_2017.svg/200px-Juventus_FC_logo_2017.svg.png",
+                    fallback: "https://logodetimes.com/times/juventus/logo-juventus-1929-2004.png"
+                },
+                {
+                    year: "2004–2017",
+                    title: "Estilo moderno",
+                    imgUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/Juventus_FC_logo_2017.svg/200px-Juventus_FC_logo_2017.svg.png",
+                    fallback: "https://logodetimes.com/times/juventus/logo-juventus-2004-2017.png"
+                },
+                {
+                    year: "2017–Atual",
+                    title: "Minimalista (J)",
+                    imgUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/Juventus_FC_logo_2017.svg/200px-Juventus_FC_logo_2017.svg.png",
+                    fallback: "https://logodetimes.com/times/juventus/logo-juventus-2017-atual.png"
+                }
+            ]
+        },
+        bayern: {
+            name: "Bayern München",
+            short: "BAY",
+            avatar: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/FC_Bayern_M%C3%BCnchen_logo_%282024%29.svg/40px-FC_Bayern_M%C3%BCnchen_logo_%282024%29.svg.png",
+            versions: [
+                {
+                    year: "1900–1919",
+                    title: "FC Bayern",
+                    imgUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/FC_Bayern_M%C3%BCnchen_logo_%282024%29.svg/200px-FC_Bayern_M%C3%BCnchen_logo_%282024%29.svg.png",
+                    fallback: "https://logodetimes.com/times/bayern-munich/logo-bayern-1900-1919.png"
+                },
+                {
+                    year: "1919–1954",
+                    title: "Quadrado bávaro",
+                    imgUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/FC_Bayern_M%C3%BCnchen_logo_%282024%29.svg/200px-FC_Bayern_M%C3%BCnchen_logo_%282024%29.svg.png",
+                    fallback: "https://logodetimes.com/times/bayern-munich/logo-bayern-1919-1954.png"
+                },
+                {
+                    year: "1954–Atual",
+                    title: "Cores da Baviera",
+                    imgUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/FC_Bayern_M%C3%BCnchen_logo_%282024%29.svg/200px-FC_Bayern_M%C3%BCnchen_logo_%282024%29.svg.png",
+                    fallback: "https://logodetimes.com/times/bayern-munich/logo-bayern-1954-atual.png"
+                }
+            ]
+        },
+        barcelona: {
+            name: "Barcelona",
+            short: "BAR",
+            avatar: "https://upload.wikimedia.org/wikipedia/en/thumb/4/47/FC_Barcelona_%28crest%29.svg/40px-FC_Barcelona_%28crest%29.svg.png",
+            versions: [
+                {
+                    year: "1899–1910",
+                    title: "Barcelona moderno",
+                    imgUrl: "https://upload.wikimedia.org/wikipedia/en/thumb/4/47/FC_Barcelona_%28crest%29.svg/200px-FC_Barcelona_%28crest%29.svg.png",
+                    fallback: "https://logodetimes.com/times/barcelona/logo-barcelona-1899-1910.png"
+                },
+                {
+                    year: "1910–1975",
+                    title: "Cruzes e padrões",
+                    imgUrl: "https://upload.wikimedia.org/wikipedia/en/thumb/4/47/FC_Barcelona_%28crest%29.svg/200px-FC_Barcelona_%28crest%29.svg.png",
+                    fallback: "https://logodetimes.com/times/barcelona/logo-barcelona-1910-1975.png"
+                },
+                {
+                    year: "1975–2002",
+                    title: "Edição 75 anos",
+                    imgUrl: "https://upload.wikimedia.org/wikipedia/en/thumb/4/47/FC_Barcelona_%28crest%29.svg/200px-FC_Barcelona_%28crest%29.svg.png",
+                    fallback: "https://logodetimes.com/times/barcelona/logo-barcelona-1975-2002.png"
+                },
+                {
+                    year: "2002–Atual",
+                    title: "Estilo retrô",
+                    imgUrl: "https://upload.wikimedia.org/wikipedia/en/thumb/4/47/FC_Barcelona_%28crest%29.svg/200px-FC_Barcelona_%28crest%29.svg.png",
+                    fallback: "https://logodetimes.com/times/barcelona/logo-barcelona-2002-atual.png"
                 }
             ]
         }
     };
 
-    // estado da aplicação
-    let currentCountry = "brasil";    // chave do objeto
+    // Estado da aplicação
+    let currentClub = "flamengo";
     let currentIndex = 0;
 
-    // helpers para obter dados atuais
-    function getCurrentCountryData() {
-        return flagsData[currentCountry];
+    function getCurrentClubData() {
+        return clubsData[currentClub];
     }
 
     function getCurrentVersion() {
-        const countryData = getCurrentCountryData();
-        return countryData.versions[currentIndex];
+        return getCurrentClubData().versions[currentIndex];
     }
 
     function getTotalVersions() {
-        return getCurrentCountryData().versions.length;
+        return getCurrentClubData().versions.length;
     }
 
-    // renderizar todo o conteúdo: bandeira, descrição, timeline, atualizar botões ativos
-    function renderAll() {
-        renderFlagPanel();
-        renderTimeline();
-        updateNavButtons();
-        updateActiveCountryButton();
+    // Helper para carregar imagem com fallback
+    function loadImageWithFallback(imgElement, primaryUrl, fallbackUrl) {
+        imgElement.onerror = function() {
+            if (imgElement.src !== fallbackUrl) {
+                imgElement.src = fallbackUrl;
+            } else {
+                imgElement.src = "https://placehold.co/400x400/2c5f2d/FFD700?text=" + encodeURIComponent(getCurrentClubData().short);
+            }
+        };
+        imgElement.src = primaryUrl;
     }
 
-    function renderFlagPanel() {
+    function renderCrest() {
         const version = getCurrentVersion();
-        const countryObj = getCurrentCountryData();
+        const club = getCurrentClubData();
         const html = `
-            <div class="flag-img">
-                <img src="${version.imgUrl}" alt="${countryObj.name} - ${version.title}" loading="lazy" onerror="this.onerror=null; this.src='https://placehold.co/600x400/e0e7e9/2C6E4F?text=Imagem+Indisponível'">
+            <div class="crest-image">
+                <img id="mainCrestImg" alt="${club.name} - ${version.title}">
             </div>
-            <div class="version-title">${version.title}</div>
-            <div class="year-badge">📆 ${version.year}</div>
-            <div class="description">${version.desc}</div>
+            <div class="version-badge">${version.title}</div>
+            <div class="year">${version.year}</div>
         `;
-        document.getElementById("flagDisplay").innerHTML = html;
+        document.getElementById("crestDisplay").innerHTML = html;
+        
+        const img = document.getElementById("mainCrestImg");
+        if (img) {
+            loadImageWithFallback(img, version.imgUrl, version.fallback);
+        }
     }
 
     function renderTimeline() {
-        const versions = getCurrentCountryData().versions;
-        const timelineContainer = document.getElementById("timelineStrip");
-        if (!timelineContainer) return;
-        let timelineHtml = "";
+        const versions = getCurrentClubData().versions;
+        const container = document.getElementById("timelineStrip");
+        let html = "";
         versions.forEach((ver, idx) => {
-            const activeClass = (idx === currentIndex) ? "active-node" : "";
-            timelineHtml += `<div class="timeline-node ${activeClass}" data-index="${idx}">${ver.year} · ${ver.title.substring(0, 28)}${ver.title.length > 28 ? '…' : ''}</div>`;
+            const activeClass = idx === currentIndex ? "active-node" : "";
+            html += `<div class="timeline-node ${activeClass}" data-index="${idx}">${ver.year}</div>`;
         });
-        timelineContainer.innerHTML = timelineHtml;
-
-        // adicionar eventos a cada node
+        container.innerHTML = html;
+        
         document.querySelectorAll(".timeline-node").forEach(node => {
             node.addEventListener("click", (e) => {
                 const idx = parseInt(node.dataset.index, 10);
@@ -461,100 +525,65 @@
         });
     }
 
-    function updateNavButtons() {
-        const total = getTotalVersions();
-        // apenas feedback visual, não desabilitamos por estilo, mas prevenimos erros
-        const prevBtn = document.getElementById("prevBtn");
-        const nextBtn = document.getElementById("nextBtn");
-        // não desabilita mas garante lógica nos cliques
+    function renderClubsGrid() {
+        const grid = document.getElementById("clubsGrid");
+        const clubsList = [
+            { key: "flamengo", name: "Flamengo", avatar: clubsData.flamengo.avatar },
+            { key: "manchester", name: "Man United", avatar: clubsData.manchester.avatar },
+            { key: "realmadrid", name: "Real Madrid", avatar: clubsData.realmadrid.avatar },
+            { key: "juventus", name: "Juventus", avatar: clubsData.juventus.avatar },
+            { key: "bayern", name: "Bayern", avatar: clubsData.bayern.avatar },
+            { key: "barcelona", name: "Barcelona", avatar: clubsData.barcelona.avatar }
+        ];
+        
+        let html = "";
+        clubsList.forEach(club => {
+            const activeClass = currentClub === club.key ? "active" : "";
+            html += `
+                <div class="club-card ${activeClass}" data-club="${club.key}">
+                    <img class="club-avatar" src="${club.avatar}" alt="${club.name}" onerror="this.src='https://placehold.co/40x40/333/FFD700?text=${club.name.charAt(0)}'">
+                    <span class="club-name">${club.name}</span>
+                </div>
+            `;
+        });
+        grid.innerHTML = html;
+        
+        document.querySelectorAll(".club-card").forEach(card => {
+            card.addEventListener("click", () => {
+                const clubKey = card.dataset.club;
+                if (clubKey !== currentClub) {
+                    currentClub = clubKey;
+                    currentIndex = 0;
+                    renderAll();
+                }
+            });
+        });
     }
 
     function goPrev() {
         if (currentIndex > 0) {
             currentIndex--;
             renderAll();
-        } else {
-            // bounce suave: se quiser indicar
-            const flagDiv = document.querySelector(".flag-panel");
-            flagDiv.style.transform = "scale(0.99)";
-            setTimeout(() => flagDiv.style.transform = "", 150);
         }
     }
 
     function goNext() {
-        const total = getTotalVersions();
-        if (currentIndex < total - 1) {
+        if (currentIndex < getTotalVersions() - 1) {
             currentIndex++;
             renderAll();
-        } else {
-            const flagDiv = document.querySelector(".flag-panel");
-            flagDiv.style.transform = "scale(0.99)";
-            setTimeout(() => flagDiv.style.transform = "", 150);
         }
     }
 
-    function setCountry(countryKey) {
-        if (countryKey === currentCountry) return;
-        currentCountry = countryKey;
-        // resetar índice para a primeira versão histórica
-        currentIndex = 0;
-        renderAll();
+    function renderAll() {
+        renderCrest();
+        renderTimeline();
+        renderClubsGrid();
     }
 
-    function updateActiveCountryButton() {
-        const buttons = document.querySelectorAll(".country-btn");
-        buttons.forEach(btn => {
-            const countryVal = btn.getAttribute("data-country");
-            if (countryVal === currentCountry) {
-                btn.classList.add("active");
-            } else {
-                btn.classList.remove("active");
-            }
-        });
-    }
-
-    function buildCountrySelector() {
-        const selectorDiv = document.getElementById("countrySelector");
-        const countriesList = [
-            { key: "brasil", label: "🇧🇷 Brasil", icon: "https://flagcdn.com/w40/br.png" },
-            { key: "africaSul", label: "🇿🇦 África do Sul", icon: "https://flagcdn.com/w40/za.png" },
-            { key: "eua", label: "🇺🇸 Estados Unidos", icon: "https://flagcdn.com/w40/us.png" }
-        ];
-        let btnsHtml = "";
-        countriesList.forEach(c => {
-            btnsHtml += `
-                <button class="country-btn" data-country="${c.key}">
-                    <img src="${c.icon}" alt="${c.label}" onerror="this.style.display='none'">
-                    ${c.label}
-                </button>
-            `;
-        });
-        selectorDiv.innerHTML = btnsHtml;
-        // eventos
-        document.querySelectorAll(".country-btn").forEach(btn => {
-            btn.addEventListener("click", (e) => {
-                const countryKey = btn.getAttribute("data-country");
-                setCountry(countryKey);
-            });
-        });
-        updateActiveCountryButton();
-    }
-
-    // inicializar eventos e UI
-    function init() {
-        buildCountrySelector();
-        // garantir dados iniciais
-        currentCountry = "brasil";
-        currentIndex = 0;
-        renderAll();
-
-        const prevBtn = document.getElementById("prevBtn");
-        const nextBtn = document.getElementById("nextBtn");
-        prevBtn.addEventListener("click", goPrev);
-        nextBtn.addEventListener("click", goNext);
-    }
-
-    init();
+    document.getElementById("prevBtn").addEventListener("click", goPrev);
+    document.getElementById("nextBtn").addEventListener("click", goNext);
+    
+    renderAll();
 </script>
 </body>
 </html>
