@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Radio Brasil — Explore as rádios dos estados</title>
+  <!-- Google Fonts + Font Awesome 6 (gratuito) -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(145deg, #f5f7fe 0%, #eef2fa 100%);
+      color: #1a2c3e;
+      padding-bottom: 100px; /* espaço para o player fixo */
+    }
+
+    /* container principal */
+    .app {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+    }
+
+    /* cabeçalho futurista */
+    .header {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+    .header h1 {
+      font-size: 2.8rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #1e2b3c, #2b4b6e);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      letter-spacing: -0.01em;
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .header h1 i {
+      background: none;
+      color: #2b6a9f;
+      font-size: 2.2rem;
+    }
+    .sub {
+      font-size: 1rem;
+      color: #4a627a;
+      margin-top: 0.5rem;
+      font-weight: 400;
+      backdrop-filter: blur(4px);
+    }
+
+    /* grade dos estados (cards) */
+    .states-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+      gap: 1rem;
+      margin-bottom: 3rem;
+    }
+    .state-card {
+      background: rgba(255, 255, 255, 0.55);
+      backdrop-filter: blur(8px);
+      border-radius: 28px;
+      padding: 1rem 0.5rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      border: 1px solid rgba(255,255,255,0.6);
+      box-shadow: 0 6px 14px rgba(0,0,0,0.02), 0 1px 2px rgba(0,0,0,0.03);
+    }
+    .state-card:hover {
+      transform: translateY(-4px);
+      background: rgba(255, 255, 255, 0.85);
+      box-shadow: 0 18px 30px -12px rgba(0, 32, 64, 0.2);
+      border-color: rgba(43, 106, 159, 0.3);
+    }
+    .state-card.active {
+      background: white;
+      border-left: 3px solid #2b6a9f;
+      border-right: 3px solid #2b6a9f;
+      transform: scale(0.98);
+    }
+    .state-flag-icon {
+      font-size: 2.2rem;
+      margin-bottom: 0.4rem;
+      display: block;
+    }
+    .state-sigla {
+      font-weight: 700;
+      font-size: 1.1rem;
+      letter-spacing: -0.3px;
+      background: linear-gradient(120deg, #1e3a4d, #0f2c3f);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+    }
+    .state-name {
+      font-size: 0.7rem;
+      font-weight: 500;
+      color: #4b6a86;
+      margin-top: 4px;
+    }
+
+    /* seção de rádios (grid) */
+    .radios-section {
+      margin-top: 1.2rem;
+      animation: fadeUp 0.3s ease;
+    }
+    .section-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-left: 4px solid #2b6a9f;
+      padding-left: 1rem;
+    }
+    .radios-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.4rem;
+    }
+    .radio-card {
+      background: rgba(255,255,255,0.7);
+      backdrop-filter: blur(12px);
+      border-radius: 28px;
+      padding: 1rem 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      transition: all 0.2s;
+      border: 1px solid rgba(255,255,255,0.8);
+      box-shadow: 0 5px 12px rgba(0,0,0,0.02);
+    }
+    .radio-card:hover {
+      background: white;
+      box-shadow: 0 12px 24px -12px rgba(0,0,0,0.15);
+      transform: scale(0.99);
+    }
+    .radio-logo {
+      width: 52px;
+      height: 52px;
+      background: linear-gradient(145deg, #e0e8f5, #cdd9ed);
+      border-radius: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      color: #1f5777;
+    }
+    .radio-info {
+      flex: 1;
+    }
+    .radio-name {
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: #0c2a3b;
+    }
+    .radio-stream-badge {
+      font-size: 0.7rem;
+      color: #5a7e9c;
+      font-family: monospace;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 140px;
+    }
+    .listen-btn {
+      background: #1f5777;
+      border: none;
+      color: white;
+      font-weight: 600;
+      padding: 8px 16px;
+      border-radius: 40px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      backdrop-filter: blur(2px);
+    }
+    .listen-btn:hover {
+      background: #0f3e58;
+      transform: scale(1.02);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    .empty-state {
+      text-align: center;
+      padding: 3rem;
+      background: rgba(255,255,240,0.5);
+      border-radius: 48px;
+      color: #3e5e7c;
+    }
+
+    /* player fixo moderno */
+    .player-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(20px);
+      border-top: 1px solid rgba(43, 106, 159, 0.2);
+      padding: 0.8rem 1.8rem;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 1rem;
+      justify-content: space-between;
+      z-index: 1000;
+      box-shadow: 0 -6px 20px rgba(0,0,0,0.03);
+    }
+    .now-playing {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      min-width: 160px;
+    }
+    .now-playing i {
+      font-size: 1.2rem;
+      color: #1f5777;
+    }
+    audio {
+      flex: 2;
+      min-width: 200px;
+      height: 44px;
+      border-radius: 32px;
+      outline: none;
+    }
+    audio::-webkit-media-controls-panel {
+      background-color: #eef2fa;
+    }
+    .player-status {
+      font-size: 0.75rem;
+      color: #2b6a9f;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(18px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 640px) {
+      .app {
+        padding: 1rem;
+      }
+      .states-grid {
+        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+        gap: 0.7rem;
+      }
+      .radios-grid {
+        grid-template-columns: 1fr;
+      }
+      .player-bar {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 0.8rem;
+        gap: 0.4rem;
+      }
+      audio {
+        width: 100%;
+      }
+      .now-playing {
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="app">
+  <div class="header">
+    <h1>
+      <i class="fas fa-satellite-dish"></i> 
+      Radio Brasil
+    </h1>
+    <div class="sub">✧ sintonize o país inteiro | clique na bandeira de cada estado ✧</div>
+  </div>
+
+  <div class="states-grid" id="statesGrid"></div>
+
+  <div id="radiosContainer" class="radios-section" style="display: none;">
+    <div class="section-title">
+      <i class="fas fa-waveform"></i>
+      <span id="selectedStateTitle">Rádios disponíveis</span>
+    </div>
+    <div id="radiosGrid" class="radios-grid"></div>
+  </div>
+</div>
+
+<div class="player-bar">
+  <div class="now-playing">
+    <i class="fas fa-head-side-headphones"></i>
+    <span id="currentRadioName">Nenhuma rádio tocando</span>
+  </div>
+  <audio id="audioPlayer" controls preload="none">
+    Seu navegador não suporta áudio HTML5.
+  </audio>
+  <div class="player-status" id="playerStatus">⚡ pronto</div>
+</div>
+
+<script>
+  // --------------------------------------------------------------
+  // 1. LISTA COMPLETA DOS ESTADOS DO BRASIL + DF (sigla, nome)
+  // --------------------------------------------------------------
+  const estadosBrasil = [
+    { sigla: "AC", nome: "Acre" }, { sigla: "AL", nome: "Alagoas" }, { sigla: "AP", nome: "Amapá" },
+    { sigla: "AM", nome: "Amazonas" }, { sigla: "BA", nome: "Bahia" }, { sigla: "CE", nome: "Ceará" },
+    { sigla: "DF", nome: "Distrito Federal" }, { sigla: "ES", nome: "Espírito Santo" }, { sigla: "GO", nome: "Goiás" },
+    { sigla: "MA", nome: "Maranhão" }, { sigla: "MT", nome: "Mato Grosso" }, { sigla: "MS", nome: "Mato Grosso do Sul" },
+    { sigla: "MG", nome: "Minas Gerais" }, { sigla: "PA", nome: "Pará" }, { sigla: "PB", nome: "Paraíba" },
+    { sigla: "PR", nome: "Paraná" }, { sigla: "PE", nome: "Pernambuco" }, { sigla: "PI", nome: "Piauí" },
+    { sigla: "RJ", nome: "Rio de Janeiro" }, { sigla: "RN", nome: "Rio Grande do Norte" }, { sigla: "RS", nome: "Rio Grande do Sul" },
+    { sigla: "RO", nome: "Rondônia" }, { sigla: "RR", nome: "Roraima" }, { sigla: "SC", nome: "Santa Catarina" },
+    { sigla: "SP", nome: "São Paulo" }, { sigla: "SE", nome: "Sergipe" }, { sigla: "TO", nome: "Tocantins" }
+  ];
+
+  // --------------------------------------------------------------
+  // 2. BASE DE DADOS DAS RÁDIOS (SUBSTITUA PELAS STREAMS REAIS)
+  //    Estrutura: "sigla": [ { nome, stream, logoIcon (opcional) } ]
+  // --------------------------------------------------------------
+  const radiosData = {
+    "SP": [
+      { nome: "Jovem Pan - SP", stream: "https://streaming.jovempan.com.br/radio/8000/radio.mp3", logoIcon: "📻" },
+      { nome: "Band FM (São Paulo)", stream: "https://streaming.bandfm.com.br/bandfm", logoIcon: "🎙️" },
+      { nome: "Alpha FM 101.7", stream: "https://streaming.alphafm.com.br/alpha", logoIcon: "✨" }
+    ],
+    "RJ": [
+      { nome: "CBN Rio", stream: "https://stream.cbn.globoradio.com.br/rio", logoIcon: "📰" },
+      { nome: "Rádio Tupi", stream: "https://radiotupi.com.br/stream", logoIcon: "🔊" }
+    ],
+    "MG": [
+      { nome: "Rádio Itatiaia", stream: "https://mcp.itatiaia.com.br/itatiaia", logoIcon: "🏔️" },
+      { nome: "Super 91,7 FM", stream: "https://stream.super917.com.br/super", logoIcon: "⚡" }
+    ],
+    "BA": [
+      { nome: "Rádio Metrópole (Salvador)", stream: "https://streaming.metropole.com.br", logoIcon: "🌊" }
+    ],
+    "PE": [
+      { nome: "Rádio Jornal (Recife)", stream: "https://stream.radiojornal.com.br/jornal", logoIcon: "📡" }
+    ],
+    "RS": [
+      { nome: "Gaúcha ZH", stream: "https://stream.gaucha.com.br/gaucha", logoIcon: "⚽" },
+      { nome: "Atlântida FM", stream: "https://stream.atlantida.com.br/atlantida", logoIcon: "🌊" }
+    ],
+    "DF": [
+      { nome: "Rádio Nacional de Brasília", stream: "https://radio.ebc.com.br/nacionaldf", logoIcon: "🏛️" }
+    ]
+  };
+
+  // Ícones padrão para estados sem rádio cadastrada
+  const defaultIcon = "📡";
+
+  // Elementos DOM
+  const statesGrid = document.getElementById("statesGrid");
+  const radiosContainer = document.getElementById("radiosContainer");
+  const radiosGrid = document.getElementById("radiosGrid");
+  const selectedStateTitleSpan = document.getElementById("selectedStateTitle");
+  const audioPlayer = document.getElementById("audioPlayer");
+  const currentRadioNameSpan = document.getElementById("currentRadioName");
+  const playerStatusSpan = document.getElementById("playerStatus");
+
+  let activeStateSigla = null;
+
+  // Renderiza grade de estados com ícone elegante (simula bandeiras)
+  function renderStates() {
+    estadosBrasil.forEach(state => {
+      const card = document.createElement("div");
+      card.className = "state-card";
+      card.setAttribute("data-sigla", state.sigla);
+      // Ícone genérico de bandeira + toque regional
+      card.innerHTML = `
+        <div class="state-flag-icon"><i class="fas fa-map-marker-alt" style="font-size:1.8rem; color:#2b6a9f;"></i></div>
+        <div class="state-sigla">${state.sigla}</div>
+        <div class="state-name">${state.nome}</div>
+      `;
+      card.addEventListener("click", (e) => {
+        e.stopPropagation();
+        loadRadiosForState(state.sigla, state.nome);
+        // destaca o card ativo
+        document.querySelectorAll(".state-card").forEach(c => c.classList.remove("active"));
+        card.classList.add("active");
+      });
+      statesGrid.appendChild(card);
+    });
+  }
+
+  // Carrega e exibe as rádios do estado (grid)
+  function loadRadiosForState(sigla, nomeEstado) {
+    activeStateSigla = sigla;
+    const radiosList = radiosData[sigla] || [];
+    
+    selectedStateTitleSpan.innerHTML = `<i class="fas fa-flag-checkered"></i> ${nomeEstado} (${sigla}) — ${radiosList.length} rádio(s)`;
+    radiosContainer.style.display = "block";
+    
+    if (radiosList.length === 0) {
+      radiosGrid.innerHTML = `<div class="empty-state"><i class="fas fa-tower-broadcast" style="font-size:2rem; opacity:0.5;"></i><br/>Nenhuma rádio cadastrada para ${nomeEstado} ainda.<br/>🔧 Adicione streams reais no objeto 'radiosData'.</div>`;
+      return;
+    }
+    
+    // monta o grid com cada rádio
+    radiosGrid.innerHTML = "";
+    radiosList.forEach(radio => {
+      const card = document.createElement("div");
+      card.className = "radio-card";
+      card.innerHTML = `
+        <div class="radio-logo">
+          <span>${radio.logoIcon || "🎵"}</span>
+        </div>
+        <div class="radio-info">
+          <div class="radio-name">${escapeHtml(radio.nome)}</div>
+          <div class="radio-stream-badge">${radio.stream.substring(0, 35)}...</div>
+        </div>
+        <button class="listen-btn" data-stream="${radio.stream}" data-nome="${escapeHtml(radio.nome)}">
+          <i class="fas fa-play"></i> Ouvir
+        </button>
+      `;
+      const btn = card.querySelector(".listen-btn");
+      btn.addEventListener("click", () => {
+        playStream(btn.dataset.stream, btn.dataset.nome);
+      });
+      radiosGrid.appendChild(card);
+    });
+  }
+  
+  // função para reproduzir stream e atualizar player bar
+  function playStream(streamUrl, radioNome) {
+    if (!streamUrl) {
+      playerStatusSpan.innerText = "❌ URL inválida";
+      return;
+    }
+    currentRadioNameSpan.innerText = radioNome;
+    audioPlayer.src = streamUrl;
+    audioPlayer.play().catch(error => {
+      console.warn("Erro ao tocar stream:", error);
+      playerStatusSpan.innerText = "⚠️ Stream indisponível (CORS/offline)";
+      currentRadioNameSpan.innerText = "Falha ao conectar";
+    });
+    audioPlayer.onplaying = () => {
+      playerStatusSpan.innerText = "🎧 tocando agora";
+    };
+    audioPlayer.onerror = () => {
+      playerStatusSpan.innerText = "❌ Stream inacessível";
+    };
+    audioPlayer.onpause = () => {
+      if (!audioPlayer.ended) playerStatusSpan.innerText = "⏸ pausado";
+    };
+    audioPlayer.onplay = () => {
+      playerStatusSpan.innerText = "🔊 conectando...";
+    };
+  }
+  
+  // pequeno helper para segurança
+  function escapeHtml(str) {
+    return str.replace(/[&<>]/g, function(m) {
+      if (m === '&') return '&amp;';
+      if (m === '<') return '&lt;';
+      if (m === '>') return '&gt;';
+      return m;
+    });
+  }
+  
+  // Inicialização
+  renderStates();
+  
+  // Mensagem inicial: quando clicar em qualquer estado, o container aparece.
+  // Já tratado no loadRadiosForState.
+  
+  // Pré-definir um placeholder no player
+  audioPlayer.addEventListener("ended", () => {
+    playerStatusSpan.innerText = "⏹️ finalizado";
+  });
+</script>
+</body>
+</html>
