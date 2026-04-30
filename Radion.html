@@ -337,34 +337,35 @@
   // 2. BASE DE DADOS DAS RÁDIOS (SUBSTITUA PELAS STREAMS REAIS)
   //    Estrutura: "sigla": [ { nome, stream, logoIcon (opcional) } ]
   // --------------------------------------------------------------
-  const radiosData = {
-    "SP": [
-      { nome: "Jovem Pan - SP", stream: "https://streaming.jovempan.com.br/radio/8000/radio.mp3", logoIcon: "📻" },
-      { nome: "Band FM (São Paulo)", stream: "https://streaming.bandfm.com.br/bandfm", logoIcon: "🎙️" },
-      { nome: "Alpha FM 101.7", stream: "https://streaming.alphafm.com.br/alpha", logoIcon: "✨" }
-    ],
-    "RJ": [
-      { nome: "CBN Rio", stream: "https://stream.cbn.globoradio.com.br/rio", logoIcon: "📰" },
-      { nome: "Rádio Tupi", stream: "https://radiotupi.com.br/stream", logoIcon: "🔊" }
-    ],
-    "MG": [
-      { nome: "Rádio Itatiaia", stream: "https://mcp.itatiaia.com.br/itatiaia", logoIcon: "🏔️" },
-      { nome: "Super 91,7 FM", stream: "https://stream.super917.com.br/super", logoIcon: "⚡" }
-    ],
-    "BA": [
-      { nome: "Rádio Metrópole (Salvador)", stream: "https://streaming.metropole.com.br", logoIcon: "🌊" }
-    ],
-    "PE": [
-      { nome: "Rádio Jornal (Recife)", stream: "https://stream.radiojornal.com.br/jornal", logoIcon: "📡" }
-    ],
-    "RS": [
-      { nome: "Gaúcha ZH", stream: "https://stream.gaucha.com.br/gaucha", logoIcon: "⚽" },
-      { nome: "Atlântida FM", stream: "https://stream.atlantida.com.br/atlantida", logoIcon: "🌊" }
-    ],
-    "DF": [
-      { nome: "Rádio Nacional de Brasília", stream: "https://radio.ebc.com.br/nacionaldf", logoIcon: "🏛️" }
-    ]
-  };
+  
+  // 2. BASE DE DADOS DAS RÁDIOS (ATUALIZADO COM URLS REAIS)
+const radiosData = {
+  "SP": [
+    { nome: "Jovem Pan - SP", stream: "http://6d9f.webradio.gk.vc:8282/stream", logoIcon: "🎙️" },
+    { nome: "Band FM (São Paulo)", stream: "http://wz4.dnip.com.br/bandfmsantos/bandfmsantos.stream/playlist.m3u8", logoIcon: "🎸" },
+    { nome: "Alpha FM 101.7", stream: "https://cast.hoost.com.br:20015/stream", logoIcon: "🎵" }
+  ],
+  "RJ": [
+    { nome: "CBN Rio", stream: "https://streaming.livecenter.com/live/cbnrio", logoIcon: "📰" },
+    { nome: "Rádio Tupi", stream: "http://playerservices.streamtheworld.com/api/livestream-redirect/RTUPI_96FM_SC", logoIcon: "🔊" }
+  ],
+  "MG": [
+    { nome: "Rádio Itatiaia", stream: "http://8903.brasilstream.com.br:8903/mp3", logoIcon: "🏔️" },
+    { nome: "Super 91,7 FM", stream: "https://ice.fabricahost.com.br/supernovafmmoc9217", logoIcon: "⚡" }
+  ],
+  "BA": [
+    { nome: "Rádio Metrópole (Salvador)", stream: "http://wz5.dnip.com.br/metropolefm/metropolefm.stream/playlist.m3u8", logoIcon: "🌊" }
+  ],
+  "PE": [
+    { nome: "Rádio Jornal (Recife)", stream: "https://str1.streamhostpg.com.br:8124/stream", logoIcon: "📡" }
+  ],
+  "RS": [
+    { nome: "Gaúcha ZH", stream: "https://streaming.livecenter.com/live/gaucha", logoIcon: "⚽" },
+  ],
+  "DF": [
+    { nome: "Rádio Nacional de Brasília", stream: "https://radionacionalam-stream.ebc.com.br/radionacionalam", logoIcon: "🏛️" }
+  ]
+};
 
   // Ícones padrão para estados sem rádio cadastrada
   const defaultIcon = "📡";
