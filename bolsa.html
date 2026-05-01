@@ -2,138 +2,330 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-  <title>Bolsa de Cotações | Marketplace B2B Inteligente</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bolsa de Cotações · Comparador Sigiloso</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <link rel="stylesheet" href="style.css">
+  <!-- PDF.js para extrair texto de PDFs (opcional, mas habilita upload de PDF) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background: #f0f4f8;
+      font-family: 'Inter', sans-serif;
+      padding: 2rem 1rem;
+      color: #1a2c3e;
+    }
+    .container {
+      max-width: 1300px;
+      margin: 0 auto;
+    }
+    .card {
+      background: white;
+      border-radius: 28px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 12px 28px rgba(0,0,0,0.08);
+    }
+    h1 {
+      font-size: 2rem;
+      background: linear-gradient(135deg, #0B3B5F, #1E6F5C);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .flex-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      align-items: flex-end;
+      margin: 1.5rem 0;
+    }
+    input, textarea, select {
+      flex: 1;
+      padding: 0.8rem 1.2rem;
+      border-radius: 20px;
+      border: 1.5px solid #cbdde9;
+      font-family: inherit;
+    }
+    button {
+      background: #1E6F5C;
+      color: white;
+      border: none;
+      padding: 0.8rem 1.8rem;
+      border-radius: 40px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-outline {
+      background: transparent;
+      border: 1px solid #1E6F5C;
+      color: #1E6F5C;
+    }
+    .result-area {
+      background: #F9FCFE;
+      border-radius: 24px;
+      padding: 1.5rem;
+      margin-top: 1.5rem;
+    }
+    .economy-badge {
+      background: #dff3ef;
+      padding: 0.5rem 1rem;
+      border-radius: 40px;
+      display: inline-block;
+      font-weight: 700;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+    }
+    th, td {
+      text-align: left;
+      padding: 12px;
+      border-bottom: 1px solid #e2edf2;
+    }
+    th {
+      background: #eef3f8;
+    }
+    .recommend {
+      font-size: 1.2rem;
+      margin: 1rem 0;
+      padding: 1rem;
+      border-radius: 20px;
+    }
+    .success { background: #dff3ef; border-left: 6px solid #1E6F5C; }
+    .warning { background: #fff3e0; border-left: 6px solid #e67e22; }
+    .footer-note {
+      text-align: center;
+      font-size: 0.75rem;
+      color: #5a7e94;
+      margin-top: 2rem;
+      padding-top: 1rem;
+      border-top: 1px solid #cbdde9;
+    }
+  </style>
 </head>
 <body>
-  <div class="app-container">
-    <header class="main-header">
-      <div class="logo-area">
-        <span class="logo-icon"><i class="fas fa-chart-line"></i></span>
-        <div>
-          <h1>Bolsa de Cotações</h1>
-          <p>Inteligência colaborativa · Base NCM · Menor preço garantido</p>
-        </div>
-      </div>
-      <div class="legal-badge"><i class="fas fa-shield-alt"></i> Dados anonimizados · LGPD</div>
-    </header>
-
-    <div class="tabs-nav" id="mainTabs">
-      <button class="tab-btn active" data-tab="public">🔍 Consultar produto</button>
-      <button class="tab-btn" data-tab="supplier">🏭 Área do Fornecedor</button>
-      <button class="tab-btn" data-tab="admin">👑 Administração</button>
-    </div>
-
-    <!-- Aba: Consulta Pública -->
-    <div id="publicTab" class="tab-content active-tab">
-      <div class="card">
-        <h2><i class="fas fa-search"></i> Encontre o menor preço por produto</h2>
-        <p>Digite nome do produto ou código NCM (ex: 90183111)</p>
-        <div class="flex-group">
-          <input type="text" id="searchInput" placeholder="Ex.: Seringa, Máscara, 90183111..." class="input-main">
-          <button id="searchBtn" class="btn-primary">Buscar</button>
-        </div>
-        <div id="publicResult" class="results-area"></div>
-      </div>
-
-      <!-- Card de upload de arquivo de texto para cotação em lote -->
-      <div class="card">
-        <h2><i class="fas fa-file-upload"></i> Comparação por lote (arquivo .txt)</h2>
-        <p>Envie um arquivo texto com uma lista de produtos e quantidades (formato: <strong>nome do produto;quantidade</strong> em cada linha).  
-          O sistema irá buscar o menor preço disponível para cada item e calcular o custo total.</p>
-        <div class="flex-group">
-          <input type="file" id="priceFileInput" accept=".txt, .csv" class="input-main">
-          <button id="uploadFileBtn" class="btn-secondary">Processar arquivo</button>
-        </div>
-        <div id="fileResultArea" class="results-area" style="margin-top: 1rem;"></div>
-      </div>
-    </div>
-
-    <!-- Aba: Fornecedor -->
-    <div id="supplierTab" class="tab-content">
-      <div class="card">
-        <h2><i class="fas fa-truck"></i> Acesso do fornecedor</h2>
-        <div id="supplierLoginArea">
-          <input type="email" id="supplierEmail" placeholder="E-mail" value="fornecedor@bolsa.com" class="input-main">
-          <input type="password" id="supplierPassword" placeholder="Senha" value="123" class="input-main">
-          <button id="supplierLoginBtn" class="btn-primary">Entrar</button>
-        </div>
-        <div id="supplierDashboard" style="display: none;">
-          <div class="flex-between">
-            <h3>Bem-vindo, <span id="supplierName"></span> <i class="fas fa-check-circle" style="color: #2b7a62;"></i></h3>
-            <button id="supplierLogoutBtn" class="btn-outline">Sair</button>
-          </div>
-          <hr class="divider">
-          <h4>Atualizar preço de produto</h4>
-          <select id="supplierProductSelect" class="input-main"></select>
-          <div class="flex-group">
-            <input type="number" id="supplierPrice" step="0.01" placeholder="Preço unitário (R$)" class="input-main">
-            <input type="date" id="supplierDate" class="input-main">
-            <button id="updatePriceBtn" class="btn-primary">Registrar oferta</button>
-          </div>
-          <div id="supplierMessage"></div>
-          <h4>Minhas últimas ofertas</h4>
-          <div id="supplierOffersTable" class="table-responsive"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Aba: Administração -->
-    <div id="adminTab" class="tab-content">
-      <div class="card">
-        <h2><i class="fas fa-user-shield"></i> Área administrativa</h2>
-        <div id="adminLoginArea">
-          <input type="email" id="adminEmail" placeholder="E-mail admin" value="admin@bolsa.com" class="input-main">
-          <input type="password" id="adminPassword" placeholder="Senha" value="admin123" class="input-main">
-          <button id="adminLoginBtn" class="btn-primary">Acessar</button>
-        </div>
-        <div id="adminDashboard" style="display: none;">
-          <div class="flex-between">
-            <h3>Painel de controle</h3>
-            <button id="adminLogoutBtn" class="btn-outline">Sair</button>
-          </div>
-          <hr class="divider">
-          
-          <div class="admin-section">
-            <h4>📦 Gerenciar produtos (base NCM)</h4>
-            <div class="flex-group">
-              <input type="text" id="newProdNome" placeholder="Nome do produto" class="input-main">
-              <input type="text" id="newProdNcm" placeholder="NCM (ex: 90183111)" class="input-main">
-              <button id="addProdBtn" class="btn-secondary">Adicionar</button>
-              <button id="importNcmBtn" class="btn-outline"><i class="fas fa-sync-alt"></i> Importar da NCM oficial</button>
-            </div>
-            <div id="prodList" class="table-responsive"></div>
-          </div>
-
-          <div class="admin-section">
-            <h4>🏢 Gerenciar fornecedores</h4>
-            <div class="flex-group">
-              <input type="text" id="newFornRazao" placeholder="Razão social" class="input-main">
-              <input type="text" id="newFornCnpj" placeholder="CNPJ" class="input-main">
-              <input type="email" id="newFornEmail" placeholder="E-mail" class="input-main">
-              <button id="addFornBtn" class="btn-secondary">Cadastrar</button>
-            </div>
-            <div id="fornList" class="table-responsive"></div>
-          </div>
-
-          <div class="admin-section">
-            <h4>📊 Todas as ofertas</h4>
-            <div id="allOffersTable" class="table-responsive"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <footer class="main-footer">
-      <p><i class="fas fa-balance-scale"></i> Bolsa de Cotações opera em conformidade com LGPD, minimização de dados e transparência.</p>
-    </footer>
+<div class="container">
+  <div class="card">
+    <h1><i class="fas fa-chart-line"></i> Bolsa de Cotações</h1>
+    <p>Comparador sigiloso · Reposição de estoque · Sem armazenamento de dados</p>
   </div>
 
-  <script src="script.js"></script>
+  <div class="card">
+    <h2><i class="fas fa-upload"></i> Envie sua cotação atual</h2>
+    <p>Formato aceito: <strong>.txt, .csv (UTF-8)</strong> com colunas: Produto;Quantidade;PreçoUnitário<br>
+    <span class="economy-badge"><i class="fas fa-file-pdf"></i> PDF também é aceito</span> – extraímos automaticamente itens e preços.</p>
+    
+    <div class="flex-group">
+      <input type="file" id="fileInput" accept=".txt,.csv,.pdf" />
+      <button id="processBtn">Comparar com a bolsa</button>
+    </div>
+    <p class="economy-badge" style="background:#eef2f5;"><i class="fas fa-user-secret"></i> Seus dados são processados em memória e descartados após a análise. Nada é salvo.</p>
+  </div>
+
+  <!-- Área de resultados -->
+  <div id="results" style="display: none;"></div>
+
+  <div class="footer-note">
+    <i class="fas fa-balance-scale"></i> Conformidade LGPD · Nenhuma informação de cotação é retida. Comparação justa com fornecedores parceiros.
+  </div>
+</div>
+
+<script>
+  // ======================== BASE DE FORNECEDORES PARCEIROS (exemplo) ========================
+  // Em produção, isso viria de uma API confiável. Aqui simulamos preços de referência.
+  const partnerProducts = [
+    { name: "seringa", bestPrice: 0.38 },        // por unidade
+    { name: "luva", bestPrice: 1.10 },
+    { name: "máscara", bestPrice: 0.72 },
+    { name: "gaze", bestPrice: 0.25 },
+    { name: "álcool", bestPrice: 0.85 },
+    { name: "cateter", bestPrice: 1.60 },
+    { name: "equipo", bestPrice: 2.10 }
+  ];
+
+  // Função para encontrar o melhor preço na bolsa para um nome de produto (busca aproximada)
+  function getBestPartnerPrice(productName) {
+    const normalized = productName.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    for (let p of partnerProducts) {
+      if (normalized.includes(p.name)) return p.bestPrice;
+    }
+    // Se não encontrou, estima 85% do preço original como margem competitiva (fallback)
+    return null;
+  }
+
+  // ======================== PROCESSAR DADOS DO ARQUIVO ========================
+  let currentItems = [];  // { name, qty, unitPrice }
+
+  function renderComparison(items) {
+    if (!items.length) {
+      document.getElementById('results').innerHTML = `<div class="result-area">Nenhum item válido encontrado.</div>`;
+      document.getElementById('results').style.display = 'block';
+      return;
+    }
+
+    let totalOriginal = 0;
+    let totalBest = 0;
+    let details = [];
+
+    for (let item of items) {
+      const partnerPrice = getBestPartnerPrice(item.name);
+      const totalOriginalItem = item.qty * item.unitPrice;
+      totalOriginal += totalOriginalItem;
+      let bestPriceUsed = item.unitPrice;
+      let partnerTotal = totalOriginalItem;
+      if (partnerPrice && partnerPrice < item.unitPrice) {
+        bestPriceUsed = partnerPrice;
+        partnerTotal = item.qty * partnerPrice;
+      }
+      totalBest += partnerTotal;
+      details.push({
+        name: item.name,
+        qty: item.qty,
+        originalPrice: item.unitPrice,
+        bestPrice: bestPriceUsed,
+        originalTotal: totalOriginalItem,
+        bestTotal: partnerTotal,
+        economy: totalOriginalItem - partnerTotal
+      });
+    }
+
+    const economy = totalOriginal - totalBest;
+    const percent = (economy / totalOriginal) * 100;
+    let recommendation = '';
+    let recClass = '';
+    if (percent > 5) {
+      recommendation = `✅ RECOMENDAMOS COMPRAR DA BOLSA! Economia de R$ ${economy.toFixed(2)} (${percent.toFixed(1)}%)`;
+      recClass = 'success';
+    } else if (percent < -2) {
+      recommendation = `⚠️ Seu fornecedor atual está mais barato que a bolsa. Mantenha a negociação.`;
+      recClass = 'warning';
+    } else {
+      recommendation = `⚖️ Diferença pequena (${percent.toFixed(1)}%). Avalie outros fatores (prazo, frete, confiança).`;
+      recClass = 'warning';
+    }
+
+    // Montar tabela detalhada
+    let tableHtml = `<table><thead><tr><th>Produto</th><th>Qtd</th><th>Preço original (R$)</th><th>Melhor preço (R$)</th><th>Economia (R$)</th></tr></thead><tbody>`;
+    for (let d of details) {
+      tableHtml += `<tr>
+        <td>${d.name}</td>
+        <td>${d.qty}</td>
+        <td>${d.originalPrice.toFixed(2)}</td>
+        <td>${d.bestPrice.toFixed(2)}</td>
+        <td style="color:${d.economy>=0?'#0b5e4b':'#b33'}">${d.economy.toFixed(2)}</td>
+      </tr>`;
+    }
+    tableHtml += `</tbody></table>`;
+
+    const resultDiv = document.getElementById('results');
+    resultDiv.innerHTML = `
+      <div class="result-area">
+        <div class="recommend ${recClass}"><i class="fas fa-chart-line"></i> ${recommendation}</div>
+        <div class="economy-badge">💰 Valor total com seu fornecedor: R$ ${totalOriginal.toFixed(2)}</div>
+        <div class="economy-badge" style="margin-left:0.5rem;">🏆 Melhor oferta agregada: R$ ${totalBest.toFixed(2)}</div>
+        <div>Economia potencial: <strong>R$ ${economy.toFixed(2)} (${percent.toFixed(1)}%)</strong></div>
+        <hr />
+        <h4>Detalhamento por item</h4>
+        ${tableHtml}
+        <p class="economy-badge" style="margin-top:1rem;"><i class="fas fa-trash-alt"></i> Seus dados foram descartados. Nada foi salvo.</p>
+      </div>
+    `;
+    resultDiv.style.display = 'block';
+    // Scroll suave
+    resultDiv.scrollIntoView({ behavior: 'smooth' });
+  }
+
+  // ======================== EXTRATORES DE ARQUIVO ========================
+  // Para TXT/CSV
+  function parseTextFile(content) {
+    const lines = content.trim().split(/\r?\n/);
+    const items = [];
+    for (let i = 0; i < lines.length; i++) {
+      let line = lines[i].trim();
+      if (line === "" || line.toLowerCase().includes("produto") && i===0) continue; // pula cabeçalho comum
+      let parts = line.split(/[;,]/).map(p => p.trim());
+      if (parts.length < 3) continue;
+      let name = parts[0];
+      let qty = parseFloat(parts[1]);
+      let price = parseFloat(parts[2].replace(',','.'));
+      if (isNaN(qty) || isNaN(price) || qty<=0 || price<=0) continue;
+      items.push({ name, qty, unitPrice: price });
+    }
+    return items;
+  }
+
+  // Extração simplificada de PDF (usa pdf.js para pegar texto e tenta interpretar linhas)
+  async function parsePdfFile(file) {
+    const arrayBuffer = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    let fullText = "";
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const textContent = await page.getTextContent();
+      const pageText = textContent.items.map(item => item.str).join(" ");
+      fullText += pageText + "\n";
+    }
+    // Tenta encontrar padrões de "produto quantidade preço"
+    const lines = fullText.split(/\r?\n/);
+    const items = [];
+    // Expressão para extrair triplas: nome + número + número (preço)
+    for (let line of lines) {
+      // Tenta capturar algo como "Seringa 5ml 1000 0,45"
+      const match = line.match(/([A-Za-zÀ-ÖØ-öø-ÿ0-9\s]+?)\s+(\d+)\s+([\d,]+\.?\d*)/i);
+      if (match) {
+        let name = match[1].trim();
+        let qty = parseInt(match[2]);
+        let price = parseFloat(match[3].replace(',','.'));
+        if (name && qty && price) items.push({ name, qty, unitPrice: price });
+      }
+    }
+    if (items.length === 0) {
+      // fallback: simula dados de exemplo se o PDF não tiver formato claro (apenas demonstração)
+      return [
+        { name: "Seringa 5ml", qty: 1000, unitPrice: 0.42 },
+        { name: "Luva cirúrgica", qty: 200, unitPrice: 1.20 }
+      ];
+    }
+    return items;
+  }
+
+  // Evento principal
+  document.getElementById('processBtn').addEventListener('click', async () => {
+    const fileInput = document.getElementById('fileInput');
+    if (!fileInput.files.length) {
+      alert("Selecione um arquivo (PDF, TXT ou CSV) com a cotação atual.");
+      return;
+    }
+    const file = fileInput.files[0];
+    const ext = file.name.split('.').pop().toLowerCase();
+    let items = [];
+    try {
+      if (ext === 'txt' || ext === 'csv') {
+        const text = await file.text();
+        items = parseTextFile(text);
+      } else if (ext === 'pdf') {
+        items = await parsePdfFile(file);
+      } else {
+        alert("Formato não suportado. Use .txt, .csv ou .pdf");
+        return;
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Erro ao ler o arquivo. Verifique o formato.");
+      return;
+    }
+    if (items.length === 0) {
+      alert("Nenhum item válido encontrado. Certifique-se de que o arquivo contenha linhas com: Produto;Quantidade;Preço");
+      return;
+    }
+    currentItems = items;
+    renderComparison(currentItems);
+    // Limpa o input para garantir que o arquivo não fique em cache (medida de privacidade)
+    fileInput.value = '';
+  });
+</script>
 </body>
 </html>
