@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>Bolsa de Cotações | Marketplace B2B Inteligente</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-container">
+    <header class="main-header">
+      <div class="logo-area">
+        <span class="logo-icon"><i class="fas fa-chart-line"></i></span>
+        <div>
+          <h1>Bolsa de Cotações</h1>
+          <p>Inteligência colaborativa · Base NCM · Menor preço garantido</p>
+        </div>
+      </div>
+      <div class="legal-badge"><i class="fas fa-shield-alt"></i> Dados anonimizados · LGPD</div>
+    </header>
+
+    <div class="tabs-nav" id="mainTabs">
+      <button class="tab-btn active" data-tab="public">🔍 Consultar produto</button>
+      <button class="tab-btn" data-tab="supplier">🏭 Área do Fornecedor</button>
+      <button class="tab-btn" data-tab="admin">👑 Administração</button>
+    </div>
+
+    <!-- Aba: Consulta Pública -->
+    <div id="publicTab" class="tab-content active-tab">
+      <div class="card">
+        <h2><i class="fas fa-search"></i> Encontre o menor preço por produto</h2>
+        <p>Digite nome do produto ou código NCM (ex: 90183111)</p>
+        <div class="flex-group">
+          <input type="text" id="searchInput" placeholder="Ex.: Seringa, Máscara, 90183111..." class="input-main">
+          <button id="searchBtn" class="btn-primary">Buscar</button>
+        </div>
+        <div id="publicResult" class="results-area"></div>
+      </div>
+
+      <!-- Card de upload de arquivo de texto para cotação em lote -->
+      <div class="card">
+        <h2><i class="fas fa-file-upload"></i> Comparação por lote (arquivo .txt)</h2>
+        <p>Envie um arquivo texto com uma lista de produtos e quantidades (formato: <strong>nome do produto;quantidade</strong> em cada linha).  
+          O sistema irá buscar o menor preço disponível para cada item e calcular o custo total.</p>
+        <div class="flex-group">
+          <input type="file" id="priceFileInput" accept=".txt, .csv" class="input-main">
+          <button id="uploadFileBtn" class="btn-secondary">Processar arquivo</button>
+        </div>
+        <div id="fileResultArea" class="results-area" style="margin-top: 1rem;"></div>
+      </div>
+    </div>
+
+    <!-- Aba: Fornecedor -->
+    <div id="supplierTab" class="tab-content">
+      <div class="card">
+        <h2><i class="fas fa-truck"></i> Acesso do fornecedor</h2>
+        <div id="supplierLoginArea">
+          <input type="email" id="supplierEmail" placeholder="E-mail" value="fornecedor@bolsa.com" class="input-main">
+          <input type="password" id="supplierPassword" placeholder="Senha" value="123" class="input-main">
+          <button id="supplierLoginBtn" class="btn-primary">Entrar</button>
+        </div>
+        <div id="supplierDashboard" style="display: none;">
+          <div class="flex-between">
+            <h3>Bem-vindo, <span id="supplierName"></span> <i class="fas fa-check-circle" style="color: #2b7a62;"></i></h3>
+            <button id="supplierLogoutBtn" class="btn-outline">Sair</button>
+          </div>
+          <hr class="divider">
+          <h4>Atualizar preço de produto</h4>
+          <select id="supplierProductSelect" class="input-main"></select>
+          <div class="flex-group">
+            <input type="number" id="supplierPrice" step="0.01" placeholder="Preço unitário (R$)" class="input-main">
+            <input type="date" id="supplierDate" class="input-main">
+            <button id="updatePriceBtn" class="btn-primary">Registrar oferta</button>
+          </div>
+          <div id="supplierMessage"></div>
+          <h4>Minhas últimas ofertas</h4>
+          <div id="supplierOffersTable" class="table-responsive"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Aba: Administração -->
+    <div id="adminTab" class="tab-content">
+      <div class="card">
+        <h2><i class="fas fa-user-shield"></i> Área administrativa</h2>
+        <div id="adminLoginArea">
+          <input type="email" id="adminEmail" placeholder="E-mail admin" value="admin@bolsa.com" class="input-main">
+          <input type="password" id="adminPassword" placeholder="Senha" value="admin123" class="input-main">
+          <button id="adminLoginBtn" class="btn-primary">Acessar</button>
+        </div>
+        <div id="adminDashboard" style="display: none;">
+          <div class="flex-between">
+            <h3>Painel de controle</h3>
+            <button id="adminLogoutBtn" class="btn-outline">Sair</button>
+          </div>
+          <hr class="divider">
+          
+          <div class="admin-section">
+            <h4>📦 Gerenciar produtos (base NCM)</h4>
+            <div class="flex-group">
+              <input type="text" id="newProdNome" placeholder="Nome do produto" class="input-main">
+              <input type="text" id="newProdNcm" placeholder="NCM (ex: 90183111)" class="input-main">
+              <button id="addProdBtn" class="btn-secondary">Adicionar</button>
+              <button id="importNcmBtn" class="btn-outline"><i class="fas fa-sync-alt"></i> Importar da NCM oficial</button>
+            </div>
+            <div id="prodList" class="table-responsive"></div>
+          </div>
+
+          <div class="admin-section">
+            <h4>🏢 Gerenciar fornecedores</h4>
+            <div class="flex-group">
+              <input type="text" id="newFornRazao" placeholder="Razão social" class="input-main">
+              <input type="text" id="newFornCnpj" placeholder="CNPJ" class="input-main">
+              <input type="email" id="newFornEmail" placeholder="E-mail" class="input-main">
+              <button id="addFornBtn" class="btn-secondary">Cadastrar</button>
+            </div>
+            <div id="fornList" class="table-responsive"></div>
+          </div>
+
+          <div class="admin-section">
+            <h4>📊 Todas as ofertas</h4>
+            <div id="allOffersTable" class="table-responsive"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="main-footer">
+      <p><i class="fas fa-balance-scale"></i> Bolsa de Cotações opera em conformidade com LGPD, minimização de dados e transparência.</p>
+    </footer>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
