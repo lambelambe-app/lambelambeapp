@@ -2,20 +2,19 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-  <title>Bolsa de Cotações · Marketplace B2B Inteligente</title>
-  <!-- Google Fonts + Font Awesome 6 (profissional) -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <!-- PDF.js para extração básica de texto de PDF -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+  <title>Bolsa de Cotações · Marketplace B2B</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
+    /* Fonte fallback para apps sem internet */
+    body, input, button, select, textarea {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.4;
     }
-
+    /* Garantia de que o conteúdo não ultrapasse a tela */
+    * { 
+      box-sizing: border-box; 
+      -webkit-tap-highlight-color: transparent;
+    }
     :root {
       --primary-dark: #0A2E3F;
       --primary-teal: #1E6F5C;
@@ -31,42 +30,37 @@
       --radius-card: 28px;
       --radius-element: 20px;
     }
-
     body {
-      font-family: 'Inter', sans-serif;
       background: var(--bg-light);
-      color: var(--text-dark);
-      padding: 1.5rem;
-      line-height: 1.5;
+      margin: 0;
+      padding: 16px;
     }
-
     .app-container {
       max-width: 1400px;
       margin: 0 auto;
     }
-
-    /* Header */
+    /* Header responsivo */
     .main-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       flex-wrap: wrap;
       gap: 1rem;
-      margin-bottom: 2rem;
+      margin-bottom: 1.5rem;
       padding-bottom: 0.5rem;
       border-bottom: 2px solid rgba(30,111,92,0.2);
     }
     .logo-area {
       display: flex;
       align-items: center;
-      gap: 1rem;
+      gap: 0.8rem;
     }
     .logo-icon {
-      font-size: 2.5rem;
+      font-size: 2rem;
       color: var(--primary-teal);
     }
     .logo-area h1 {
-      font-size: 1.8rem;
+      font-size: 1.5rem;
       font-weight: 700;
       background: linear-gradient(135deg, var(--primary-dark), var(--primary-teal));
       -webkit-background-clip: text;
@@ -74,208 +68,156 @@
       color: transparent;
     }
     .logo-area p {
-      font-size: 0.85rem;
+      font-size: 0.7rem;
       color: var(--primary-teal);
-      font-weight: 500;
     }
     .legal-badge {
       background: #eaf4f0;
-      padding: 0.5rem 1.2rem;
+      padding: 0.4rem 1rem;
       border-radius: 40px;
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       font-weight: 600;
-      color: var(--primary-dark);
     }
-
-    /* Tabs */
+    /* Tabs touch-friendly */
     .tabs-nav {
       display: flex;
-      gap: 0.75rem;
+      gap: 0.5rem;
       background: white;
       padding: 0.5rem;
       border-radius: 60px;
-      margin-bottom: 2rem;
-      box-shadow: var(--shadow-sm);
+      margin-bottom: 1.5rem;
       flex-wrap: wrap;
     }
     .tab-btn {
       background: transparent;
       border: none;
-      padding: 0.7rem 1.8rem;
+      padding: 12px 20px;
+      border-radius: 40px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: 0.2s;
+      color: var(--text-light);
+      flex: 1;
+      text-align: center;
+      min-height: 48px;
+    }
+    .tab-btn.active {
+      background: var(--primary-teal);
+      color: white;
+    }
+    /* Cards e formulários */
+    .card {
+      background: var(--card-white);
+      border-radius: var(--radius-card);
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: var(--shadow-md);
+    }
+    .card h2 {
+      font-size: 1.3rem;
+      margin-bottom: 0.5rem;
+    }
+    .flex-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.8rem;
+      align-items: center;
+      margin-top: 1rem;
+    }
+    .input-main, select, textarea {
+      flex: 1;
+      padding: 12px 16px;
+      border-radius: var(--radius-element);
+      border: 1.5px solid var(--border-color);
+      font-size: 1rem;
+      background: white;
+      min-height: 48px;
+    }
+    button, .btn-primary, .btn-secondary, .btn-outline {
+      padding: 12px 20px;
       border-radius: 40px;
       font-weight: 600;
       font-size: 1rem;
       cursor: pointer;
       transition: 0.2s;
-      color: var(--text-light);
-    }
-    .tab-btn.active {
-      background: var(--primary-teal);
-      color: white;
-      box-shadow: 0 4px 12px rgba(30,111,92,0.3);
-    }
-    .tab-content {
-      display: none;
-      animation: fadeIn 0.2s ease;
-    }
-    .tab-content.active-tab {
-      display: block;
-    }
-
-    /* Cards */
-    .card {
-      background: var(--card-white);
-      border-radius: var(--radius-card);
-      padding: 2rem;
-      margin-bottom: 2rem;
-      box-shadow: var(--shadow-md);
-    }
-    .card h2 {
-      font-size: 1.5rem;
-      margin-bottom: 0.5rem;
-      color: var(--primary-dark);
-    }
-    .card h3, .card h4 {
-      margin: 1rem 0 0.5rem;
-      color: var(--text-medium);
-    }
-    .flex-group {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1rem;
-      align-items: center;
-      margin: 1rem 0;
-    }
-    .flex-between {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-    .input-main, select, textarea {
-      flex: 1;
-      padding: 0.8rem 1.2rem;
-      border-radius: var(--radius-element);
-      border: 1.5px solid var(--border-color);
-      font-family: inherit;
-      font-size: 0.95rem;
-      transition: 0.2s;
-      background: white;
-    }
-    .input-main:focus, select:focus, textarea:focus {
-      outline: none;
-      border-color: var(--primary-teal);
-      box-shadow: 0 0 0 3px rgba(30,111,92,0.2);
+      min-height: 48px;
+      border: none;
     }
     .btn-primary {
       background: var(--primary-teal);
       color: white;
-      border: none;
-      padding: 0.8rem 1.8rem;
-      border-radius: 40px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: 0.2s;
     }
-    .btn-primary:hover {
-      background: var(--primary-teal-hover);
-      transform: translateY(-1px);
-    }
+    .btn-primary:active { background: var(--primary-teal-hover); transform: scale(0.98); }
     .btn-secondary {
       background: #eef2f5;
       color: var(--primary-dark);
       border: 1px solid var(--border-color);
-      padding: 0.7rem 1.5rem;
-      border-radius: 40px;
-      font-weight: 500;
-      cursor: pointer;
     }
     .btn-outline {
       background: transparent;
       border: 1px solid var(--primary-teal);
       color: var(--primary-teal);
-      padding: 0.6rem 1.3rem;
-      border-radius: 40px;
-      font-weight: 500;
-      cursor: pointer;
     }
-    .results-area, .result-item {
-      margin-top: 1rem;
-    }
-    .result-item {
-      background: #F9FCFE;
-      border-radius: 20px;
-      padding: 1.2rem;
-      margin-bottom: 1rem;
-      border-left: 4px solid var(--primary-teal);
-    }
-    .price-highlight {
-      font-size: 1.6rem;
-      font-weight: 700;
-      color: #0b5e4b;
-    }
+    /* Tabelas responsivas */
     .table-responsive {
       overflow-x: auto;
-      margin: 1rem 0;
+      -webkit-overflow-scrolling: touch;
     }
     table {
       width: 100%;
       border-collapse: collapse;
       font-size: 0.85rem;
+      min-width: 400px;
     }
     th, td {
       text-align: left;
-      padding: 12px 8px;
+      padding: 10px 6px;
       border-bottom: 1px solid var(--border-color);
     }
-    th {
-      background: #eef3f8;
-      font-weight: 600;
+    /* Resultados e mensagens */
+    .result-item {
+      background: #F9FCFE;
+      border-radius: 20px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      border-left: 4px solid var(--primary-teal);
+    }
+    .price-highlight {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #0b5e4b;
     }
     .message {
       padding: 0.8rem;
       border-radius: 16px;
       margin: 0.5rem 0;
     }
-    .message.success {
-      background: #e0f2e9;
-      color: #0b5e4b;
-    }
-    .message.error {
-      background: #ffe6e6;
-      color: #b33;
-    }
-    .status-success {
-      color: #0b5e4b;
-      font-weight: bold;
-    }
-    .status-warning {
-      color: #e67e22;
-      font-weight: bold;
-    }
-    .status-error {
-      color: #c0392b;
-      font-weight: bold;
-    }
+    .message.success { background: #e0f2e9; color: #0b5e4b; }
+    .message.error { background: #ffe6e6; color: #b33; }
+    .status-success { color: #0b5e4b; font-weight: bold; }
+    .status-warning { color: #e67e22; font-weight: bold; }
+    .status-error { color: #c0392b; font-weight: bold; }
     .main-footer {
-      margin-top: 2rem;
       text-align: center;
-      font-size: 0.75rem;
-      color: var(--text-light);
+      font-size: 0.7rem;
+      padding-top: 1rem;
       border-top: 1px solid var(--border-color);
-      padding-top: 1.5rem;
     }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(4px);}
-      to { opacity: 1; transform: translateY(0);}
-    }
-    @media (max-width: 720px) {
-      body { padding: 1rem; }
-      .card { padding: 1.2rem; }
+    /* esconde conteúdo de abas */
+    .tab-content { display: none; }
+    .tab-content.active-tab { display: block; }
+    @media (max-width: 600px) {
+      body { padding: 12px; }
+      .card { padding: 1rem; }
       .flex-group { flex-direction: column; align-items: stretch; }
-      .tab-btn { flex: 1; text-align: center; }
+      .tab-btn { font-size: 0.8rem; padding: 10px 12px; }
     }
   </style>
+  <!-- Inclui FontAwesome via CDN (caso sem internet, ícones não aparecem, mas layout permanece) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <!-- PDF.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
 </head>
 <body>
 <div class="app-container">
@@ -284,151 +226,138 @@
       <span class="logo-icon"><i class="fas fa-chart-line"></i></span>
       <div>
         <h1>Bolsa de Cotações</h1>
-        <p>Inteligência colaborativa · Base NCM · Menor preço garantido</p>
+        <p>Menor preço · Base NCM</p>
       </div>
     </div>
-    <div class="legal-badge"><i class="fas fa-shield-alt"></i> Dados anonimizados · LGPD</div>
+    <div class="legal-badge"><i class="fas fa-shield-alt"></i> LGPD</div>
   </header>
 
   <div class="tabs-nav" id="mainTabs">
-    <button class="tab-btn active" data-tab="public">🔍 Consultar produto</button>
-    <button class="tab-btn" data-tab="supplier">🏭 Área do Fornecedor</button>
-    <button class="tab-btn" data-tab="admin">👑 Administração</button>
+    <button class="tab-btn active" data-tab="public">🔍 Consulta</button>
+    <button class="tab-btn" data-tab="supplier">🏭 Fornecedor</button>
+    <button class="tab-btn" data-tab="admin">👑 Admin</button>
   </div>
 
-  <!-- Aba Pública -->
+  <!-- CONSULTA PÚBLICA -->
   <div id="publicTab" class="tab-content active-tab">
     <div class="card">
-      <h2><i class="fas fa-search"></i> Encontre o menor preço</h2>
-      <p>Digite nome do produto ou código NCM (ex: 90183111)</p>
+      <h2>🔎 Buscar produto</h2>
       <div class="flex-group">
-        <input type="text" id="searchInput" placeholder="Ex.: Seringa, Máscara, 90183111..." class="input-main">
-        <button id="searchBtn" class="btn-primary">Buscar</button>
+        <input type="text" id="searchInput" placeholder="Ex.: Seringa, 90183111" class="input-main">
+        <button id="searchBtn" class="btn-primary">Buscar menor preço</button>
       </div>
-      <div id="publicResult" class="results-area"></div>
+      <div id="publicResult"></div>
     </div>
-
     <div class="card">
-      <h2><i class="fas fa-file-upload"></i> Cotação em lote (arquivo)</h2>
-      <p>Envie um arquivo <strong>.txt, .csv ou .pdf</strong> com a lista de produtos e quantidades. Formato: <code>produto;quantidade</code> por linha (ou PDF com texto estruturado). O sistema compara com os menores preços da bolsa e calcula a economia.</p>
+      <h2>📄 Cotação em lote (arquivo)</h2>
+      <p>Envie .txt, .csv ou .pdf com <strong>produto;quantidade</strong> por linha. O sistema compara com a bolsa.</p>
       <div class="flex-group">
         <input type="file" id="priceFileInput" accept=".txt,.csv,.pdf" class="input-main">
         <button id="uploadFileBtn" class="btn-primary">Processar arquivo</button>
       </div>
-      <div id="fileResultArea" class="results-area"></div>
-      <p class="message success" style="margin-top: 1rem;"><i class="fas fa-trash-alt"></i> Seus dados são processados em memória e descartados após a análise. Nada é armazenado.</p>
+      <div id="fileResultArea"></div>
+      <p class="message success" style="margin-top:12px"><i class="fas fa-trash-alt"></i> Nenhum dado é armazenado – processamento em memória.</p>
     </div>
   </div>
 
-  <!-- Aba Fornecedor -->
+  <!-- FORNECEDOR -->
   <div id="supplierTab" class="tab-content">
     <div class="card">
-      <h2><i class="fas fa-truck"></i> Acesso do fornecedor</h2>
+      <h2>🏭 Acesso do fornecedor</h2>
       <div id="supplierLoginArea">
         <input type="email" id="supplierEmail" placeholder="E-mail" value="fornecedor@bolsa.com" class="input-main">
         <input type="password" id="supplierPassword" placeholder="Senha" value="123" class="input-main">
         <button id="supplierLoginBtn" class="btn-primary">Entrar</button>
       </div>
-      <div id="supplierDashboard" style="display: none;">
-        <div class="flex-between">
-          <h3>Bem-vindo, <span id="supplierName"></span> <i class="fas fa-check-circle" style="color: #2b7a62;"></i></h3>
+      <div id="supplierDashboard" style="display:none">
+        <div class="flex-between" style="display:flex; justify-content:space-between; align-items:center">
+          <h3>Olá, <span id="supplierName"></span></h3>
           <button id="supplierLogoutBtn" class="btn-outline">Sair</button>
         </div>
-        <hr class="divider">
-        <h4>Atualizar preço de produto</h4>
+        <hr style="margin:1rem 0">
+        <h4>Registrar oferta</h4>
         <select id="supplierProductSelect" class="input-main"></select>
         <div class="flex-group">
-          <input type="number" id="supplierPrice" step="0.01" placeholder="Preço unitário (R$)" class="input-main">
+          <input type="number" id="supplierPrice" step="0.01" placeholder="Preço unitário R$" class="input-main">
           <input type="date" id="supplierDate" class="input-main">
-          <button id="updatePriceBtn" class="btn-primary">Registrar oferta</button>
+          <button id="updatePriceBtn" class="btn-primary">Registrar</button>
         </div>
         <div id="supplierMessage"></div>
-        <h4>Minhas últimas ofertas</h4>
+        <h4>Minhas ofertas</h4>
         <div id="supplierOffersTable" class="table-responsive"></div>
-
-        <!-- Comparação anônima de preços -->
-        <h4 style="margin-top: 2rem;">📊 Comparação de preços (anônima)</h4>
-        <p>Veja como seus preços se comparam ao melhor preço da bolsa, sem identificar outros fornecedores.</p>
+        <h4>📊 Comparação anônima</h4>
+        <p>Seu preço vs. melhor preço da bolsa</p>
         <div id="supplierComparisonTable" class="table-responsive"></div>
       </div>
     </div>
   </div>
 
-  <!-- Aba Administrador -->
+  <!-- ADMIN -->
   <div id="adminTab" class="tab-content">
     <div class="card">
-      <h2><i class="fas fa-user-shield"></i> Área administrativa</h2>
+      <h2>👑 Administração</h2>
       <div id="adminLoginArea">
         <input type="email" id="adminEmail" placeholder="E-mail admin" value="admin@bolsa.com" class="input-main">
         <input type="password" id="adminPassword" placeholder="Senha" value="admin123" class="input-main">
         <button id="adminLoginBtn" class="btn-primary">Acessar</button>
       </div>
-      <div id="adminDashboard" style="display: none;">
-        <div class="flex-between">
-          <h3>Painel de controle</h3>
+      <div id="adminDashboard" style="display:none">
+        <div class="flex-between" style="display:flex; justify-content:space-between">
+          <h3>Painel</h3>
           <button id="adminLogoutBtn" class="btn-outline">Sair</button>
         </div>
-        <hr class="divider">
-        <div class="admin-section">
-          <h4>📦 Gerenciar produtos (base NCM)</h4>
-          <div class="flex-group">
-            <input type="text" id="newProdNome" placeholder="Nome do produto" class="input-main">
-            <input type="text" id="newProdNcm" placeholder="NCM (ex: 90183111)" class="input-main">
-            <button id="addProdBtn" class="btn-secondary">Adicionar</button>
-            <button id="importNcmBtn" class="btn-outline"><i class="fas fa-sync-alt"></i> Importar da NCM oficial</button>
-          </div>
-          <div id="prodList" class="table-responsive"></div>
+        <hr>
+        <h4>Produtos (NCM)</h4>
+        <div class="flex-group">
+          <input type="text" id="newProdNome" placeholder="Nome" class="input-main">
+          <input type="text" id="newProdNcm" placeholder="NCM (8 dígitos)" class="input-main">
+          <button id="addProdBtn" class="btn-secondary">Adicionar</button>
+          <button id="importNcmBtn" class="btn-outline"><i class="fas fa-sync-alt"></i> Importar NCM oficial</button>
         </div>
-        <div class="admin-section">
-          <h4>🏢 Gerenciar fornecedores</h4>
-          <div class="flex-group">
-            <input type="text" id="newFornRazao" placeholder="Razão social" class="input-main">
-            <input type="text" id="newFornCnpj" placeholder="CNPJ" class="input-main">
-            <input type="email" id="newFornEmail" placeholder="E-mail" class="input-main">
-            <button id="addFornBtn" class="btn-secondary">Cadastrar</button>
-          </div>
-          <div id="fornList" class="table-responsive"></div>
+        <div id="prodList" class="table-responsive"></div>
+        <h4>Fornecedores</h4>
+        <div class="flex-group">
+          <input type="text" id="newFornRazao" placeholder="Razão social" class="input-main">
+          <input type="text" id="newFornCnpj" placeholder="CNPJ" class="input-main">
+          <input type="email" id="newFornEmail" placeholder="E-mail" class="input-main">
+          <button id="addFornBtn" class="btn-secondary">Cadastrar</button>
         </div>
-        <div class="admin-section">
-          <h4>📊 Todas as ofertas</h4>
-          <div id="allOffersTable" class="table-responsive"></div>
-        </div>
+        <div id="fornList" class="table-responsive"></div>
+        <h4>Todas as ofertas</h4>
+        <div id="allOffersTable" class="table-responsive"></div>
       </div>
     </div>
   </div>
 
   <footer class="main-footer">
-    <p><i class="fas fa-balance-scale"></i> Bolsa de Cotações opera em conformidade com LGPD, minimização de dados e transparência. Nenhum dado de cotação enviado é armazenado.</p>
+    <p><i class="fas fa-balance-scale"></i> Conformidade LGPD · Processamento local · Nenhum dado de cotação é armazenado</p>
   </footer>
 </div>
 
 <script>
-  // ======================== INICIALIZAÇÃO LOCALSTORAGE (BASE DEMO) ========================
+  // ========== INICIALIZAÇÃO (dados demo) ==========
   function initDatabase() {
     if (!localStorage.getItem('produtos')) {
-      const produtos = [
+      localStorage.setItem('produtos', JSON.stringify([
         { id: 1, nome: "Seringa descartável 5ml", ncm: "90183111" },
         { id: 2, nome: "Máscara N95", ncm: "63079090" },
         { id: 3, nome: "Luva cirúrgica estéril", ncm: "40151100" },
         { id: 4, nome: "Álcool gel 70%", ncm: "22072010" }
-      ];
-      localStorage.setItem('produtos', JSON.stringify(produtos));
+      ]));
     }
     if (!localStorage.getItem('fornecedores')) {
-      const fornecedores = [
+      localStorage.setItem('fornecedores', JSON.stringify([
         { id: 1, razao_social: "MedValue Distribuidora", cnpj: "12.345.678/0001-90", email: "fornecedor@bolsa.com", senha: "123" },
         { id: 2, razao_social: "Saúde Direct Brasil", cnpj: "98.765.432/0001-12", email: "saudedirect@example.com", senha: "123" }
-      ];
-      localStorage.setItem('fornecedores', JSON.stringify(fornecedores));
+      ]));
     }
     if (!localStorage.getItem('ofertas')) {
-      const ofertas = [
+      localStorage.setItem('ofertas', JSON.stringify([
         { id: 1, produto_id: 1, fornecedor_id: 1, preco: 0.39, data_oferta: "2025-04-01" },
         { id: 2, produto_id: 2, fornecedor_id: 1, preco: 0.85, data_oferta: "2025-04-10" },
         { id: 3, produto_id: 2, fornecedor_id: 2, preco: 0.79, data_oferta: "2025-04-12" },
         { id: 4, produto_id: 3, fornecedor_id: 2, preco: 1.15, data_oferta: "2025-04-05" }
-      ];
-      localStorage.setItem('ofertas', JSON.stringify(ofertas));
+      ]));
     }
     if (!localStorage.getItem('nextIds')) {
       localStorage.setItem('nextIds', JSON.stringify({ produto: 5, fornecedor: 3, oferta: 5 }));
@@ -436,397 +365,244 @@
   }
   initDatabase();
 
-  // Helpers
   function getProdutos() { return JSON.parse(localStorage.getItem('produtos')); }
   function getFornecedores() { return JSON.parse(localStorage.getItem('fornecedores')); }
   function getOfertas() { return JSON.parse(localStorage.getItem('ofertas')); }
   function saveProdutos(prod) { localStorage.setItem('produtos', JSON.stringify(prod)); }
   function saveFornecedores(forn) { localStorage.setItem('fornecedores', JSON.stringify(forn)); }
   function saveOfertas(ofertas) { localStorage.setItem('ofertas', JSON.stringify(ofertas)); }
-  function getNextId(entidade) {
-    let ids = JSON.parse(localStorage.getItem('nextIds'));
-    let id = ids[entidade];
-    ids[entidade] += 1;
-    localStorage.setItem('nextIds', JSON.stringify(ids));
-    return id;
-  }
+  function getNextId(ent) { let ids = JSON.parse(localStorage.getItem('nextIds')); let id = ids[ent]; ids[ent]++; localStorage.setItem('nextIds', JSON.stringify(ids)); return id; }
 
-  // ======================== INTEGRAÇÃO NCM (Siscomex) ========================
-  async function fetchNCMTable() {
-    const url = 'https://portalunico.siscomex.gov.br/classif/api/publico/nomenclatura/download/json?perfil=PUBLICO';
-    try {
-      const response = await fetch(url);
-      if (!response.ok) throw new Error('Erro ao buscar NCM');
-      const data = await response.json();
-      localStorage.setItem('ncm_table', JSON.stringify(data));
-      localStorage.setItem('ncm_last_update', Date.now());
-      return data;
-    } catch (error) {
-      console.error('Falha ao carregar NCM:', error);
-      return null;
-    }
-  }
-  async function getNCMTable() {
-    const cached = localStorage.getItem('ncm_table');
-    const lastUpdate = localStorage.getItem('ncm_last_update');
-    if (cached && lastUpdate && (Date.now() - lastUpdate < 24 * 60 * 60 * 1000)) {
-      return JSON.parse(cached);
-    }
-    return await fetchNCMTable();
-  }
-
-  // ======================== BUSCA E MELHOR OFERTA ========================
+  // Busca inteligente (semântica)
   function normalizeText(str) { return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase(); }
   function searchProducts(term) {
     if (!term.trim()) return [];
     term = normalizeText(term);
-    const produtos = getProdutos();
-    return produtos.map(p => {
-      const nomeNorm = normalizeText(p.nome);
-      const ncmNorm = normalizeText(p.ncm);
-      let score = 0;
-      if (nomeNorm.includes(term)) score = 100;
-      else if (ncmNorm.includes(term)) score = 95;
-      else {
-        let palavras = term.split(/\s+/);
-        for (let pal of palavras) if (nomeNorm.includes(pal)) score += 30;
-      }
+    return getProdutos().map(p => {
+      let score = normalizeText(p.nome).includes(term) ? 100 : (normalizeText(p.ncm).includes(term) ? 95 : 0);
       return { ...p, score };
-    }).filter(r => r.score > 0).sort((a,b) => b.score - a.score).slice(0,6);
+    }).filter(p => p.score > 0).sort((a,b)=>b.score-a.score).slice(0,6);
   }
-  function getBestOffer(produtoId) {
-    const ofertas = getOfertas().filter(o => o.produto_id === produtoId);
+  function getBestOffer(prodId) {
+    let ofertas = getOfertas().filter(o=>o.produto_id===prodId);
     if (!ofertas.length) return null;
-    const melhor = ofertas.reduce((best, curr) => {
-      if (curr.preco < best.preco) return curr;
-      if (curr.preco === best.preco && new Date(curr.data_oferta) > new Date(best.data_oferta)) return curr;
-      return best;
-    });
-    const fornecedor = getFornecedores().find(f => f.id === melhor.fornecedor_id);
-    return { ...melhor, fornecedor_razao: fornecedor?.razao_social };
+    let melhor = ofertas.reduce((a,b)=> (b.preco<a.preco ? b : a));
+    let forn = getFornecedores().find(f=>f.id===melhor.fornecedor_id);
+    return { ...melhor, fornecedor_razao: forn?.razao_social };
   }
 
-  // ======================== CONSULTA PÚBLICA ========================
-  document.getElementById('searchBtn').addEventListener('click', async () => {
-    const term = document.getElementById('searchInput').value;
-    const matches = searchProducts(term);
-    const resultDiv = document.getElementById('publicResult');
-    if (!matches.length) {
-      resultDiv.innerHTML = '<div class="message error">Nenhum produto encontrado.</div>';
-      return;
-    }
+  // Consulta pública
+  document.getElementById('searchBtn').onclick = () => {
+    let term = document.getElementById('searchInput').value;
+    let matches = searchProducts(term);
     let html = '';
-    for (let prod of matches) {
-      const best = getBestOffer(prod.id);
-      if (best) {
-        html += `<div class="result-item">
-          <div><strong>${prod.nome}</strong> <span style="font-size:0.7rem;">NCM: ${prod.ncm}</span></div>
-          <div class="price-highlight">R$ ${best.preco.toFixed(2)}</div>
-          <div><i class="far fa-calendar-alt"></i> Última atualização: ${new Date(best.data_oferta).toLocaleDateString('pt-BR')}</div>
-          <div><i class="fas fa-building"></i> Fornecedor: ${best.fornecedor_razao}</div>
-        </div>`;
-      } else {
-        html += `<div class="result-item"><strong>${prod.nome}</strong> (NCM: ${prod.ncm})<br><span class="message error">Nenhuma oferta cadastrada.</span></div>`;
-      }
+    for (let p of matches) {
+      let best = getBestOffer(p.id);
+      if (best) html += `<div class="result-item"><strong>${p.nome}</strong> (${p.ncm})<div class="price-highlight">R$ ${best.preco.toFixed(2)}</div><small>Fornecedor: ${best.fornecedor_razao} · ${new Date(best.data_oferta).toLocaleDateString()}</small></div>`;
+      else html += `<div class="result-item"><strong>${p.nome}</strong> (${p.ncm})<br><span class="message error">Sem oferta</span></div>`;
     }
-    resultDiv.innerHTML = html;
-  });
+    document.getElementById('publicResult').innerHTML = matches.length ? html : '<div class="message error">Nenhum produto encontrado</div>';
+  };
 
-  // ======================== UPLOAD DE ARQUIVO (LOTE) ========================
-  function findBestOfferForProductName(productName) {
-    const matches = searchProducts(productName);
-    if (!matches.length) return null;
-    const bestOffer = getBestOffer(matches[0].id);
-    if (!bestOffer) return null;
-    return { produto: matches[0], oferta: bestOffer };
-  }
-  document.getElementById('uploadFileBtn').addEventListener('click', async () => {
-    const fileInput = document.getElementById('priceFileInput');
-    if (!fileInput.files.length) { alert('Selecione um arquivo.'); return; }
-    const file = fileInput.files[0];
-    const ext = file.name.split('.').pop().toLowerCase();
+  // Upload arquivo
+  document.getElementById('uploadFileBtn').onclick = async () => {
+    let file = document.getElementById('priceFileInput').files[0];
+    if (!file) return alert('Selecione um arquivo');
+    let ext = file.name.split('.').pop().toLowerCase();
     let items = [];
     try {
       if (ext === 'txt' || ext === 'csv') {
-        const text = await file.text();
-        const lines = text.split(/\r?\n/);
-        for (let line of lines) {
-          line = line.trim();
-          if (!line) continue;
-          let [produtoNome, quantidadeStr] = line.split(/[;,]/).map(s => s.trim());
-          if (!produtoNome || !quantidadeStr) continue;
-          let quantidade = parseInt(quantidadeStr);
-          if (isNaN(quantidade)) continue;
-          items.push({ nome: produtoNome, quantidade });
+        let text = await file.text();
+        for (let line of text.split(/\r?\n/)) {
+          let [prod, qtd] = line.split(/[;,]/).map(s=>s.trim());
+          if (prod && qtd) items.push({ nome: prod, quantidade: parseInt(qtd) });
         }
       } else if (ext === 'pdf') {
-        // Extração básica de texto do PDF (exemplo)
-        const arrayBuffer = await file.arrayBuffer();
-        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-        let fullText = "";
-        for (let i = 1; i <= pdf.numPages; i++) {
-          const page = await pdf.getPage(i);
-          const textContent = await page.getTextContent();
-          fullText += textContent.items.map(item => item.str).join(" ") + "\n";
+        let arrayBuf = await file.arrayBuffer();
+        let pdf = await pdfjsLib.getDocument({ data: arrayBuf }).promise;
+        let fullText = '';
+        for (let i=1;i<=pdf.numPages;i++) {
+          let page = await pdf.getPage(i);
+          let text = await page.getTextContent();
+          fullText += text.items.map(t=>t.str).join(' ') + '\n';
         }
-        // Tenta capturar linhas com "produto quantidade"
-        const lines = fullText.split(/\r?\n/);
+        let lines = fullText.split(/\r?\n/);
         for (let line of lines) {
-          const match = line.match(/([A-Za-zÀ-ÖØ-öø-ÿ0-9\s]+?)\s+(\d+)/i);
-          if (match) {
-            let nome = match[1].trim();
-            let qtd = parseInt(match[2]);
-            if (nome && qtd) items.push({ nome, quantidade: qtd });
-          }
+          let match = line.match(/([A-Za-zÀ-ÖØ-öø-ÿ0-9\s]+?)\s+(\d+)/i);
+          if (match) items.push({ nome: match[1].trim(), quantidade: parseInt(match[2]) });
         }
-        if (items.length === 0) throw new Error('Não foi possível extrair itens do PDF');
+      } else { alert('Formato não suportado'); return; }
+    } catch(e) { alert('Erro ao ler arquivo'); return; }
+    if (!items.length) { document.getElementById('fileResultArea').innerHTML = '<div class="message error">Nenhum item válido</div>'; return; }
+    let total = 0, rows = '';
+    for (let it of items) {
+      let prodMatch = searchProducts(it.nome)[0];
+      let best = prodMatch ? getBestOffer(prodMatch.id) : null;
+      if (best) {
+        let sub = best.preco * it.quantidade;
+        total += sub;
+        rows += `<tr><td>${prodMatch.nome}</td><td>${it.quantidade}</td><td>R$ ${best.preco.toFixed(2)}</td><td>R$ ${sub.toFixed(2)}</td><td>${best.fornecedor_razao}</td></tr>`;
       } else {
-        alert('Formato não suportado. Use .txt, .csv ou .pdf');
-        return;
-      }
-    } catch (err) {
-      alert('Erro ao ler arquivo: ' + err.message);
-      return;
-    }
-    if (!items.length) {
-      document.getElementById('fileResultArea').innerHTML = '<div class="message error">Nenhum item válido encontrado. Use formato: produto;quantidade</div>';
-      return;
-    }
-    let resultados = [];
-    let totalGeral = 0;
-    for (let item of items) {
-      const melhor = findBestOfferForProductName(item.nome);
-      if (melhor) {
-        const totalItem = melhor.oferta.preco * item.quantidade;
-        totalGeral += totalItem;
-        resultados.push(`<tr><td>${melhor.produto.nome}</td><td>${item.quantidade}</td><td>R$ ${melhor.oferta.preco.toFixed(2)}</td><td>R$ ${totalItem.toFixed(2)}</td><td>${melhor.oferta.fornecedor_razao}</td>`);
-      } else {
-        resultados.push(`<tr><td>${item.nome}</td><td colspan="4" class="message error">Produto não encontrado ou sem oferta</td>`);
+        rows += `<tr><td>${it.nome}</td><td colspan="4" class="message error">Produto sem oferta</td></tr>`;
       }
     }
-    const htmlTable = `
-      <h4>Resultado da cotação por lote</h4>
-      <div class="table-responsive">
-        <table><thead><tr><th>Produto</th><th>Quantidade</th><th>Melhor preço unit.</th><th>Total</th><th>Fornecedor</th></tr></thead>
-        <tbody>${resultados.join('')}</tbody></table>
-      </div>
-      <div class="price-highlight">Valor total da compra: R$ ${totalGeral.toFixed(2)}</div>
-    `;
-    document.getElementById('fileResultArea').innerHTML = htmlTable;
-    fileInput.value = ''; // limpa o campo por privacidade
-  });
+    document.getElementById('fileResultArea').innerHTML = `<h4>Resultado</h4><div class="table-responsive"><table><thead><tr><th>Produto</th><th>Qtd</th><th>Melhor preço</th><th>Total</th><th>Fornecedor</th></tr></thead><tbody>${rows}</tbody></table></div><div class="price-highlight">Total: R$ ${total.toFixed(2)}</div>`;
+    document.getElementById('priceFileInput').value = ''; // limpa
+  };
 
-  // ======================== PAINEL FORNECEDOR ========================
+  // ========== FORNECEDOR ==========
   let currentSupplier = null;
-  function loadSupplierProducts() {
-    const produtos = getProdutos();
-    const select = document.getElementById('supplierProductSelect');
-    select.innerHTML = produtos.map(p => `<option value="${p.id}">${p.nome} (${p.ncm})</option>`).join('');
-  }
+  function loadSupplierProducts() { document.getElementById('supplierProductSelect').innerHTML = getProdutos().map(p=>`<option value="${p.id}">${p.nome} (${p.ncm})</option>`).join(''); }
   function loadSupplierOffers() {
     if (!currentSupplier) return;
-    const ofertas = getOfertas().filter(o => o.fornecedor_id === currentSupplier.id);
-    const produtos = getProdutos();
-    const tableHtml = `<table><thead><tr><th>Produto</th><th>Preço</th><th>Data</th></tr></thead><tbody>${
-      ofertas.map(o => { const prod = produtos.find(p=>p.id === o.produto_id); return `<tr><td>${prod?.nome || '-'}</td><td>R$ ${o.preco.toFixed(2)}</td><td>${new Date(o.data_oferta).toLocaleDateString()}</td></tr>`; }).join('')
-    }</tbody></table>`;
-    document.getElementById('supplierOffersTable').innerHTML = ofertas.length ? tableHtml : '<p>Nenhuma oferta registrada.</p>';
+    let ofertas = getOfertas().filter(o=>o.fornecedor_id===currentSupplier.id);
+    let produtos = getProdutos();
+    let html = `<table><thead><tr><th>Produto</th><th>Preço</th><th>Data</th></tr></thead><tbody>${ofertas.map(o=>{let p=produtos.find(p=>p.id===o.produto_id); return `<tr><td>${p?.nome}</td><td>R$ ${o.preco.toFixed(2)}</td><td>${new Date(o.data_oferta).toLocaleDateString()}</td></tr>`;}).join('')}</tbody></table>`;
+    document.getElementById('supplierOffersTable').innerHTML = ofertas.length ? html : '<p>Nenhuma oferta</p>';
   }
   function loadSupplierComparison() {
     if (!currentSupplier) return;
-    const produtos = getProdutos();
-    const todasOfertas = getOfertas();
-    const minhasOfertas = todasOfertas.filter(o => o.fornecedor_id === currentSupplier.id);
-    if (minhasOfertas.length === 0) {
-      document.getElementById('supplierComparisonTable').innerHTML = '<p>Cadastre ofertas para ver a comparação.</p>';
-      return;
+    let ofertas = getOfertas().filter(o=>o.fornecedor_id===currentSupplier.id);
+    if (!ofertas.length) { document.getElementById('supplierComparisonTable').innerHTML = '<p>Cadastre ofertas para comparar</p>'; return; }
+    let produtos = getProdutos();
+    let rows = '';
+    for (let oferta of ofertas) {
+      let prod = produtos.find(p=>p.id===oferta.produto_id);
+      let allOffers = getOfertas().filter(o=>o.produto_id===oferta.produto_id);
+      let bestPrice = Math.min(...allOffers.map(o=>o.preco));
+      let diff = oferta.preco - bestPrice;
+      let perc = (diff / bestPrice) * 100;
+      let status = diff <= 0 ? 'status-success' : (perc <= 10 ? 'status-warning' : 'status-error');
+      let msg = diff <= 0 ? '✅ Competitivo' : (perc <= 10 ? `⚠️ ${perc.toFixed(1)}% acima` : `🔴 ${perc.toFixed(1)}% acima`);
+      rows += `<tr><td>${prod.nome}</td><td>R$ ${oferta.preco.toFixed(2)}</td><td>R$ ${bestPrice.toFixed(2)}</td><td>${diff>0?'+':''}R$ ${diff.toFixed(2)} (${perc>0?'+':''}${perc.toFixed(1)}%)</td><td class="${status}">${msg}</td></tr>`;
     }
-    let html = '<table><thead><tr><th>Produto</th><th>Seu preço (R$)</th><th>Melhor preço da bolsa (R$)</th><th>Diferença</th><th>Status</th></tr></thead><tbody>';
-    for (let oferta of minhasOfertas) {
-      const produto = produtos.find(p => p.id === oferta.produto_id);
-      const ofertasProduto = todasOfertas.filter(o => o.produto_id === oferta.produto_id);
-      const melhorPrecoGlobal = Math.min(...ofertasProduto.map(o => o.preco));
-      const diferenca = oferta.preco - melhorPrecoGlobal;
-      const percentual = (diferenca / melhorPrecoGlobal) * 100;
-      let statusClass = '', statusText = '';
-      if (diferenca <= 0) { statusClass = 'status-success'; statusText = '✅ Competitivo (melhor ou igual)'; }
-      else if (percentual <= 10) { statusClass = 'status-warning'; statusText = `⚠️ ${percentual.toFixed(1)}% acima`; }
-      else { statusClass = 'status-error'; statusText = `🔴 ${percentual.toFixed(1)}% acima – revise`; }
-      html += `<tr>
-        <td>${produto.nome}</td>
-        <td>R$ ${oferta.preco.toFixed(2)}</td>
-        <td>R$ ${melhorPrecoGlobal.toFixed(2)}</td>
-        <td>${diferenca > 0 ? '+' : ''}R$ ${diferenca.toFixed(2)} (${percentual > 0 ? '+' : ''}${percentual.toFixed(1)}%)</td>
-        <td class="${statusClass}">${statusText}</td>
-      </tr>`;
-    }
-    html += '</tbody></table>';
-    document.getElementById('supplierComparisonTable').innerHTML = html;
+    document.getElementById('supplierComparisonTable').innerHTML = `<table><thead><tr><th>Produto</th><th>Seu preço</th><th>Melhor preço</th><th>Diferença</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table>`;
   }
-  document.getElementById('supplierLoginBtn').addEventListener('click', () => {
-    const email = document.getElementById('supplierEmail').value;
-    const senha = document.getElementById('supplierPassword').value;
-    const fornecedor = getFornecedores().find(f => f.email === email && f.senha === senha);
-    if (fornecedor) {
-      currentSupplier = fornecedor;
+  document.getElementById('supplierLoginBtn').onclick = () => {
+    let email = document.getElementById('supplierEmail').value;
+    let senha = document.getElementById('supplierPassword').value;
+    let forn = getFornecedores().find(f=>f.email===email && f.senha===senha);
+    if (forn) {
+      currentSupplier = forn;
       document.getElementById('supplierLoginArea').style.display = 'none';
       document.getElementById('supplierDashboard').style.display = 'block';
-      document.getElementById('supplierName').innerText = fornecedor.razao_social;
-      loadSupplierProducts();
-      loadSupplierOffers();
-      loadSupplierComparison();
-    } else {
-      document.getElementById('supplierMessage').innerHTML = '<div class="message error">Credenciais inválidas</div>';
-    }
-  });
-  document.getElementById('supplierLogoutBtn').addEventListener('click', () => {
-    currentSupplier = null;
-    document.getElementById('supplierLoginArea').style.display = 'block';
-    document.getElementById('supplierDashboard').style.display = 'none';
-  });
-  document.getElementById('updatePriceBtn').addEventListener('click', () => {
+      document.getElementById('supplierName').innerText = forn.razao_social;
+      loadSupplierProducts(); loadSupplierOffers(); loadSupplierComparison();
+    } else { document.getElementById('supplierMessage').innerHTML = '<div class="message error">Falha no login</div>'; }
+  };
+  document.getElementById('supplierLogoutBtn').onclick = () => { currentSupplier = null; document.getElementById('supplierLoginArea').style.display = 'block'; document.getElementById('supplierDashboard').style.display = 'none'; };
+  document.getElementById('updatePriceBtn').onclick = () => {
     if (!currentSupplier) return;
-    const produto_id = parseInt(document.getElementById('supplierProductSelect').value);
-    const preco = parseFloat(document.getElementById('supplierPrice').value);
-    const data_oferta = document.getElementById('supplierDate').value;
-    if (isNaN(preco) || preco <= 0 || !data_oferta) {
-      document.getElementById('supplierMessage').innerHTML = '<div class="message error">Preço e data válidos</div>';
-      return;
-    }
-    const ofertas = getOfertas();
-    ofertas.push({ id: getNextId('oferta'), produto_id, fornecedor_id: currentSupplier.id, preco, data_oferta });
+    let prod_id = parseInt(document.getElementById('supplierProductSelect').value);
+    let preco = parseFloat(document.getElementById('supplierPrice').value);
+    let data = document.getElementById('supplierDate').value;
+    if (isNaN(preco) || !data) { document.getElementById('supplierMessage').innerHTML = '<div class="message error">Preço e data válidos</div>'; return; }
+    let ofertas = getOfertas();
+    ofertas.push({ id: getNextId('oferta'), produto_id: prod_id, fornecedor_id: currentSupplier.id, preco, data_oferta: data });
     saveOfertas(ofertas);
-    document.getElementById('supplierMessage').innerHTML = '<div class="message success">Oferta registrada!</div>';
-    loadSupplierOffers();
-    loadSupplierComparison();
+    document.getElementById('supplierMessage').innerHTML = '<div class="message success">Oferta registrada</div>';
+    loadSupplierOffers(); loadSupplierComparison();
     document.getElementById('supplierPrice').value = '';
-    document.getElementById('supplierDate').value = '';
-  });
+  };
   document.getElementById('supplierDate').valueAsDate = new Date();
 
-  // ======================== PAINEL ADMIN ========================
+  // ========== ADMIN ==========
   let currentAdmin = false;
   function renderAdminProducts() {
-    const produtos = getProdutos();
-    const html = `<table><thead><tr><th>ID</th><th>Nome</th><th>NCM</th><th>Ações</th></tr></thead><tbody>${
-      produtos.map(p => `<tr><td>${p.id}</td><td>${p.nome}</td><td>${p.ncm}</td><td><button onclick="deleteProd(${p.id})" class="btn-outline">Excluir</button></td></tr>`).join('')
-    }</tbody></table>`;
-    document.getElementById('prodList').innerHTML = html;
+    let produtos = getProdutos();
+    document.getElementById('prodList').innerHTML = `<table><thead><tr><th>ID</th><th>Nome</th><th>NCM</th><th>Ações</th></tr></thead><tbody>${produtos.map(p=>`<tr><td>${p.id}</td><td>${p.nome}</td><td>${p.ncm}</td><td><button onclick="deleteProd(${p.id})" class="btn-outline">Excluir</button></td></tr>`).join('')}</tbody></table>`;
   }
-  window.deleteProd = function(id) {
-    if (confirm('Remover produto? Ofertas vinculadas serão excluídas.')) {
-      let produtos = getProdutos().filter(p => p.id !== id);
+  window.deleteProd = (id) => {
+    if (confirm('Remover produto?')) {
+      let produtos = getProdutos().filter(p=>p.id!==id);
       saveProdutos(produtos);
-      let ofertas = getOfertas().filter(o => o.produto_id !== id);
+      let ofertas = getOfertas().filter(o=>o.produto_id!==id);
       saveOfertas(ofertas);
-      renderAdminProducts();
-      renderAllOffers();
+      renderAdminProducts(); renderAllOffers();
     }
   };
   function renderAdminFornecedores() {
-    const fornecedores = getFornecedores();
-    const html = `<table><thead><tr><th>ID</th><th>Razão Social</th><th>CNPJ</th><th>E-mail</th><th>Ações</th></tr></thead><tbody>${
-      fornecedores.map(f => `<tr><td>${f.id}</td><td>${f.razao_social}</td><td>${f.cnpj}</td><td>${f.email}</td><td><button onclick="deleteForn(${f.id})" class="btn-outline">Excluir</button></td></tr>`).join('')
-    }</tbody></table>`;
-    document.getElementById('fornList').innerHTML = html;
+    let fornecedores = getFornecedores();
+    document.getElementById('fornList').innerHTML = `<table><thead><tr><th>ID</th><th>Razão</th><th>CNPJ</th><th>E-mail</th><th>Ações</th></tr></thead><tbody>${fornecedores.map(f=>`<tr><td>${f.id}</td><td>${f.razao_social}</td><td>${f.cnpj}</td><td>${f.email}</td><td><button onclick="deleteForn(${f.id})" class="btn-outline">Excluir</button></td></tr>`).join('')}</tbody></table>`;
   }
-  window.deleteForn = function(id) {
-    if (confirm('Excluir fornecedor? Todas as ofertas serão removidas.')) {
-      let fornecedores = getFornecedores().filter(f => f.id !== id);
+  window.deleteForn = (id) => {
+    if (confirm('Excluir fornecedor?')) {
+      let fornecedores = getFornecedores().filter(f=>f.id!==id);
       saveFornecedores(fornecedores);
-      let ofertas = getOfertas().filter(o => o.fornecedor_id !== id);
+      let ofertas = getOfertas().filter(o=>o.fornecedor_id!==id);
       saveOfertas(ofertas);
-      renderAdminFornecedores();
-      renderAllOffers();
+      renderAdminFornecedores(); renderAllOffers();
     }
   };
   function renderAllOffers() {
-    const ofertas = getOfertas();
-    const produtos = getProdutos();
-    const fornecedores = getFornecedores();
-    const html = `<table><thead><tr><th>Produto</th><th>Fornecedor</th><th>Preço (R$)</th><th>Data</th></tr></thead><tbody>${
-      ofertas.map(o => { const prod = produtos.find(p=>p.id === o.produto_id); const forn = fornecedores.find(f=>f.id === o.fornecedor_id); return `<tr><td>${prod?.nome || '-'}</td><td>${forn?.razao_social || '-'}</td><td>${o.preco.toFixed(2)}</td><td>${o.data_oferta}</td></tr>`; }).join('')
-    }</tbody></table>`;
-    document.getElementById('allOffersTable').innerHTML = ofertas.length ? html : '<p>Nenhuma oferta.</p>';
+    let ofertas = getOfertas();
+    let produtos = getProdutos();
+    let fornecedores = getFornecedores();
+    document.getElementById('allOffersTable').innerHTML = `<table><thead><tr><th>Produto</th><th>Fornecedor</th><th>Preço</th><th>Data</th></tr></thead><tbody>${ofertas.map(o=>{let p=produtos.find(p=>p.id===o.produto_id); let f=fornecedores.find(f=>f.id===o.fornecedor_id); return `<tr><td>${p?.nome}</td><td>${f?.razao_social}</td><td>R$ ${o.preco.toFixed(2)}</td><td>${o.data_oferta}</td></tr>`;}).join('')}</tbody></table>`;
   }
-  document.getElementById('adminLoginBtn').addEventListener('click', () => {
-    const email = document.getElementById('adminEmail').value;
-    const senha = document.getElementById('adminPassword').value;
+  document.getElementById('adminLoginBtn').onclick = () => {
+    let email = document.getElementById('adminEmail').value;
+    let senha = document.getElementById('adminPassword').value;
     if (email === 'admin@bolsa.com' && senha === 'admin123') {
       currentAdmin = true;
       document.getElementById('adminLoginArea').style.display = 'none';
       document.getElementById('adminDashboard').style.display = 'block';
-      renderAdminProducts();
-      renderAdminFornecedores();
-      renderAllOffers();
-    } else { alert('Acesso negado'); }
-  });
-  document.getElementById('adminLogoutBtn').addEventListener('click', () => {
-    currentAdmin = false;
-    document.getElementById('adminLoginArea').style.display = 'block';
-    document.getElementById('adminDashboard').style.display = 'none';
-  });
-  document.getElementById('addProdBtn').addEventListener('click', () => {
-    const nome = document.getElementById('newProdNome').value.trim();
-    const ncm = document.getElementById('newProdNcm').value.trim().replace(/[^0-9]/g, '');
-    if (!nome || !ncm) return alert('Preencha nome e NCM (apenas números)');
-    const produtos = getProdutos();
+      renderAdminProducts(); renderAdminFornecedores(); renderAllOffers();
+    } else alert('Acesso negado');
+  };
+  document.getElementById('adminLogoutBtn').onclick = () => { currentAdmin = false; document.getElementById('adminLoginArea').style.display = 'block'; document.getElementById('adminDashboard').style.display = 'none'; };
+  document.getElementById('addProdBtn').onclick = () => {
+    let nome = document.getElementById('newProdNome').value.trim();
+    let ncm = document.getElementById('newProdNcm').value.trim().replace(/\D/g,'');
+    if (!nome || !ncm) return alert('Nome e NCM obrigatórios');
+    let produtos = getProdutos();
     produtos.push({ id: getNextId('produto'), nome, ncm });
     saveProdutos(produtos);
     renderAdminProducts();
-    document.getElementById('newProdNome').value = '';
-    document.getElementById('newProdNcm').value = '';
-  });
-  document.getElementById('addFornBtn').addEventListener('click', () => {
-    const razao = document.getElementById('newFornRazao').value.trim();
-    const cnpj = document.getElementById('newFornCnpj').value.trim();
-    const email = document.getElementById('newFornEmail').value.trim();
-    if (!razao || !cnpj || !email) return alert('Preencha todos os campos');
-    const fornecedores = getFornecedores();
+    document.getElementById('newProdNome').value = ''; document.getElementById('newProdNcm').value = '';
+  };
+  document.getElementById('addFornBtn').onclick = () => {
+    let razao = document.getElementById('newFornRazao').value.trim();
+    let cnpj = document.getElementById('newFornCnpj').value.trim();
+    let email = document.getElementById('newFornEmail').value.trim();
+    if (!razao || !cnpj || !email) return alert('Preencha todos');
+    let fornecedores = getFornecedores();
     fornecedores.push({ id: getNextId('fornecedor'), razao_social: razao, cnpj, email, senha: "123" });
     saveFornecedores(fornecedores);
     renderAdminFornecedores();
-    document.getElementById('newFornRazao').value = '';
-    document.getElementById('newFornCnpj').value = '';
-    document.getElementById('newFornEmail').value = '';
-  });
-  document.getElementById('importNcmBtn').addEventListener('click', async () => {
-    const ncmTable = await getNCMTable();
-    if (!ncmTable) return alert('Erro ao carregar NCM oficial');
-    const produtosExistentes = getProdutos();
-    let novos = 0;
-    for (let item of ncmTable) {
-      if (item.nivel === 4 && !produtosExistentes.some(p => p.ncm === item.codigo)) {
-        produtosExistentes.push({ id: getNextId('produto'), nome: item.descricao, ncm: item.codigo });
-        novos++;
-      }
-    }
-    if (novos) {
-      saveProdutos(produtosExistentes);
-      alert(`${novos} produtos importados.`);
-      renderAdminProducts();
-    } else {
-      alert('Nenhum novo produto encontrado.');
-    }
-  });
-
-  // Navegação entre abas
-  const tabs = document.querySelectorAll('.tab-btn');
-  const contents = {
-    public: document.getElementById('publicTab'),
-    supplier: document.getElementById('supplierTab'),
-    admin: document.getElementById('adminTab')
+    document.getElementById('newFornRazao').value = ''; document.getElementById('newFornCnpj').value = ''; document.getElementById('newFornEmail').value = '';
   };
+  document.getElementById('importNcmBtn').onclick = async () => {
+    let url = 'https://portalunico.siscomex.gov.br/classif/api/publico/nomenclatura/download/json?perfil=PUBLICO';
+    try {
+      let resp = await fetch(url);
+      let data = await resp.json();
+      let produtos = getProdutos();
+      let novos = 0;
+      for (let item of data) {
+        if (item.nivel === 4 && !produtos.some(p=>p.ncm === item.codigo)) {
+          produtos.push({ id: getNextId('produto'), nome: item.descricao, ncm: item.codigo });
+          novos++;
+        }
+      }
+      if (novos) { saveProdutos(produtos); alert(`${novos} produtos importados`); renderAdminProducts(); }
+      else alert('Nenhum novo produto');
+    } catch(e) { alert('Erro ao importar NCM'); }
+  };
+
+  // Navegação entre abas (touch-friendly)
+  let tabs = document.querySelectorAll('.tab-btn');
+  let panels = { public: document.getElementById('publicTab'), supplier: document.getElementById('supplierTab'), admin: document.getElementById('adminTab') };
   tabs.forEach(btn => {
-    btn.addEventListener('click', () => {
-      tabs.forEach(b => b.classList.remove('active'));
+    btn.onclick = () => {
+      tabs.forEach(b=>b.classList.remove('active'));
       btn.classList.add('active');
-      const tabId = btn.getAttribute('data-tab');
-      Object.keys(contents).forEach(k => contents[k].classList.remove('active-tab'));
-      contents[tabId].classList.add('active-tab');
-      if (tabId === 'admin' && currentAdmin) renderAllOffers();
-      if (tabId === 'supplier' && currentSupplier) { loadSupplierOffers(); loadSupplierComparison(); }
-    });
+      let tab = btn.getAttribute('data-tab');
+      Object.values(panels).forEach(p=>p.classList.remove('active-tab'));
+      panels[tab].classList.add('active-tab');
+      if (tab === 'supplier' && currentSupplier) { loadSupplierOffers(); loadSupplierComparison(); }
+      if (tab === 'admin' && currentAdmin) renderAllOffers();
+    };
   });
 </script>
 </body>
