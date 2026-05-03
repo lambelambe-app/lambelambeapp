@@ -1,0 +1,1268 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mente Inversa — O Jogo da Autoconsciência</title>
+    <style>
+        :root {
+            --bg: #0b0c15;
+            --surface: #151725;
+            --surface2: #1c1f30;
+            --text: #e0e0ee;
+            --text2: #9b9bb5;
+            --accent: #8b5cf6;
+            --accent2: #6366f1;
+            --cyan: #22d3ee;
+            --amber: #f59e0b;
+            --red: #ef4444;
+            --green: #22c55e;
+            --clareza-low: #ef4444;
+            --clareza-mid: #f59e0b;
+            --clareza-high: #22c55e;
+            --radius: 16px;
+            --radius-sm: 10px;
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font);
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+            background-image: radial-gradient(ellipse at 50% 0%, #1a1040 0%, var(--bg) 70%),
+                radial-gradient(ellipse at 80% 100%, #0f1a2e 0%, var(--bg) 60%);
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 520px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            position: relative;
+        }
+
+        /* ========== SCREENS ========== */
+        .screen {
+            display: none;
+            flex-direction: column;
+            gap: 16px;
+            animation: fadeSlideIn 0.4s ease;
+        }
+        .screen.active {
+            display: flex;
+        }
+
+        @keyframes fadeSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        @keyframes pulse {
+            0%,
+            100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.04);
+            }
+        }
+        @keyframes shake {
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+            20% {
+                transform: translateX(-8px);
+            }
+            40% {
+                transform: translateX(8px);
+            }
+            60% {
+                transform: translateX(-5px);
+            }
+            80% {
+                transform: translateX(5px);
+            }
+        }
+        @keyframes glowPulse {
+            0%,
+            100% {
+                box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+            }
+            50% {
+                box-shadow: 0 0 40px rgba(139, 92, 246, 0.6);
+            }
+        }
+        @keyframes confetti {
+            0% {
+                transform: translateY(0) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-120px) scale(0);
+                opacity: 0;
+            }
+        }
+
+        .shake {
+            animation: shake 0.5s ease;
+        }
+        .pulse {
+            animation: pulse 0.5s ease;
+        }
+
+        /* ========== HEADER CARD ========== */
+        .header-card {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 18px 20px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .logo-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+        }
+        .logo-text {
+            font-size: 1.2rem;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+            background: linear-gradient(135deg, #c4b5fd, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .level-badge {
+            background: var(--surface2);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--cyan);
+            border: 1px solid rgba(34, 211, 238, 0.3);
+            white-space: nowrap;
+        }
+
+        /* ========== CLAREZA BAR ========== */
+        .clareza-section {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 14px 18px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .clareza-label {
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--text2);
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .clareza-bar-outer {
+            flex: 1;
+            height: 12px;
+            background: #1e2035;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+        .clareza-bar-inner {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1), background 0.6s;
+            width: 50%;
+            background: var(--clareza-mid);
+        }
+        .clareza-value {
+            font-weight: 700;
+            font-size: 1rem;
+            min-width: 32px;
+            text-align: center;
+            transition: color 0.4s;
+        }
+
+        /* ========== CASE CARD ========== */
+        .case-card {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+        .case-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent), var(--cyan));
+            border-radius: var(--radius) var(--radius) 0 0;
+        }
+        .case-number {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--accent);
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+        .case-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #fff;
+            line-height: 1.4;
+        }
+        .case-description {
+            font-size: 0.9rem;
+            color: var(--text2);
+            line-height: 1.65;
+            font-style: italic;
+            border-left: 3px solid rgba(139, 92, 246, 0.4);
+            padding-left: 14px;
+        }
+
+        /* ========== SELECTION AREA ========== */
+        .selection-label {
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--text2);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+        .chips-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .chip {
+            padding: 10px 15px;
+            border-radius: 24px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.25s ease;
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            background: var(--surface2);
+            color: var(--text);
+            position: relative;
+            overflow: hidden;
+        }
+        .chip:hover {
+            border-color: rgba(139, 92, 246, 0.6);
+            background: #232540;
+        }
+        .chip.selected {
+            border-color: var(--accent);
+            background: rgba(139, 92, 246, 0.2);
+            color: #fff;
+            font-weight: 600;
+            box-shadow: 0 0 16px rgba(139, 92, 246, 0.25);
+        }
+        .chip.selected::after {
+            content: '✓';
+            margin-left: 6px;
+            font-size: 0.75rem;
+        }
+        .antidoto-card {
+            padding: 14px 16px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            background: var(--surface2);
+            transition: all 0.25s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .antidoto-card:hover {
+            border-color: rgba(34, 211, 238, 0.5);
+            background: #1e2840;
+        }
+        .antidoto-card.selected {
+            border-color: var(--cyan);
+            background: rgba(34, 211, 238, 0.12);
+            box-shadow: 0 0 18px rgba(34, 211, 238, 0.2);
+        }
+        .antidoto-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background: rgba(34, 211, 238, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+        .antidoto-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .antidoto-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #fff;
+        }
+        .antidoto-desc {
+            font-size: 0.75rem;
+            color: var(--text2);
+            line-height: 1.3;
+        }
+
+        /* ========== BUTTONS ========== */
+        .btn {
+            padding: 14px 24px;
+            border-radius: 28px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s ease;
+            letter-spacing: 0.2px;
+            font-family: var(--font);
+            width: 100%;
+            text-align: center;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            color: #fff;
+            box-shadow: 0 6px 24px rgba(139, 92, 246, 0.35);
+        }
+        .btn-primary:hover {
+            box-shadow: 0 8px 32px rgba(139, 92, 246, 0.5);
+            transform: translateY(-2px);
+        }
+        .btn-primary:active {
+            transform: scale(0.97);
+        }
+        .btn-primary:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        .btn-outline {
+            background: transparent;
+            border: 2px solid rgba(255, 255, 255, 0.25);
+            color: #fff;
+        }
+        .btn-outline:hover {
+            border-color: rgba(255, 255, 255, 0.6);
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        /* ========== MODAL ========== */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease;
+            padding: 20px;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        .modal {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 24px;
+            max-width: 440px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes popIn {
+            from {
+                transform: scale(0.85);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        .modal-emoji {
+            font-size: 3rem;
+            margin-bottom: 8px;
+            animation: pulse 0.6s ease;
+        }
+        .modal-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+        .modal-text {
+            font-size: 0.9rem;
+            color: var(--text2);
+            margin-bottom: 16px;
+            line-height: 1.5;
+        }
+        .modal-xp {
+            display: inline-block;
+            background: rgba(139, 92, 246, 0.2);
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-weight: 700;
+            color: #c4b5fd;
+            margin-bottom: 16px;
+        }
+
+        /* ========== LOG / HISTORY ========== */
+        .log-section {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 14px 18px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            max-height: 140px;
+            overflow-y: auto;
+        }
+        .log-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text2);
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        .log-entry {
+            font-size: 0.8rem;
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .log-entry.correct {
+            color: var(--green);
+        }
+        .log-entry.wrong {
+            color: var(--red);
+        }
+        .log-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .log-dot.green {
+            background: var(--green);
+        }
+        .log-dot.red {
+            background: var(--red);
+        }
+
+        /* ========== SCROLLBAR ========== */
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        /* ========== RESPONSIVE ========== */
+        @media (max-width: 400px) {
+            .header-card {
+                padding: 12px 14px;
+                gap: 8px;
+            }
+            .logo-text {
+                font-size: 1rem;
+            }
+            .case-card {
+                padding: 14px;
+            }
+            .case-title {
+                font-size: 1rem;
+            }
+            .case-description {
+                font-size: 0.82rem;
+            }
+            .chip {
+                padding: 8px 12px;
+                font-size: 0.78rem;
+            }
+            .antidoto-card {
+                padding: 10px 12px;
+            }
+            .btn {
+                padding: 12px 18px;
+                font-size: 0.85rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container" id="appContainer">
+        <!-- ========== TELA INICIAL ========== -->
+        <div class="screen active" id="homeScreen">
+            <div style="text-align:center;padding:20px 0;">
+                <div class="logo-icon" style="margin:0 auto 12px;width:64px;height:64px;font-size:36px;border-radius:20px;">
+                    🧠
+                </div>
+                <h1 style="font-size:1.8rem;font-weight:800;letter-spacing:-0.5px;background:linear-gradient(135deg,#c4b5fd,#a78bfa,#22d3ee);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">
+                    Mente Inversa
+                </h1>
+                <p style="color:var(--text2);margin-top:4px;font-size:0.9rem;">O Jogo da Autoconsciência</p>
+            </div>
+
+            <div class="header-card" style="justify-content:center;gap:20px;">
+                <div style="text-align:center;">
+                    <div style="font-size:0.7rem;color:var(--text2);text-transform:uppercase;letter-spacing:1px;">Nível</div>
+                    <div class="level-badge" id="homeLevelBadge" style="font-size:1rem;padding:8px 18px;">🧭 Iniciante</div>
+                </div>
+                <div style="text-align:center;">
+                    <div style="font-size:0.7rem;color:var(--text2);text-transform:uppercase;letter-spacing:1px;">XP Total</div>
+                    <div style="font-weight:700;font-size:1.3rem;color:#fff;" id="homeXP">0</div>
+                </div>
+                <div style="text-align:center;">
+                    <div style="font-size:0.7rem;color:var(--text2);text-transform:uppercase;letter-spacing:1px;">Casos</div>
+                    <div style="font-weight:700;font-size:1.3rem;color:#fff;" id="homeCases">0</div>
+                </div>
+            </div>
+
+            <button class="btn btn-primary pulse" onclick="startGame()" style="font-size:1.05rem;">
+                🧩 Iniciar Análise
+            </button>
+            <button class="btn btn-outline" onclick="showTutorial()">
+                📖 Como Jogar
+            </button>
+            <p style="text-align:center;font-size:0.7rem;color:var(--text2);margin-top:8px;">
+                Identifique vieses cognitivos e neutralize-os com os antídotos corretos
+            </p>
+        </div>
+
+        <!-- ========== TELA DE JOGO ========== -->
+        <div class="screen" id="gameScreen">
+            <!-- Header -->
+            <div class="header-card">
+                <div class="logo-area">
+                    <div class="logo-icon">🧠</div>
+                    <div class="logo-text">Mente Inversa</div>
+                </div>
+                <div class="level-badge" id="gameLevelBadge">🧭 Iniciante</div>
+            </div>
+
+            <!-- Clareza -->
+            <div class="clareza-section">
+                <span class="clareza-label">💡 Clareza</span>
+                <div class="clareza-bar-outer">
+                    <div class="clareza-bar-inner" id="clarezaBar"></div>
+                </div>
+                <span class="clareza-value" id="clarezaValue">5/10</span>
+            </div>
+
+            <!-- Caso -->
+            <div class="case-card" id="caseCard">
+                <div class="case-number" id="caseNumber">CASO #1</div>
+                <div class="case-title" id="caseTitle"></div>
+                <div class="case-description" id="caseDescription"></div>
+            </div>
+
+            <!-- Vieses -->
+            <div>
+                <div class="selection-label">🔍 Vieses Suspeitos (selecione os que detectar)</div>
+                <div class="chips-container" id="viesesContainer"></div>
+            </div>
+
+            <!-- Antídotos -->
+            <div>
+                <div class="selection-label">💊 Antídoto Neutralizador (escolha um)</div>
+                <div id="antidotosContainer" style="display:flex;flex-direction:column;gap:8px;"></div>
+            </div>
+
+            <!-- Botão -->
+            <button class="btn btn-primary" id="btnAnalisar" onclick="analisarCaso()" disabled>
+                🔬 Analisar Caso
+            </button>
+
+            <!-- Log -->
+            <div class="log-section" id="logSection" style="display:none;">
+                <div class="log-title">📋 Histórico da Sessão</div>
+                <div id="logEntries"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal overlay (dinâmico) -->
+    <div class="modal-overlay" id="modalOverlay" style="display:none;">
+        <div class="modal" id="modalContent"></div>
+    </div>
+
+    <script>
+        // ============================================================
+        // DADOS DO JOGO
+        // ============================================================
+
+        const viesesData = [
+            { id: 'confirmacao', nome: 'Viés de Confirmação', desc: 'Buscar informações que confirmem crenças prévias',
+                categoria: 'atenção' },
+            { id: 'disponibilidade', nome: 'Viés de Disponibilidade', desc: 'Superestimar eventos fáceis de lembrar',
+                categoria: 'atenção' },
+            { id: 'ancoragem', nome: 'Viés da Ancoragem', desc: 'Prender-se à primeira informação recebida',
+            categoria: 'decisao' },
+            { id: 'aversao_perda', nome: 'Aversão à Perda', desc: 'Sentir a perda mais intensamente que o ganho',
+                categoria: 'decisao' },
+            { id: 'custo_afundado', nome: 'Falácia do Custo Afundado',
+                desc: 'Continuar investindo em algo ruim por já ter investido', categoria: 'decisao' },
+            { id: 'atribuicao', nome: 'Erro de Atribuição Fundamental',
+                desc: 'Julgar os outros pelo caráter, não pela situação', categoria: 'social' },
+            { id: 'manada', nome: 'Efeito Manada', desc: 'Adotar ideias porque muitos as seguem',
+            categoria: 'social' },
+            { id: 'otimismo', nome: 'Viés do Otimismo', desc: 'Superestimar eventos positivos para si',
+                categoria: 'decisao' },
+            { id: 'enquadramento', nome: 'Efeito Enquadramento',
+                desc: 'Decidir diferente conforme a informação é apresentada', categoria: 'decisao' },
+            { id: 'retrospeccao', nome: 'Viés da Retrospecção',
+                desc: 'Achar que "já sabia" após saber o resultado', categoria: 'memoria' },
+            { id: 'agrupamento', nome: 'Ilusão de Agrupamento', desc: 'Ver padrões em eventos aleatórios',
+                categoria: 'significado' },
+            { id: 'autoconveniencia', nome: 'Viés da Autoconveniência',
+                desc: 'Atribuir sucessos a si e fracassos a fatores externos', categoria: 'social' },
+            { id: 'falso_consenso', nome: 'Efeito Falso Consenso',
+                desc: 'Achar que os outros concordam mais do que realmente concordam', categoria: 'social' },
+            { id: 'status_quo', nome: 'Viés do Status Quo', desc: 'Preferir manter as coisas como estão',
+                categoria: 'decisao' },
+        ];
+
+        const antidotosData = [
+            { id: 'advogado_diabo', nome: 'Advogado do Diabo', desc: 'Argumentar ativamente contra sua própria posição',
+                neutraliza: ['confirmacao', 'manada'], icone: '😈' },
+            { id: 'pre_mortem', nome: 'Pré-Mortem', desc: 'Imaginar que o plano falhou e buscar causas',
+                neutraliza: ['otimismo', 'agrupamento'], icone: '🔮' },
+            { id: 'pergunta_invertida', nome: 'Pergunta Invertida',
+                desc: 'Reformular a questão pelo ângulo oposto', neutraliza: ['enquadramento', 'ancoragem'],
+            icone: '🪞' },
+            { id: 'diario_decisoes', nome: 'Diário de Decisões', desc: 'Registrar previsões antes de saber o resultado',
+                neutraliza: ['retrospeccao', 'autoconveniencia'], icone: '📓' },
+            { id: 'troca_perspectiva', nome: 'Troca de Perspectiva',
+                desc: 'Analisar a situação como se fosse outra pessoa', neutraliza: ['atribuicao', 'falso_consenso'],
+                icone: '👁️' },
+            { id: 'evidencias_contrarias', nome: 'Lista de Evidências Contrárias',
+                desc: 'Listar fatos que contradizem sua crença', neutraliza: ['confirmacao', 'disponibilidade'],
+                icone: '📋' },
+            { id: 'ponto_vista_externo', nome: 'Ponto de Vista Externo',
+                desc: 'Analisar usando estatísticas de casos similares', neutraliza: ['custo_afundado', 'otimismo'],
+                icone: '🌐' },
+            { id: 'custo_zero', nome: 'Reenquadre do Zero',
+                desc: 'Perguntar: "Se eu não tivesse nada investido, faria isso hoje?"',
+                neutraliza: ['custo_afundado', 'aversao_perda', 'status_quo'], icone: '🔄' },
+            { id: 'amostragem_ampla', nome: 'Amplie a Amostra', desc: 'Buscar dados além dos exemplos mais vívidos',
+                neutraliza: ['disponibilidade', 'agrupamento'], icone: '📊' },
+        ];
+
+        const casosData = [
+            // Nível 1 (Iniciante) - vieses básicos
+            {
+                id: 1,
+                nivelMin: 1,
+                titulo: 'O novo colega "incompetente"',
+                descricao: 'Maria está convencida de que Antônio, recém-chegado à equipe, é incompetente. Ela observa cada pequeno erro dele e os registra mentalmente, mas ignora completamente as três entregas impecáveis que ele fez esta semana. Na reunião, ela o interrompe duas vezes.',
+                vieses: ['confirmacao', 'atribuicao'],
+                antidotoCorreto: 'evidencias_contrarias',
+                dica: 'Ela só vê o que quer ver... e julga o caráter, não o contexto.'
+            },
+            {
+                id: 2,
+                nivelMin: 1,
+                titulo: 'Medo de voar após o noticiário',
+                descricao: 'Carlos nunca teve medo de avião. Mas após assistir a uma série de reportagens sobre um acidente aéreo, ele cancelou sua viagem e decidiu dirigir 14 horas. Estatisticamente, a estrada é muito mais perigosa.',
+                vieses: ['disponibilidade'],
+                antidotoCorreto: 'amostragem_ampla',
+                dica: 'A emoção do noticiário recente está distorcendo a percepção de risco.'
+            },
+            {
+                id: 3,
+                nivelMin: 1,
+                titulo: 'A promoção que "eu já sabia"',
+                descricao: 'Depois que Juliana foi promovida, seu amigo Pedro comentou: "Eu já sabia que ela seria escolhida, era óbvio." No entanto, duas semanas antes, Pedro havia apostado que outro colega levaria a vaga.',
+                vieses: ['retrospeccao'],
+                antidotoCorreto: 'diario_decisoes',
+                dica: 'A certeza veio só depois do resultado...'
+            },
+            {
+                id: 4,
+                nivelMin: 1,
+                titulo: 'O desconto irresistível',
+                descricao: 'Uma loja anuncia: "De R$200 por R$120!" com o preço original riscado. Laura compra imediatamente, sentindo que fez um ótimo negócio. Depois descobre que o produto sempre custou R$120 em outras lojas.',
+                vieses: ['ancoragem'],
+                antidotoCorreto: 'pergunta_invertida',
+                dica: 'O primeiro número apresentado criou uma referência artificial.'
+            },
+            {
+                id: 5,
+                nivelMin: 1,
+                titulo: 'A aposta dobrada',
+                descricao: 'Um investidor se recusa a vender uma ação em queda há meses. Ele diz: "Já coloquei muito dinheiro nisso, não posso assumir o prejuízo agora." Logo depois, ele investe ainda mais na mesma ação.',
+                vieses: ['custo_afundado', 'aversao_perda'],
+                antidotoCorreto: 'custo_zero',
+                dica: 'O passado está aprisionando a decisão... e a dor da perda pesa.'
+            },
+            // Nível 2 (Analista)
+            {
+                id: 6,
+                nivelMin: 2,
+                titulo: 'A startup que todos amam',
+                descricao: 'Todo mundo no escritório está investindo na mesma startup. Rafael não entende muito do negócio, mas pensa: "Se tanta gente está colocando dinheiro, deve ser bom." Ele investe sem fazer nenhuma análise.',
+                vieses: ['manada', 'falso_consenso'],
+                antidotoCorreto: 'advogado_diabo',
+                dica: 'A pressão social está guiando a decisão... e ele presume que os outros sabem.'
+            },
+            {
+                id: 7,
+                nivelMin: 2,
+                titulo: '90% de sucesso vs. 10% de fracasso',
+                descricao: 'Dois médicos apresentam a mesma cirurgia ao paciente. Dr. A diz: "90% dos pacientes sobrevivem." Dr. B diz: "10% dos pacientes morrem." O paciente aceita com o Dr. A e recusa com o Dr. B.',
+                vieses: ['enquadramento'],
+                antidotoCorreto: 'pergunta_invertida',
+                dica: 'As palavras "sobrevivem" e "morrem" ativam emoções diferentes.'
+            },
+            {
+                id: 8,
+                nivelMin: 2,
+                titulo: 'Comigo não acontece',
+                descricao: 'Lucas nunca usa protetor solar, fuma regularmente e dirige acima do limite. Quando alertado, sempre responde: "Comigo não vai acontecer nada, eu me cuido." Estatisticamente, ele está no grupo de alto risco.',
+                vieses: ['otimismo'],
+                antidotoCorreto: 'pre_mortem',
+                dica: 'Ele subestima riscos que afetam os outros...'
+            },
+            // Nível 3 (Estrategista)
+            {
+                id: 9,
+                nivelMin: 3,
+                titulo: 'A sequência mágica de vitórias',
+                descricao: 'Em um cassino, uma roleta caiu no vermelho 7 vezes seguidas. A multidão começa a apostar no preto, certa de que "está na hora". Mas a probabilidade continua exatamente a mesma: 50% (ignorando o zero).',
+                vieses: ['agrupamento', 'manada'],
+                antidotoCorreto: 'amostragem_ampla',
+                dica: 'Estão vendo um padrão onde só existe acaso... e a manada segue.'
+            },
+            {
+                id: 10,
+                nivelMin: 3,
+                titulo: 'O projeto que não pode parar',
+                descricao: 'Uma empresa já gastou 2 milhões em um projeto que claramente não vai dar retorno. O CEO insiste em continuar: "Não podemos jogar fora o que já investimos." Um concorrente abandonou projeto similar economizando 5 milhões.',
+                vieses: ['custo_afundado', 'status_quo'],
+                antidotoCorreto: 'ponto_vista_externo',
+                dica: 'O dinheiro já gasto não deveria ditar o futuro...'
+            },
+            // Nível 4 (Mestre)
+            {
+                id: 11,
+                nivelMin: 4,
+                titulo: 'O debate acalorado',
+                descricao: 'Em uma discussão política, Amanda busca apenas artigos que sustentem seu ponto de vista, rotula quem discorda como "mal-informado" e tem certeza de que a maioria silenciosa concorda com ela. Quando apresentada a dados contrários, diz que a fonte é tendenciosa.',
+                vieses: ['confirmacao', 'falso_consenso', 'autoconveniencia'],
+                antidotoCorreto: 'evidencias_contrarias',
+                dica: 'Múltiplos vieses se reforçando... ela se protege da dissonância.'
+            },
+            {
+                id: 12,
+                nivelMin: 4,
+                titulo: 'O chef e o garçom',
+                descricao: 'O chef grita com o garçom por um pedido errado, pensando: "Ele é desleixado e não presta atenção." Mas o garçom estava cobrindo três mesas porque dois colegas faltaram. O chef, por outro lado, quando erra um prato, culpa a cozinha barulhenta.',
+                vieses: ['atribuicao', 'autoconveniencia'],
+                antidotoCorreto: 'troca_perspectiva',
+                dica: 'Para os outros, falha de caráter. Para nós, falha da situação...'
+            },
+        ];
+
+        // Agrupar antídotos por utilidade (para exibir na UI)
+        const todosAntidotosIds = antidotosData.map(a => a.id);
+
+        // ============================================================
+        // ESTADO DO JOGO
+        // ============================================================
+        const state = {
+            clareza: 5,
+            maxClareza: 10,
+            xpTotal: 0,
+            casosConcluidos: 0,
+            nivel: 1,
+            nivelNome: 'Iniciante',
+            casoAtual: null,
+            viesesSelecionados: [],
+            antidotoSelecionado: null,
+            log: [],
+            sessaoAtiva: false,
+            casosNivelAtual: [],
+            casoIndex: 0,
+        };
+
+        const niveis = [
+            { nivel: 1, nome: '🧭 Iniciante', xpNecessario: 0 },
+            { nivel: 2, nome: '🔎 Analista', xpNecessario: 30 },
+            { nivel: 3, nome: '♟️ Estrategista', xpNecessario: 70 },
+            { nivel: 4, nome: '🧙 Mestre da Mente', xpNecessario: 120 },
+        ];
+
+        function getNivelPorXP(xp) {
+            let nivelAtual = niveis[0];
+            for (const n of niveis) {
+                if (xp >= n.xpNecessario) nivelAtual = n;
+            }
+            return nivelAtual;
+        }
+
+        function atualizarNivel() {
+            const info = getNivelPorXP(state.xpTotal);
+            state.nivel = info.nivel;
+            state.nivelNome = info.nome;
+        }
+
+        // ============================================================
+        // FUNÇÕES DE UI
+        // ============================================================
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            const screen = document.getElementById(screenId);
+            if (screen) screen.classList.add('active');
+        }
+
+        function updateClarezaUI() {
+            const bar = document.getElementById('clarezaBar');
+            const val = document.getElementById('clarezaValue');
+            if (!bar || !val) return;
+            const pct = (state.clareza / state.maxClareza) * 100;
+            bar.style.width = pct + '%';
+            val.textContent = state.clareza + '/' + state.maxClareza;
+
+            // Cor da barra
+            if (state.clareza <= 3) {
+                bar.style.background = 'var(--clareza-low)';
+                val.style.color = 'var(--clareza-low)';
+            } else if (state.clareza <= 6) {
+                bar.style.background = 'var(--clareza-mid)';
+                val.style.color = 'var(--clareza-mid)';
+            } else {
+                bar.style.background = 'var(--clareza-high)';
+                val.style.color = 'var(--clareza-high)';
+            }
+        }
+
+        function updateHeaderBadges() {
+            const homeLevel = document.getElementById('homeLevelBadge');
+            const gameLevel = document.getElementById('gameLevelBadge');
+            const homeXP = document.getElementById('homeXP');
+            const homeCases = document.getElementById('homeCases');
+            if (homeLevel) homeLevel.textContent = state.nivelNome;
+            if (gameLevel) gameLevel.textContent = state.nivelNome;
+            if (homeXP) homeXP.textContent = state.xpTotal;
+            if (homeCases) homeCases.textContent = state.casosConcluidos;
+        }
+
+        function addLogEntry(text, type) {
+            state.log.unshift({ text, type, time: new Date().toLocaleTimeString() });
+            if (state.log.length > 50) state.log.pop();
+            renderLog();
+        }
+
+        function renderLog() {
+            const logSection = document.getElementById('logSection');
+            const logEntries = document.getElementById('logEntries');
+            if (!logSection || !logEntries) return;
+            if (state.log.length > 0) {
+                logSection.style.display = 'block';
+                logEntries.innerHTML = state.log.slice(0, 20).map(l =>
+                    `<div class="log-entry ${l.type}">
+                <span class="log-dot ${l.type === 'correct' ? 'green' : 'red'}"></span>
+                <span>${l.text}</span>
+                <span style="margin-left:auto;font-size:0.7rem;opacity:0.5;">${l.time}</span>
+              </div>`
+                ).join('');
+            }
+        }
+
+        function showModal(emoji, title, text, xpGanho, botoes) {
+            const overlay = document.getElementById('modalOverlay');
+            const content = document.getElementById('modalContent');
+            if (!overlay || !content) return;
+            content.innerHTML = `
+            <div class="modal-emoji">${emoji}</div>
+            <div class="modal-title">${title}</div>
+            <div class="modal-text">${text}</div>
+            ${xpGanho > 0 ? `<div class="modal-xp">+${xpGanho} XP</div>` : ''}
+            <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;">
+              ${botoes.map(b => `<button class="btn ${b.classe || 'btn-primary'}" onclick="${b.acao}" style="flex:1;min-width:100px;">${b.label}</button>`).join('')}
+            </div>
+          `;
+            overlay.style.display = 'flex';
+        }
+
+        function hideModal() {
+            document.getElementById('modalOverlay').style.display = 'none';
+        }
+
+        // ============================================================
+        // LÓGICA DO JOGO
+        // ============================================================
+        function getCasosDisponiveis() {
+            return casosData.filter(c => c.nivelMin <= state.nivel);
+        }
+
+        function sortearCaso() {
+            const disponiveis = getCasosDisponiveis();
+            if (disponiveis.length === 0) return casosData[0];
+            // Evitar repetir o mesmo caso imediatamente
+            const filtered = disponiveis.filter(c => c.id !== (state.casoAtual && state.casoAtual.id));
+            const pool = filtered.length > 0 ? filtered : disponiveis;
+            return pool[Math.floor(Math.random() * pool.length)];
+        }
+
+        function carregarCaso() {
+            state.casoAtual = sortearCaso();
+            state.viesesSelecionados = [];
+            state.antidotoSelecionado = null;
+            state.casoIndex++;
+
+            document.getElementById('caseNumber').textContent = 'CASO #' + state.casoIndex;
+            document.getElementById('caseTitle').textContent = state.casoAtual.titulo;
+            document.getElementById('caseDescription').textContent = state.casoAtual.descricao;
+
+            // Renderizar vieses (todos os disponíveis para o nível)
+            const viesesNivel = viesesData.filter(v => {
+                // Mostrar todos os vieses que aparecem em casos do nível atual ou inferiores
+                const casosNivel = casosData.filter(c => c.nivelMin <= state.nivel);
+                const viesesUsados = new Set(casosNivel.flatMap(c => c.vieses));
+                // Sempre incluir os vieses do caso atual também
+                state.casoAtual.vieses.forEach(id => viesesUsados.add(id));
+                return viesesUsados.has(v.id);
+            });
+
+            const container = document.getElementById('viesesContainer');
+            container.innerHTML = viesesNivel.map(v => `
+            <span class="chip" data-viés-id="${v.id}" onclick="toggleVies('${v.id}', this)" title="${v.desc}">
+              ${v.nome}
+            </span>
+          `).join('');
+
+            // Renderizar antídotos (todos disponíveis)
+            const antidotosNivel = antidotosData.filter(a => {
+                const casosNivel = casosData.filter(c => c.nivelMin <= state.nivel);
+                const viesesUsados = new Set(casosNivel.flatMap(c => c.vieses));
+                state.casoAtual.vieses.forEach(id => viesesUsados.add(id));
+                return a.neutraliza.some(vid => viesesUsados.has(vid));
+            });
+
+            const antidotosContainer = document.getElementById('antidotosContainer');
+            antidotosContainer.innerHTML = antidotosNivel.map(a => `
+            <div class="antidoto-card" data-antidoto-id="${a.id}" onclick="selectAntidoto('${a.id}', this)">
+              <div class="antidoto-icon">${a.icone}</div>
+              <div class="antidoto-info">
+                <div class="antidoto-name">${a.nome}</div>
+                <div class="antidoto-desc">${a.desc}</div>
+              </div>
+            </div>
+          `).join('');
+
+            document.getElementById('btnAnalisar').disabled = true;
+            updateClarezaUI();
+        }
+
+        function toggleVies(viesId, element) {
+            if (state.viesesSelecionados.includes(viesId)) {
+                state.viesesSelecionados = state.viesesSelecionados.filter(v => v !== viesId);
+                element.classList.remove('selected');
+            } else {
+                state.viesesSelecionados.push(viesId);
+                element.classList.add('selected');
+            }
+            verificarSelecao();
+        }
+
+        function selectAntidoto(antidotoId, element) {
+            // Desselecionar anterior
+            document.querySelectorAll('.antidoto-card.selected').forEach(el => el.classList.remove('selected'));
+            state.antidotoSelecionado = antidotoId;
+            element.classList.add('selected');
+            verificarSelecao();
+        }
+
+        function verificarSelecao() {
+            const btn = document.getElementById('btnAnalisar');
+            btn.disabled = !(state.viesesSelecionados.length > 0 && state.antidotoSelecionado);
+        }
+
+        function analisarCaso() {
+            if (!state.casoAtual || state.viesesSelecionados.length === 0 || !state.antidotoSelecionado) return;
+
+            const caso = state.casoAtual;
+            const viesesCorretos = caso.vieses;
+            const antidotoCorreto = caso.antidotoCorreto;
+
+            // Verificar vieses
+            const viesesAcertados = state.viesesSelecionados.filter(v => viesesCorretos.includes(v));
+            const viesesErrados = state.viesesSelecionados.filter(v => !viesesCorretos.includes(v));
+            const viesesFaltantes = viesesCorretos.filter(v => !state.viesesSelecionados.includes(v));
+
+            const acertouTodosVieses = viesesErrados.length === 0 && viesesFaltantes.length === 0;
+            const acertouAntidoto = state.antidotoSelecionado === antidotoCorreto;
+
+            // Calcular mudança de clareza
+            let deltaClareza = 0;
+            let xpGanho = 0;
+            const detalhes = [];
+
+            if (acertouTodosVieses) {
+                deltaClareza += 1;
+                xpGanho += 3;
+                detalhes.push('✅ Detectou todos os vieses corretamente');
+            } else {
+                if (viesesErrados.length > 0) {
+                    deltaClareza -= 1;
+                    detalhes.push(
+                        `❌ Selecionou viés incorreto: ${viesesErrados.map(v => viesesData.find(vd => vd.id === v)?.nome || v).join(', ')}`
+                        );
+                }
+                if (viesesFaltantes.length > 0) {
+                    deltaClareza -= 0;
+                    detalhes.push(
+                        `⚠️ Não detectou: ${viesesFaltantes.map(v => viesesData.find(vd => vd.id === v)?.nome || v).join(', ')}`
+                        );
+                }
+            }
+
+            if (acertouAntidoto) {
+                deltaClareza += 2;
+                xpGanho += 5;
+                detalhes.push('✅ Antídoto correto aplicado');
+            } else {
+                deltaClareza -= 1;
+                const antidotoEscolhido = antidotosData.find(a => a.id === state.antidotoSelecionado);
+                const antidotoCerto = antidotosData.find(a => a.id === antidotoCorreto);
+                detalhes.push(
+                    `❌ Antídoto incorreto. Você usou "${antidotoEscolhido?.nome || '?'}". O ideal era "${antidotoCerto?.nome || '?'}".`
+                    );
+            }
+
+            // Aplicar mudança
+            state.clareza = Math.max(0, Math.min(state.maxClareza, state.clareza + deltaClareza));
+            state.xpTotal += xpGanho;
+            state.casosConcluidos++;
+            atualizarNivel();
+            updateClarezaUI();
+            updateHeaderBadges();
+
+            // Log
+            const tipoLog = (acertouTodosVieses && acertouAntidoto) ? 'correct' :
+                (deltaClareza > 0 ? 'correct' : 'wrong');
+            addLogEntry(`Caso #${state.casoIndex}: ${caso.titulo} — Clareza ${deltaClareza >= 0 ? '+' : ''}${deltaClareza}`,
+                tipoLog);
+            renderLog();
+
+            // Feedback
+            const emoji = (acertouTodosVieses && acertouAntidoto) ? '🎯' :
+                (deltaClareza > 0 ? '👍' : '🧐');
+            const titulo = (acertouTodosVieses && acertouAntidoto) ? 'Análise Perfeita!' :
+                (deltaClareza > 0 ? 'Boa análise!' : 'Análise parcial');
+
+            const textoDetalhes = detalhes.join('<br>');
+            const antidotoInfo = antidotosData.find(a => a.id === antidotoCorreto);
+            const textoExtra = (acertouTodosVieses && acertouAntidoto) ?
+                '' :
+                `<br><br>📌 <b>Resposta esperada:</b><br>Vieses: ${viesesCorretos.map(v => viesesData.find(vd => vd.id === v)?.nome || v).join(', ')}<br>Antídoto: ${antidotoInfo?.nome} — ${antidotoInfo?.desc}`;
+
+            // Verificar condições de Clareza
+            let botoes = [];
+            if (state.clareza >= 9) {
+                botoes = [{
+                    label: '🎉 Continuar (Bônus!)',
+                    classe: 'btn-primary',
+                    acao: 'handleClarezaMaxima()'
+                }];
+            } else if (state.clareza <= 1) {
+                botoes = [{
+                    label: '🔄 Reiniciar Clareza',
+                    classe: 'btn-outline',
+                    acao: 'handleClarezaMinima()'
+                }];
+            } else {
+                botoes = [{
+                    label: '▶️ Próximo Caso',
+                    classe: 'btn-primary',
+                    acao: 'hideModal();carregarCaso();'
+                }];
+            }
+
+            // Adicionar botão de voltar ao menu sempre
+            botoes.push({
+                label: '🏠 Menu',
+                classe: 'btn-outline',
+                acao: 'hideModal();goHome();'
+            });
+
+            showModal(emoji, titulo, textoDetalhes + textoExtra, xpGanho, botoes);
+
+            // Animação no card do caso
+            const caseCard = document.getElementById('caseCard');
+            if (deltaClareza < 0) {
+                caseCard.classList.add('shake');
+                setTimeout(() => caseCard.classList.remove('shake'), 500);
+            } else if (acertouTodosVieses && acertouAntidoto) {
+                caseCard.classList.add('pulse');
+                setTimeout(() => caseCard.classList.remove('pulse'), 500);
+            }
+        }
+
+        function handleClarezaMaxima() {
+            state.clareza = 5;
+            state.xpTotal += 10;
+            atualizarNivel();
+            updateClarezaUI();
+            updateHeaderBadges();
+            addLogEntry('🌟 Clareza máxima! Bônus de +10 XP. Clareza resetada para 5.', 'correct');
+            renderLog();
+            hideModal();
+            carregarCaso();
+        }
+
+        function handleClarezaMinima() {
+            state.clareza = 5;
+            state.xpTotal = Math.max(0, state.xpTotal - 5);
+            atualizarNivel();
+            updateClarezaUI();
+            updateHeaderBadges();
+            addLogEntry('⚠️ Clareza esgotada. -5 XP. Clareza resetada para 5.', 'wrong');
+            renderLog();
+            hideModal();
+            carregarCaso();
+        }
+
+        function startGame() {
+            state.clareza = 5;
+            state.sessaoAtiva = true;
+            state.log = [];
+            state.casoIndex = 0;
+            state.viesesSelecionados = [];
+            state.antidotoSelecionado = null;
+            atualizarNivel();
+            updateClarezaUI();
+            updateHeaderBadges();
+            document.getElementById('logSection').style.display = 'none';
+            document.getElementById('logEntries').innerHTML = '';
+            showScreen('gameScreen');
+            carregarCaso();
+        }
+
+        function goHome() {
+            state.sessaoAtiva = false;
+            state.clareza = 5;
+            state.viesesSelecionados = [];
+            state.antidotoSelecionado = null;
+            state.log = [];
+            atualizarNivel();
+            updateHeaderBadges();
+            updateClarezaUI();
+            document.getElementById('logSection').style.display = 'none';
+            document.getElementById('logEntries').innerHTML = '';
+            showScreen('homeScreen');
+        }
+
+        function showTutorial() {
+            showModal('📖', 'Como Jogar',
+                `
+            <b>1.</b> Leia o caso apresentado com atenção.<br><br>
+            <b>2.</b> Selecione os <b>vieses cognitivos</b> que detectar no comportamento descrito.<br><br>
+            <b>3.</b> Escolha o <b>antídoto neutralizador</b> mais adequado para combater esses vieses.<br><br>
+            <b>4.</b> Clique em "Analisar Caso".<br><br>
+            <b>Clareza:</b> acertos aumentam, erros diminuem. Mantenha-a alta!<br>
+            <b>Níveis:</b> acumule XP para desbloquear casos mais complexos.<br><br>
+            🧠 <i>Reconhecer o viés é o primeiro passo para neutralizá-lo.</i>
+          `,
+                0, [{ label: 'Entendi!', classe: 'btn-primary', acao: 'hideModal()' }]
+            );
+        }
+
+        // ============================================================
+        // INICIALIZAÇÃO
+        // ============================================================
+        function init() {
+            atualizarNivel();
+            updateHeaderBadges();
+            updateClarezaUI();
+            showScreen('homeScreen');
+            document.getElementById('modalOverlay').addEventListener('click', function(e) {
+                if (e.target === this) hideModal();
+            });
+        }
+
+        // Suporte a tecla Escape para fechar modal
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') hideModal();
+        });
+
+        init();
+        console.log('🧠 Mente Inversa — App carregado com sucesso!');
+        console.log('📊 ' + casosData.length + ' casos | ' + viesesData.length + ' vieses | ' + antidotosData.length +
+            ' antídotos');
+        console.log('💡 Dica: abra no celular para a melhor experiência mobile.');
+    </script>
+</body>
+</html>
