@@ -3,37 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mente Inversa • Análise Cognitiva Interativa</title>
+    <title>Mente Inversa • Detetive de Vieses</title>
     <style>
         :root {
-            --bg: #07090f;
-            --surface: #111827;
-            --surface2: #1a1f2e;
-            --surface3: #222940;
-            --text: #e8eaf0;
-            --text2: #9ca3b8;
-            --accent: #818cf8;
-            --accent2: #6366f1;
-            --accent3: #a78bfa;
-            --cyan: #22d3ee;
-            --amber: #f59e0b;
+            --bg: #0a0c14;
+            --surface: #141824;
+            --surface2: #1d2133;
+            --surface3: #262d42;
+            --text: #eaeef5;
+            --text2: #8b90a5;
+            --accent: #7c8cf8;
+            --accent2: #5b6cf0;
             --red: #f87171;
             --green: #4ade80;
+            --amber: #fbbf24;
+            --cyan: #22d3ee;
             --pink: #f472b6;
-            --font: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
-            --radius: 20px;
-            --radius-sm: 12px;
-            --radius-xs: 8px;
-            --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.5);
-            --shadow-md: 0 8px 20px rgba(0, 0, 0, 0.4);
+            --radius: 18px;
+            --radius-sm: 10px;
+            --shadow: 0 10px 30px rgba(0,0,0,0.5);
+            --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
             --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin:0; padding:0; box-sizing:border-box; }
         body {
             background: var(--bg);
             color: var(--text);
@@ -43,1137 +35,595 @@
             align-items: center;
             justify-content: center;
             padding: 20px;
-            background-image: radial-gradient(ellipse at 30% 20%, #1a1040 0%, transparent 60%),
-                radial-gradient(ellipse at 70% 80%, #0f1a2e 0%, transparent 60%),
-                radial-gradient(ellipse at 50% 50%, #0b0f1c 0%, #07090f 100%);
+            background-image: radial-gradient(ellipse at 30% 20%, #12183a 0%, transparent 60%),
+                              radial-gradient(ellipse at 70% 80%, #1a1f30 0%, transparent 60%);
             -webkit-tap-highlight-color: transparent;
             user-select: none;
         }
         .app {
             width: 100%;
-            max-width: 800px;
+            max-width: 750px;
             display: flex;
             flex-direction: column;
-            gap: 18px;
+            gap: 16px;
         }
-
-        /* Screens */
         .screen {
             display: none;
             flex-direction: column;
-            gap: 18px;
+            gap: 16px;
             animation: fadeUp 0.5s ease;
         }
-        .screen.active {
-            display: flex;
-        }
+        .screen.active { display: flex; }
         @keyframes fadeUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity:0; transform:translateY(25px); }
+            to { opacity:1; transform:translateY(0); }
         }
-        @keyframes float {
-            0%,
-            100% {
-                transform: translateY(0);
-            }
-            50% {
-                transform: translateY(-8px);
-            }
-        }
-        @keyframes pulse {
-            0%,
-            100% {
-                transform: scale(1);
-            }
-            50% {
-                transform: scale(1.05);
-            }
-        }
-        @keyframes shake {
-            0%,
-            100% {
-                transform: translateX(0);
-            }
-            25% {
-                transform: translateX(-6px);
-            }
-            75% {
-                transform: translateX(6px);
-            }
-        }
-        @keyframes revealGlow {
-            0% {
-                box-shadow: 0 0 0px rgba(129, 140, 248, 0);
-            }
-            50% {
-                box-shadow: 0 0 30px rgba(129, 140, 248, 0.5);
-            }
-            100% {
-                box-shadow: 0 0 0px rgba(129, 140, 248, 0);
-            }
-        }
-        @keyframes sparkle {
-            0%,
-            100% {
-                opacity: 0;
-                transform: scale(0) translateY(0);
-            }
-            50% {
-                opacity: 1;
-                transform: scale(1) translateY(-20px);
-            }
-        }
-
-        /* Header */
+        @keyframes pulse { 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.05); } }
+        @keyframes shake { 0%,100%{ transform:translateX(0); } 20%{ transform:translateX(-6px); } 40%{ transform:translateX(6px); } 60%{ transform:translateX(-4px); } 80%{ transform:translateX(4px); } }
+        @keyframes handcuff { 0%{ transform:rotate(0) scale(0); opacity:0; } 50%{ transform:rotate(15deg) scale(1.3); opacity:1; } 100%{ transform:rotate(0) scale(1); opacity:1; } }
         .header {
             display: flex;
-            align-items: center;
             justify-content: space-between;
+            align-items: center;
             background: var(--surface);
             border-radius: var(--radius);
-            padding: 16px 22px;
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            box-shadow: var(--shadow-md);
+            padding: 14px 20px;
+            border: 1px solid rgba(255,255,255,0.06);
+            box-shadow: var(--shadow);
             flex-wrap: wrap;
-            gap: 12px;
+            gap: 10px;
         }
         .logo {
             display: flex;
             align-items: center;
-            gap: 10px;
-        }
-        .logo .brain {
-            width: 46px;
-            height: 46px;
-            background: linear-gradient(135deg, var(--accent), var(--accent2));
-            border-radius: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            box-shadow: 0 6px 20px rgba(129, 140, 248, 0.4);
-        }
-        .logo h1 {
-            font-size: 1.3rem;
+            gap: 8px;
             font-weight: 700;
-            background: linear-gradient(to right, #c7d2fe, #a5b4fc);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            letter-spacing: -0.3px;
+            font-size: 1.2rem;
         }
+        .logo span { font-size: 1.5rem; }
         .stats {
             display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
+            gap: 16px;
         }
-        .stat-item {
+        .stat {
             text-align: center;
         }
-        .stat-value {
+        .stat .val {
             font-weight: 700;
-            font-size: 1.2rem;
             color: #fff;
         }
-        .stat-label {
-            font-size: 0.7rem;
+        .stat .lbl {
+            font-size: 0.65rem;
             text-transform: uppercase;
-            letter-spacing: 1px;
             color: var(--text2);
+            letter-spacing: 0.5px;
         }
-
-        /* Home */
         .home-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 14px;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
         }
-        .case-thumb {
+        .case-card {
             background: var(--surface);
             border-radius: var(--radius);
             padding: 20px;
             cursor: pointer;
-            border: 2px solid rgba(255, 255, 255, 0.06);
+            border: 2px solid rgba(255,255,255,0.05);
             transition: all var(--transition);
-            position: relative;
-            overflow: hidden;
-            box-shadow: var(--shadow-md);
         }
-        .case-thumb:hover {
-            border-color: rgba(129, 140, 248, 0.4);
+        .case-card:hover {
+            border-color: var(--accent);
             background: var(--surface2);
             transform: translateY(-4px);
-            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
         }
-        .case-thumb.locked {
+        .case-card.locked {
             opacity: 0.5;
             pointer-events: none;
-            filter: grayscale(0.5);
+            filter: grayscale(0.6);
         }
-        .case-thumb .emoji {
-            font-size: 2.5rem;
-            animation: float 3s infinite ease-in-out;
-        }
-        .case-thumb h3 {
-            margin: 10px 0 4px;
-            font-size: 1rem;
-            color: #fff;
-        }
-        .case-thumb .meta {
-            font-size: 0.75rem;
-            color: var(--text2);
-            display: flex;
-            gap: 8px;
-            align-items: center;
-        }
-        .case-thumb .stars {
-            color: var(--amber);
-        }
-        .badge-lock {
-            position: absolute;
-            top: 12px;
-            right: 12px;
-            background: rgba(0, 0, 0, 0.5);
-            border-radius: 20px;
-            padding: 4px 10px;
-            font-size: 0.7rem;
-        }
-
-        /* Game screen */
-        .game-layout {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 18px;
-        }
-        @media (max-width: 700px) {
-            .game-layout {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .client-panel {
-            background: var(--surface);
-            border-radius: var(--radius);
-            padding: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            box-shadow: var(--shadow-md);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            position: relative;
-            min-height: 280px;
-        }
-        .client-avatar {
-            font-size: 5rem;
-            transition: all 0.4s;
-            filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.4));
-            animation: float 4s infinite ease-in-out;
-            position: relative;
-        }
-        .client-avatar.thinking {
-            animation: shake 0.6s ease;
-        }
-        .client-name {
-            font-weight: 700;
-            font-size: 1.2rem;
-            margin-top: 8px;
-            color: #fff;
-        }
-        .client-quote {
-            font-style: italic;
-            color: var(--text2);
-            margin-top: 6px;
-            font-size: 0.9rem;
-            line-height: 1.5;
-            min-height: 50px;
-            background: rgba(255, 255, 255, 0.03);
-            padding: 12px;
-            border-radius: var(--radius-xs);
-            width: 100%;
-        }
-        .emotion-bar {
-            width: 100%;
-            height: 6px;
-            background: #1f2937;
-            border-radius: 10px;
-            margin-top: 12px;
-            overflow: hidden;
-        }
-        .emotion-fill {
-            height: 100%;
-            border-radius: 10px;
-            transition: width 0.6s ease, background 0.6s;
-            background: var(--amber);
-            width: 50%;
-        }
-
-        .analyst-panel {
-            background: var(--surface);
-            border-radius: var(--radius);
-            padding: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            box-shadow: var(--shadow-md);
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-        }
-        .panel-title {
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            font-size: 0.75rem;
-            color: var(--accent3);
-            margin-bottom: 4px;
-        }
-        .action-buttons {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-        .action-chip {
-            padding: 10px 14px;
-            border-radius: 30px;
-            cursor: pointer;
-            font-weight: 500;
-            font-size: 0.85rem;
-            background: var(--surface3);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: var(--text);
-            transition: all var(--transition);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            white-space: nowrap;
-        }
-        .action-chip:hover {
-            background: #2a3050;
-            border-color: rgba(129, 140, 248, 0.5);
-        }
-        .action-chip:active {
-            transform: scale(0.96);
-        }
-        .action-chip.used {
-            opacity: 0.4;
-            pointer-events: none;
-            text-decoration: line-through;
-        }
-
-        .detected-viés {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: rgba(248, 113, 113, 0.15);
-            border: 1px solid rgba(248, 113, 113, 0.3);
-            border-radius: 20px;
-            padding: 6px 14px;
-            font-size: 0.8rem;
-            animation: fadeUp 0.3s ease;
-        }
-        .detected-viés.confirmed {
-            background: rgba(74, 222, 128, 0.15);
-            border-color: rgba(74, 222, 128, 0.4);
-            color: var(--green);
-        }
-
-        .intervention-list {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-        .intervention-item {
-            padding: 10px 14px;
-            border-radius: var(--radius-xs);
-            cursor: pointer;
-            background: var(--surface3);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            transition: all var(--transition);
-            font-size: 0.85rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .intervention-item:hover {
-            background: #2c334f;
-            border-color: var(--cyan);
-        }
-        .intervention-item.selected {
-            border-color: var(--cyan);
-            background: rgba(34, 211, 238, 0.12);
-            box-shadow: 0 0 14px rgba(34, 211, 238, 0.2);
-        }
-
+        .case-emoji { font-size: 2.5rem; }
+        .case-title { font-weight: 600; margin: 8px 0 4px; }
+        .case-meta { font-size: 0.75rem; color: var(--text2); }
         .btn {
             padding: 12px 20px;
             border-radius: 30px;
+            border: none;
             font-weight: 600;
             cursor: pointer;
-            border: none;
             font-family: var(--font);
             font-size: 0.9rem;
             transition: all var(--transition);
             letter-spacing: 0.3px;
-            width: 100%;
             text-align: center;
         }
         .btn-primary {
             background: linear-gradient(135deg, var(--accent), var(--accent2));
-            color: white;
-            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.3);
+            color: #fff;
+            box-shadow: 0 6px 20px rgba(124,140,248,0.3);
         }
-        .btn-primary:hover {
-            box-shadow: 0 12px 30px rgba(129, 140, 248, 0.5);
-            transform: translateY(-2px);
-        }
-        .btn-primary:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
+        .btn-primary:hover { box-shadow: 0 10px 28px rgba(124,140,248,0.5); transform: translateY(-2px); }
+        .btn-primary:disabled { opacity:0.4; cursor:not-allowed; transform:none; }
         .btn-outline {
             background: transparent;
-            border: 1px solid rgba(255, 255, 255, 0.25);
+            border: 2px solid rgba(255,255,255,0.2);
             color: #fff;
         }
-        .btn-outline:hover {
-            border-color: rgba(255, 255, 255, 0.6);
+        .btn-outline:hover { border-color: rgba(255,255,255,0.5); }
+        .game-area {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
         }
-        .btn-sm {
-            width: auto;
-            padding: 6px 14px;
-            font-size: 0.8rem;
+        @media (max-width: 650px) { .game-area { grid-template-columns: 1fr; } }
+        .panel {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.05);
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
         }
-
-        .clareza-box {
+        .suspect-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        .suspect-avatar {
+            font-size: 4.5rem;
+            animation: pulse 4s infinite ease-in-out;
+            position: relative;
+        }
+        .suspect-name {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+        .suspect-speech {
+            font-style: italic;
+            color: var(--text2);
+            background: rgba(255,255,255,0.03);
+            padding: 10px;
+            border-radius: var(--radius-sm);
+            min-height: 50px;
+            width: 100%;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+        .clue-board {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            min-height: 40px;
+        }
+        .clue {
+            background: rgba(251,191,36,0.15);
+            border: 1px solid rgba(251,191,36,0.3);
+            border-radius: 20px;
+            padding: 6px 12px;
+            font-size: 0.75rem;
+            color: var(--amber);
+            animation: fadeUp 0.3s;
+        }
+        .strategy-hand {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .strategy-card {
+            background: var(--surface3);
+            border: 1px solid rgba(124,140,248,0.25);
+            border-radius: var(--radius-sm);
+            padding: 10px 14px;
+            cursor: pointer;
+            transition: all var(--transition);
             display: flex;
             align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        .strategy-card:hover {
+            background: #313b5a;
+            border-color: var(--accent);
+        }
+        .strategy-card.used {
+            opacity: 0.3;
+            pointer-events: none;
+            text-decoration: line-through;
+        }
+        .action-btns {
+            display: flex;
             gap: 10px;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 30px;
-            padding: 8px 16px;
+            flex-wrap: wrap;
         }
-        .clareza-box .icon {
-            font-size: 1.2rem;
+        .accuse-form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
-        .clareza-box .bar-outer {
-            flex: 1;
-            height: 8px;
-            background: #1f2937;
-            border-radius: 10px;
-            overflow: hidden;
-        }
-        .clareza-box .bar-inner {
-            height: 100%;
-            border-radius: 10px;
-            transition: width 0.5s ease;
-            background: var(--amber);
-        }
-        .clareza-box .value {
-            font-weight: 700;
-            font-size: 0.9rem;
-        }
-
-        /* Modal */
         .modal-overlay {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
             backdrop-filter: blur(4px);
             z-index: 100;
             display: flex;
             align-items: center;
             justify-content: center;
-            animation: fadeIn 0.3s;
-            padding: 20px;
         }
         .modal {
             background: var(--surface2);
             border-radius: var(--radius);
-            padding: 28px;
-            max-width: 420px;
-            width: 100%;
+            padding: 24px;
+            max-width: 400px;
+            width: 90%;
             text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: var(--shadow-lg);
-            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 1px solid rgba(255,255,255,0.08);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+            animation: popIn 0.3s ease;
         }
         @keyframes popIn {
-            from {
-                transform: scale(0.8);
-                opacity: 0;
-            }
-            to {
-                transform: scale(1);
-                opacity: 1;
-            }
+            from { transform:scale(0.85); opacity:0; }
+            to { transform:scale(1); opacity:1; }
         }
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-            to {
-                opacity: 1;
-            }
-        }
-        .modal-emoji {
-            font-size: 4rem;
-            animation: float 2s infinite;
-        }
-        .modal-title {
-            font-size: 1.4rem;
-            font-weight: 700;
-            margin: 8px 0;
-        }
-        .modal-text {
-            color: var(--text2);
-            margin-bottom: 16px;
-            line-height: 1.5;
-            font-size: 0.9rem;
-        }
-        .xp-gain {
-            display: inline-block;
-            background: rgba(129, 140, 248, 0.2);
-            padding: 6px 18px;
-            border-radius: 20px;
-            font-weight: 700;
-            color: #c7d2fe;
-            margin: 8px 0;
-        }
-        .stars-display {
-            font-size: 2rem;
-            letter-spacing: 4px;
-        }
-
-        /* Particles */
-        .particle {
-            position: absolute;
-            pointer-events: none;
-            font-size: 1.2rem;
-            animation: sparkle 1s ease-out forwards;
-            z-index: 50;
-        }
-
-        /* Journal */
-        .journal-card {
-            background: var(--surface);
-            border-radius: var(--radius);
-            padding: 14px 18px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            transition: all var(--transition);
-        }
-        .journal-card:hover {
-            background: var(--surface2);
-        }
-
-        /* Scrollbar */
-        ::-webkit-scrollbar {
-            width: 4px;
-        }
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-        }
-
-        @media (max-width: 500px) {
-            .header {
-                padding: 12px 14px;
-            }
-            .logo h1 {
-                font-size: 1rem;
-            }
-            .stats {
-                gap: 10px;
-            }
-            .stat-value {
-                font-size: 1rem;
-            }
-            .client-avatar {
-                font-size: 3.5rem;
-            }
-            .action-chip {
-                padding: 8px 10px;
-                font-size: 0.75rem;
-            }
-        }
+        .modal-emoji { font-size: 3.5rem; }
+        .stars { font-size: 2rem; letter-spacing: 4px; }
     </style>
 </head>
 <body>
-
-    <div class="app" id="appRoot">
-        <!-- HOME SCREEN -->
-        <div class="screen active" id="homeScreen">
-            <div class="header">
-                <div class="logo">
-                    <div class="brain">🧠</div>
-                    <div>
-                        <h1>Mente Inversa</h1>
-                        <div style="font-size:0.7rem;color:var(--text2);">Central de Análise Cognitiva</div>
-                    </div>
-                </div>
-                <div class="stats">
-                    <div class="stat-item"><div class="stat-value" id="homeLevel">🧭 Iniciante</div><div class="stat-label">Nível</div></div>
-                    <div class="stat-item"><div class="stat-value" id="homeXP">0</div><div class="stat-label">XP</div></div>
-                    <div class="stat-item"><div class="stat-value" id="homeCasos">0</div><div class="stat-label">Casos</div></div>
-                </div>
+<div class="app" id="appRoot">
+    <!-- HOME -->
+    <div class="screen active" id="homeScreen">
+        <div class="header">
+            <div class="logo"><span>🕵️</span> Mente Inversa</div>
+            <div class="stats">
+                <div class="stat"><div class="val" id="homeLevel">🧭 Iniciante</div><div class="lbl">Patente</div></div>
+                <div class="stat"><div class="val" id="homeXP">0</div><div class="lbl">XP</div></div>
+                <div class="stat"><div class="val" id="homeSolved">0</div><div class="lbl">Casos</div></div>
             </div>
-
-            <div style="color:var(--text2);font-size:0.85rem;display:flex;align-items:center;gap:6px;">📋 Selecione um caso para análise:</div>
-            <div class="home-grid" id="caseGrid"></div>
-
-            <button class="btn btn-outline" onclick="openJournal()" style="margin-top:6px;">📓 Diário de Casos Resolvidos</button>
         </div>
+        <div class="home-grid" id="caseGrid"></div>
+    </div>
 
-        <!-- GAME SCREEN -->
-        <div class="screen" id="gameScreen">
-            <div class="header">
-                <div class="logo">
-                    <div class="brain" style="width:36px;height:36px;font-size:18px;">🧠</div>
-                    <div>
-                        <h1 style="font-size:1rem;">Mente Inversa</h1>
-                        <div style="font-size:0.65rem;color:var(--text2);" id="gameCaseTitle">Análise em andamento</div>
-                    </div>
-                </div>
-                <div class="clareza-box">
-                    <span class="icon">💡</span>
-                    <div class="bar-outer"><div class="bar-inner" id="clarezaBar" style="width:60%;"></div></div>
-                    <span class="value" id="clarezaValue">6/10</span>
-                </div>
+    <!-- GAME -->
+    <div class="screen" id="gameScreen">
+        <div class="header">
+            <div class="logo"><span>🕵️</span> <span id="gameTitle">Investigação</span></div>
+            <div class="stats">
+                <div class="stat"><div class="val" id="insightVal">5</div><div class="lbl">🔥 Insight</div></div>
+                <div class="stat"><div class="val" id="progressVal">0/2</div><div class="lbl">Pistas</div></div>
             </div>
-
-            <div class="game-layout">
-                <!-- Client panel -->
-                <div class="client-panel" id="clientPanel">
-                    <div class="client-avatar" id="clientAvatar">🤔</div>
-                    <div class="client-name" id="clientName">Cliente</div>
-                    <div class="client-quote" id="clientQuote">"..."</div>
-                    <div class="emotion-bar"><div class="emotion-fill" id="emotionFill" style="width:50%;"></div></div>
-                    <div style="font-size:0.7rem;color:var(--text2);margin-top:4px;">Nível de Resistência</div>
-                </div>
-
-                <!-- Analyst panel -->
-                <div class="analyst-panel">
-                    <div class="panel-title">🔍 Investigações</div>
-                    <div class="action-buttons" id="investigationActions"></div>
-
-                    <div class="panel-title" style="margin-top:8px;">📌 Vieses Detectados</div>
-                    <div id="detectedViésesContainer" style="display:flex;flex-wrap:wrap;gap:6px;min-height:30px;"></div>
-
-                    <div class="panel-title" style="margin-top:8px;">💊 Intervenção (Antídoto)</div>
-                    <div class="intervention-list" id="interventionList"></div>
-
-                    <button class="btn btn-primary" id="btnResolve" onclick="resolveCase()" disabled>
-                        ✅ Aplicar Intervenção e Concluir
-                    </button>
-                    <button class="btn btn-outline btn-sm" onclick="exitToHome()" style="margin-top:4px;">🏠 Sair</button>
+        </div>
+        <div class="game-area">
+            <div class="panel suspect-area">
+                <div class="suspect-avatar" id="suspectAvatar">👤</div>
+                <div class="suspect-name" id="suspectName">Suspeito</div>
+                <div class="suspect-speech" id="suspectSpeech">"..."</div>
+                <div style="font-size:0.7rem;color:var(--text2);">Os vieses são os ladrões. Encontre-os.</div>
+            </div>
+            <div class="panel">
+                <div style="font-weight:600;">🔍 Mural de Pistas</div>
+                <div class="clue-board" id="clueBoard">Nenhuma pista ainda.</div>
+                <div style="font-weight:600;">⚔️ Estratagemas (Arte da Guerra)</div>
+                <div class="strategy-hand" id="strategyHand"></div>
+                <div class="action-btns">
+                    <button class="btn btn-primary" id="btnInvestigate" onclick="investigate()">🔎 Interrogar (-1 Insight)</button>
+                    <button class="btn btn-outline" id="btnAccuse" onclick="openAccuse()">🚨 Acusar</button>
                 </div>
             </div>
         </div>
     </div>
+</div>
+<div class="modal-overlay" id="modalOverlay" style="display:none;">
+    <div class="modal" id="modalContent"></div>
+</div>
 
-    <!-- Modal overlay -->
-    <div class="modal-overlay" id="modalOverlay" style="display:none;">
-        <div class="modal" id="modalContent"></div>
-    </div>
+<script>
+(() => {
+    // VIÉSES (os ladrões)
+    const vieses = {
+        confirmacao: { nome: 'Viés de Confirmação', emoji: '🔎', dica: 'Só lembra dos erros, ignora acertos.' },
+        disponibilidade: { nome: 'Viés de Disponibilidade', emoji: '📺', dica: 'Superestima evento recente e vívido.' },
+        ancoragem: { nome: 'Ancoragem', emoji: '⚓', dica: 'Preso ao primeiro número que ouviu.' },
+        aversao_perda: { nome: 'Aversão à Perda', emoji: '💔', dica: 'Sente mais a perda do que o ganho.' },
+        custo_afundado: { nome: 'Custo Afundado', emoji: '🕳️', dica: 'Continua porque já investiu muito.' },
+        atribuicao: { nome: 'Erro de Atribuição', emoji: '🎭', dica: 'Julga os outros, ignora a situação.' },
+        manada: { nome: 'Efeito Manada', emoji: '🐑', dica: 'Segue a maioria sem pensar.' },
+        otimismo: { nome: 'Viés do Otimismo', emoji: '🌞', dica: 'Acha que com ele nunca acontece.' },
+    };
 
-    <script>
-        (function() {
-            // ===================== DATA =====================
-            const viesesDB = {
-                confirmacao: { nome: 'Viés de Confirmação', emoji: '🔎', desc: 'Buscar evidências que confirmem crenças.' },
-                disponibilidade: { nome: 'Viés de Disponibilidade', emoji: '📺', desc: 'Superestimar eventos vívidos.' },
-                ancoragem: { nome: 'Ancoragem', emoji: '⚓', desc: 'Prender-se à primeira informação.' },
-                aversao_perda: { nome: 'Aversão à Perda', emoji: '💔', desc: 'Pesar perdas mais que ganhos.' },
-                custo_afundado: { nome: 'Custo Afundado', emoji: '🕳️', desc: 'Continuar investindo no erro.' },
-                atribuicao: { nome: 'Erro de Atribuição', emoji: '🎭', desc: 'Julgar pessoas, ignorar contexto.' },
-                manada: { nome: 'Efeito Manada', emoji: '🐑', desc: 'Seguir a maioria sem crítica.' },
-                otimismo: { nome: 'Viés do Otimismo', emoji: '🌞', desc: 'Subestimar riscos pessoais.' },
-                enquadramento: { nome: 'Efeito Enquadramento', emoji: '🖼️', desc: 'Mudar decisão pela forma da mensagem.' },
-                retrospeccao: { nome: 'Viés da Retrospecção', emoji: '⏪', desc: 'Achar que já sabia depois.' },
-                agrupamento: { nome: 'Ilusão de Agrupamento', emoji: '🎲', desc: 'Ver padrões em aleatoriedade.' },
-                autoconveniencia: { nome: 'Viés Autoconveniente', emoji: '🛡️', desc: 'Sucesso meu, fracasso do acaso.' },
-                falso_consenso: { nome: 'Falso Consenso', emoji: '🤝', desc: 'Superestimar concordância.' },
-                status_quo: { nome: 'Status Quo', emoji: '🏠', desc: 'Resistência à mudança.' },
-            };
+    // ANTÍDOTOS (polícia)
+    const antidotos = {
+        evidencias_contrarias: { nome: 'Evidências Contrárias', emoji: '📋', neutraliza: ['confirmacao','disponibilidade'] },
+        amplie_amostra: { nome: 'Amplie a Amostra', emoji: '📊', neutraliza: ['disponibilidade','manada'] },
+        pergunta_invertida: { nome: 'Pergunta Invertida', emoji: '🪞', neutraliza: ['enquadramento','ancoragem'] },
+        reenquadre_zero: { nome: 'Reenquadre do Zero', emoji: '🔄', neutraliza: ['custo_afundado','aversao_perda'] },
+        troca_perspectiva: { nome: 'Troca de Perspectiva', emoji: '👁️', neutraliza: ['atribuicao','autoconveniencia'] },
+        diario: { nome: 'Diário de Decisões', emoji: '📓', neutraliza: ['retrospeccao','autoconveniencia'] },
+        advogado_diabo: { nome: 'Advogado do Diabo', emoji: '😈', neutraliza: ['confirmacao','manada'] },
+    };
 
-            const antidotosDB = {
-                advogado_diabo: { nome: 'Advogado do Diabo', emoji: '😈', desc: 'Argumentar contra si mesmo.',
-                    neutraliza: ['confirmacao', 'manada'] },
-                pre_mortem: { nome: 'Pré-Mortem', emoji: '🔮', desc: 'Simular falha antecipadamente.',
-                neutraliza: ['otimismo', 'agrupamento'] },
-                pergunta_invertida: { nome: 'Pergunta Invertida', emoji: '🪞', desc: 'Reformular pelo oposto.',
-                    neutraliza: ['enquadramento', 'ancoragem'] },
-                diario: { nome: 'Diário de Decisões', emoji: '📓', desc: 'Registrar previsões antes.',
-                    neutraliza: ['retrospeccao', 'autoconveniencia'] },
-                troca_perspectiva: { nome: 'Troca de Perspectiva', emoji: '👁️', desc: 'Ver como outro.',
-                    neutraliza: ['atribuicao', 'falso_consenso'] },
-                evidencias_contrarias: { nome: 'Evidências Contrárias', emoji: '📋',
-                    desc: 'Listar fatos opostos.', neutraliza: ['confirmacao', 'disponibilidade'] },
-                ponto_externo: { nome: 'Ponto de Vista Externo', emoji: '🌐', desc: 'Usar dados estatísticos.',
-                    neutraliza: ['custo_afundado', 'otimismo'] },
-                reenquadre_zero: { nome: 'Reenquadre do Zero', emoji: '🔄',
-                    desc: 'Decisão como se nada tivesse sido investido.', neutraliza: ['custo_afundado',
-                        'aversao_perda', 'status_quo'
-                    ] },
-                amplie_amostra: { nome: 'Amplie a Amostra', emoji: '📊', desc: 'Buscar dados além do óbvio.',
-                    neutraliza: ['disponibilidade', 'agrupamento'] },
-            };
+    // ESTRATAGEMAS (Arte da Guerra)
+    const estrategemas = [
+        { id: 'conhece_inimigo', nome: 'Conhece o Inimigo', emoji: '📖', desc: 'Revela uma pista crucial.', acao: (state) => { forceClue(state); return true; } },
+        { id: 'ataque_surpresa', nome: 'Ataque Surpresa', emoji: '⚡', desc: 'Revela imediatamente um viés oculto.', acao: (state) => { revealRandomVies(state); return true; } },
+        { id: 'enganar_inimigo', nome: 'Enganar o Inimigo', emoji: '🃏', desc: 'Descarta uma pista falsa (se houver).', acao: (state) => { removeFalseClue(state); return true; } },
+        { id: 'terreno_vantajoso', nome: 'Terreno Vantajoso', emoji: '⛰️', desc: '+2 Insight', acao: (state) => { state.insight = Math.min(10, state.insight+2); updateUI(); return true; } },
+    ];
 
-            // Cada caso tem fases de diálogo e investigações que revelam vieses
-            const casos = [{
-                id: 'caso1',
-                nivelMin: 1,
-                titulo: 'O novo colega "incompetente"',
-                emoji: '👩‍💼',
-                cliente: 'Maria',
-                avatar: '👩‍💼',
-                viesesReais: ['confirmacao', 'atribuicao'],
-                antidotoCorreto: 'evidencias_contrarias',
-                xpBase: 10,
-                falasIniciais: [
-                    'Antônio entrou há um mês e já vi vários erros.',
-                    'Ele não tem o perfil para este time.',
-                    'Ontem ele atrasou a planilha, como sempre.'
-                ],
-                investigacoes: [
-                    { id: 'perguntar_acertos', label: 'Perguntar sobre acertos de Antônio', revela: 'confirmacao',
-                        custoClareza: 0 },
-                    { id: 'contexto_atraso', label: 'Questionar contexto do atraso', revela: 'atribuicao',
-                    custoClareza: 0 },
-                    { id: 'feedback_outros', label: 'Checar opinião de outros colegas', revela: null, custoClareza: -
-                            1 },
-                ],
-                fraseFinal: 'Percebi que ignorei os acertos dele e nem perguntei o motivo do atraso...'
-            }, {
-                id: 'caso2',
-                nivelMin: 1,
-                titulo: 'Medo de voar pós-noticiário',
-                emoji: '✈️',
-                cliente: 'Carlos',
-                avatar: '👨‍🦰',
-                viesesReais: ['disponibilidade'],
-                antidotoCorreto: 'amplie_amostra',
-                xpBase: 8,
-                falasIniciais: [
-                    'Cancelei o voo. Você viu o acidente na TV?',
-                    'Dirigir 14 horas é mais seguro, tenho certeza.',
-                ],
-                investigacoes: [
-                    { id: 'estatisticas', label: 'Mostrar estatísticas de segurança', revela: 'disponibilidade',
-                        custoClareza: 0 },
-                    { id: 'emocao_imediata', label: 'Perguntar sobre o medo recente', revela: 'disponibilidade',
-                        custoClareza: 0 },
-                ],
-                fraseFinal: 'É verdade... a TV exagerou o perigo na minha mente.'
-            }, {
-                id: 'caso3',
-                nivelMin: 2,
-                titulo: 'A aposta que dobra',
-                emoji: '📉',
-                cliente: 'Investidor',
-                avatar: '👨‍💼',
-                viesesReais: ['custo_afundado', 'aversao_perda'],
-                antidotoCorreto: 'reenquadre_zero',
-                xpBase: 15,
-                falasIniciais: [
-                    'Já coloquei R$50 mil nessa ação, não posso vender agora.',
-                    'Se eu vender, o prejuízo se concretiza.',
-                    'Vou comprar mais para baixar o preço médio.'
-                ],
-                investigacoes: [
-                    { id: 'pergunta_zero', label: 'Perguntar: compraria hoje?', revela: 'custo_afundado',
-                    custoClareza: 0 },
-                    { id: 'dor_perda', label: 'Explorar sentimento de perda', revela: 'aversao_perda', custoClareza: 0 },
-                ],
-                fraseFinal: 'Entendi... meu apego ao passado está turvando a decisão.'
-            }, {
-                id: 'caso4',
-                nivelMin: 3,
-                titulo: 'Debate político polarizado',
-                emoji: '🗣️',
-                cliente: 'Amanda',
-                avatar: '👩‍🎤',
-                viesesReais: ['confirmacao', 'falso_consenso', 'autoconveniencia'],
-                antidotoCorreto: 'evidencias_contrarias',
-                xpBase: 20,
-                falasIniciais: [
-                    'Todos os meus amigos pensam como eu.',
-                    'Quem discorda está mal-informado.',
-                    'Quando eu erro, é porque a fonte era ruim.'
-                ],
-                investigacoes: [
-                    { id: 'checar_fontes', label: 'Questionar fontes diversas', revela: 'confirmacao', custoClareza: 0 },
-                    { id: 'amostra_real', label: 'Verificar se há discordância real', revela: 'falso_consenso',
-                        custoClareza: 0 },
-                    { id: 'autoanalise', label: 'Pedir autoavaliação de erros', revela: 'autoconveniencia',
-                    custoClareza: 0 },
-                ],
-                fraseFinal: 'Estou presa em uma bolha... preciso ouvir outros lados.'
-            }];
+    // CASOS
+    const casos = [
+        { id:1, nivel:1, titulo:'O colega "incompetente"', cliente:'Maria', avatar:'👩‍💼', viesesReais:['confirmacao','atribuicao'], antidotoCorreto:'evidencias_contrarias',
+          falas:['Antônio errou de novo.','Ele não se encaixa aqui.','Ontem atrasou a entrega.'],
+          dicasReais:['Ela só fala dos erros de Antônio.','Ela nunca perguntou o motivo do atraso.'],
+          dicasFalsas:['Ela acha que todos concordam.'] },
+        { id:2, nivel:1, titulo:'Medo de voar', cliente:'Carlos', avatar:'👨‍🦰', viesesReais:['disponibilidade'], antidotoCorreto:'amplie_amostra',
+          falas:['Depois daquele acidente na TV...','Prefiro dirigir 14h.'],
+          dicasReais:['Ele cancelou o voo após o noticiário.'],
+          dicasFalsas:['Ele sempre teve medo de altura.'] },
+        { id:3, nivel:2, titulo:'Aposta dobrada', cliente:'Investidor', avatar:'👨‍💼', viesesReais:['custo_afundado','aversao_perda'], antidotoCorreto:'reenquadre_zero',
+          falas:['Já perdi muito, não posso vender.','Vou comprar mais pra diluir.'],
+          dicasReais:['Ele se recusa a realizar o prejuízo.','A dor da perda paralisa.'],
+          dicasFalsas:['Ele acha que a ação vai subir amanhã.'] },
+        { id:4, nivel:3, titulo:'Bolha política', cliente:'Amanda', avatar:'👩‍🎤', viesesReais:['confirmacao','manada'], antidotoCorreto:'advogado_diabo',
+          falas:['Todo mundo pensa assim.','Quem discorda está errado.'],
+          dicasReais:['Ela só lê sites que concordam com ela.','Ela segue influencers que pensam igual.'],
+          dicasFalsas:['Ela é muito inteligente.'] },
+    ];
 
-            // ===================== STATE =====================
-            const state = {
-                nivel: 1,
-                xp: 0,
-                casosResolvidos: 0,
-                clareza: 6,
-                maxClareza: 10,
-                casoAtual: null,
-                viesesDetectados: [],
-                investigacoesUsadas: [],
-                antidotoSelecionado: null,
-                caseResolved: false,
-                // diário
-                journal: [],
-            };
+    // STATE
+    const state = {
+        casoAtual: null,
+        insight: 5,
+        viesesDetectados: [],
+        pistasColetadas: [],
+        pistasFalsasRestantes: [],
+        dicasReaisRestantes: [],
+        estrategemasMao: [],
+        estrategemasUsadas: [],
+        acusacaoFeita: false,
+        // global
+        xp: 0,
+        casosResolvidos: 0,
+        nivel: 1,
+    };
 
-            function getNivel(xp) {
-                if (xp >= 80) return { nome: '🧙 Mestre', nivel: 4 };
-                if (xp >= 40) return { nome: '♟️ Estrategista', nivel: 3 };
-                if (xp >= 15) return { nome: '🔎 Analista', nivel: 2 };
-                return { nome: '🧭 Iniciante', nivel: 1 };
+    function getNivel(xp) {
+        if (xp>=60) return {nome:'🧙 Mestre', lvl:4};
+        if (xp>=30) return {nome:'♟️ Estrategista', lvl:3};
+        if (xp>=10) return {nome:'🔎 Detetive', lvl:2};
+        return {nome:'🧭 Recruta', lvl:1};
+    }
+
+    function updateGlobal() {
+        const info = getNivel(state.xp);
+        state.nivel = info.lvl;
+        document.getElementById('homeLevel').textContent = info.nome;
+        document.getElementById('homeXP').textContent = state.xp;
+        document.getElementById('homeSolved').textContent = state.casosResolvidos;
+    }
+
+    function showScreen(id) {
+        document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    }
+
+    function renderHome() {
+        const grid = document.getElementById('caseGrid');
+        grid.innerHTML = casos.map(c=>{
+            const locked = c.nivel > state.nivel;
+            return `<div class="case-card ${locked?'locked':''}" onclick="${locked?'':`startCase(${c.id})`}">
+                <div class="case-emoji">${c.avatar}</div>
+                <div class="case-title">${c.titulo}</div>
+                <div class="case-meta">${c.cliente} ${locked?`🔒 Nv.${c.nivel}`:''}</div>
+            </div>`;
+        }).join('');
+    }
+
+    function startCase(id) {
+        const caso = casos.find(c=>c.id===id);
+        if (!caso) return;
+        state.casoAtual = caso;
+        state.insight = 5;
+        state.viesesDetectados = [];
+        state.pistasColetadas = [];
+        state.pistasFalsasRestantes = [...caso.dicasFalsas];
+        state.dicasReaisRestantes = [...caso.dicasReais];
+        state.estrategemasMao = [...estrategemas];
+        state.estrategemasUsadas = [];
+        state.acusacaoFeita = false;
+
+        document.getElementById('suspectAvatar').textContent = caso.avatar;
+        document.getElementById('suspectName').textContent = caso.cliente;
+        document.getElementById('suspectSpeech').textContent = '"'+caso.falas[0]+'"';
+        document.getElementById('gameTitle').textContent = caso.titulo;
+        updateGameUI();
+        showScreen('gameScreen');
+    }
+
+    function updateGameUI() {
+        document.getElementById('insightVal').textContent = state.insight;
+        document.getElementById('progressVal').textContent = state.viesesDetectados.length+'/'+state.casoAtual.viesesReais.length;
+        renderClueBoard();
+        renderStrategyHand();
+    }
+
+    function renderClueBoard() {
+        const board = document.getElementById('clueBoard');
+        if (state.pistasColetadas.length===0) {
+            board.innerHTML = '<span style="color:var(--text2);font-size:0.85rem;">Nenhuma pista ainda.</span>';
+            return;
+        }
+        board.innerHTML = state.pistasColetadas.map(p=>`<span class="clue">${p}</span>`).join('');
+    }
+
+    function renderStrategyHand() {
+        const hand = document.getElementById('strategyHand');
+        hand.innerHTML = state.estrategemasMao.map(e=>{
+            const used = state.estrategemasUsadas.includes(e.id);
+            return `<div class="strategy-card ${used?'used':''}" onclick="${used?'':`useEstrategema('${e.id}')`}">
+                ${e.emoji} ${e.nome}
+            </div>`;
+        }).join('');
+    }
+
+    function forceClue(st) {
+        if (st.dicasReaisRestantes.length>0) {
+            const clue = st.dicasReaisRestantes.shift();
+            st.pistasColetadas.push(clue);
+        } else if (st.dicasFalsasRestantes.length>0) {
+            const clue = st.dicasFalsasRestantes.shift();
+            st.pistasColetadas.push(clue);
+        }
+    }
+
+    function revealRandomVies(st) {
+        const aindaNaoDetectados = st.casoAtual.viesesReais.filter(v=>!st.viesesDetectados.includes(v));
+        if (aindaNaoDetectados.length>0) {
+            const v = aindaNaoDetectados[Math.floor(Math.random()*aindaNaoDetectados.length)];
+            st.viesesDetectados.push(v);
+        }
+    }
+
+    function removeFalseClue(st) {
+        const falseClue = st.pistasColetadas.find(p=>st.casoAtual.dicasFalsas.includes(p));
+        if (falseClue) {
+            st.pistasColetadas = st.pistasColetadas.filter(p=>p!==falseClue);
+            st.pistasFalsasRestantes.push(falseClue);
+        }
+    }
+
+    function useEstrategema(id) {
+        if (state.insight <=0 || state.acusacaoFeita) return;
+        const estrat = state.estrategemasMao.find(e=>e.id===id);
+        if (!estrat || state.estrategemasUsadas.includes(id)) return;
+        state.estrategemasUsadas.push(id);
+        estrat.acao(state);
+        updateGameUI();
+    }
+
+    function investigate() {
+        if (state.insight <=0 || state.acusacaoFeita || !state.casoAtual) return;
+        state.insight--;
+        // Lógica: chance de pista real ou falsa
+        const totalRestante = state.dicasReaisRestantes.length + state.pistasFalsasRestantes.length;
+        if (totalRestante===0) {
+            // sem pistas, mas pode revelar viés aleatório
+            if (Math.random()<0.3) revealRandomVies(state);
+        } else {
+            const rand = Math.random();
+            if (rand < 0.7 && state.dicasReaisRestantes.length>0) {
+                const clue = state.dicasReaisRestantes.shift();
+                state.pistasColetadas.push(clue);
+                // tenta deduzir viés automaticamente (o jogador que analise, mas podemos dar uma chance)
+            } else if (state.pistasFalsasRestantes.length>0) {
+                const clue = state.pistasFalsasRestantes.shift();
+                state.pistasColetadas.push(clue);
+            } else if (state.dicasReaisRestantes.length>0) {
+                const clue = state.dicasReaisRestantes.shift();
+                state.pistasColetadas.push(clue);
             }
+        }
+        // atualiza fala do suspeito
+        const falas = state.casoAtual.falas;
+        document.getElementById('suspectSpeech').textContent = '"'+falas[Math.floor(Math.random()*falas.length)]+'"';
+        updateGameUI();
+    }
 
-            function updateNivel() {
-                const n = getNivel(state.xp);
-                state.nivel = n.nivel;
-                return n;
+    function openAccuse() {
+        if (state.acusacaoFeita || state.insight<=0) return;
+        const modal = document.getElementById('modalOverlay');
+        const content = document.getElementById('modalContent');
+        const viesesOptions = Object.entries(vieses).map(([id,v])=>`<option value="${id}">${v.emoji} ${v.nome}</option>`).join('');
+        const antidotosOptions = Object.entries(antidotos).map(([id,a])=>`<option value="${id}">${a.emoji} ${a.nome}</option>`).join('');
+        content.innerHTML = `
+            <div class="modal-emoji">🚨</div>
+            <h3>Acusação Formal</h3>
+            <p style="color:var(--text2);">Selecione o viés criminoso e o antídoto policial.</p>
+            <div style="text-align:left;">
+                <label>Viés suspeito:</label>
+                <select id="accuseVies" style="width:100%;padding:8px;margin:8px 0;background:var(--surface3);color:#fff;border:1px solid rgba(255,255,255,0.2);border-radius:8px;">${viesesOptions}</select>
+                <label>Antídoto:</label>
+                <select id="accuseAntidoto" style="width:100%;padding:8px;margin:8px 0;background:var(--surface3);color:#fff;border:1px solid rgba(255,255,255,0.2);border-radius:8px;">${antidotosOptions}</select>
+            </div>
+            <button class="btn btn-primary" onclick="confirmAccuse()" style="margin-top:12px;">🔒 Decretar Prisão</button>
+            <button class="btn btn-outline" onclick="closeModal()" style="margin-top:8px;">Cancelar</button>
+        `;
+        modal.style.display = 'flex';
+    }
+
+    function confirmAccuse() {
+        const viesId = document.getElementById('accuseVies').value;
+        const antidotoId = document.getElementById('accuseAntidoto').value;
+        closeModal();
+        if (!state.casoAtual) return;
+        const caso = state.casoAtual;
+        const acertouVies = caso.viesesReais.includes(viesId);
+        const acertouAntidoto = caso.antidotoCorreto === antidotoId;
+        // resultado
+        const capture = acertouVies && acertouAntidoto;
+        state.acusacaoFeita = true;
+        let xpGanho = 0;
+        let stars = 0;
+        if (capture) {
+            xpGanho = 20;
+            stars = 3;
+            state.xp += xpGanho;
+            state.casosResolvidos++;
+            updateGlobal();
+            showResultModal('🎉', 'Caso Resolvido!', `Você capturou o viés ${vieses[viesId].nome} com ${antidotos[antidotoId].nome}.`, stars, xpGanho);
+        } else {
+            // falha reduz insight e revela pistas extras
+            state.insight = Math.max(0, state.insight-2);
+            if (acertouVies && !acertouAntidoto) {
+                showResultModal('🤔', 'Prisão parcial', 'O viés estava certo, mas o antídoto falhou. Tente outro.', 1, 0);
+            } else if (!acertouVies && acertouAntidoto) {
+                showResultModal('🤔', 'Algemas erradas', 'Antídoto certo, mas o viés acusado não estava presente.', 1, 0);
+            } else {
+                showResultModal('❌', 'Inocente!', 'Nenhum dos dois estava correto.', 0, 0);
             }
+            state.acusacaoFeita = false; // permite tentar de novo
+        }
+        updateGameUI();
+    }
 
-            // ===================== UI HELPERS =====================
-            const $ = (sel) => document.querySelector(sel);
-            const $$ = (sel) => document.querySelectorAll(sel);
+    function showResultModal(emoji, title, text, stars, xp) {
+        const modal = document.getElementById('modalOverlay');
+        const content = document.getElementById('modalContent');
+        content.innerHTML = `
+            <div class="modal-emoji">${emoji}</div>
+            <h3>${title}</h3>
+            <p>${text}</p>
+            ${stars>0?`<div class="stars">${'⭐'.repeat(stars)}</div>`:''}
+            ${xp>0?`<div style="color:var(--accent);font-weight:700;">+${xp} XP</div>`:''}
+            <button class="btn btn-primary" onclick="closeModal();exitToHome();">🏠 Encerrar Caso</button>
+        `;
+        modal.style.display = 'flex';
+    }
 
-            function showScreen(id) {
-                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-                const el = document.getElementById(id);
-                if (el) el.classList.add('active');
-            }
+    function closeModal() { document.getElementById('modalOverlay').style.display = 'none'; }
+    function exitToHome() {
+        state.casoAtual = null;
+        updateGlobal();
+        renderHome();
+        showScreen('homeScreen');
+    }
 
-            function updateHeaderStats() {
-                const nivel = getNivel(state.xp);
-                $('#homeLevel').textContent = nivel.nome;
-                $('#homeXP').textContent = state.xp;
-                $('#homeCasos').textContent = state.casosResolvidos;
-            }
+    // Inicialização
+    window.startCase = startCase;
+    window.investigate = investigate;
+    window.useEstrategema = useEstrategema;
+    window.openAccuse = openAccuse;
+    window.confirmAccuse = confirmAccuse;
+    window.closeModal = closeModal;
+    window.exitToHome = exitToHome;
 
-            function updateClarezaUI() {
-                const bar = $('#clarezaBar');
-                const val = $('#clarezaValue');
-                if (!bar || !val) return;
-                const pct = (state.clareza / state.maxClareza) * 100;
-                bar.style.width = pct + '%';
-                val.textContent = state.clareza + '/' + state.maxClareza;
-                if (state.clareza <= 3) bar.style.background = 'var(--red)';
-                else if (state.clareza <= 6) bar.style.background = 'var(--amber)';
-                else bar.style.background = 'var(--green)';
-                val.style.color = bar.style.background;
-            }
-
-            function spawnParticles(emoji, x, y) {
-                const particle = document.createElement('div');
-                particle.className = 'particle';
-                particle.textContent = emoji;
-                particle.style.left = x + 'px';
-                particle.style.top = y + 'px';
-                document.body.appendChild(particle);
-                setTimeout(() => particle.remove(), 1000);
-            }
-
-            function showModal(emoji, title, text, xpGain, buttons) {
-                const overlay = $('#modalOverlay');
-                const content = $('#modalContent');
-                overlay.style.display = 'flex';
-                content.innerHTML = `
-              <div class="modal-emoji">${emoji}</div>
-              <div class="modal-title">${title}</div>
-              <div class="modal-text">${text}</div>
-              ${xpGain > 0 ? `<div class="xp-gain">+${xpGain} XP</div>` : ''}
-              <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;">
-                ${buttons.map(b => `<button class="btn ${b.cls || 'btn-primary'}" onclick="${b.action}" style="flex:1;min-width:90px;">${b.label}</button>`).join('')}
-              </div>
-            `;
-            }
-
-            function hideModal() {
-                $('#modalOverlay').style.display = 'none';
-            }
-
-            // ===================== HOME =====================
-            function renderHomeGrid() {
-                const grid = $('#caseGrid');
-                grid.innerHTML = casos.map(c => {
-                    const locked = c.nivelMin > state.nivel;
-                    const completed = state.journal.find(j => j.casoId === c.id);
-                    const stars = completed ? '⭐'.repeat(completed.stars) : '';
-                    return `
-                <div class="case-thumb ${locked ? 'locked' : ''}" onclick="${locked ? '' : `startCase('${c.id}')`}">
-                  ${locked ? '<span class="badge-lock">🔒 Nv.' + c.nivelMin + '</span>' : ''}
-                  <div class="emoji">${c.emoji}</div>
-                  <h3>${c.titulo}</h3>
-                  <div class="meta">
-                    <span>${c.cliente}</span>
-                    ${stars ? `<span class="stars">${stars}</span>` : '<span style="color:var(--text2);">Novo</span>'}
-                  </div>
-                </div>
-              `;
-                }).join('');
-            }
-
-            // ===================== GAME =====================
-            function startCase(casoId) {
-                const caso = casos.find(c => c.id === casoId);
-                if (!caso) return;
-                state.casoAtual = caso;
-                state.clareza = 6;
-                state.viesesDetectados = [];
-                state.investigacoesUsadas = [];
-                state.antidotoSelecionado = null;
-                state.caseResolved = false;
-                // Inicializa citação com primeira fala
-                $('#clientAvatar').textContent = caso.avatar;
-                $('#clientName').textContent = caso.cliente;
-                $('#clientQuote').textContent = '"' + caso.falasIniciais[0] + '"';
-                $('#emotionFill').style.width = '50%';
-                $('#emotionFill').style.background = 'var(--amber)';
-                $('#gameCaseTitle').textContent = caso.titulo;
-                updateClarezaUI();
-                renderInvestigations();
-                renderDetectedViéses();
-                renderInterventions();
-                $('#btnResolve').disabled = true;
-                showScreen('gameScreen');
-            }
-
-            function renderInvestigations() {
-                const container = $('#investigationActions');
-                const caso = state.casoAtual;
-                container.innerHTML = caso.investigacoes.map(inv => {
-                    const used = state.investigacoesUsadas.includes(inv.id);
-                    return `<span class="action-chip ${used ? 'used' : ''}" onclick="${used ? '' : `investigate('${inv.id}')`}">
-                🔎 ${inv.label}
-              </span>`;
-                }).join('');
-            }
-
-            function investigate(invId) {
-                if (state.caseResolved) return;
-                const caso = state.casoAtual;
-                const inv = caso.investigacoes.find(i => i.id === invId);
-                if (!inv || state.investigacoesUsadas.includes(invId)) return;
-
-                state.investigacoesUsadas.push(invId);
-                renderInvestigations();
-
-                // Efeito no cliente
-                const avatar = $('#clientAvatar');
-                avatar.classList.add('thinking');
-                setTimeout(() => avatar.classList.remove('thinking'), 600);
-
-                // Se revela viés e ainda não foi detectado
-                if (inv.revela && !state.viesesDetectados.includes(inv.revela)) {
-                    state.viesesDetectados.push(inv.revela);
-                    spawnParticles('💡', window.innerWidth / 2, window.innerHeight / 2);
-                    renderDetectedViéses();
-                }
-
-                // Custo de clareza opcional
-                if (inv.custoClareza && inv.custoClareza < 0) {
-                    state.clareza = Math.max(0, state.clareza + inv.custoClareza);
-                    updateClarezaUI();
-                }
-
-                // Atualizar fala do cliente (próxima ou reação)
-                const falasRestantes = caso.falasIniciais.filter((_, i) => !state.investigacoesUsadas.includes(
-                    `fala_${i}`));
-                if (falasRestantes.length > 0) {
-                    $('#clientQuote').textContent = '"' + falasRestantes[Math.floor(Math.random() *
-                        falasRestantes.length)] + '"';
-                } else if (state.viesesDetectados.length >= caso.viesesReais.length) {
-                    $('#clientQuote').textContent = '"' + caso.fraseFinal + '"';
-                    $('#emotionFill').style.width = '20%';
-                    $('#emotionFill').style.background = 'var(--green)';
-                }
-
-                // Se todos vieses detectados, habilitar resolução
-                verificarResolucao();
-            }
-
-            function renderDetectedViéses() {
-                const container = $('#detectedViésesContainer');
-                const caso = state.casoAtual;
-                container.innerHTML = state.viesesDetectados.map(vId => {
-                    const v = viesesDB[vId];
-                    const isReal = caso.viesesReais.includes(vId);
-                    return `<span class="detected-viés ${isReal ? 'confirmed' : ''}">${v?.emoji || '❓'} ${v?.nome || vId}</span>`;
-                }).join('');
-            }
-
-            function renderInterventions() {
-                const container = $('#interventionList');
-                const caso = state.casoAtual;
-                // Mostrar apenas antídotos que neutralizam algum viés do caso ou detectado
-                const antidotosRelevantes = Object.entries(antidotosDB).filter(([id, a]) =>
-                    a.neutraliza.some(v => caso.viesesReais.includes(v) || state.viesesDetectados.includes(v))
-                );
-                container.innerHTML = antidotosRelevantes.map(([id, a]) => `
-              <div class="intervention-item ${state.antidotoSelecionado === id ? 'selected' : ''}" onclick="selectAntidoto('${id}')">
-                <span>${a.emoji}</span>
-                <div>
-                  <div style="font-weight:600;">${a.nome}</div>
-                  <div style="font-size:0.7rem;color:var(--text2);">${a.desc}</div>
-                </div>
-              </div>
-            `).join('');
-            }
-
-            function selectAntidoto(id) {
-                state.antidotoSelecionado = id;
-                document.querySelectorAll('.intervention-item').forEach(el => el.classList.remove('selected'));
-                const selected = document.querySelector(`.intervention-item[onclick="selectAntidoto('${id}')"]`);
-                if (selected) selected.classList.add('selected');
-                verificarResolucao();
-            }
-
-            function verificarResolucao() {
-                const caso = state.casoAtual;
-                const todosDetectados = caso.viesesReais.every(v => state.viesesDetectados.includes(v));
-                const btn = $('#btnResolve');
-                btn.disabled = !(todosDetectados && state.antidotoSelecionado);
-                if (todosDetectados && !state.antidotoSelecionado) {
-                    btn.textContent = '⚠️ Selecione um antídoto';
-                } else if (!todosDetectados) {
-                    btn.textContent = '🔍 Continue investigando...';
-                } else {
-                    btn.textContent = '✅ Aplicar Intervenção e Concluir';
-                }
-            }
-
-            function resolveCase() {
-                if (state.caseResolved || !state.casoAtual) return;
-                const caso = state.casoAtual;
-                const antidotoId = state.antidotoSelecionado;
-                const viesesCorretos = caso.viesesReais;
-                const viesesDetectados = state.viesesDetectados.filter(v => viesesCorretos.includes(v));
-                const acertosVieses = viesesDetectados.length;
-                const totalVieses = viesesCorretos.length;
-                const antidotoCorreto = caso.antidotoCorreto === antidotoId;
-
-                let deltaClareza = 0;
-                if (acertosVieses === totalVieses) deltaClareza += 2;
-                else if (acertosVieses >= 1) deltaClareza += 0;
-                else deltaClareza -= 1;
-
-                if (antidotoCorreto) deltaClareza += 2;
-                else deltaClareza -= 2;
-
-                state.clareza = Math.max(0, Math.min(state.maxClareza, state.clareza + deltaClareza));
-                updateClarezaUI();
-
-                const stars = state.clareza >= 9 ? 3 : state.clareza >= 6 ? 2 : state.clareza >= 3 ? 1 : 0;
-                const xpGanho = Math.floor(caso.xpBase * (stars / 3)) + (antidotoCorreto ? 5 : 0);
-                state.xp += xpGanho;
-                state.casosResolvidos++;
-                state.caseResolved = true;
-                updateNivel();
-                updateHeaderStats();
-
-                // Salvar no diário
-                const existing = state.journal.findIndex(j => j.casoId === caso.id);
-                const entry = {
-                    casoId: caso.id,
-                    titulo: caso.titulo,
-                    stars: stars,
-                    data: new Date().toLocaleDateString(),
-                    cliente: caso.cliente,
-                };
-                if (existing >= 0 && state.journal[existing].stars < stars) state.journal[existing] = entry;
-                else if (existing < 0) state.journal.push(entry);
-
-                // Animação
-                $('#emotionFill').style.width = (100 - stars * 25) + '%';
-                $('#emotionFill').style.background = stars >= 2 ? 'var(--green)' : 'var(--red)';
-                $('#clientQuote').textContent = '"' + (stars >= 2 ? caso.fraseFinal :
-                    'Ainda não me convenceu...') + '"';
-
-                const emoji = stars >= 2 ? '🎉' : '🧐';
-                const titulo = stars >= 2 ? 'Análise Concluída!' : 'Análise Parcial';
-                const texto = `
-              Vieses detectados: ${acertosVieses}/${totalVieses}<br>
-              Antídoto: ${antidotoCorreto ? '✅ Correto' : '❌ Incorreto'}<br>
-              Clareza final: ${state.clareza}/10
-            `;
-                showModal(emoji, titulo, texto, xpGanho, [
-                    { label: '📋 Menu', cls: 'btn-outline', action: 'hideModal();exitToHome();' },
-                ]);
-            }
-
-            function exitToHome() {
-                state.casoAtual = null;
-                state.antidotoSelecionado = null;
-                state.viesesDetectados = [];
-                state.investigacoesUsadas = [];
-                state.caseResolved = false;
-                updateHeaderStats();
-                renderHomeGrid();
-                showScreen('homeScreen');
-            }
-
-            function openJournal() {
-                const entries = state.journal.slice().reverse();
-                const texto = entries.length > 0 ?
-                    entries.map(e =>
-                        `⭐ ${e.stars}/3 — ${e.titulo} (${e.cliente}) em ${e.data}`).join('<br>') :
-                    'Nenhum caso resolvido ainda.';
-                showModal('📓', 'Diário de Casos', texto, 0, [
-                    { label: 'Fechar', cls: 'btn-outline', action: 'hideModal()' },
-                ]);
-            }
-
-            // ===================== INIT =====================
-            function init() {
-                updateNivel();
-                updateHeaderStats();
-                renderHomeGrid();
-                updateClarezaUI();
-                showScreen('homeScreen');
-                // Fechar modal ao clicar fora
-                $('#modalOverlay').addEventListener('click', function(e) {
-                    if (e.target === this) hideModal();
-                });
-                document.addEventListener('keydown', function(e) {
-                    if (e.key === 'Escape') hideModal();
-                });
-                console.log('🧠 Mente Inversa — Análise Cognitiva Interativa carregada.');
-            }
-
-            // Expor funções globais
-            window.startCase = startCase;
-            window.investigate = investigate;
-            window.selectAntidoto = selectAntidoto;
-            window.resolveCase = resolveCase;
-            window.exitToHome = exitToHome;
-            window.openJournal = openJournal;
-            window.hideModal = hideModal;
-
-            init();
-        })();
-    </script>
+    updateGlobal();
+    renderHome();
+    showScreen('homeScreen');
+})();
+</script>
 </body>
 </html>
