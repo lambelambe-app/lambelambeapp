@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Labirinto Metálico | Bola ao Centro</title>
+    <title>Labirinto Metálico - Bola ao Centro</title>
     <style>
         * {
             margin: 0;
@@ -13,44 +13,37 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* Fundo branco e limpo */
         body {
-            background: #ffffff;
+            background: white;
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-family: 'Segoe UI', 'Poppins', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif;
-            padding: 20px;
-            margin: 0;
+            font-family: system-ui, 'Segoe UI', sans-serif;
+            padding: 16px;
         }
 
-        /* Container elegante com sombra suave */
         .game-container {
-            background: #ffffff;
-            border-radius: 48px;
-            padding: 20px 20px 24px;
-            box-shadow: 0 20px 35px rgba(0, 0, 0, 0.1), 0 2px 5px rgba(0, 0, 0, 0.05);
-            border: 1px solid #e2e8f0;
+            background: white;
+            border-radius: 32px;
+            padding: 16px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
         }
 
         canvas {
             display: block;
             margin: 0 auto;
-            border-radius: 28px;
-            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.1);
-            cursor: pointer;
+            border-radius: 24px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
             width: 100%;
             height: auto;
-            background-color: #eef2f5; /* Fundo do canvas - caso base */
+            background-color: #eef2f5; /* fallback */
         }
 
-        /* Painel de controles claro e moderno */
         .controls {
             display: flex;
             justify-content: center;
-            align-items: center;
-            gap: 24px;
+            gap: 20px;
             margin-top: 24px;
             flex-wrap: wrap;
         }
@@ -59,12 +52,12 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
         }
 
         .dpad-row {
             display: flex;
-            gap: 20px;
+            gap: 16px;
             justify-content: center;
         }
 
@@ -80,83 +73,41 @@
             font-size: 32px;
             font-weight: bold;
             color: #1e293b;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-            transition: all 0.08s linear;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.05);
             cursor: pointer;
-            touch-action: manipulation;
-            backdrop-filter: blur(0);
+            transition: 0.05s linear;
         }
-
         .ctrl-btn:active {
             transform: translateY(3px);
             background: #e2e8f0;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
         }
-
         .reset-btn {
-            background: #fee2e2;
+            background: #ffe4e2;
             border-color: #fecaca;
             color: #b91c1c;
             width: 80px;
-            font-size: 28px;
-        }
-
-        .reset-btn:active {
-            background: #fecaca;
         }
 
         .status {
             background: #f8fafc;
             border: 1px solid #cbd5e1;
-            padding: 8px 24px;
-            border-radius: 60px;
-            color: #0f172a;
+            padding: 8px 20px;
+            border-radius: 40px;
             font-weight: 600;
-            font-size: 0.9rem;
-            text-align: center;
-            box-shadow: inset 0 1px 1px #ffffff80, 0 2px 4px rgba(0,0,0,0.02);
-        }
-
-        .info-panel {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 20px;
-            flex-wrap: wrap;
+            color: #0f172a;
             margin-top: 16px;
+            text-align: center;
         }
 
         @media (max-width: 560px) {
-            .ctrl-btn {
-                width: 55px;
-                height: 55px;
-                font-size: 28px;
-            }
-            .dpad-row {
-                gap: 12px;
-            }
-            .game-container {
-                padding: 12px;
-            }
-            .status {
-                font-size: 0.75rem;
-                padding: 6px 16px;
-            }
+            .ctrl-btn { width: 55px; height: 55px; font-size: 26px; }
+            .dpad-row { gap: 12px; }
         }
-
-        @media (max-width: 420px) {
-            .ctrl-btn {
-                width: 50px;
-                height: 50px;
-                font-size: 24px;
-            }
-        }
-
         footer {
             text-align: center;
             font-size: 0.7rem;
             color: #64748b;
-            margin-top: 18px;
+            margin-top: 16px;
         }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
@@ -167,9 +118,7 @@
         <div id="gameCanvas"></div>
         <div class="controls">
             <div class="dpad">
-                <div class="dpad-row">
-                    <div class="ctrl-btn" id="btnUp">▲</div>
-                </div>
+                <div class="dpad-row"><div class="ctrl-btn" id="btnUp">▲</div></div>
                 <div class="dpad-row">
                     <div class="ctrl-btn" id="btnLeft">◀</div>
                     <div class="ctrl-btn" id="btnDown">▼</div>
@@ -178,426 +127,324 @@
             </div>
             <div class="ctrl-btn reset-btn" id="btnReset">⟳</div>
         </div>
-        <div class="info-panel">
-            <div class="status" id="gameStatus">✨ mova a bola até o centro ✨</div>
-        </div>
-        <footer>⬆️ ⬇️ ⬅️ ➡️  |  Toque nos botões ou use as setas</footer>
+        <div class="status" id="gameStatus">✨ mova a bola até o centro ✨</div>
+        <footer>Setas do teclado ou botões na tela</footer>
     </div>
 </div>
 
 <script>
-    (function() {
-        // ======================= CONFIGURAÇÕES ========================
-        const MAZE_SIZE = 600;
+    (function(){
+        const SIZE = 600;
         const BALL_RADIUS = 14;
         const HOLE_RADIUS = 16;
         
-        // Pontos de spawn aleatórios (nas 4 bordas, nas aberturas)
-        const SPAWN_POINTS = [
-            { x: 32, y: MAZE_SIZE / 2 },
-            { x: MAZE_SIZE - 32, y: MAZE_SIZE / 2 },
-            { x: MAZE_SIZE / 2, y: 32 },
-            { x: MAZE_SIZE / 2, y: MAZE_SIZE - 32 }
+        // Spawns nas aberturas das bordas
+        const SPAWNS = [
+            { x: 32, y: SIZE/2 },            // esquerda
+            { x: SIZE-32, y: SIZE/2 },       // direita
+            { x: SIZE/2, y: 32 },            // topo
+            { x: SIZE/2, y: SIZE-32 }        // base
         ];
         
-        const ACC_FORCE = 380;
-        const MAX_SPEED = 480;
-        const DRAG_AIR = 0.98;
-        
-        let moveLeft = false, moveRight = false, moveUp = false, moveDown = false;
+        let moveLeft=false, moveRight=false, moveUp=false, moveDown=false;
         let gameScene = null;
-        let currentGame = null;
-        let victoryActive = false;
+        let victory = false;
         
-        // ======================= CENA PRINCIPAL =======================
-        class MazeGameScene extends Phaser.Scene {
-            constructor() {
-                super({ key: 'MazeGame' });
-            }
+        class LabirintoScene extends Phaser.Scene {
+            constructor() { super({ key: 'MazeGame' }); }
             
             preload() {
-                this.createTextures();
+                // Cria texturas proceduralmente (100% visível)
+                this.makeTextures();
             }
             
-            createTextures() {
-                // --- Bola metálica com brilho e contraste forte ---
-                const ballGraphics = this.make.graphics({ x: 0, y: 0, add: false });
-                ballGraphics.clear();
-                // sombra
-                ballGraphics.beginPath();
-                ballGraphics.arc(BALL_RADIUS, BALL_RADIUS, BALL_RADIUS, 0, Math.PI * 2);
-                ballGraphics.fillStyle(0x000000, 0.2);
-                ballGraphics.fill();
-                // base prata
-                ballGraphics.beginPath();
-                ballGraphics.arc(BALL_RADIUS-2, BALL_RADIUS-2, BALL_RADIUS-1, 0, Math.PI * 2);
-                const grad = ballGraphics.createLinearGradient(2, 2, BALL_RADIUS*1.4, BALL_RADIUS*1.4);
-                grad.addColorStop(0, '#f0f4fa');
-                grad.addColorStop(0.4, '#bac8dc');
-                grad.addColorStop(1, '#7e8c9e');
-                ballGraphics.fillStyle(grad);
-                ballGraphics.fill();
-                // brilho ponto alto
-                ballGraphics.beginPath();
-                ballGraphics.arc(BALL_RADIUS-5, BALL_RADIUS-6, 4, 0, Math.PI * 2);
-                ballGraphics.fillStyle(0xffffff, 0.7);
-                ballGraphics.fill();
-                ballGraphics.generateTexture('metalBall', BALL_RADIUS*2, BALL_RADIUS*2);
+            makeTextures() {
+                // --- Bola metálica (prata brilhante) ---
+                const ballG = this.make.graphics({ add: false });
+                ballG.clear();
+                ballG.beginPath();
+                ballG.arc(BALL_RADIUS, BALL_RADIUS, BALL_RADIUS, 0, Math.PI*2);
+                ballG.fillStyle(0x000000, 0.2);
+                ballG.fill();
+                ballG.beginPath();
+                ballG.arc(BALL_RADIUS-2, BALL_RADIUS-2, BALL_RADIUS-1, 0, Math.PI*2);
+                const grad = ballG.createLinearGradient(2,2, BALL_RADIUS*1.3, BALL_RADIUS*1.3);
+                grad.addColorStop(0, '#f4f8ff');
+                grad.addColorStop(0.5, '#b5c4d4');
+                grad.addColorStop(1, '#7a8a9a');
+                ballG.fillStyle(grad);
+                ballG.fill();
+                ballG.beginPath();
+                ballG.arc(BALL_RADIUS-5, BALL_RADIUS-6, 4, 0, Math.PI*2);
+                ballG.fillStyle(0xffffff, 0.7);
+                ballG.fill();
+                ballG.generateTexture('metalBall', BALL_RADIUS*2, BALL_RADIUS*2);
                 
-                // --- Buraco central (contraste escuro) ---
-                const holeGraphics = this.make.graphics({ x: 0, y: 0, add: false });
-                holeGraphics.clear();
-                holeGraphics.beginPath();
-                holeGraphics.arc(HOLE_RADIUS, HOLE_RADIUS, HOLE_RADIUS, 0, Math.PI*2);
-                holeGraphics.fillStyle(0x2d3e4b);
-                holeGraphics.fill();
-                holeGraphics.beginPath();
-                holeGraphics.arc(HOLE_RADIUS, HOLE_RADIUS, HOLE_RADIUS-3, 0, Math.PI*2);
-                holeGraphics.fillStyle(0x141e26);
-                holeGraphics.fill();
-                holeGraphics.beginPath();
-                holeGraphics.arc(HOLE_RADIUS, HOLE_RADIUS, HOLE_RADIUS-6, 0, Math.PI*2);
-                holeGraphics.fillStyle(0x050a0e);
-                holeGraphics.fill();
-                holeGraphics.generateTexture('hole', HOLE_RADIUS*2, HOLE_RADIUS*2);
+                // --- Buraco escuro no centro ---
+                const holeG = this.make.graphics({ add: false });
+                holeG.clear();
+                holeG.beginPath();
+                holeG.arc(HOLE_RADIUS, HOLE_RADIUS, HOLE_RADIUS, 0, Math.PI*2);
+                holeG.fillStyle(0x2d3f4a);
+                holeG.fill();
+                holeG.beginPath();
+                holeG.arc(HOLE_RADIUS, HOLE_RADIUS, HOLE_RADIUS-3, 0, Math.PI*2);
+                holeG.fillStyle(0x141e26);
+                holeG.fill();
+                holeG.beginPath();
+                holeG.arc(HOLE_RADIUS, HOLE_RADIUS, HOLE_RADIUS-6, 0, Math.PI*2);
+                holeG.fillStyle(0x03070a);
+                holeG.fill();
+                holeG.generateTexture('hole', HOLE_RADIUS*2, HOLE_RADIUS*2);
                 
-                // --- Paredes: cinza escuro com relevo (contraste nítido com fundo claro) ---
-                const wallGraphics = this.make.graphics({ x: 0, y: 0, add: false });
-                wallGraphics.fillStyle(0x5c6e7a);
-                wallGraphics.fillRect(0, 0, 20, 20);
-                wallGraphics.fillStyle(0x3e4f5a);
-                wallGraphics.fillRect(2, 2, 16, 16);
-                wallGraphics.lineStyle(1, 0x1a2a33, 0.4);
-                wallGraphics.strokeRect(0, 0, 20, 20);
-                wallGraphics.generateTexture('wallTile', 20, 20);
+                // --- Parede (cinza escuro com borda) ---
+                const wallG = this.make.graphics({ add: false });
+                wallG.fillStyle(0x6c7e8a);
+                wallG.fillRect(0,0,20,20);
+                wallG.fillStyle(0x4a5c66);
+                wallG.fillRect(2,2,16,16);
+                wallG.lineStyle(1, 0x2c3e46, 0.6);
+                wallG.strokeRect(0,0,20,20);
+                wallG.generateTexture('wall', 20, 20);
             }
             
             create() {
-                victoryActive = false;
-                // Fundo da cena: cinza bem claro (clean)
+                victory = false;
+                // FUNDO CLARO ELEGANTE (cinza muito claro)
                 this.cameras.main.setBackgroundColor('#eef2f5');
                 
                 this.walls = this.physics.add.staticGroup();
                 this.buildMaze();
                 
-                // Buraco central
-                this.hole = this.add.sprite(MAZE_SIZE/2, MAZE_SIZE/2, 'hole');
+                // Buraco
+                this.hole = this.add.sprite(SIZE/2, SIZE/2, 'hole');
                 this.hole.setDisplaySize(HOLE_RADIUS*2, HOLE_RADIUS*2);
-                this.physics.add.existing(this.hole, false);
+                this.physics.add.existing(this.hole, true);
                 this.hole.body.setCircle(HOLE_RADIUS);
                 this.hole.body.setImmovable(true);
-                this.hole.body.setEnable(false);
                 
-                // Bola do jogador
-                this.ball = this.physics.add.sprite(MAZE_SIZE/2, MAZE_SIZE/2, 'metalBall');
+                // Bola
+                this.ball = this.physics.add.sprite(0, 0, 'metalBall');
                 this.ball.setDisplaySize(BALL_RADIUS*2, BALL_RADIUS*2);
                 this.ball.setCircle(BALL_RADIUS);
                 this.ball.setCollideWorldBounds(false);
-                this.ball.setBounce(0.22);
-                this.ball.setDrag(DRAG_AIR);
-                this.ball.setMaxVelocity(MAX_SPEED, MAX_SPEED);
+                this.ball.setBounce(0.2);
+                this.ball.setDrag(0.98);
+                this.ball.setMaxVelocity(500,500);
                 
-                this.physics.add.collider(this.ball, this.walls, null, null, this);
+                this.physics.add.collider(this.ball, this.walls);
                 this.physics.add.overlap(this.ball, this.hole, this.winGame, null, this);
                 
                 this.randomSpawn();
                 
-                // Iluminação suave para dar destaque (opcional, mas mantém elegância)
-                this.lights.enable();
-                this.lights.setAmbientColor(0xccddee);
-                const light = this.lights.addLight(MAZE_SIZE/2, MAZE_SIZE/2, 200, 0xffdd99, 0.25);
-                this.lights.addLight(100, 100, 160, 0xaaccff, 0.2);
-                this.lights.addLight(500, 500, 160, 0xaaccff, 0.2);
-                
-                // Pequena animação no buraco (pulsar)
+                // Animação suave do buraco
                 this.tweens.add({
                     targets: this.hole,
-                    scaleX: 1.04,
-                    scaleY: 1.04,
-                    duration: 1300,
+                    scaleX: 1.05,
+                    scaleY: 1.05,
+                    duration: 1200,
                     yoyo: true,
-                    repeat: -1,
-                    ease: 'Sine.easeInOut'
+                    repeat: -1
                 });
             }
             
             buildMaze() {
-                const wallWidth = 18;
-                this.walls.clear(true);
-                
-                // Função auxiliar
-                const addRect = (x, y, w, h) => {
-                    if (w <= 0 || h <= 0) return;
-                    const wall = this.walls.create(x, y, 'wallTile');
-                    wall.setOrigin(0, 0);
+                const ww = 18;
+                const addWall = (x,y,w,h) => {
+                    if(w<=0 || h<=0) return;
+                    const wall = this.walls.create(x, y, 'wall');
+                    wall.setOrigin(0,0);
                     wall.displayWidth = w;
                     wall.displayHeight = h;
                     wall.refreshBody();
-                    wall.body.updateCenter();
-                    wall.setAlpha(0.95);
                 };
                 
-                // --- BORDAS COM ABERTURAS (caminhos laterais)---
-                // Superior (duas partes)
-                addRect(0, 0, MAZE_SIZE/2 - 42, wallWidth);
-                addRect(MAZE_SIZE/2 + 38, 0, MAZE_SIZE/2 - 38, wallWidth);
-                // Inferior
-                addRect(0, MAZE_SIZE - wallWidth, MAZE_SIZE/2 - 42, wallWidth);
-                addRect(MAZE_SIZE/2 + 38, MAZE_SIZE - wallWidth, MAZE_SIZE/2 - 38, wallWidth);
-                // Esquerda
-                addRect(0, 0, wallWidth, MAZE_SIZE/2 - 42);
-                addRect(0, MAZE_SIZE/2 + 38, wallWidth, MAZE_SIZE/2 - 38);
-                // Direita
-                addRect(MAZE_SIZE - wallWidth, 0, wallWidth, MAZE_SIZE/2 - 42);
-                addRect(MAZE_SIZE - wallWidth, MAZE_SIZE/2 + 38, wallWidth, MAZE_SIZE/2 - 38);
+                // BORDAS COM ABERTURAS (para spawn)
+                addWall(0,0, SIZE/2-42, ww);            // top left
+                addWall(SIZE/2+38,0, SIZE/2-38, ww);   // top right
+                addWall(0,SIZE-ww, SIZE/2-42, ww);      // bottom left
+                addWall(SIZE/2+38,SIZE-ww, SIZE/2-38, ww);
+                addWall(0,0, ww, SIZE/2-42);           // left top
+                addWall(0,SIZE/2+38, ww, SIZE/2-38);    // left bottom
+                addWall(SIZE-ww,0, ww, SIZE/2-42);      // right top
+                addWall(SIZE-ww,SIZE/2+38, ww, SIZE/2-38);
                 
-                // --- LABIRINTO INTERIOR VISÍVEL E DESAFIADOR ---
-                // paredes verticais
-                addRect(140, 80, 16, 220);
-                addRect(140, 340, 16, 180);
-                addRect(440, 100, 16, 200);
-                addRect(440, 340, 16, 180);
-                // horizontais
-                addRect(200, 150, 200, 16);
-                addRect(200, 430, 200, 16);
-                // obstáculos laterais
-                addRect(70, 220, 60, 16);
-                addRect(70, 360, 60, 16);
-                addRect(470, 220, 60, 16);
-                addRect(470, 360, 60, 16);
-                // L inferior esquerdo
-                addRect(80, 480, 120, 16);
-                addRect(180, 480, 16, 80);
-                // L superior direito
-                addRect(400, 80, 120, 16);
-                addRect(400, 80, 16, 80);
-                // ilhas centrais
-                addRect(280, 240, 40, 16);
-                addRect(280, 340, 40, 16);
-                addRect(340, 280, 16, 60);
-                // anel interno próximo ao centro (ajuda a criar labirinto)
-                addRect(240, 260, 120, 12);
-                addRect(240, 328, 120, 12);
-                addRect(260, 272, 12, 56);
-                addRect(328, 272, 12, 56);
-                
-                // detalhe extra: pequeno bloqueio perto da entrada direita
-                addRect(520, 260, 16, 70);
-                addRect(70, 280, 16, 60);
+                // LABIRINTO INTERNO (paredes bem visíveis)
+                addWall(140,80, 16, 220);
+                addWall(140,340, 16, 180);
+                addWall(440,100, 16, 200);
+                addWall(440,340, 16, 180);
+                addWall(200,150, 200, 16);
+                addWall(200,430, 200, 16);
+                addWall(70,220, 60, 16);
+                addWall(70,360, 60, 16);
+                addWall(470,220, 60, 16);
+                addWall(470,360, 60, 16);
+                addWall(80,480, 120, 16);
+                addWall(180,480, 16, 80);
+                addWall(400,80, 120, 16);
+                addWall(400,80, 16, 80);
+                addWall(280,240, 40, 16);
+                addWall(280,340, 40, 16);
+                addWall(340,280, 16, 60);
+                addWall(240,260, 120, 12);
+                addWall(240,328, 120, 12);
+                addWall(260,272, 12, 56);
+                addWall(328,272, 12, 56);
+                addWall(520,260, 16, 70);
+                addWall(70,280, 16, 60);
             }
             
             randomSpawn() {
-                const rand = Math.floor(Math.random() * SPAWN_POINTS.length);
-                const spawn = SPAWN_POINTS[rand];
-                this.ball.setPosition(spawn.x, spawn.y);
-                this.ball.setVelocity(0, 0);
-                this.ball.setAcceleration(0, 0);
-                // efeito visual de "drop"
-                this.cameras.main.flash(180, 200, 210, 240, false);
+                const idx = Math.floor(Math.random() * SPAWNS.length);
+                const pos = SPAWNS[idx];
+                this.ball.setPosition(pos.x, pos.y);
+                this.ball.setVelocity(0,0);
+                this.ball.setAcceleration(0,0);
             }
             
             winGame() {
-                if (victoryActive) return;
-                victoryActive = true;
-                moveLeft = moveRight = moveUp = moveDown = false;
-                this.ball.setVelocity(0, 0);
-                this.ball.setAcceleration(0, 0);
+                if(victory) return;
+                victory = true;
+                this.ball.setVelocity(0,0);
+                this.ball.setAcceleration(0,0);
                 const statusDiv = document.getElementById('gameStatus');
-                if (statusDiv) {
-                    statusDiv.innerHTML = '🏆 VITÓRIA! 🏆  Bola no centro!';
-                    statusDiv.style.background = "#e6f7e6";
-                    statusDiv.style.borderColor = "#8bc34a";
+                if(statusDiv) {
+                    statusDiv.innerHTML = '🏆 VITÓRIA! 🏆 Bola no buraco!';
+                    statusDiv.style.background = "#e0f2e0";
                 }
-                this.showVictoryEffect();
+                // Efeito de partículas
+                for(let i=0;i<16;i++) {
+                    const angle = (i/16)*Math.PI*2;
+                    const x = this.hole.x + Math.cos(angle)*30;
+                    const y = this.hole.y + Math.sin(angle)*30;
+                    const spark = this.add.circle(x,y,4,0xffaa55,0.9);
+                    this.tweens.add({ targets: spark, alpha:0, scale:0.2, duration:400, onComplete:()=>spark.destroy() });
+                }
                 this.time.delayedCall(1500, () => {
                     this.resetGame();
-                    if (statusDiv) {
+                    if(statusDiv) {
                         statusDiv.innerHTML = '✨ mova a bola até o centro ✨';
                         statusDiv.style.background = "#f8fafc";
-                        statusDiv.style.borderColor = "#cbd5e1";
                     }
-                    victoryActive = false;
-                }, [], this);
-            }
-            
-            showVictoryEffect() {
-                this.tweens.add({
-                    targets: this.hole,
-                    scaleX: 1.4,
-                    scaleY: 1.4,
-                    duration: 300,
-                    yoyo: true,
-                    ease: 'Back.Out'
+                    victory = false;
                 });
-                for (let i = 0; i < 14; i++) {
-                    const angle = (i / 14) * Math.PI * 2;
-                    const x = this.hole.x + Math.cos(angle) * 36;
-                    const y = this.hole.y + Math.sin(angle) * 36;
-                    const spark = this.add.circle(x, y, 4, 0xf5b042, 0.95);
-                    this.tweens.add({
-                        targets: spark,
-                        scaleX: 0.2,
-                        scaleY: 2,
-                        alpha: 0,
-                        duration: 480,
-                        onComplete: () => spark.destroy()
-                    });
-                }
             }
             
             resetGame() {
                 this.randomSpawn();
-                this.ball.setVelocity(0, 0);
-                this.ball.setAcceleration(0, 0);
-                moveLeft = moveRight = moveUp = moveDown = false;
-                victoryActive = false;
-                this.cameras.main.shake(90, 0.006);
+                this.ball.setVelocity(0,0);
+                moveLeft=moveRight=moveUp=moveDown=false;
+                this.cameras.main.shake(80,0.005);
             }
             
             update() {
-                if (victoryActive) {
-                    this.ball.setAcceleration(0, 0);
-                    this.ball.setVelocity(0, 0);
+                if(victory) {
+                    this.ball.setAcceleration(0,0);
                     return;
                 }
-                let ax = 0, ay = 0;
-                if (moveLeft) ax = -ACC_FORCE;
-                if (moveRight) ax = ACC_FORCE;
-                if (moveUp) ay = -ACC_FORCE;
-                if (moveDown) ay = ACC_FORCE;
+                let ax=0, ay=0;
+                if(moveLeft) ax = -380;
+                if(moveRight) ax = 380;
+                if(moveUp) ay = -380;
+                if(moveDown) ay = 380;
                 this.ball.setAcceleration(ax, ay);
-                
-                // Efeito visual: rotação conforme movimento
-                if (Math.abs(this.ball.body.velocity.x) > 20 || Math.abs(this.ball.body.velocity.y) > 20) {
-                    this.ball.angle += this.ball.body.velocity.x * 0.25;
-                }
+                // rotação estética
+                this.ball.angle += this.ball.body.velocity.x * 0.2;
             }
         }
         
-        // ======================= INICIALIZAÇÃO =======================
+        // Inicialização do Phaser
         const config = {
             type: Phaser.AUTO,
             parent: 'gameCanvas',
-            width: MAZE_SIZE,
-            height: MAZE_SIZE,
-            backgroundColor: '#eef2f5', // fundo claro consistente
-            scene: MazeGameScene,
-            physics: {
-                default: 'arcade',
-                arcade: {
-                    debug: false,
-                    gravity: { x: 0, y: 0 },
-                    fps: 60
-                }
-            },
-            scale: {
-                mode: Phaser.Scale.FIT,
-                autoCenter: Phaser.Scale.CENTER_BOTH,
-                width: MAZE_SIZE,
-                height: MAZE_SIZE
-            },
-            pixelArt: false,
-            antialias: true,
-            transparent: false
+            width: SIZE,
+            height: SIZE,
+            backgroundColor: '#eef2f5',
+            scene: LabirintoScene,
+            physics: { default: 'arcade', arcade: { debug: false, gravity: { x:0, y:0 } } },
+            scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH }
         };
         
-        currentGame = new Phaser.Game(config);
+        const game = new Phaser.Game(config);
         
-        // Aguarda cena pronta
-        function waitForScene() {
-            const interval = setInterval(() => {
-                if (currentGame && currentGame.scene && currentGame.scene.getScene('MazeGame')) {
-                    gameScene = currentGame.scene.getScene('MazeGame');
-                    clearInterval(interval);
-                    if (gameScene && gameScene.randomSpawn) gameScene.randomSpawn();
+        // Aguardar cena
+        let sceneReady = false;
+        game.events.on('ready', () => {
+            setTimeout(() => {
+                const scene = game.scene.getScene('MazeGame');
+                if(scene) {
+                    gameScene = scene;
+                    sceneReady = true;
                 }
-            }, 150);
-        }
-        waitForScene();
+            }, 200);
+        });
         
-        // ======================= CONTROLES (TECLADO + TOUCH) =======================
-        function handleKeyboard() {
+        // Função para conectar controles
+        function setupControls() {
+            const up = document.getElementById('btnUp');
+            const down = document.getElementById('btnDown');
+            const left = document.getElementById('btnLeft');
+            const right = document.getElementById('btnRight');
+            const resetBtn = document.getElementById('btnReset');
+            
+            const setDir = (dir,val) => {
+                if(dir==='up') moveUp=val;
+                if(dir==='down') moveDown=val;
+                if(dir==='left') moveLeft=val;
+                if(dir==='right') moveRight=val;
+            };
+            
+            const attach = (btn, dir) => {
+                if(!btn) return;
+                btn.addEventListener('mousedown', (e) => { e.preventDefault(); setDir(dir, true); });
+                btn.addEventListener('mouseup', () => setDir(dir, false));
+                btn.addEventListener('mouseleave', () => setDir(dir, false));
+                btn.addEventListener('touchstart', (e) => { e.preventDefault(); setDir(dir, true); });
+                btn.addEventListener('touchend', () => setDir(dir, false));
+                btn.addEventListener('touchcancel', () => setDir(dir, false));
+            };
+            
+            attach(up, 'up');
+            attach(down, 'down');
+            attach(left, 'left');
+            attach(right, 'right');
+            
+            if(resetBtn) {
+                resetBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    if(gameScene && !victory) gameScene.resetGame();
+                });
+                resetBtn.addEventListener('touchstart', (e) => { e.preventDefault(); if(gameScene) gameScene.resetGame(); });
+            }
+            
+            // Teclado
             window.addEventListener('keydown', (e) => {
-                const key = e.key;
-                if (key === 'ArrowLeft' || key === 'Left' || key === 'a') {
-                    moveLeft = true;
-                    e.preventDefault();
-                } else if (key === 'ArrowRight' || key === 'Right' || key === 'd') {
-                    moveRight = true;
-                    e.preventDefault();
-                } else if (key === 'ArrowUp' || key === 'Up' || key === 'w') {
-                    moveUp = true;
-                    e.preventDefault();
-                } else if (key === 'ArrowDown' || key === 'Down' || key === 's') {
-                    moveDown = true;
-                    e.preventDefault();
-                } else if (key === 'r' || key === 'R') {
-                    if (gameScene && !victoryActive) gameScene.resetGame();
-                    e.preventDefault();
-                }
+                const k = e.key;
+                if(k === 'ArrowLeft' || k === 'a') { moveLeft=true; e.preventDefault(); }
+                else if(k === 'ArrowRight' || k === 'd') { moveRight=true; e.preventDefault(); }
+                else if(k === 'ArrowUp' || k === 'w') { moveUp=true; e.preventDefault(); }
+                else if(k === 'ArrowDown' || k === 's') { moveDown=true; e.preventDefault(); }
+                else if(k === 'r') { if(gameScene) gameScene.resetGame(); e.preventDefault(); }
             });
             window.addEventListener('keyup', (e) => {
-                const key = e.key;
-                if (key === 'ArrowLeft' || key === 'Left' || key === 'a') moveLeft = false;
-                else if (key === 'ArrowRight' || key === 'Right' || key === 'd') moveRight = false;
-                else if (key === 'ArrowUp' || key === 'Up' || key === 'w') moveUp = false;
-                else if (key === 'ArrowDown' || key === 'Down' || key === 's') moveDown = false;
-                e.preventDefault();
+                const k = e.key;
+                if(k === 'ArrowLeft' || k === 'a') moveLeft=false;
+                else if(k === 'ArrowRight' || k === 'd') moveRight=false;
+                else if(k === 'ArrowUp' || k === 'w') moveUp=false;
+                else if(k === 'ArrowDown' || k === 's') moveDown=false;
             });
         }
         
-        function setupTouchAndButtons() {
-            const btnUp = document.getElementById('btnUp');
-            const btnDown = document.getElementById('btnDown');
-            const btnLeft = document.getElementById('btnLeft');
-            const btnRight = document.getElementById('btnRight');
-            const btnReset = document.getElementById('btnReset');
-            
-            const setDir = (dir, state) => {
-                if (dir === 'up') moveUp = state;
-                if (dir === 'down') moveDown = state;
-                if (dir === 'left') moveLeft = state;
-                if (dir === 'right') moveRight = state;
-            };
-            
-            const attachButton = (btn, dir) => {
-                if (!btn) return;
-                const onStart = (e) => { e.preventDefault(); setDir(dir, true); };
-                const onEnd = (e) => { setDir(dir, false); };
-                btn.addEventListener('mousedown', onStart);
-                btn.addEventListener('mouseup', onEnd);
-                btn.addEventListener('mouseleave', onEnd);
-                btn.addEventListener('touchstart', onStart, { passive: false });
-                btn.addEventListener('touchend', onEnd);
-                btn.addEventListener('touchcancel', onEnd);
-            };
-            
-            attachButton(btnUp, 'up');
-            attachButton(btnDown, 'down');
-            attachButton(btnLeft, 'left');
-            attachButton(btnRight, 'right');
-            
-            if (btnReset) {
-                btnReset.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    if (gameScene) gameScene.resetGame();
-                });
-                btnReset.addEventListener('touchstart', (e) => { e.preventDefault(); if(gameScene) gameScene.resetGame(); });
+        setupControls();
+        
+        // Fallback para garantir referência da cena
+        const interval = setInterval(() => {
+            if(!gameScene && game.scene.getScene('MazeGame')) {
+                gameScene = game.scene.getScene('MazeGame');
+                clearInterval(interval);
             }
-        }
-        
-        handleKeyboard();
-        setupTouchAndButtons();
-        
-        // Prevenir scroll enquanto interage com os botões
-        window.addEventListener('touchmove', function(e) {
-            if (e.target.closest('.ctrl-btn')) e.preventDefault();
-        }, { passive: false });
-        
-        // Ajuste responsivo do canvas
-        window.addEventListener('resize', () => {
-            if (currentGame && currentGame.scale) currentGame.scale.refresh();
-        });
+        }, 300);
     })();
 </script>
 </body>
