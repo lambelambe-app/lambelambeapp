@@ -13,7 +13,7 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* Fundo externo conforme solicitado (#666666) */
+        /* Fundo externo #666666 */
         body {
             background: #666666;
             min-height: 100vh;
@@ -28,7 +28,7 @@
             height: 100%;
         }
 
-        /* Container com efeito vidro escuro (contraste) */
+        /* Container principal */
         .game-container {
             background: rgba(20, 28, 38, 0.85);
             backdrop-filter: blur(12px);
@@ -43,6 +43,65 @@
             max-width: 100%;
             max-height: 95vh;
             overflow-y: auto;
+            position: relative;
+        }
+
+        /* Barra superior com timer (esquerda) e reset (direita) */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 16px;
+            gap: 16px;
+        }
+
+        /* Timer (canto esquerdo) */
+        .timer-panel {
+            background: rgba(0, 0, 0, 0.55);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 200, 100, 0.6);
+            border-radius: 48px;
+            padding: 4px 18px;
+            text-align: center;
+        }
+        .timer-label {
+            font-size: 0.6rem;
+            letter-spacing: 1px;
+            color: #c0b090;
+        }
+        .timer-value {
+            font-family: 'Courier New', 'Fira Code', monospace;
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #FFE5B4;
+            text-shadow: 0 0 4px rgba(0,0,0,0.5);
+            line-height: 1.2;
+        }
+
+        /* Botão Reset (canto direito) */
+        .reset-btn {
+            background: rgba(160, 65, 45, 0.9);
+            backdrop-filter: blur(4px);
+            border: 1px solid #ffbc7a;
+            border-radius: 60px;
+            width: 65px;
+            height: 65px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            font-weight: bold;
+            color: #FFE5B4;
+            text-shadow: 0 2px 4px black;
+            box-shadow: 0 5px 0 rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255,255,255,0.15);
+            transition: 0.05s linear;
+            cursor: pointer;
+        }
+        .reset-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px 0 rgba(0, 0, 0, 0.4);
+            background: rgba(180, 75, 55, 0.95);
         }
 
         canvas {
@@ -61,7 +120,7 @@
             display: flex;
             justify-content: center;
             width: 100%;
-            margin-bottom: 16px;
+            margin-bottom: 20px;
         }
         .dpad {
             display: flex;
@@ -98,75 +157,33 @@
             background: rgba(50, 65, 82, 0.95);
         }
 
-        /* Timer + Reset lado a lado (tamanho reduzido) */
-        .timer-reset-bar {
+        /* Ranking e inputs (parte inferior) */
+        .player-input {
             display: flex;
+            gap: 8px;
             justify-content: center;
-            align-items: center;
-            gap: 16px;
-            margin-bottom: 16px;
-            width: 100%;
+            margin: 6px 0 4px;
         }
-        .timer-panel {
-            background: rgba(0, 0, 0, 0.55);
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 200, 100, 0.6);
-            border-radius: 48px;
-            padding: 4px 18px;
-            text-align: center;
-        }
-        .timer-label {
-            font-size: 0.6rem;
-            letter-spacing: 1px;
-            color: #c0b090;
-        }
-        .timer-value {
-            font-family: 'Courier New', 'Fira Code', monospace;
-            font-size: 1.3rem;
-            font-weight: bold;
-            color: #FFE5B4;
-            text-shadow: 0 0 4px rgba(0,0,0,0.5);
-            line-height: 1.2;
-        }
-        .reset-btn {
-            background: rgba(160, 65, 45, 0.9);
-            backdrop-filter: blur(4px);
-            border: 1px solid #ffbc7a;
-            border-radius: 60px;
-            width: 65px;
-            height: 65px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 26px;
-            font-weight: bold;
-            color: #FFE5B4;
-            text-shadow: 0 2px 4px black;
-            box-shadow: 0 5px 0 rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255,255,255,0.15);
-            transition: 0.05s linear;
-            cursor: pointer;
-        }
-        .reset-btn:active {
-            transform: translateY(3px);
-            box-shadow: 0 2px 0 rgba(0, 0, 0, 0.4);
-            background: rgba(180, 75, 55, 0.95);
-        }
-
-        /* Status em linha única (sem quebra) */
-        .status {
-            background: rgba(0, 0, 0, 0.55);
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 215, 150, 0.6);
-            padding: 8px 18px;
+        .player-input input {
+            background: rgba(30, 40, 50, 0.9);
+            border: 1px solid #FFD28F;
             border-radius: 40px;
-            font-weight: 500;
-            font-size: 0.85rem;
-            color: #FDE5B4;
-            margin-bottom: 16px;
+            padding: 5px 12px;
+            font-size: 0.75rem;
+            width: 130px;
             text-align: center;
-            white-space: nowrap;
-            overflow-x: auto;
-            max-width: 100%;
+            color: #FFE5B4;
+            outline: none;
+        }
+        .player-input button {
+            background: #2c3e46;
+            border: none;
+            border-radius: 40px;
+            padding: 5px 12px;
+            color: #FFE5B4;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 0.75rem;
         }
 
         .ranking {
@@ -204,32 +221,12 @@
             color: #FFEBB0;
         }
 
-        .player-input {
-            display: flex;
-            gap: 8px;
-            justify-content: center;
-            margin: 6px 0 4px;
-        }
-        .player-input input {
-            background: rgba(30, 40, 50, 0.9);
-            border: 1px solid #FFD28F;
-            border-radius: 40px;
-            padding: 5px 12px;
-            font-size: 0.75rem;
-            width: 130px;
+        footer {
             text-align: center;
-            color: #FFE5B4;
-            outline: none;
-        }
-        .player-input button {
-            background: #2c3e46;
-            border: none;
-            border-radius: 40px;
-            padding: 5px 12px;
-            color: #FFE5B4;
-            font-weight: bold;
-            cursor: pointer;
-            font-size: 0.75rem;
+            font-size: 0.55rem;
+            color: #aaa;
+            margin-top: 12px;
+            opacity: 0.7;
         }
 
         @media (max-width: 560px) {
@@ -238,24 +235,24 @@
             .reset-btn { width: 55px; height: 55px; font-size: 22px; }
             .timer-value { font-size: 1.1rem; }
             .timer-panel { padding: 2px 12px; }
-            .status { font-size: 0.7rem; white-space: normal; } /* fallback para telas muito pequenas */
-        }
-
-        footer {
-            text-align: center;
-            font-size: 0.55rem;
-            color: #aaa;
-            margin-top: 12px;
-            opacity: 0.7;
         }
     </style>
 </head>
 <body>
 <div>
     <div class="game-container">
+        <!-- Barra superior: timer esquerda, reset direita -->
+        <div class="top-bar">
+            <div class="timer-panel">
+                <div class="timer-label">⏱️ TEMPO</div>
+                <div class="timer-value" id="timerDisplay">0.0 s</div>
+            </div>
+            <div class="reset-btn" id="btnReset">⟳</div>
+        </div>
+
         <canvas id="gameCanvas" width="600" height="600"></canvas>
 
-        <!-- D-PAD -->
+        <!-- D-PAD centralizado -->
         <div class="dpad-wrapper">
             <div class="dpad">
                 <div class="dpad-row"><div class="ctrl-btn" id="btnUp">▲</div></div>
@@ -267,17 +264,7 @@
             </div>
         </div>
 
-        <!-- TIMER + RESET (tamanho reduzido) -->
-        <div class="timer-reset-bar">
-            <div class="timer-panel">
-                <div class="timer-label">⏱️ TEMPO</div>
-                <div class="timer-value" id="timerDisplay">0.0 s</div>
-            </div>
-            <div class="reset-btn" id="btnReset">⟳</div>
-        </div>
-        
-        <div class="status" id="gameStatus">✨ mova a esfera até o centro do alvo ✨</div>
-        
+        <!-- Parte inferior: nome e ranking (separados) -->
         <div class="player-input">
             <input type="text" id="playerName" placeholder="Seu nome" maxlength="12">
             <button id="saveNameBtn">Salvar</button>
@@ -315,10 +302,9 @@
         let isFalling = false;
         
         // Controle do cronômetro: só inicia no primeiro movimento
-        let gameStarted = false;      // indica se o jogador já movimentou a bola
-        let startTime = null;         // tempo real de início (performance)
+        let gameStarted = false;
+        let startTime = null;
         let currentTime = 0;
-        let timerInterval = null;
         
         let walls = [];
         const targetCenter = { x: SIZE/2, y: SIZE/2 };
@@ -463,7 +449,6 @@
             buildWallsFromDFS(borders);
         }
         
-        // Spawn seguro nos pontos de entrada
         function randomSpawn() {
             const points = [
                 { x: OFFSET_X + 20, y: targetCenter.y },
@@ -487,7 +472,7 @@
             ballX = targetCenter.x; ballY = targetCenter.y - 50;
         }
         
-        // Colisão com repulsão
+        // Colisão e repulsão
         function circleRectCollision(cx, cy, r, rect) {
             let closestX = Math.max(rect.x, Math.min(cx, rect.x + rect.w));
             let closestY = Math.max(rect.y, Math.min(cy, rect.y + rect.h));
@@ -521,7 +506,7 @@
             ballY = Math.min(Math.max(ballY, BALL_RADIUS + OFFSET_Y), SIZE - BALL_RADIUS - OFFSET_Y);
         }
         
-        // Efeito de queda da bola
+        // Efeitos de queda e fogos
         function startFallingEffect(callback) {
             if (isFalling) return;
             isFalling = true;
@@ -548,7 +533,6 @@
             anim();
         }
         
-        // Fogos de artifício
         function startFireworks() {
             const particles = [];
             const cx = targetCenter.x, cy = targetCenter.y;
@@ -593,20 +577,17 @@
             update();
         }
         
-        // Verifica vitória (bola toca o alvo)
         function checkWin() {
             if (victory) return;
             const dist = Math.hypot(ballX - targetCenter.x, ballY - targetCenter.y);
             if (dist < BALL_RADIUS + 5) {
                 victory = true;
-                const elapsed = currentTime; // tempo já registrado
+                const elapsed = currentTime;
                 addScoreToRanking(playerName, elapsed);
-                document.getElementById('gameStatus').innerHTML = `🎉 VITÓRIA! ${elapsed.toFixed(2)}s 🎉`;
                 startFallingEffect(() => startFireworks());
                 if (victoryTimer) clearTimeout(victoryTimer);
                 victoryTimer = setTimeout(() => {
                     resetGame(true);
-                    document.getElementById('gameStatus').innerHTML = '✨ mova a esfera até o centro do alvo ✨';
                     victory = false;
                     gameStarted = false;
                     startTime = null;
@@ -616,7 +597,6 @@
             }
         }
         
-        // Reinicia todo o jogo (novo labirinto, esfera na entrada, cronômetro parado)
         function resetGame(newMaze=true) {
             if(victoryTimer) clearTimeout(victoryTimer);
             victory = false;
@@ -630,7 +610,6 @@
             leftPressed = rightPressed = upPressed = downPressed = false;
         }
         
-        // Atualiza o tempo exibido (baseado em performance.now se startTime existir)
         function updateTimerDisplay() {
             if (!victory && gameStarted && startTime) {
                 currentTime = (performance.now() / 1000) - startTime;
@@ -641,7 +620,6 @@
             requestAnimationFrame(updateTimerDisplay);
         }
         
-        // Inicia o cronômetro no primeiro movimento (tecla ou toque)
         function startTimerOnFirstMove() {
             if (!gameStarted && !victory && startTime === null) {
                 gameStarted = true;
@@ -650,7 +628,7 @@
             }
         }
         
-        // Física e atualização
+        // Física
         let lastTimePhysics = 0;
         function updatePhysics(delta) {
             if(victory) { 
@@ -680,7 +658,6 @@
             checkWin();
         }
         
-        // Desenho do labirinto, alvo e bola
         function draw() {
             ctx.clearRect(0,0,SIZE,SIZE);
             ctx.fillStyle = "#1e2a32";
@@ -701,7 +678,6 @@
                 ctx.strokeRect(w.x, w.y, w.w, w.h);
             }
             ctx.shadowBlur = 0;
-            // Alvo
             ctx.beginPath();
             ctx.arc(targetCenter.x, targetCenter.y, TARGET_RADIUS, 0, Math.PI*2);
             ctx.fillStyle = "#8B0000";
@@ -718,7 +694,7 @@
             ctx.arc(targetCenter.x, targetCenter.y, 5, 0, Math.PI*2);
             ctx.fillStyle = "#FFF8DC";
             ctx.fill();
-            // Bola
+            
             ctx.shadowColor = "rgba(0,0,0,0.4)";
             ctx.shadowBlur = 8;
             const grad = ctx.createRadialGradient(ballX-4, ballY-4, 4, ballX, ballY, BALL_RADIUS);
@@ -736,7 +712,6 @@
             ctx.fill();
         }
         
-        // Loop principal
         let lastFrame = 0;
         function gameLoop(now) {
             if(!lastFrame) lastFrame = now;
@@ -749,13 +724,12 @@
             requestAnimationFrame(gameLoop);
         }
         
-        // Inicialização
         loadRanking();
         generateMazeDFS();
         randomSpawn();
-        updateTimerDisplay();  // inicia a exibição do relógio (0.0)
+        updateTimerDisplay();
         
-        // Controles de teclado (também disparam o timer)
+        // Eventos de teclado
         window.addEventListener('keydown', (e) => {
             const k = e.key;
             if(k === 'ArrowLeft' || k === 'a') { leftPressed=true; e.preventDefault(); startTimerOnFirstMove();}
@@ -772,7 +746,7 @@
             else if(k === 'ArrowDown' || k === 's') downPressed=false;
         });
         
-        // Botões touch (também disparam o timer)
+        // Botões touch
         const attach = (btn, dir) => {
             if(!btn) return;
             const set = (active) => {
