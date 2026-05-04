@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Labirinto Metálico | Bola no Alvo</title>
+    <title>Labirinto Áureo | Esfera ao Centro</title>
     <style>
         * {
             margin: 0;
@@ -12,62 +12,101 @@
             user-select: none;
             -webkit-tap-highlight-color: transparent;
         }
+
         body {
-            background: #f0f4f8;
+            background: linear-gradient(145deg, #0f1724 0%, #0a0f1a 100%);
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            padding: 20px;
+            font-family: 'Segoe UI', 'Poppins', system-ui, sans-serif;
+            padding: 16px;
             overflow: hidden;
             position: fixed;
             width: 100%;
             height: 100%;
         }
+
+        /* Container principal com fundo translúcido */
         .game-container {
-            background: white;
-            border-radius: 32px;
-            padding: 20px 20px 16px;
-            box-shadow: 0 12px 28px rgba(0,0,0,0.1);
+            background: rgba(20, 28, 38, 0.7);
+            backdrop-filter: blur(12px);
+            border-radius: 48px;
+            padding: 20px 20px 24px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 215, 150, 0.35);
             display: flex;
             flex-direction: column;
             align-items: center;
-            margin-top: 80px;
+            width: fit-content;
             max-width: 100%;
-            max-height: calc(100% - 80px);
+            max-height: 95vh;
             overflow-y: auto;
         }
+
+        /* Destaque para o canvas */
         canvas {
             display: block;
             margin: 0 auto 20px auto;
-            border-radius: 24px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            background-color: #eef2f5;
+            border-radius: 32px;
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.6), inset 0 0 0 2px rgba(255, 215, 150, 0.25);
+            background-color: #1e2a32;
             cursor: pointer;
             width: 100%;
             height: auto;
         }
+
+        /* Painel de tempo bem destacado */
+        .timer-panel {
+            background: rgba(0, 0, 0, 0.55);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 200, 100, 0.5);
+            border-radius: 60px;
+            padding: 8px 24px;
+            margin-bottom: 20px;
+            width: auto;
+            text-align: center;
+        }
+        .timer-label {
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+            color: #c0b090;
+        }
+        .timer-value {
+            font-family: 'Courier New', 'Fira Code', monospace;
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #FFE5B4;
+            text-shadow: 0 0 6px rgba(0,0,0,0.5);
+            line-height: 1.2;
+        }
+
+        /* Controles alinhados centralmente */
         .controls {
             display: flex;
             justify-content: center;
-            gap: 24px;
+            align-items: center;
+            gap: 30px;
             margin-bottom: 20px;
             flex-wrap: wrap;
         }
+
         .dpad {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
         }
+
         .dpad-row {
             display: flex;
-            gap: 16px;
+            gap: 20px;
         }
+
         .ctrl-btn {
-            background: #f1f5f9;
-            border: 1px solid #cbd5e1;
+            background: rgba(30, 40, 52, 0.9);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 200, 120, 0.7);
             border-radius: 60px;
             width: 70px;
             height: 70px;
@@ -76,93 +115,115 @@
             justify-content: center;
             font-size: 32px;
             font-weight: bold;
-            color: #1e293b;
-            box-shadow: 0 3px 6px rgba(0,0,0,0.05);
-            cursor: pointer;
+            color: #FFE5B4;
+            text-shadow: 0 2px 4px black;
+            box-shadow: 0 6px 0 rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255,255,255,0.15);
             transition: 0.05s linear;
+            cursor: pointer;
         }
         .ctrl-btn:active {
             transform: translateY(3px);
-            background: #e2e8f0;
+            box-shadow: 0 3px 0 rgba(0, 0, 0, 0.4);
+            background: rgba(50, 65, 82, 0.95);
         }
         .reset-btn {
-            background: #ffe4e2;
-            border-color: #fecaca;
-            color: #b91c1c;
+            background: rgba(160, 65, 45, 0.9);
+            border-color: #ffbc7a;
             width: 80px;
+            font-size: 28px;
         }
+
+        /* Status abaixo dos botões */
         .status {
-            background: #f8fafc;
-            border: 1px solid #cbd5e1;
-            padding: 8px 20px;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 215, 150, 0.5);
+            padding: 8px 18px;
             border-radius: 40px;
-            font-weight: 600;
-            color: #0f172a;
-            margin-top: 16px;
-            margin-bottom: 12px;
+            font-weight: 500;
+            font-size: 0.85rem;
+            color: #FDE5B4;
+            margin-bottom: 16px;
             text-align: center;
         }
+
+        /* Ranking visível e bonito */
         .ranking {
-            background: #f1f5f9;
-            border-radius: 20px;
-            padding: 8px 16px;
+            background: rgba(0, 0, 0, 0.45);
+            backdrop-filter: blur(8px);
+            border-radius: 28px;
+            padding: 12px 16px;
             margin-top: 8px;
             width: 100%;
             text-align: center;
-            font-size: 0.8rem;
+            border: 1px solid rgba(255, 200, 120, 0.35);
         }
         .ranking h3 {
-            font-size: 0.9rem;
-            margin-bottom: 6px;
-            color: #1e293b;
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+            color: #FFE2B5;
+            font-weight: 500;
+            letter-spacing: 1px;
         }
         .ranking ol {
-            padding-left: 20px;
+            padding-left: 24px;
             text-align: left;
             display: inline-block;
+            color: #DDD0BC;
+            font-size: 0.8rem;
         }
         .ranking li {
             margin: 4px 0;
-            color: #334155;
         }
         .ranking .current-player {
-            background-color: #ffe6b3;
-            border-radius: 16px;
+            background: rgba(255, 215, 150, 0.35);
+            border-radius: 20px;
             padding-left: 8px;
             margin-left: -8px;
+            font-weight: bold;
+            color: #FFEBB0;
         }
+
         .player-input {
             display: flex;
-            gap: 8px;
+            gap: 10px;
             justify-content: center;
-            margin: 8px 0;
+            margin: 6px 0 4px;
         }
         .player-input input {
-            padding: 6px 12px;
+            background: rgba(30, 40, 50, 0.9);
+            border: 1px solid #FFD28F;
             border-radius: 40px;
-            border: 1px solid #cbd5e1;
+            padding: 6px 14px;
             font-size: 0.8rem;
-            width: 120px;
+            width: 140px;
             text-align: center;
+            color: #FFE5B4;
+            outline: none;
         }
         .player-input button {
-            background: #e2e8f0;
+            background: #2c3e46;
             border: none;
             border-radius: 40px;
-            padding: 6px 12px;
+            padding: 6px 14px;
+            color: #FFE5B4;
+            font-weight: bold;
             cursor: pointer;
         }
+
         @media (max-width: 560px) {
             .ctrl-btn { width: 55px; height: 55px; font-size: 26px; }
             .dpad-row { gap: 12px; }
-            .ranking { font-size: 0.7rem; }
-            .game-container { margin-top: 60px; }
+            .timer-value { font-size: 1.4rem; }
+            .ranking ol { font-size: 0.7rem; padding-left: 20px; }
         }
+
         footer {
             text-align: center;
-            font-size: 0.7rem;
-            color: #64748b;
-            margin-top: 8px;
+            font-size: 0.6rem;
+            color: #8f9eae;
+            margin-top: 12px;
+            opacity: 0.7;
         }
     </style>
 </head>
@@ -171,6 +232,12 @@
     <div class="game-container">
         <canvas id="gameCanvas" width="600" height="600"></canvas>
         
+        <!-- Painel de tempo em destaque -->
+        <div class="timer-panel">
+            <div class="timer-label">⏱️ TEMPO</div>
+            <div class="timer-value" id="timerDisplay">0.0 s</div>
+        </div>
+
         <div class="controls">
             <div class="dpad">
                 <div class="dpad-row"><div class="ctrl-btn" id="btnUp">▲</div></div>
@@ -183,7 +250,7 @@
             <div class="ctrl-btn reset-btn" id="btnReset">⟳</div>
         </div>
         
-        <div class="status" id="gameStatus">✨ mova a bola até o centro do alvo ✨</div>
+        <div class="status" id="gameStatus">✨ mova a esfera até o centro do alvo ✨</div>
         
         <div class="player-input">
             <input type="text" id="playerName" placeholder="Seu nome" maxlength="12">
@@ -194,7 +261,7 @@
             <h3>🏆 RANKING (melhor tempo) 🏆</h3>
             <ol id="rankingList"></ol>
         </div>
-        <footer>Paredes VERDE CLARO: repelem | Escuras: normais | Alvo: centro do tabuleiro</footer>
+        <footer>paredes claras: repelem | escuras: bloqueiam | alvo central dourado</footer>
     </div>
 </div>
 
@@ -208,34 +275,29 @@
         canvas.height = SIZE;
         
         const BALL_RADIUS = 13;
-        const TARGET_RADIUS = 18;   // raio externo do alvo
+        const TARGET_RADIUS = 20;
         
-        // Variáveis da bola
         let ballX = SIZE/2, ballY = SIZE/2;
         let velocityX = 0, velocityY = 0;
         const ACC = 400;
         const MAX_SPEED = 500;
         const DRAG = 0.98;
         
-        // Entradas
         let leftPressed = false, rightPressed = false, upPressed = false, downPressed = false;
         let victory = false;
         let victoryTimer = null;
         let isFalling = false;
         
-        // Paredes
         let walls = [];
-        
-        // Alvo fixo no centro
         const targetCenter = { x: SIZE/2, y: SIZE/2 };
         
-        // Variáveis de tempo e ranking
         let startTime = null;
         let currentTime = 0;
         let playerName = localStorage.getItem('playerName') || 'Anônimo';
         let ranking = [];
         
-        // ---------- ELEMENTOS DOM ----------
+        // DOM elements
+        const timerDisplay = document.getElementById('timerDisplay');
         const nameInput = document.getElementById('playerName');
         nameInput.value = playerName;
         document.getElementById('saveNameBtn').addEventListener('click', () => {
@@ -246,17 +308,16 @@
             updateRankingDisplay();
         });
         
-        // ---------- RANKING LOCAL ----------
+        // Ranking local
         function loadRanking() {
-            const stored = localStorage.getItem('mazeRanking3');
+            const stored = localStorage.getItem('mazeRankingFinal');
             if (stored) {
                 ranking = JSON.parse(stored);
             } else {
                 ranking = [
                     { name: "MestreAço", time: 12.3 },
                     { name: "BolaDeFogo", time: 15.7 },
-                    { name: "Labirinteiro", time: 18.2 },
-                    { name: "Desafiante", time: 22.4 }
+                    { name: "Labirinteiro", time: 18.2 }
                 ];
                 saveRanking();
             }
@@ -266,7 +327,7 @@
         function saveRanking() {
             ranking.sort((a,b) => a.time - b.time);
             ranking = ranking.slice(0, 10);
-            localStorage.setItem('mazeRanking3', JSON.stringify(ranking));
+            localStorage.setItem('mazeRankingFinal', JSON.stringify(ranking));
         }
         
         function addScoreToRanking(name, timeSec) {
@@ -285,20 +346,17 @@
                 li.textContent = `${idx+1}. ${entry.name} - ${entry.time.toFixed(2)}s`;
                 if (entry.name === playerName) {
                     li.classList.add('current-player');
-                    li.style.fontWeight = 'bold';
                 }
                 list.appendChild(li);
             });
             if (ranking.length === 0) list.innerHTML = '<li>Nenhum registro</li>';
         }
         
-        // ---------- GERADOR DE LABIRINTO DFS COM CAMINHOS MAIS LARGOS ----------
-        // Aumentar distância entre paredes: reduzir número de células e aumentar célula
-        const CELL_SIZE = 46;      // antes 40 -> mais espaço
-        const WALL_THICK = 10;     // antes 8
-        const GRID_W = Math.floor(SIZE / CELL_SIZE); // 600/46 = 13.04 -> 13
+        // ---------- GERADOR DFS COM CAMINHOS LARGOS ----------
+        const CELL_SIZE = 46;
+        const WALL_THICK = 10;
+        const GRID_W = Math.floor(SIZE / CELL_SIZE); // 13
         const GRID_H = GRID_W;
-        // Ajuste fino para centralizar: offset = (SIZE - GRID_W * CELL_SIZE)/2
         const OFFSET_X = (SIZE - GRID_W * CELL_SIZE) / 2;
         const OFFSET_Y = (SIZE - GRID_H * CELL_SIZE) / 2;
         
@@ -308,19 +366,15 @@
         function initDFS() {
             cells = Array(GRID_H).fill().map(() => Array(GRID_W).fill(false));
             wallsGrid = Array(GRID_H).fill().map(() => Array(GRID_W).fill().map(() => ({ right: true, bottom: true })));
-            
             const startX = Math.floor(GRID_W/2);
             const startY = Math.floor(GRID_H/2);
             dfsCarve(startX, startY);
-            
-            // Aberturas nas bordas
-            const borderOpenings = {
+            return {
                 top: Math.floor(Math.random() * GRID_W),
                 bottom: Math.floor(Math.random() * GRID_W),
                 left: Math.floor(Math.random() * GRID_H),
                 right: Math.floor(Math.random() * GRID_H)
             };
-            return borderOpenings;
         }
         
         function dfsCarve(x, y) {
@@ -349,87 +403,48 @@
                 if (w <= 0 || h <= 0) return;
                 walls.push({ x, y, w, h, type });
             };
-            
-            // Paredes internas (entre células)
             for (let row = 0; row < GRID_H; row++) {
                 for (let col = 0; col < GRID_W; col++) {
                     const cx = OFFSET_X + col * CELL_SIZE;
                     const cy = OFFSET_Y + row * CELL_SIZE;
-                    // Parede direita
                     if (wallsGrid[row][col].right) {
-                        const wallX = cx + CELL_SIZE;
-                        const wallY = cy;
-                        let type = (Math.random() < 0.3) ? 'light' : 'dark';
-                        addWall(wallX, wallY, WALL_THICK, CELL_SIZE, type);
+                        let type = Math.random() < 0.3 ? 'light' : 'dark';
+                        addWall(cx + CELL_SIZE, cy, WALL_THICK, CELL_SIZE, type);
                     }
-                    // Parede inferior
                     if (wallsGrid[row][col].bottom) {
-                        const wallX = cx;
-                        const wallY = cy + CELL_SIZE;
-                        let type = (Math.random() < 0.3) ? 'light' : 'dark';
-                        addWall(wallX, wallY, CELL_SIZE, WALL_THICK, type);
+                        let type = Math.random() < 0.3 ? 'light' : 'dark';
+                        addWall(cx, cy + CELL_SIZE, CELL_SIZE, WALL_THICK, type);
                     }
                 }
             }
-            
-            // Bordas com aberturas
-            // Superior
+            // Bordas
             for (let col = 0; col < GRID_W; col++) {
-                if (col !== borderOpenings.top) {
-                    const wallX = OFFSET_X + col * CELL_SIZE;
-                    const wallY = OFFSET_Y;
-                    addWall(wallX, wallY, CELL_SIZE, WALL_THICK, 'dark');
-                }
+                if (col !== borderOpenings.top) addWall(OFFSET_X + col*CELL_SIZE, OFFSET_Y, CELL_SIZE, WALL_THICK, 'dark');
+                if (col !== borderOpenings.bottom) addWall(OFFSET_X + col*CELL_SIZE, OFFSET_Y + GRID_H*CELL_SIZE - WALL_THICK, CELL_SIZE, WALL_THICK, 'dark');
             }
-            // Inferior
-            for (let col = 0; col < GRID_W; col++) {
-                if (col !== borderOpenings.bottom) {
-                    const wallX = OFFSET_X + col * CELL_SIZE;
-                    const wallY = OFFSET_Y + GRID_H * CELL_SIZE - WALL_THICK;
-                    addWall(wallX, wallY, CELL_SIZE, WALL_THICK, 'dark');
-                }
-            }
-            // Esquerda
             for (let row = 0; row < GRID_H; row++) {
-                if (row !== borderOpenings.left) {
-                    const wallX = OFFSET_X;
-                    const wallY = OFFSET_Y + row * CELL_SIZE;
-                    addWall(wallX, wallY, WALL_THICK, CELL_SIZE, 'dark');
-                }
+                if (row !== borderOpenings.left) addWall(OFFSET_X, OFFSET_Y + row*CELL_SIZE, WALL_THICK, CELL_SIZE, 'dark');
+                if (row !== borderOpenings.right) addWall(OFFSET_X + GRID_W*CELL_SIZE - WALL_THICK, OFFSET_Y + row*CELL_SIZE, WALL_THICK, CELL_SIZE, 'dark');
             }
-            // Direita
-            for (let row = 0; row < GRID_H; row++) {
-                if (row !== borderOpenings.right) {
-                    const wallX = OFFSET_X + GRID_W * CELL_SIZE - WALL_THICK;
-                    const wallY = OFFSET_Y + row * CELL_SIZE;
-                    addWall(wallX, wallY, WALL_THICK, CELL_SIZE, 'dark');
-                }
-            }
-            
-            // Remover paredes que obstruem o alvo central
-            walls = walls.filter(w => {
-                const distToCenter = Math.hypot(w.x + w.w/2 - targetCenter.x, w.y + w.h/2 - targetCenter.y);
-                return distToCenter > TARGET_RADIUS + 10;
-            });
+            // Remove paredes próximas ao alvo
+            walls = walls.filter(w => Math.hypot(w.x + w.w/2 - targetCenter.x, w.y + w.h/2 - targetCenter.y) > TARGET_RADIUS + 12);
         }
         
         function generateMazeDFS() {
-            const borderOpenings = initDFS();
-            buildWallsFromDFS(borderOpenings);
+            const borders = initDFS();
+            buildWallsFromDFS(borders);
         }
         
-        // ---------- SPAWN SEGURO ----------
         function randomSpawn() {
-            const spawnPoints = [
+            const points = [
                 { x: OFFSET_X + 20, y: targetCenter.y },
-                { x: OFFSET_X + GRID_W * CELL_SIZE - 20, y: targetCenter.y },
+                { x: OFFSET_X + GRID_W*CELL_SIZE - 20, y: targetCenter.y },
                 { x: targetCenter.x, y: OFFSET_Y + 20 },
-                { x: targetCenter.x, y: OFFSET_Y + GRID_H * CELL_SIZE - 20 }
+                { x: targetCenter.x, y: OFFSET_Y + GRID_H*CELL_SIZE - 20 }
             ];
             for (let attempt = 0; attempt < 15; attempt++) {
-                const idx = Math.floor(Math.random() * spawnPoints.length);
-                let sx = spawnPoints[idx].x;
-                let sy = spawnPoints[idx].y;
+                const idx = Math.floor(Math.random() * points.length);
+                let sx = points[idx].x, sy = points[idx].y;
                 let collides = false;
                 for (let w of walls) {
                     if (sx + BALL_RADIUS > w.x && sx - BALL_RADIUS < w.x + w.w &&
@@ -438,39 +453,32 @@
                         break;
                     }
                 }
-                if (!collides) {
-                    ballX = sx;
-                    ballY = sy;
-                    return;
-                }
+                if (!collides) { ballX = sx; ballY = sy; return; }
             }
-            ballX = targetCenter.x;
-            ballY = targetCenter.y - 50;
+            ballX = targetCenter.x; ballY = targetCenter.y - 50;
         }
         
-        // ---------- COLISÃO E REPULSÃO ----------
+        // Colisão
         function circleRectCollision(cx, cy, r, rect) {
             let closestX = Math.max(rect.x, Math.min(cx, rect.x + rect.w));
             let closestY = Math.max(rect.y, Math.min(cy, rect.y + rect.h));
-            let dx = cx - closestX;
-            let dy = cy - closestY;
-            return (dx * dx + dy * dy) < r * r;
+            let dx = cx - closestX, dy = cy - closestY;
+            return dx*dx + dy*dy < r*r;
         }
         
         function handleCollisions() {
-            for (let wall of walls) {
-                if (circleRectCollision(ballX, ballY, BALL_RADIUS, wall)) {
-                    let closestX = Math.max(wall.x, Math.min(ballX, wall.x + wall.w));
-                    let closestY = Math.max(wall.y, Math.min(ballY, wall.y + wall.h));
-                    let dx = ballX - closestX;
-                    let dy = ballY - closestY;
+            for (let w of walls) {
+                if (circleRectCollision(ballX, ballY, BALL_RADIUS, w)) {
+                    let closestX = Math.max(w.x, Math.min(ballX, w.x + w.w));
+                    let closestY = Math.max(w.y, Math.min(ballY, w.y + w.h));
+                    let dx = ballX - closestX, dy = ballY - closestY;
                     let dist = Math.hypot(dx, dy);
                     if (dist < BALL_RADIUS) {
                         let angle = Math.atan2(dy, dx);
                         let correction = BALL_RADIUS - dist;
                         ballX += Math.cos(angle) * correction;
                         ballY += Math.sin(angle) * correction;
-                        if (wall.type === 'light') {
+                        if (w.type === 'light') {
                             velocityX = -velocityX * 1.3;
                             velocityY = -velocityY * 1.3;
                         } else {
@@ -480,175 +488,148 @@
                     }
                 }
             }
-            // limites do canvas (considerando offset)
             ballX = Math.min(Math.max(ballX, BALL_RADIUS + OFFSET_X), SIZE - BALL_RADIUS - OFFSET_X);
             ballY = Math.min(Math.max(ballY, BALL_RADIUS + OFFSET_Y), SIZE - BALL_RADIUS - OFFSET_Y);
         }
         
-        // ---------- EFEITO DE QUEDA ----------
+        // Efeito queda
         function startFallingEffect(callback) {
             if (isFalling) return;
             isFalling = true;
-            let fallStep = 0;
-            const originalRadius = BALL_RADIUS;
-            function fallAnim() {
-                if (fallStep < 10) {
-                    const scale = 1 - (fallStep / 10) * 0.8;
-                    const newRadius = originalRadius * scale;
+            let step = 0;
+            const origR = BALL_RADIUS;
+            function anim() {
+                if (step < 10) {
+                    const scale = 1 - (step/10)*0.8;
+                    const r = origR * scale;
                     ctx.save();
                     ctx.shadowBlur = 0;
                     ctx.beginPath();
-                    ctx.arc(ballX, ballY, newRadius, 0, Math.PI*2);
+                    ctx.arc(ballX, ballY, r, 0, Math.PI*2);
                     ctx.fillStyle = "#7a8a9a";
                     ctx.fill();
                     ctx.restore();
-                    fallStep++;
-                    requestAnimationFrame(fallAnim);
+                    step++;
+                    requestAnimationFrame(anim);
                 } else {
                     isFalling = false;
                     if (callback) callback();
                 }
             }
-            fallAnim();
+            anim();
         }
         
-        // ---------- FOGOS DE ARTIFÍCIO ----------
+        // Fogos
         function startFireworks() {
             const particles = [];
-            const centerX = targetCenter.x, centerY = targetCenter.y;
-            for (let f = 0; f < 6; f++) {
-                const angle = Math.random() * Math.PI * 2;
-                const radius = 40 + Math.random() * 60;
-                const startX = centerX + Math.cos(angle) * radius;
-                const startY = centerY + Math.sin(angle) * radius - 40;
-                particles.push({ x: startX, y: startY, vx: (Math.random() - 0.5)*2, vy: -7, life: 1, exploded: false });
+            const cx = targetCenter.x, cy = targetCenter.y;
+            for (let i=0;i<6;i++) {
+                const a = Math.random() * Math.PI*2;
+                const r = 40 + Math.random()*60;
+                const x = cx + Math.cos(a)*r;
+                const y = cy + Math.sin(a)*r - 40;
+                particles.push({ x, y, vx: (Math.random()-0.5)*2, vy: -7, life:1, exploded:false });
             }
-            function updateFireworks() {
-                for (let i = particles.length-1; i >= 0; i--) {
+            function update() {
+                for(let i=particles.length-1;i>=0;i--) {
                     const p = particles[i];
-                    if (!p.exploded) {
-                        p.x += p.vx;
-                        p.y += p.vy;
-                        p.vy += 0.2;
-                        if (p.vy >= 0 || p.y < 50) {
+                    if(!p.exploded) {
+                        p.x += p.vx; p.y += p.vy; p.vy += 0.2;
+                        if(p.vy >=0 || p.y<50) {
                             p.exploded = true;
-                            const numSparks = 22;
-                            for (let s = 0; s < numSparks; s++) {
-                                const angle2 = Math.random() * Math.PI * 2;
-                                const speed = Math.random() * 5 + 2;
-                                const vx2 = Math.cos(angle2) * speed;
-                                const vy2 = Math.sin(angle2) * speed;
+                            for(let s=0;s<22;s++) {
+                                const a2 = Math.random()*Math.PI*2;
+                                const sp = Math.random()*5+2;
                                 particles.push({
-                                    x: p.x, y: p.y, vx: vx2, vy: vy2,
-                                    life: 1, exploded: true, color: `hsl(${Math.random() * 360}, 100%, 60%)`
+                                    x: p.x, y: p.y, vx: Math.cos(a2)*sp, vy: Math.sin(a2)*sp,
+                                    life:1, exploded:true, color: `hsl(${Math.random()*360},100%,60%)`
                                 });
                             }
                             particles.splice(i,1);
                         }
                     } else {
-                        p.x += p.vx;
-                        p.y += p.vy;
-                        p.vy += 0.2;
+                        p.x += p.vx; p.y += p.vy; p.vy += 0.2;
                         p.life -= 0.02;
-                        if (p.life <= 0 || p.y > SIZE + 50) particles.splice(i,1);
+                        if(p.life<=0 || p.y>SIZE+50) particles.splice(i,1);
                     }
                 }
-                for (let p of particles) {
+                for(let p of particles) {
                     ctx.beginPath();
-                    ctx.arc(p.x, p.y, p.exploded ? 3 * p.life : 4, 0, Math.PI*2);
+                    ctx.arc(p.x, p.y, p.exploded?3*p.life:4, 0, Math.PI*2);
                     ctx.fillStyle = p.color || "#ffaa66";
                     ctx.fill();
                 }
-                if (particles.length > 0) requestAnimationFrame(updateFireworks);
+                if(particles.length>0) requestAnimationFrame(update);
             }
-            updateFireworks();
+            update();
         }
         
-        // Vitória: bola deve parar sobre o alvo (centro)
         function checkWin() {
-            const distToCenter = Math.hypot(ballX - targetCenter.x, ballY - targetCenter.y);
-            if (!victory && distToCenter < BALL_RADIUS + 5) { // encostou no centro
+            const dist = Math.hypot(ballX - targetCenter.x, ballY - targetCenter.y);
+            if (!victory && dist < BALL_RADIUS + 5) {
                 victory = true;
-                const elapsed = (performance.now() / 1000) - startTime;
+                const elapsed = (performance.now()/1000) - startTime;
                 addScoreToRanking(playerName, elapsed);
-                const statusDiv = document.getElementById('gameStatus');
-                statusDiv.innerHTML = `🎉 VITÓRIA! Tempo: ${elapsed.toFixed(2)}s 🎉`;
-                statusDiv.style.background = "#fff0d0";
-                startFallingEffect(() => {
-                    startFireworks();
-                });
+                document.getElementById('gameStatus').innerHTML = `🎉 VITÓRIA! ${elapsed.toFixed(2)}s 🎉`;
+                startFallingEffect(() => startFireworks());
                 if (victoryTimer) clearTimeout(victoryTimer);
                 victoryTimer = setTimeout(() => {
                     resetGame(true);
-                    statusDiv.style.background = "#f8fafc";
+                    document.getElementById('gameStatus').innerHTML = '✨ mova a esfera até o centro do alvo ✨';
                     victory = false;
                 }, 3500);
             }
         }
         
-        // ---------- RESET E INICIALIZAÇÃO ----------
-        function resetGame(newMaze = true) {
-            if (victoryTimer) clearTimeout(victoryTimer);
+        function resetGame(newMaze=true) {
+            if(victoryTimer) clearTimeout(victoryTimer);
             victory = false;
-            if (newMaze) generateMazeDFS();
+            if(newMaze) generateMazeDFS();
             randomSpawn();
-            velocityX = 0;
-            velocityY = 0;
+            velocityX = 0; velocityY = 0;
             leftPressed = rightPressed = upPressed = downPressed = false;
-            startTime = performance.now() / 1000;
-            updateStatusTime();
+            startTime = performance.now()/1000;
         }
         
-        function updateStatusTime() {
-            if (victory) return;
-            if (startTime) {
-                const elapsed = (performance.now() / 1000) - startTime;
-                currentTime = elapsed;
-                document.getElementById('gameStatus').innerHTML = `⏱️ ${currentTime.toFixed(1)}s | Mova a bola até o centro do alvo`;
+        function updateTimer() {
+            if(!victory && startTime) {
+                currentTime = (performance.now()/1000) - startTime;
+                timerDisplay.innerText = currentTime.toFixed(1) + " s";
             }
         }
         
-        // ---------- FÍSICA E LOOP ----------
-        let lastTimestamp = 0;
-        function updatePhysics(deltaTime) {
-            if (victory) {
-                velocityX = 0;
-                velocityY = 0;
-                return;
-            }
-            let accX = 0, accY = 0;
-            if (leftPressed) accX = -ACC;
-            if (rightPressed) accX = ACC;
-            if (upPressed) accY = -ACC;
-            if (downPressed) accY = ACC;
-            
-            velocityX += accX * deltaTime;
-            velocityY += accY * deltaTime;
-            let speed = Math.hypot(velocityX, velocityY);
-            if (speed > MAX_SPEED) {
-                velocityX = (velocityX / speed) * MAX_SPEED;
-                velocityY = (velocityY / speed) * MAX_SPEED;
-            }
+        // Física
+        let lastTime = 0;
+        function updatePhysics(delta) {
+            if(victory) { velocityX=0; velocityY=0; return; }
+            let ax=0, ay=0;
+            if(leftPressed) ax = -ACC;
+            if(rightPressed) ax = ACC;
+            if(upPressed) ay = -ACC;
+            if(downPressed) ay = ACC;
+            velocityX += ax*delta;
+            velocityY += ay*delta;
+            let spd = Math.hypot(velocityX, velocityY);
+            if(spd > MAX_SPEED) { velocityX = velocityX/spd*MAX_SPEED; velocityY = velocityY/spd*MAX_SPEED; }
             velocityX *= DRAG;
             velocityY *= DRAG;
-            if (Math.abs(velocityX) < 0.2) velocityX = 0;
-            if (Math.abs(velocityY) < 0.2) velocityY = 0;
-            
-            ballX += velocityX * deltaTime;
-            ballY += velocityY * deltaTime;
+            if(Math.abs(velocityX)<0.2) velocityX=0;
+            if(Math.abs(velocityY)<0.2) velocityY=0;
+            ballX += velocityX*delta;
+            ballY += velocityY*delta;
             handleCollisions();
             checkWin();
-            updateStatusTime();
+            updateTimer();
         }
         
+        // Desenho
         function draw() {
-            ctx.clearRect(0, 0, SIZE, SIZE);
-            ctx.fillStyle = "#eef2f5";
-            ctx.fillRect(0, 0, SIZE, SIZE);
-            
-            // Desenha paredes
-            for (let w of walls) {
-                if (w.type === 'dark') {
+            ctx.clearRect(0,0,SIZE,SIZE);
+            ctx.fillStyle = "#1e2a32";
+            ctx.fillRect(0,0,SIZE,SIZE);
+            // Paredes
+            for(let w of walls) {
+                if(w.type === 'dark') {
                     ctx.fillStyle = "#2d5a3b";
                     ctx.fillRect(w.x, w.y, w.w, w.h);
                     ctx.fillStyle = "#1f3e2a";
@@ -662,37 +643,26 @@
                 ctx.strokeStyle = "#1e2a1a";
                 ctx.strokeRect(w.x, w.y, w.w, w.h);
             }
-            
-            // Desenha o alvo (círculos concêntricos)
-            ctx.save();
+            // Alvo
             ctx.shadowBlur = 0;
-            // círculo externo
             ctx.beginPath();
             ctx.arc(targetCenter.x, targetCenter.y, TARGET_RADIUS, 0, Math.PI*2);
             ctx.fillStyle = "#8B0000";
             ctx.fill();
-            ctx.strokeStyle = "#FFD700";
-            ctx.lineWidth = 2;
-            ctx.stroke();
-            // círculo médio
             ctx.beginPath();
             ctx.arc(targetCenter.x, targetCenter.y, TARGET_RADIUS-5, 0, Math.PI*2);
             ctx.fillStyle = "#FF4500";
             ctx.fill();
-            // círculo central
             ctx.beginPath();
             ctx.arc(targetCenter.x, targetCenter.y, TARGET_RADIUS-10, 0, Math.PI*2);
             ctx.fillStyle = "#FFD700";
             ctx.fill();
-            // ponto central
             ctx.beginPath();
-            ctx.arc(targetCenter.x, targetCenter.y, 4, 0, Math.PI*2);
-            ctx.fillStyle = "#FFFFFF";
+            ctx.arc(targetCenter.x, targetCenter.y, 5, 0, Math.PI*2);
+            ctx.fillStyle = "#FFF8DC";
             ctx.fill();
-            ctx.restore();
-            
-            // Bola metálica
-            ctx.shadowColor = "rgba(0,0,0,0.3)";
+            // Bola
+            ctx.shadowColor = "rgba(0,0,0,0.4)";
             ctx.shadowBlur = 8;
             const grad = ctx.createRadialGradient(ballX-4, ballY-4, 4, ballX, ballY, BALL_RADIUS);
             grad.addColorStop(0, "#f4f8ff");
@@ -709,15 +679,15 @@
             ctx.fill();
         }
         
-        let lastTime = 0;
+        let lastFrame = 0;
         function gameLoop(now) {
-            if (!lastTime) lastTime = now;
-            let delta = Math.min(0.033, (now - lastTime) / 1000);
-            if (delta > 0.01) {
+            if(!lastFrame) lastFrame = now;
+            let delta = Math.min(0.033, (now-lastFrame)/1000);
+            if(delta>0.01) {
                 updatePhysics(delta);
                 draw();
             }
-            lastTime = now;
+            lastFrame = now;
             requestAnimationFrame(gameLoop);
         }
         
@@ -725,62 +695,51 @@
         loadRanking();
         generateMazeDFS();
         randomSpawn();
-        startTime = performance.now() / 1000;
-        updateStatusTime();
+        startTime = performance.now()/1000;
+        updateTimer();
         
-        // Controles (teclado e touch) - mesmo código anterior
+        // Controles
         window.addEventListener('keydown', (e) => {
-            const key = e.key;
-            if (key === 'ArrowLeft' || key === 'a') { leftPressed = true; e.preventDefault(); }
-            else if (key === 'ArrowRight' || key === 'd') { rightPressed = true; e.preventDefault(); }
-            else if (key === 'ArrowUp' || key === 'w') { upPressed = true; e.preventDefault(); }
-            else if (key === 'ArrowDown' || key === 's') { downPressed = true; e.preventDefault(); }
-            else if (key === 'r') { resetGame(true); e.preventDefault(); }
+            const k = e.key;
+            if(k === 'ArrowLeft' || k === 'a') { leftPressed=true; e.preventDefault(); }
+            else if(k === 'ArrowRight' || k === 'd') { rightPressed=true; e.preventDefault(); }
+            else if(k === 'ArrowUp' || k === 'w') { upPressed=true; e.preventDefault(); }
+            else if(k === 'ArrowDown' || k === 's') { downPressed=true; e.preventDefault(); }
+            else if(k === 'r') { resetGame(true); e.preventDefault(); }
         });
         window.addEventListener('keyup', (e) => {
-            const key = e.key;
-            if (key === 'ArrowLeft' || key === 'a') leftPressed = false;
-            else if (key === 'ArrowRight' || key === 'd') rightPressed = false;
-            else if (key === 'ArrowUp' || key === 'w') upPressed = false;
-            else if (key === 'ArrowDown' || key === 's') downPressed = false;
+            const k = e.key;
+            if(k === 'ArrowLeft' || k === 'a') leftPressed=false;
+            else if(k === 'ArrowRight' || k === 'd') rightPressed=false;
+            else if(k === 'ArrowUp' || k === 'w') upPressed=false;
+            else if(k === 'ArrowDown' || k === 's') downPressed=false;
         });
         
-        const btnUp = document.getElementById('btnUp');
-        const btnDown = document.getElementById('btnDown');
-        const btnLeft = document.getElementById('btnLeft');
-        const btnRight = document.getElementById('btnRight');
-        const btnReset = document.getElementById('btnReset');
-        
-        function attachButton(btn, dir) {
-            if (!btn) return;
+        const attach = (btn, dir) => {
+            if(!btn) return;
             const set = (active) => {
-                if (dir === 'up') upPressed = active;
-                if (dir === 'down') downPressed = active;
-                if (dir === 'left') leftPressed = active;
-                if (dir === 'right') rightPressed = active;
+                if(dir==='up') upPressed=active;
+                if(dir==='down') downPressed=active;
+                if(dir==='left') leftPressed=active;
+                if(dir==='right') rightPressed=active;
             };
-            btn.addEventListener('mousedown', (e) => { e.preventDefault(); set(true); });
-            btn.addEventListener('mouseup', () => set(false));
-            btn.addEventListener('mouseleave', () => set(false));
-            btn.addEventListener('touchstart', (e) => { e.preventDefault(); set(true); });
-            btn.addEventListener('touchend', () => set(false));
-            btn.addEventListener('touchcancel', () => set(false));
-        }
-        attachButton(btnUp, 'up');
-        attachButton(btnDown, 'down');
-        attachButton(btnLeft, 'left');
-        attachButton(btnRight, 'right');
-        if (btnReset) {
-            btnReset.addEventListener('click', () => resetGame(true));
-            btnReset.addEventListener('touchstart', (e) => { e.preventDefault(); resetGame(true); });
-        }
+            btn.addEventListener('mousedown', (e)=>{e.preventDefault(); set(true);});
+            btn.addEventListener('mouseup', ()=>set(false));
+            btn.addEventListener('mouseleave', ()=>set(false));
+            btn.addEventListener('touchstart', (e)=>{e.preventDefault(); set(true);});
+            btn.addEventListener('touchend', ()=>set(false));
+            btn.addEventListener('touchcancel', ()=>set(false));
+        };
+        attach(document.getElementById('btnUp'), 'up');
+        attach(document.getElementById('btnDown'), 'down');
+        attach(document.getElementById('btnLeft'), 'left');
+        attach(document.getElementById('btnRight'), 'right');
+        const resetBtn = document.getElementById('btnReset');
+        if(resetBtn) resetBtn.addEventListener('click', ()=>resetGame(true));
+        if(resetBtn) resetBtn.addEventListener('touchstart', (e)=>{e.preventDefault(); resetGame(true);});
         
-        document.querySelectorAll('.ctrl-btn').forEach(btn => {
-            btn.addEventListener('touchstart', (e) => e.preventDefault());
-        });
-        document.body.addEventListener('touchmove', (e) => {
-            if (e.target.closest('.ctrl-btn') || e.target === canvas) e.preventDefault();
-        }, { passive: false });
+        document.querySelectorAll('.ctrl-btn').forEach(b => b.addEventListener('touchstart', e=>e.preventDefault()));
+        document.body.addEventListener('touchmove', e=>{ if(e.target.closest('.ctrl-btn') || e.target===canvas) e.preventDefault(); }, {passive:false});
         
         requestAnimationFrame(gameLoop);
     })();
