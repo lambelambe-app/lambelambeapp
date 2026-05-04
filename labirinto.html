@@ -27,7 +27,6 @@
             height: 100%;
         }
 
-        /* Container principal com fundo translúcido */
         .game-container {
             background: rgba(20, 28, 38, 0.7);
             backdrop-filter: blur(12px);
@@ -44,7 +43,6 @@
             overflow-y: auto;
         }
 
-        /* Destaque para o canvas */
         canvas {
             display: block;
             margin: 0 auto 20px auto;
@@ -56,39 +54,14 @@
             height: auto;
         }
 
-        /* Painel de tempo bem destacado */
-        .timer-panel {
-            background: rgba(0, 0, 0, 0.55);
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 200, 100, 0.5);
-            border-radius: 60px;
-            padding: 8px 24px;
-            margin-bottom: 20px;
-            width: auto;
-            text-align: center;
-        }
-        .timer-label {
-            font-size: 0.75rem;
-            letter-spacing: 1px;
-            color: #c0b090;
-        }
-        .timer-value {
-            font-family: 'Courier New', 'Fira Code', monospace;
-            font-size: 1.8rem;
-            font-weight: bold;
-            color: #FFE5B4;
-            text-shadow: 0 0 6px rgba(0,0,0,0.5);
-            line-height: 1.2;
-        }
-
-        /* Controles alinhados centralmente */
+        /* Controles centralizados */
         .controls {
             display: flex;
             justify-content: center;
             align-items: center;
             gap: 30px;
             margin-bottom: 20px;
-            flex-wrap: wrap;
+            width: 100%;
         }
 
         .dpad {
@@ -101,6 +74,7 @@
         .dpad-row {
             display: flex;
             gap: 20px;
+            justify-content: center;
         }
 
         .ctrl-btn {
@@ -133,7 +107,31 @@
             font-size: 28px;
         }
 
-        /* Status abaixo dos botões */
+        /* Timer abaixo dos botões */
+        .timer-panel {
+            background: rgba(0, 0, 0, 0.55);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 200, 100, 0.5);
+            border-radius: 60px;
+            padding: 8px 24px;
+            margin-bottom: 20px;
+            width: auto;
+            text-align: center;
+        }
+        .timer-label {
+            font-size: 0.7rem;
+            letter-spacing: 1px;
+            color: #c0b090;
+        }
+        .timer-value {
+            font-family: 'Courier New', 'Fira Code', monospace;
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #FFE5B4;
+            text-shadow: 0 0 6px rgba(0,0,0,0.5);
+            line-height: 1.2;
+        }
+
         .status {
             background: rgba(0, 0, 0, 0.5);
             backdrop-filter: blur(8px);
@@ -147,7 +145,6 @@
             text-align: center;
         }
 
-        /* Ranking visível e bonito */
         .ranking {
             background: rgba(0, 0, 0, 0.45);
             backdrop-filter: blur(8px);
@@ -214,6 +211,7 @@
         @media (max-width: 560px) {
             .ctrl-btn { width: 55px; height: 55px; font-size: 26px; }
             .dpad-row { gap: 12px; }
+            .controls { gap: 20px; }
             .timer-value { font-size: 1.4rem; }
             .ranking ol { font-size: 0.7rem; padding-left: 20px; }
         }
@@ -231,13 +229,8 @@
 <div>
     <div class="game-container">
         <canvas id="gameCanvas" width="600" height="600"></canvas>
-        
-        <!-- Painel de tempo em destaque -->
-        <div class="timer-panel">
-            <div class="timer-label">⏱️ TEMPO</div>
-            <div class="timer-value" id="timerDisplay">0.0 s</div>
-        </div>
 
+        <!-- CONTROLES CENTRALIZADOS -->
         <div class="controls">
             <div class="dpad">
                 <div class="dpad-row"><div class="ctrl-btn" id="btnUp">▲</div></div>
@@ -248,6 +241,12 @@
                 </div>
             </div>
             <div class="ctrl-btn reset-btn" id="btnReset">⟳</div>
+        </div>
+
+        <!-- TIMER ABAIXO DOS BOTÕES -->
+        <div class="timer-panel">
+            <div class="timer-label">⏱️ TEMPO</div>
+            <div class="timer-value" id="timerDisplay">0.0 s</div>
         </div>
         
         <div class="status" id="gameStatus">✨ mova a esfera até o centro do alvo ✨</div>
@@ -296,7 +295,6 @@
         let playerName = localStorage.getItem('playerName') || 'Anônimo';
         let ranking = [];
         
-        // DOM elements
         const timerDisplay = document.getElementById('timerDisplay');
         const nameInput = document.getElementById('playerName');
         nameInput.value = playerName;
@@ -355,7 +353,7 @@
         // ---------- GERADOR DFS COM CAMINHOS LARGOS ----------
         const CELL_SIZE = 46;
         const WALL_THICK = 10;
-        const GRID_W = Math.floor(SIZE / CELL_SIZE); // 13
+        const GRID_W = Math.floor(SIZE / CELL_SIZE);
         const GRID_H = GRID_W;
         const OFFSET_X = (SIZE - GRID_W * CELL_SIZE) / 2;
         const OFFSET_Y = (SIZE - GRID_H * CELL_SIZE) / 2;
@@ -426,7 +424,6 @@
                 if (row !== borderOpenings.left) addWall(OFFSET_X, OFFSET_Y + row*CELL_SIZE, WALL_THICK, CELL_SIZE, 'dark');
                 if (row !== borderOpenings.right) addWall(OFFSET_X + GRID_W*CELL_SIZE - WALL_THICK, OFFSET_Y + row*CELL_SIZE, WALL_THICK, CELL_SIZE, 'dark');
             }
-            // Remove paredes próximas ao alvo
             walls = walls.filter(w => Math.hypot(w.x + w.w/2 - targetCenter.x, w.y + w.h/2 - targetCenter.y) > TARGET_RADIUS + 12);
         }
         
@@ -458,7 +455,6 @@
             ballX = targetCenter.x; ballY = targetCenter.y - 50;
         }
         
-        // Colisão
         function circleRectCollision(cx, cy, r, rect) {
             let closestX = Math.max(rect.x, Math.min(cx, rect.x + rect.w));
             let closestY = Math.max(rect.y, Math.min(cy, rect.y + rect.h));
@@ -492,7 +488,6 @@
             ballY = Math.min(Math.max(ballY, BALL_RADIUS + OFFSET_Y), SIZE - BALL_RADIUS - OFFSET_Y);
         }
         
-        // Efeito queda
         function startFallingEffect(callback) {
             if (isFalling) return;
             isFalling = true;
@@ -519,7 +514,6 @@
             anim();
         }
         
-        // Fogos
         function startFireworks() {
             const particles = [];
             const cx = targetCenter.x, cy = targetCenter.y;
@@ -598,7 +592,6 @@
             }
         }
         
-        // Física
         let lastTime = 0;
         function updatePhysics(delta) {
             if(victory) { velocityX=0; velocityY=0; return; }
@@ -622,12 +615,10 @@
             updateTimer();
         }
         
-        // Desenho
         function draw() {
             ctx.clearRect(0,0,SIZE,SIZE);
             ctx.fillStyle = "#1e2a32";
             ctx.fillRect(0,0,SIZE,SIZE);
-            // Paredes
             for(let w of walls) {
                 if(w.type === 'dark') {
                     ctx.fillStyle = "#2d5a3b";
@@ -643,7 +634,6 @@
                 ctx.strokeStyle = "#1e2a1a";
                 ctx.strokeRect(w.x, w.y, w.w, w.h);
             }
-            // Alvo
             ctx.shadowBlur = 0;
             ctx.beginPath();
             ctx.arc(targetCenter.x, targetCenter.y, TARGET_RADIUS, 0, Math.PI*2);
@@ -661,7 +651,7 @@
             ctx.arc(targetCenter.x, targetCenter.y, 5, 0, Math.PI*2);
             ctx.fillStyle = "#FFF8DC";
             ctx.fill();
-            // Bola
+            
             ctx.shadowColor = "rgba(0,0,0,0.4)";
             ctx.shadowBlur = 8;
             const grad = ctx.createRadialGradient(ballX-4, ballY-4, 4, ballX, ballY, BALL_RADIUS);
@@ -691,14 +681,12 @@
             requestAnimationFrame(gameLoop);
         }
         
-        // Inicialização
         loadRanking();
         generateMazeDFS();
         randomSpawn();
         startTime = performance.now()/1000;
         updateTimer();
         
-        // Controles
         window.addEventListener('keydown', (e) => {
             const k = e.key;
             if(k === 'ArrowLeft' || k === 'a') { leftPressed=true; e.preventDefault(); }
