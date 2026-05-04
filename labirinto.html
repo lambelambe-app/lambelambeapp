@@ -54,14 +54,12 @@
             height: auto;
         }
 
-        /* Controles centralizados */
-        .controls {
+        /* D-pad centralizado sozinho */
+        .dpad-wrapper {
             display: flex;
             justify-content: center;
-            align-items: center;
-            gap: 30px;
-            margin-bottom: 20px;
             width: 100%;
+            margin-bottom: 20px;
         }
 
         .dpad {
@@ -100,36 +98,61 @@
             box-shadow: 0 3px 0 rgba(0, 0, 0, 0.4);
             background: rgba(50, 65, 82, 0.95);
         }
-        .reset-btn {
-            background: rgba(160, 65, 45, 0.9);
-            border-color: #ffbc7a;
-            width: 80px;
-            font-size: 28px;
+
+        /* Timer + Botão Reset lado a lado */
+        .timer-reset-bar {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 20px;
+            width: 100%;
         }
 
-        /* Timer abaixo dos botões */
         .timer-panel {
             background: rgba(0, 0, 0, 0.55);
             backdrop-filter: blur(8px);
             border: 1px solid rgba(255, 200, 100, 0.5);
             border-radius: 60px;
-            padding: 8px 24px;
-            margin-bottom: 20px;
-            width: auto;
+            padding: 6px 24px;
             text-align: center;
         }
         .timer-label {
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             letter-spacing: 1px;
             color: #c0b090;
         }
         .timer-value {
             font-family: 'Courier New', 'Fira Code', monospace;
-            font-size: 1.8rem;
+            font-size: 1.6rem;
             font-weight: bold;
             color: #FFE5B4;
             text-shadow: 0 0 6px rgba(0,0,0,0.5);
             line-height: 1.2;
+        }
+
+        .reset-btn {
+            background: rgba(160, 65, 45, 0.9);
+            backdrop-filter: blur(4px);
+            border: 1px solid #ffbc7a;
+            border-radius: 60px;
+            width: 80px;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: bold;
+            color: #FFE5B4;
+            text-shadow: 0 2px 4px black;
+            box-shadow: 0 6px 0 rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255,255,255,0.15);
+            transition: 0.05s linear;
+            cursor: pointer;
+        }
+        .reset-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 3px 0 rgba(0, 0, 0, 0.4);
+            background: rgba(180, 75, 55, 0.95);
         }
 
         .status {
@@ -211,8 +234,9 @@
         @media (max-width: 560px) {
             .ctrl-btn { width: 55px; height: 55px; font-size: 26px; }
             .dpad-row { gap: 12px; }
-            .controls { gap: 20px; }
-            .timer-value { font-size: 1.4rem; }
+            .reset-btn { width: 65px; height: 55px; font-size: 24px; }
+            .timer-value { font-size: 1.3rem; }
+            .timer-panel { padding: 4px 16px; }
             .ranking ol { font-size: 0.7rem; padding-left: 20px; }
         }
 
@@ -230,8 +254,8 @@
     <div class="game-container">
         <canvas id="gameCanvas" width="600" height="600"></canvas>
 
-        <!-- CONTROLES CENTRALIZADOS -->
-        <div class="controls">
+        <!-- D-PAD CENTRALIZADO SOZINHO -->
+        <div class="dpad-wrapper">
             <div class="dpad">
                 <div class="dpad-row"><div class="ctrl-btn" id="btnUp">▲</div></div>
                 <div class="dpad-row">
@@ -240,13 +264,15 @@
                     <div class="ctrl-btn" id="btnRight">▶</div>
                 </div>
             </div>
-            <div class="ctrl-btn reset-btn" id="btnReset">⟳</div>
         </div>
 
-        <!-- TIMER ABAIXO DOS BOTÕES -->
-        <div class="timer-panel">
-            <div class="timer-label">⏱️ TEMPO</div>
-            <div class="timer-value" id="timerDisplay">0.0 s</div>
+        <!-- TIMER + BOTÃO RESET LADO A LADO -->
+        <div class="timer-reset-bar">
+            <div class="timer-panel">
+                <div class="timer-label">⏱️ TEMPO</div>
+                <div class="timer-value" id="timerDisplay">0.0 s</div>
+            </div>
+            <div class="reset-btn" id="btnReset">⟳</div>
         </div>
         
         <div class="status" id="gameStatus">✨ mova a esfera até o centro do alvo ✨</div>
@@ -687,6 +713,7 @@
         startTime = performance.now()/1000;
         updateTimer();
         
+        // Controles de teclado
         window.addEventListener('keydown', (e) => {
             const k = e.key;
             if(k === 'ArrowLeft' || k === 'a') { leftPressed=true; e.preventDefault(); }
@@ -703,6 +730,7 @@
             else if(k === 'ArrowDown' || k === 's') downPressed=false;
         });
         
+        // Botões touch
         const attach = (btn, dir) => {
             if(!btn) return;
             const set = (active) => {
@@ -722,11 +750,14 @@
         attach(document.getElementById('btnDown'), 'down');
         attach(document.getElementById('btnLeft'), 'left');
         attach(document.getElementById('btnRight'), 'right');
-        const resetBtn = document.getElementById('btnReset');
-        if(resetBtn) resetBtn.addEventListener('click', ()=>resetGame(true));
-        if(resetBtn) resetBtn.addEventListener('touchstart', (e)=>{e.preventDefault(); resetGame(true);});
         
-        document.querySelectorAll('.ctrl-btn').forEach(b => b.addEventListener('touchstart', e=>e.preventDefault()));
+        const resetBtn = document.getElementById('btnReset');
+        if(resetBtn) {
+            resetBtn.addEventListener('click', ()=>resetGame(true));
+            resetBtn.addEventListener('touchstart', (e)=>{e.preventDefault(); resetGame(true);});
+        }
+        
+        document.querySelectorAll('.ctrl-btn, .reset-btn').forEach(b => b.addEventListener('touchstart', e=>e.preventDefault()));
         document.body.addEventListener('touchmove', e=>{ if(e.target.closest('.ctrl-btn') || e.target===canvas) e.preventDefault(); }, {passive:false});
         
         requestAnimationFrame(gameLoop);
