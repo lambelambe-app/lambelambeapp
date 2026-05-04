@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Labirinto Metálico | Bola na Meia-Lua</title>
+    <title>Labirinto Metálico | Bola no Alvo</title>
     <style>
         * {
             margin: 0;
@@ -183,7 +183,7 @@
             <div class="ctrl-btn reset-btn" id="btnReset">⟳</div>
         </div>
         
-        <div class="status" id="gameStatus">✨ mova a bola até a abertura da meia-lua ✨</div>
+        <div class="status" id="gameStatus">✨ mova a bola até o centro do alvo ✨</div>
         
         <div class="player-input">
             <input type="text" id="playerName" placeholder="Seu nome" maxlength="12">
@@ -194,7 +194,7 @@
             <h3>🏆 RANKING (melhor tempo) 🏆</h3>
             <ol id="rankingList"></ol>
         </div>
-        <footer>Paredes VERDE CLARO: repelem | Escuras: normais | Meia-lua: orientação aleatória</footer>
+        <footer>Paredes VERDE CLARO: repelem | Escuras: normais | Alvo: centro do tabuleiro</footer>
     </div>
 </div>
 
@@ -208,7 +208,7 @@
         canvas.height = SIZE;
         
         const BALL_RADIUS = 13;
-        const HOLE_RADIUS = 24;
+        const TARGET_RADIUS = 18;   // raio externo do alvo
         
         // Variáveis da bola
         let ballX = SIZE/2, ballY = SIZE/2;
@@ -221,14 +221,13 @@
         let leftPressed = false, rightPressed = false, upPressed = false, downPressed = false;
         let victory = false;
         let victoryTimer = null;
-        let isFalling = false; // efeito de queda
+        let isFalling = false;
         
-        // Paredes (DFS gera lista de células, mas vamos converter para retângulos)
-        let walls = []; // cada wall: {x, y, w, h, type}
+        // Paredes
+        let walls = [];
         
-        // Meia-lua
-        let crescentOrientation = 0; // 0,90,180,270
-        const crescentCenter = { x: SIZE/2, y: SIZE/2 };
+        // Alvo fixo no centro
+        const targetCenter = { x: SIZE/2, y: SIZE/2 };
         
         // Variáveis de tempo e ranking
         let startTime = null;
@@ -249,7 +248,7 @@
         
         // ---------- RANKING LOCAL ----------
         function loadRanking() {
-            const stored = localStorage.getItem('mazeRanking2');
+            const stored = localStorage.getItem('mazeRanking3');
             if (stored) {
                 ranking = JSON.parse(stored);
             } else {
@@ -267,7 +266,7 @@
         function saveRanking() {
             ranking.sort((a,b) => a.time - b.time);
             ranking = ranking.slice(0, 10);
-            localStorage.setItem('mazeRanking2', JSON.stringify(ranking));
+            localStorage.setItem('mazeRanking3', JSON.stringify(ranking));
         }
         
         function addScoreToRanking(name, timeSec) {
@@ -293,48 +292,40 @@
             if (ranking.length === 0) list.innerHTML = '<li>Nenhum registro</li>';
         }
         
-        // ---------- GERADOR DE LABIRINTO POR DFS (caminho contínuo) ----------
-        // Vamos usar um grid de células 15x15, cada célula 40px. As paredes terão 8px de espessura.
-        // Depois convertemos para coordenadas reais.
-        const CELL_SIZE = 40;
-        const GRID_W = Math.floor(SIZE / CELL_SIZE); // 15
+        // ---------- GERADOR DE LABIRINTO DFS COM CAMINHOS MAIS LARGOS ----------
+        // Aumentar distância entre paredes: reduzir número de células e aumentar célula
+        const CELL_SIZE = 46;      // antes 40 -> mais espaço
+        const WALL_THICK = 10;     // antes 8
+        const GRID_W = Math.floor(SIZE / CELL_SIZE); // 600/46 = 13.04 -> 13
         const GRID_H = GRID_W;
-        const WALL_THICK = 8;
+        // Ajuste fino para centralizar: offset = (SIZE - GRID_W * CELL_SIZE)/2
+        const OFFSET_X = (SIZE - GRID_W * CELL_SIZE) / 2;
+        const OFFSET_Y = (SIZE - GRID_H * CELL_SIZE) / 2;
         
-        let cells = []; // booleano para visitado
-        let wallsGrid = []; // armazena paredes entre células (direita e baixo)
+        let cells = [];
+        let wallsGrid = [];
         
         function initDFS() {
-            // Inicializa matrizes
             cells = Array(GRID_H).fill().map(() => Array(GRID_W).fill(false));
             wallsGrid = Array(GRID_H).fill().map(() => Array(GRID_W).fill().map(() => ({ right: true, bottom: true })));
             
-            // Escolhe célula inicial aleatória (perto das bordas? começamos no centro)
             const startX = Math.floor(GRID_W/2);
             const startY = Math.floor(GRID_H/2);
             dfsCarve(startX, startY);
             
-            // Garante aberturas nas bordas: quatro entradas nas laterais (posições aleatórias)
-            // Vamos abrir algumas paredes externas:
-            // superior: abrir célula (0, y) na borda superior
-            const topEntryY = Math.floor(Math.random() * (GRID_W-2)) + 1;
-            const bottomEntryY = Math.floor(Math.random() * (GRID_W-2)) + 1;
-            const leftEntryX = Math.floor(Math.random() * (GRID_H-2)) + 1;
-            const rightEntryX = Math.floor(Math.random() * (GRID_H-2)) + 1;
-            // As aberturas serão tratadas ao desenhar: não desenhar parede na borda nessas posições.
-            // Guardamos as posições:
-            let borderOpenings = {
-                top: topEntryY,
-                bottom: bottomEntryY,
-                left: leftEntryX,
-                right: rightEntryX
+            // Aberturas nas bordas
+            const borderOpenings = {
+                top: Math.floor(Math.random() * GRID_W),
+                bottom: Math.floor(Math.random() * GRID_W),
+                left: Math.floor(Math.random() * GRID_H),
+                right: Math.floor(Math.random() * GRID_H)
             };
             return borderOpenings;
         }
         
         function dfsCarve(x, y) {
             cells[y][x] = true;
-            const dirs = [[0,-1],[1,0],[0,1],[-1,0]]; // cima, direita, baixo, esquerda
+            const dirs = [[0,-1],[1,0],[0,1],[-1,0]];
             for (let i = dirs.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [dirs[i], dirs[j]] = [dirs[j], dirs[i]];
@@ -343,7 +334,6 @@
                 const nx = x + dx;
                 const ny = y + dy;
                 if (nx >= 0 && nx < GRID_W && ny >= 0 && ny < GRID_H && !cells[ny][nx]) {
-                    // Remove a parede entre (x,y) e (nx,ny)
                     if (dx === 1) wallsGrid[y][x].right = false;
                     else if (dx === -1) wallsGrid[y][nx].right = false;
                     else if (dy === 1) wallsGrid[y][x].bottom = false;
@@ -353,116 +343,88 @@
             }
         }
         
-        // Converte o grid de células em paredes (retângulos) para colisão e desenho
         function buildWallsFromDFS(borderOpenings) {
             walls = [];
-            // Paredes verticais entre células
+            const addWall = (x, y, w, h, type) => {
+                if (w <= 0 || h <= 0) return;
+                walls.push({ x, y, w, h, type });
+            };
+            
+            // Paredes internas (entre células)
             for (let row = 0; row < GRID_H; row++) {
                 for (let col = 0; col < GRID_W; col++) {
-                    const cx = col * CELL_SIZE;
-                    const cy = row * CELL_SIZE;
+                    const cx = OFFSET_X + col * CELL_SIZE;
+                    const cy = OFFSET_Y + row * CELL_SIZE;
                     // Parede direita
                     if (wallsGrid[row][col].right) {
                         const wallX = cx + CELL_SIZE;
                         const wallY = cy;
-                        const wallW = WALL_THICK;
-                        const wallH = CELL_SIZE;
-                        // Define tipo (30% chance de ser repulsiva, exceto bordas externas)
                         let type = (Math.random() < 0.3) ? 'light' : 'dark';
-                        walls.push({ x: wallX, y: wallY, w: wallW, h: wallH, type });
+                        addWall(wallX, wallY, WALL_THICK, CELL_SIZE, type);
                     }
                     // Parede inferior
                     if (wallsGrid[row][col].bottom) {
                         const wallX = cx;
                         const wallY = cy + CELL_SIZE;
-                        const wallW = CELL_SIZE;
-                        const wallH = WALL_THICK;
                         let type = (Math.random() < 0.3) ? 'light' : 'dark';
-                        walls.push({ x: wallX, y: wallY, w: wallW, h: wallH, type });
+                        addWall(wallX, wallY, CELL_SIZE, WALL_THICK, type);
                     }
                 }
             }
-            // Paredes externas (bordas), mas com as aberturas
-            // Borda superior (y=0)
+            
+            // Bordas com aberturas
+            // Superior
             for (let col = 0; col < GRID_W; col++) {
                 if (col !== borderOpenings.top) {
-                    const wallX = col * CELL_SIZE;
-                    const wallY = 0;
-                    const wallW = CELL_SIZE;
-                    const wallH = WALL_THICK;
-                    walls.push({ x: wallX, y: wallY, w: wallW, h: wallH, type: 'dark' });
+                    const wallX = OFFSET_X + col * CELL_SIZE;
+                    const wallY = OFFSET_Y;
+                    addWall(wallX, wallY, CELL_SIZE, WALL_THICK, 'dark');
                 }
             }
-            // Borda inferior
+            // Inferior
             for (let col = 0; col < GRID_W; col++) {
                 if (col !== borderOpenings.bottom) {
-                    const wallX = col * CELL_SIZE;
-                    const wallY = SIZE - WALL_THICK;
-                    const wallW = CELL_SIZE;
-                    const wallH = WALL_THICK;
-                    walls.push({ x: wallX, y: wallY, w: wallW, h: wallH, type: 'dark' });
+                    const wallX = OFFSET_X + col * CELL_SIZE;
+                    const wallY = OFFSET_Y + GRID_H * CELL_SIZE - WALL_THICK;
+                    addWall(wallX, wallY, CELL_SIZE, WALL_THICK, 'dark');
                 }
             }
-            // Borda esquerda
+            // Esquerda
             for (let row = 0; row < GRID_H; row++) {
                 if (row !== borderOpenings.left) {
-                    const wallX = 0;
-                    const wallY = row * CELL_SIZE;
-                    const wallW = WALL_THICK;
-                    const wallH = CELL_SIZE;
-                    walls.push({ x: wallX, y: wallY, w: wallW, h: wallH, type: 'dark' });
+                    const wallX = OFFSET_X;
+                    const wallY = OFFSET_Y + row * CELL_SIZE;
+                    addWall(wallX, wallY, WALL_THICK, CELL_SIZE, 'dark');
                 }
             }
-            // Borda direita
+            // Direita
             for (let row = 0; row < GRID_H; row++) {
                 if (row !== borderOpenings.right) {
-                    const wallX = SIZE - WALL_THICK;
-                    const wallY = row * CELL_SIZE;
-                    const wallW = WALL_THICK;
-                    const wallH = CELL_SIZE;
-                    walls.push({ x: wallX, y: wallY, w: wallW, h: wallH, type: 'dark' });
+                    const wallX = OFFSET_X + GRID_W * CELL_SIZE - WALL_THICK;
+                    const wallY = OFFSET_Y + row * CELL_SIZE;
+                    addWall(wallX, wallY, WALL_THICK, CELL_SIZE, 'dark');
                 }
             }
-        }
-        
-        // Chama DFS e gera novo labirinto
-        function generateMazeDFS() {
-            const borderOpenings = initDFS();
-            buildWallsFromDFS(borderOpenings);
-            // Assegura que o centro (meia-lua) não fique obstruído removendo paredes próximas
+            
+            // Remover paredes que obstruem o alvo central
             walls = walls.filter(w => {
-                const centerX = SIZE/2;
-                const centerY = SIZE/2;
-                const distToCenter = Math.hypot(w.x + w.w/2 - centerX, w.y + w.h/2 - centerY);
-                return distToCenter > HOLE_RADIUS + 5;
+                const distToCenter = Math.hypot(w.x + w.w/2 - targetCenter.x, w.y + w.h/2 - targetCenter.y);
+                return distToCenter > TARGET_RADIUS + 10;
             });
         }
         
-        // ---------- MEIA-LUA ----------
-        function randomizeCrescentOrientation() {
-            const orientations = [0, 90, 180, 270];
-            crescentOrientation = orientations[Math.floor(Math.random() * 4)];
-        }
-        
-        function isBallInsideCrescent() {
-            const dx = ballX - crescentCenter.x;
-            const dy = ballY - crescentCenter.y;
-            const dist = Math.hypot(dx, dy);
-            if (dist > HOLE_RADIUS) return false;
-            let angle = Math.atan2(dy, dx) * 180 / Math.PI;
-            angle = (angle + 360) % 360;
-            let diff = Math.abs(angle - crescentOrientation);
-            diff = Math.min(diff, 360 - diff);
-            return diff <= 55; // abertura de aproximadamente 110 graus
+        function generateMazeDFS() {
+            const borderOpenings = initDFS();
+            buildWallsFromDFS(borderOpenings);
         }
         
         // ---------- SPAWN SEGURO ----------
         function randomSpawn() {
             const spawnPoints = [
-                { x: 32, y: SIZE/2 },
-                { x: SIZE-32, y: SIZE/2 },
-                { x: SIZE/2, y: 32 },
-                { x: SIZE/2, y: SIZE-32 }
+                { x: OFFSET_X + 20, y: targetCenter.y },
+                { x: OFFSET_X + GRID_W * CELL_SIZE - 20, y: targetCenter.y },
+                { x: targetCenter.x, y: OFFSET_Y + 20 },
+                { x: targetCenter.x, y: OFFSET_Y + GRID_H * CELL_SIZE - 20 }
             ];
             for (let attempt = 0; attempt < 15; attempt++) {
                 const idx = Math.floor(Math.random() * spawnPoints.length);
@@ -482,8 +444,8 @@
                     return;
                 }
             }
-            ballX = SIZE/2;
-            ballY = SIZE/2 - 60;
+            ballX = targetCenter.x;
+            ballY = targetCenter.y - 50;
         }
         
         // ---------- COLISÃO E REPULSÃO ----------
@@ -518,9 +480,9 @@
                     }
                 }
             }
-            // limites do canvas
-            ballX = Math.min(Math.max(ballX, BALL_RADIUS), SIZE - BALL_RADIUS);
-            ballY = Math.min(Math.max(ballY, BALL_RADIUS), SIZE - BALL_RADIUS);
+            // limites do canvas (considerando offset)
+            ballX = Math.min(Math.max(ballX, BALL_RADIUS + OFFSET_X), SIZE - BALL_RADIUS - OFFSET_X);
+            ballY = Math.min(Math.max(ballY, BALL_RADIUS + OFFSET_Y), SIZE - BALL_RADIUS - OFFSET_Y);
         }
         
         // ---------- EFEITO DE QUEDA ----------
@@ -533,7 +495,6 @@
                 if (fallStep < 10) {
                     const scale = 1 - (fallStep / 10) * 0.8;
                     const newRadius = originalRadius * scale;
-                    // redesenha a bola menor no mesmo lugar
                     ctx.save();
                     ctx.shadowBlur = 0;
                     ctx.beginPath();
@@ -551,10 +512,10 @@
             fallAnim();
         }
         
-        // ---------- VITÓRIA COM QUEDA E FOGOS ----------
+        // ---------- FOGOS DE ARTIFÍCIO ----------
         function startFireworks() {
             const particles = [];
-            const centerX = SIZE/2, centerY = SIZE/2;
+            const centerX = targetCenter.x, centerY = targetCenter.y;
             for (let f = 0; f < 6; f++) {
                 const angle = Math.random() * Math.PI * 2;
                 const radius = 40 + Math.random() * 60;
@@ -603,34 +564,33 @@
             updateFireworks();
         }
         
-        function winGame() {
-            if (victory) return;
-            victory = true;
-            const elapsed = (performance.now() / 1000) - startTime;
-            addScoreToRanking(playerName, elapsed);
-            const statusDiv = document.getElementById('gameStatus');
-            statusDiv.innerHTML = `🎉 VITÓRIA! Tempo: ${elapsed.toFixed(2)}s 🎉`;
-            statusDiv.style.background = "#fff0d0";
-            // Efeito de queda e depois fogos
-            startFallingEffect(() => {
-                startFireworks();
-            });
-            if (victoryTimer) clearTimeout(victoryTimer);
-            victoryTimer = setTimeout(() => {
-                resetGame(true);
-                statusDiv.style.background = "#f8fafc";
-                victory = false;
-            }, 3500);
+        // Vitória: bola deve parar sobre o alvo (centro)
+        function checkWin() {
+            const distToCenter = Math.hypot(ballX - targetCenter.x, ballY - targetCenter.y);
+            if (!victory && distToCenter < BALL_RADIUS + 5) { // encostou no centro
+                victory = true;
+                const elapsed = (performance.now() / 1000) - startTime;
+                addScoreToRanking(playerName, elapsed);
+                const statusDiv = document.getElementById('gameStatus');
+                statusDiv.innerHTML = `🎉 VITÓRIA! Tempo: ${elapsed.toFixed(2)}s 🎉`;
+                statusDiv.style.background = "#fff0d0";
+                startFallingEffect(() => {
+                    startFireworks();
+                });
+                if (victoryTimer) clearTimeout(victoryTimer);
+                victoryTimer = setTimeout(() => {
+                    resetGame(true);
+                    statusDiv.style.background = "#f8fafc";
+                    victory = false;
+                }, 3500);
+            }
         }
         
         // ---------- RESET E INICIALIZAÇÃO ----------
         function resetGame(newMaze = true) {
             if (victoryTimer) clearTimeout(victoryTimer);
             victory = false;
-            if (newMaze) {
-                generateMazeDFS();
-                randomizeCrescentOrientation();
-            }
+            if (newMaze) generateMazeDFS();
             randomSpawn();
             velocityX = 0;
             velocityY = 0;
@@ -644,8 +604,7 @@
             if (startTime) {
                 const elapsed = (performance.now() / 1000) - startTime;
                 currentTime = elapsed;
-                const statusDiv = document.getElementById('gameStatus');
-                statusDiv.innerHTML = `⏱️ ${currentTime.toFixed(1)}s | Abertura: ${crescentOrientation}° | Mova até a meia-lua`;
+                document.getElementById('gameStatus').innerHTML = `⏱️ ${currentTime.toFixed(1)}s | Mova a bola até o centro do alvo`;
             }
         }
         
@@ -678,7 +637,7 @@
             ballX += velocityX * deltaTime;
             ballY += velocityY * deltaTime;
             handleCollisions();
-            if (!victory && isBallInsideCrescent()) winGame();
+            checkWin();
             updateStatusTime();
         }
         
@@ -704,21 +663,35 @@
                 ctx.strokeRect(w.x, w.y, w.w, w.h);
             }
             
-            // Meia-lua
+            // Desenha o alvo (círculos concêntricos)
             ctx.save();
+            ctx.shadowBlur = 0;
+            // círculo externo
             ctx.beginPath();
-            ctx.translate(crescentCenter.x, crescentCenter.y);
-            ctx.rotate(crescentOrientation * Math.PI / 180);
-            ctx.arc(0, 0, HOLE_RADIUS, -Math.PI/2, Math.PI/2, false);
-            ctx.lineTo(0, -HOLE_RADIUS);
-            ctx.fillStyle = "#2d3f4a";
+            ctx.arc(targetCenter.x, targetCenter.y, TARGET_RADIUS, 0, Math.PI*2);
+            ctx.fillStyle = "#8B0000";
             ctx.fill();
-            ctx.strokeStyle = "#141e26";
+            ctx.strokeStyle = "#FFD700";
             ctx.lineWidth = 2;
             ctx.stroke();
+            // círculo médio
+            ctx.beginPath();
+            ctx.arc(targetCenter.x, targetCenter.y, TARGET_RADIUS-5, 0, Math.PI*2);
+            ctx.fillStyle = "#FF4500";
+            ctx.fill();
+            // círculo central
+            ctx.beginPath();
+            ctx.arc(targetCenter.x, targetCenter.y, TARGET_RADIUS-10, 0, Math.PI*2);
+            ctx.fillStyle = "#FFD700";
+            ctx.fill();
+            // ponto central
+            ctx.beginPath();
+            ctx.arc(targetCenter.x, targetCenter.y, 4, 0, Math.PI*2);
+            ctx.fillStyle = "#FFFFFF";
+            ctx.fill();
             ctx.restore();
             
-            // Bola
+            // Bola metálica
             ctx.shadowColor = "rgba(0,0,0,0.3)";
             ctx.shadowBlur = 8;
             const grad = ctx.createRadialGradient(ballX-4, ballY-4, 4, ballX, ballY, BALL_RADIUS);
@@ -751,12 +724,11 @@
         // Inicialização
         loadRanking();
         generateMazeDFS();
-        randomizeCrescentOrientation();
         randomSpawn();
         startTime = performance.now() / 1000;
         updateStatusTime();
         
-        // Controles
+        // Controles (teclado e touch) - mesmo código anterior
         window.addEventListener('keydown', (e) => {
             const key = e.key;
             if (key === 'ArrowLeft' || key === 'a') { leftPressed = true; e.preventDefault(); }
@@ -773,7 +745,6 @@
             else if (key === 'ArrowDown' || key === 's') downPressed = false;
         });
         
-        // Botões touch
         const btnUp = document.getElementById('btnUp');
         const btnDown = document.getElementById('btnDown');
         const btnLeft = document.getElementById('btnLeft');
@@ -804,7 +775,6 @@
             btnReset.addEventListener('touchstart', (e) => { e.preventDefault(); resetGame(true); });
         }
         
-        // Previne rolagem ao tocar nos botões
         document.querySelectorAll('.ctrl-btn').forEach(btn => {
             btn.addEventListener('touchstart', (e) => e.preventDefault());
         });
