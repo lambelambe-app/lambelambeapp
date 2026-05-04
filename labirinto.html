@@ -13,7 +13,6 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* Fundo externo #666666 */
         body {
             background: #666666;
             min-height: 100vh;
@@ -28,7 +27,6 @@
             height: 100%;
         }
 
-        /* Container principal */
         .game-container {
             background: rgba(20, 28, 38, 0.85);
             backdrop-filter: blur(12px);
@@ -43,20 +41,18 @@
             max-width: 100%;
             max-height: 95vh;
             overflow-y: auto;
-            position: relative;
         }
 
-        /* Barra superior com timer (esquerda) e reset (direita) */
+        /* Barra superior: timer esquerda, reset direita */
         .top-bar {
             display: flex;
             justify-content: space-between;
             align-items: center;
             width: 100%;
-            margin-bottom: 16px;
+            margin-bottom: 20px;
             gap: 16px;
         }
 
-        /* Timer (canto esquerdo) */
         .timer-panel {
             background: rgba(0, 0, 0, 0.55);
             backdrop-filter: blur(8px);
@@ -79,29 +75,35 @@
             line-height: 1.2;
         }
 
-        /* Botão Reset (canto direito) */
+        /* Botão reset com mesmo formato do timer, porém cor avermelhada */
         .reset-btn {
             background: rgba(160, 65, 45, 0.9);
-            backdrop-filter: blur(4px);
-            border: 1px solid #ffbc7a;
-            border-radius: 60px;
-            width: 65px;
-            height: 65px;
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 200, 100, 0.6);
+            border-radius: 48px;
+            padding: 4px 18px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.05s linear;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 26px;
-            font-weight: bold;
-            color: #FFE5B4;
-            text-shadow: 0 2px 4px black;
-            box-shadow: 0 5px 0 rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255,255,255,0.15);
-            transition: 0.05s linear;
-            cursor: pointer;
+            gap: 4px;
         }
         .reset-btn:active {
-            transform: translateY(3px);
-            box-shadow: 0 2px 0 rgba(0, 0, 0, 0.4);
+            transform: translateY(2px);
             background: rgba(180, 75, 55, 0.95);
+        }
+        .reset-icon {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #FFE5B4;
+            text-shadow: 0 1px 2px black;
+        }
+        .reset-label {
+            font-size: 0.6rem;
+            letter-spacing: 1px;
+            color: #ffd7a0;
         }
 
         canvas {
@@ -115,12 +117,50 @@
             height: auto;
         }
 
-        /* D-pad centralizado */
+        /* Linha de controles: quadros laterais + D-pad */
+        .controls-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 24px;
+            width: 100%;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        /* Quadro esquerdo e direito (estilo igual) */
+        .info-panel {
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(8px);
+            border-radius: 28px;
+            padding: 10px 14px;
+            min-width: 140px;
+            text-align: center;
+            border: 1px solid rgba(255, 200, 120, 0.4);
+        }
+        .info-panel h4 {
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: #ffd7a0;
+            margin-bottom: 6px;
+            letter-spacing: 0.5px;
+        }
+        .info-panel ul {
+            list-style: none;
+            font-size: 0.7rem;
+            color: #FFE5B4;
+        }
+        .info-panel li {
+            margin: 4px 0;
+        }
+        .highlight {
+            font-weight: bold;
+            color: #FFB347;
+        }
+
         .dpad-wrapper {
             display: flex;
             justify-content: center;
-            width: 100%;
-            margin-bottom: 20px;
         }
         .dpad {
             display: flex;
@@ -157,35 +197,7 @@
             background: rgba(50, 65, 82, 0.95);
         }
 
-        /* Ranking e inputs (parte inferior) */
-        .player-input {
-            display: flex;
-            gap: 8px;
-            justify-content: center;
-            margin: 6px 0 4px;
-        }
-        .player-input input {
-            background: rgba(30, 40, 50, 0.9);
-            border: 1px solid #FFD28F;
-            border-radius: 40px;
-            padding: 5px 12px;
-            font-size: 0.75rem;
-            width: 130px;
-            text-align: center;
-            color: #FFE5B4;
-            outline: none;
-        }
-        .player-input button {
-            background: #2c3e46;
-            border: none;
-            border-radius: 40px;
-            padding: 5px 12px;
-            color: #FFE5B4;
-            font-weight: bold;
-            cursor: pointer;
-            font-size: 0.75rem;
-        }
-
+        /* Ranking geral (abaixo) */
         .ranking {
             background: rgba(0, 0, 0, 0.5);
             backdrop-filter: blur(8px);
@@ -221,6 +233,34 @@
             color: #FFEBB0;
         }
 
+        .player-input {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin: 6px 0 4px;
+        }
+        .player-input input {
+            background: rgba(30, 40, 50, 0.9);
+            border: 1px solid #FFD28F;
+            border-radius: 40px;
+            padding: 5px 12px;
+            font-size: 0.75rem;
+            width: 130px;
+            text-align: center;
+            color: #FFE5B4;
+            outline: none;
+        }
+        .player-input button {
+            background: #2c3e46;
+            border: none;
+            border-radius: 40px;
+            padding: 5px 12px;
+            color: #FFE5B4;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 0.75rem;
+        }
+
         footer {
             text-align: center;
             font-size: 0.55rem;
@@ -229,49 +269,73 @@
             opacity: 0.7;
         }
 
-        @media (max-width: 560px) {
+        @media (max-width: 700px) {
+            .controls-row {
+                flex-direction: column;
+                gap: 12px;
+            }
+            .info-panel {
+                width: 100%;
+            }
             .ctrl-btn { width: 55px; height: 55px; font-size: 24px; }
             .dpad-row { gap: 12px; }
-            .reset-btn { width: 55px; height: 55px; font-size: 22px; }
-            .timer-value { font-size: 1.1rem; }
-            .timer-panel { padding: 2px 12px; }
         }
     </style>
 </head>
 <body>
 <div>
     <div class="game-container">
-        <!-- Barra superior: timer esquerda, reset direita -->
+        <!-- Barra superior: timer e reset -->
         <div class="top-bar">
             <div class="timer-panel">
                 <div class="timer-label">⏱️ TEMPO</div>
                 <div class="timer-value" id="timerDisplay">0.0 s</div>
             </div>
-            <div class="reset-btn" id="btnReset">⟳</div>
+            <div class="reset-btn" id="btnReset">
+                <div class="reset-icon">⟳</div>
+                <div class="reset-label">NOVO</div>
+            </div>
         </div>
 
         <canvas id="gameCanvas" width="600" height="600"></canvas>
 
-        <!-- D-PAD centralizado -->
-        <div class="dpad-wrapper">
-            <div class="dpad">
-                <div class="dpad-row"><div class="ctrl-btn" id="btnUp">▲</div></div>
-                <div class="dpad-row">
-                    <div class="ctrl-btn" id="btnLeft">◀</div>
-                    <div class="ctrl-btn" id="btnDown">▼</div>
-                    <div class="ctrl-btn" id="btnRight">▶</div>
+        <!-- Linha com quadros laterais e D-pad -->
+        <div class="controls-row">
+            <!-- Quadro esquerdo: últimas conquistas (últimos 3 tempos do jogador) -->
+            <div class="info-panel" id="recentScoresPanel">
+                <h4>🏆 ÚLTIMAS CONQUISTAS</h4>
+                <ul id="recentList">
+                    <li>---</li>
+                </ul>
+            </div>
+
+            <!-- D-pad central -->
+            <div class="dpad-wrapper">
+                <div class="dpad">
+                    <div class="dpad-row"><div class="ctrl-btn" id="btnUp">▲</div></div>
+                    <div class="dpad-row">
+                        <div class="ctrl-btn" id="btnLeft">◀</div>
+                        <div class="ctrl-btn" id="btnDown">▼</div>
+                        <div class="ctrl-btn" id="btnRight">▶</div>
+                    </div>
                 </div>
+            </div>
+
+            <!-- Quadro direito: maior conquista do jogador atual + comparação -->
+            <div class="info-panel" id="bestScorePanel">
+                <h4>⭐ MELHOR CONQUISTA</h4>
+                <div id="bestInfo">---</div>
             </div>
         </div>
 
-        <!-- Parte inferior: nome e ranking (separados) -->
+        <!-- Nome e ranking geral -->
         <div class="player-input">
             <input type="text" id="playerName" placeholder="Seu nome" maxlength="12">
             <button id="saveNameBtn">Salvar</button>
         </div>
         
         <div class="ranking" id="rankingDiv">
-            <h3>🏆 RANKING (melhor tempo) 🏆</h3>
+            <h3>🏆 RANKING GERAL (melhores tempos) 🏆</h3>
             <ol id="rankingList"></ol>
         </div>
         <footer>paredes claras: repelem | escuras: bloqueiam | alvo central dourado</footer>
@@ -301,7 +365,6 @@
         let victoryTimer = null;
         let isFalling = false;
         
-        // Controle do cronômetro: só inicia no primeiro movimento
         let gameStarted = false;
         let startTime = null;
         let currentTime = 0;
@@ -310,20 +373,14 @@
         const targetCenter = { x: SIZE/2, y: SIZE/2 };
         
         let playerName = localStorage.getItem('playerName') || 'Anônimo';
-        let ranking = [];
+        let ranking = [];         // ranking geral [{name, time}]
+        let recentScores = [];    // últimos tempos do jogador atual (máx 3)
         
         const timerDisplay = document.getElementById('timerDisplay');
         const nameInput = document.getElementById('playerName');
         nameInput.value = playerName;
-        document.getElementById('saveNameBtn').addEventListener('click', () => {
-            let newName = nameInput.value.trim();
-            if (newName === "") newName = "Anônimo";
-            playerName = newName;
-            localStorage.setItem('playerName', playerName);
-            updateRankingDisplay();
-        });
         
-        // Ranking local
+        // Carregar dados do localStorage
         function loadRanking() {
             const stored = localStorage.getItem('dedaloRanking');
             if (stored) {
@@ -351,6 +408,8 @@
             ranking = ranking.slice(0, 10);
             saveRanking();
             updateRankingDisplay();
+            updateBestScoreInfo();       // atualiza quadro direito
+            updateRecentScores(name, timeSec);
         }
         
         function updateRankingDisplay() {
@@ -367,7 +426,66 @@
             if (ranking.length === 0) list.innerHTML = '<li>Nenhum registro</li>';
         }
         
-        // ---------- GERADOR DFS COM CAMINHOS LARGOS ----------
+        // ---------- Gerenciar últimas conquistas (recentes) ----------
+        function loadRecentScores() {
+            const stored = localStorage.getItem('dedaloRecent_' + playerName);
+            if (stored) {
+                recentScores = JSON.parse(stored);
+            } else {
+                recentScores = [];
+            }
+            updateRecentPanel();
+        }
+        
+        function saveRecentScores() {
+            localStorage.setItem('dedaloRecent_' + playerName, JSON.stringify(recentScores));
+        }
+        
+        function updateRecentScores(name, timeSec) {
+            if (name !== playerName) return; // só atualiza para o jogador atual
+            recentScores.unshift(parseFloat(timeSec.toFixed(2))); // insere no início
+            if (recentScores.length > 3) recentScores.pop();
+            saveRecentScores();
+            updateRecentPanel();
+        }
+        
+        function updateRecentPanel() {
+            const container = document.getElementById('recentList');
+            container.innerHTML = '';
+            if (recentScores.length === 0) {
+                container.innerHTML = '<li>---</li>';
+                return;
+            }
+            recentScores.forEach((t, idx) => {
+                const li = document.createElement('li');
+                li.textContent = `${idx+1}º  ${t.toFixed(2)}s`;
+                container.appendChild(li);
+            });
+        }
+        
+        // ---------- Melhor conquista (melhor tempo do jogador e posição) ----------
+        function updateBestScoreInfo() {
+            // encontra o melhor tempo do jogador atual no ranking
+            let best = null;
+            let position = null;
+            ranking.forEach((entry, idx) => {
+                if (entry.name === playerName) {
+                    if (best === null || entry.time < best) {
+                        best = entry.time;
+                        position = idx + 1;
+                    }
+                }
+            });
+            const panel = document.getElementById('bestInfo');
+            if (best !== null) {
+                panel.innerHTML = `<span class="highlight">${best.toFixed(2)}s</span><br>📍 ${position}º lugar no ranking`;
+                if (position === 1) panel.innerHTML += '<br>🏆 LÍDER! 🏆';
+            } else {
+                panel.innerHTML = 'Ainda sem pontuação';
+            }
+        }
+        
+        // ---------- GERADOR DFS (mesmo de antes) ----------
         const CELL_SIZE = 46;
         const WALL_THICK = 10;
         const GRID_W = Math.floor(SIZE / CELL_SIZE);
@@ -432,7 +550,6 @@
                     }
                 }
             }
-            // Bordas com aberturas
             for (let col = 0; col < GRID_W; col++) {
                 if (col !== borderOpenings.top) addWall(OFFSET_X + col*CELL_SIZE, OFFSET_Y, CELL_SIZE, WALL_THICK, 'dark');
                 if (col !== borderOpenings.bottom) addWall(OFFSET_X + col*CELL_SIZE, OFFSET_Y + GRID_H*CELL_SIZE - WALL_THICK, CELL_SIZE, WALL_THICK, 'dark');
@@ -724,12 +841,30 @@
             requestAnimationFrame(gameLoop);
         }
         
-        loadRanking();
-        generateMazeDFS();
-        randomSpawn();
-        updateTimerDisplay();
+        // Inicialização e eventos
+        function init() {
+            loadRanking();
+            generateMazeDFS();
+            randomSpawn();
+            loadRecentScores();          // carrega últimas conquistas do jogador atual
+            updateBestScoreInfo();       // atualiza melhor conquista
+            updateTimerDisplay();
+            
+            // Evento de troca de nome: recarregar recentes e melhor info
+            document.getElementById('saveNameBtn').addEventListener('click', () => {
+                let newName = nameInput.value.trim();
+                if (newName === "") newName = "Anônimo";
+                playerName = newName;
+                localStorage.setItem('playerName', playerName);
+                loadRecentScores();        // recarrega os recentes do novo jogador
+                updateBestScoreInfo();     // atualiza melhor conquista
+                updateRankingDisplay();    // atualiza ranking (destaque)
+            });
+        }
         
-        // Eventos de teclado
+        init();
+        
+        // Controles (teclado e toque) mantidos iguais
         window.addEventListener('keydown', (e) => {
             const k = e.key;
             if(k === 'ArrowLeft' || k === 'a') { leftPressed=true; e.preventDefault(); startTimerOnFirstMove();}
@@ -746,7 +881,6 @@
             else if(k === 'ArrowDown' || k === 's') downPressed=false;
         });
         
-        // Botões touch
         const attach = (btn, dir) => {
             if(!btn) return;
             const set = (active) => {
