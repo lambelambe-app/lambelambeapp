@@ -19,8 +19,8 @@
             justify-content: center;
             align-items: center;
             font-family: 'Segoe UI', system-ui, sans-serif;
-            padding: 16px;
-            overflow: hidden; /* evita rolagem da página */
+            padding: 20px;
+            overflow: hidden;
             position: fixed;
             width: 100%;
             height: 100%;
@@ -28,15 +28,17 @@
         .game-container {
             background: white;
             border-radius: 32px;
-            padding: 16px;
+            padding: 20px 20px 16px;
             box-shadow: 0 12px 28px rgba(0,0,0,0.1);
             max-width: 100%;
             max-height: 100%;
-            overflow: auto; /* permite scroll apenas se necessário, mas raramente */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
         canvas {
             display: block;
-            margin: 0 auto;
+            margin: 0 auto 30px auto; /* mais distante dos botões */
             border-radius: 24px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
             background-color: #eef2f5;
@@ -47,8 +49,8 @@
         .controls {
             display: flex;
             justify-content: center;
-            gap: 20px;
-            margin-top: 24px;
+            gap: 24px;
+            margin-bottom: 20px;
             flex-wrap: wrap;
         }
         .dpad {
@@ -94,19 +96,66 @@
             border-radius: 40px;
             font-weight: 600;
             color: #0f172a;
-            margin-top: 16px;
+            margin-top: 20px; /* mais abaixo */
+            margin-bottom: 12px;
             text-align: center;
             transition: all 0.2s;
+        }
+        .ranking {
+            background: #f1f5f9;
+            border-radius: 20px;
+            padding: 8px 16px;
+            margin-top: 8px;
+            width: 100%;
+            text-align: center;
+            font-size: 0.8rem;
+        }
+        .ranking h3 {
+            font-size: 0.9rem;
+            margin-bottom: 6px;
+            color: #1e293b;
+        }
+        .ranking ol {
+            padding-left: 20px;
+            text-align: left;
+            display: inline-block;
+        }
+        .ranking li {
+            margin: 4px 0;
+            color: #334155;
+        }
+        .player-input {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin: 8px 0;
+        }
+        .player-input input {
+            padding: 6px 12px;
+            border-radius: 40px;
+            border: 1px solid #cbd5e1;
+            font-size: 0.8rem;
+            width: 120px;
+            text-align: center;
+        }
+        .player-input button {
+            background: #e2e8f0;
+            border: none;
+            border-radius: 40px;
+            padding: 6px 12px;
+            cursor: pointer;
         }
         @media (max-width: 560px) {
             .ctrl-btn { width: 55px; height: 55px; font-size: 26px; }
             .dpad-row { gap: 12px; }
+            .ranking { font-size: 0.7rem; }
+            canvas { margin-bottom: 20px; }
         }
         footer {
             text-align: center;
             font-size: 0.7rem;
             color: #64748b;
-            margin-top: 16px;
+            margin-top: 8px;
         }
     </style>
 </head>
@@ -114,6 +163,7 @@
 <div>
     <div class="game-container">
         <canvas id="gameCanvas" width="600" height="600"></canvas>
+        
         <div class="controls">
             <div class="dpad">
                 <div class="dpad-row"><div class="ctrl-btn" id="btnUp">▲</div></div>
@@ -125,8 +175,19 @@
             </div>
             <div class="ctrl-btn reset-btn" id="btnReset">⟳</div>
         </div>
+        
         <div class="status" id="gameStatus">✨ mova a bola até o centro ✨</div>
-        <footer>Setas do teclado ou botões na tela</footer>
+        
+        <div class="player-input">
+            <input type="text" id="playerName" placeholder="Seu nome" maxlength="12">
+            <button id="saveNameBtn">Salvar</button>
+        </div>
+        
+        <div class="ranking" id="rankingDiv">
+            <h3>🏆 RANKING (melhor tempo) 🏆</h3>
+            <ol id="rankingList"></ol>
+        </div>
+        <footer>Setas do teclado ou botões na tela | Nova fase a cada vitória</footer>
     </div>
 </div>
 
@@ -154,144 +215,176 @@
         let victory = false;
         let victoryTimer = null;
         
-        // Paredes dinâmicas (muda a cada partida)
+        // Paredes dinâmicas (geradas proceduralmente)
         let walls = [];
         
-        // ---------- GERADOR DE LABIRINTOS ALEATÓRIOS (sempre com caminho para o centro) ----------
-        // Vamos criar 4 layouts diferentes, todos garantindo acesso ao centro
-        const mazeLayouts = [];
+        // Sistema de pontuação (tempo em segundos)
+        let startTime = null;
+        let currentTime = 0;
+        let animationFrameId = null;
+        let gameLoopRunning = true;
         
-        // Layout 0: caminho sinuoso vindo da esquerda e direita
-        mazeLayouts[0] = function(addWall) {
-            // Bordas externas com aberturas nas 4 direções (já incluímos depois)
-            // Paredes internas, mas deixando espaço central livre
-            addWall(100, 80, 16, 200);
-            addWall(100, 400, 16, 120);
-            addWall(480, 100, 16, 200);
-            addWall(480, 420, 16, 100);
-            addWall(200, 150, 200, 16);
-            addWall(200, 450, 200, 16);
-            addWall(60, 250, 80, 16);
-            addWall(460, 280, 80, 16);
-            // Não bloquear o centro: deixar um quadrado vazio em torno do centro (150 a 450)
-            // Adicionar algumas ilhas laterais
-            addWall(280, 220, 40, 16);
-            addWall(280, 360, 40, 16);
-            addWall(340, 290, 16, 60);
-            // caminho livre entre 300-300
-        };
+        // Nome do jogador
+        let playerName = localStorage.getItem('playerName') || 'Anônimo';
+        const nameInput = document.getElementById('playerName');
+        nameInput.value = playerName;
+        document.getElementById('saveNameBtn').addEventListener('click', () => {
+            let newName = nameInput.value.trim();
+            if (newName === "") newName = "Anônimo";
+            playerName = newName;
+            localStorage.setItem('playerName', playerName);
+            updateRankingDisplay();
+        });
         
-        // Layout 1: caminho em espiral livre
-        mazeLayouts[1] = function(addWall) {
-            addWall(80, 80, 16, 250);
-            addWall(80, 420, 16, 100);
-            addWall(500, 80, 16, 250);
-            addWall(500, 420, 16, 100);
-            addWall(180, 120, 240, 16);
-            addWall(180, 460, 240, 16);
-            addWall(120, 200, 80, 16);
-            addWall(400, 200, 80, 16);
-            addWall(120, 380, 80, 16);
-            addWall(400, 380, 80, 16);
-            // ninguém bloqueia o centro
-        };
+        // Ranking: armazena { name, time } (menor tempo melhor)
+        let ranking = [];
         
-        // Layout 2: labirinto com corredor central acessível
-        mazeLayouts[2] = function(addWall) {
-            addWall(50, 120, 120, 16);
-            addWall(50, 460, 120, 16);
-            addWall(430, 120, 120, 16);
-            addWall(430, 460, 120, 16);
-            addWall(200, 180, 200, 16);
-            addWall(200, 400, 200, 16);
-            addWall(130, 260, 80, 16);
-            addWall(390, 260, 80, 16);
-            addWall(260, 130, 16, 80);
-            addWall(260, 390, 16, 80);
-            // aberto perto do centro
-        };
+        function loadRanking() {
+            const stored = localStorage.getItem('mazeRanking');
+            if (stored) {
+                ranking = JSON.parse(stored);
+            } else {
+                // Dados fictícios para simular outros jogadores
+                ranking = [
+                    { name: "MestreAço", time: 12.3 },
+                    { name: "BolaDeFogo", time: 15.7 },
+                    { name: "Labirinteiro", time: 18.2 },
+                    { name: "Desafio", time: 22.1 }
+                ];
+                saveRanking();
+            }
+            updateRankingDisplay();
+        }
         
-        // Layout 3: labirinto mais aberto, garantindo acesso fácil
-        mazeLayouts[3] = function(addWall) {
-            addWall(150, 70, 16, 180);
-            addWall(150, 350, 16, 180);
-            addWall(430, 70, 16, 180);
-            addWall(430, 350, 16, 180);
-            addWall(70, 200, 120, 16);
-            addWall(70, 380, 120, 16);
-            addWall(410, 200, 120, 16);
-            addWall(410, 380, 120, 16);
-            addWall(250, 250, 100, 16);
-            addWall(250, 330, 100, 16);
-        };
+        function saveRanking() {
+            ranking.sort((a,b) => a.time - b.time);
+            ranking = ranking.slice(0, 8); // mantém top 8
+            localStorage.setItem('mazeRanking', JSON.stringify(ranking));
+        }
         
-        function buildMazeWithLayout(layoutIndex) {
+        function addScoreToRanking(name, timeSec) {
+            ranking.push({ name: name, time: parseFloat(timeSec.toFixed(2)) });
+            ranking.sort((a,b) => a.time - b.time);
+            ranking = ranking.slice(0, 8);
+            saveRanking();
+            updateRankingDisplay();
+        }
+        
+        function updateRankingDisplay() {
+            const list = document.getElementById('rankingList');
+            list.innerHTML = '';
+            ranking.slice(0,5).forEach((entry, idx) => {
+                const li = document.createElement('li');
+                li.textContent = `${idx+1}. ${entry.name} - ${entry.time.toFixed(2)}s`;
+                list.appendChild(li);
+            });
+            if (ranking.length === 0) list.innerHTML = '<li>Nenhum registro</li>';
+        }
+        
+        // ---------- GERADOR PROCEDURAL DE LABIRINTOS (infinito, sempre com caminho central) ----------
+        // Algoritmo: gera paredes aleatórias, mas garantindo que não bloqueiem o centro (raio 70) e que haja espaços.
+        // Para assegurar caminho, usamos paredes do tipo "retângulos" que não formem becos sem saída absolutos.
+        // Vamos criar paredes em posições variadas, mas sempre deixando corredores.
+        function generateRandomMaze() {
             walls = [];
             const ww = 18;
-            const addWall = (x, y, w, h) => {
+            // Adiciona bordas com aberturas (fixas)
+            function addBorderWalls() {
+                // superior
+                walls.push({ x: 0, y: 0, w: SIZE/2 - 42, h: ww });
+                walls.push({ x: SIZE/2 + 38, y: 0, w: SIZE/2 - 38, h: ww });
+                // inferior
+                walls.push({ x: 0, y: SIZE - ww, w: SIZE/2 - 42, h: ww });
+                walls.push({ x: SIZE/2 + 38, y: SIZE - ww, w: SIZE/2 - 38, h: ww });
+                // esquerda
+                walls.push({ x: 0, y: 0, w: ww, h: SIZE/2 - 42 });
+                walls.push({ x: 0, y: SIZE/2 + 38, w: ww, h: SIZE/2 - 38 });
+                // direita
+                walls.push({ x: SIZE - ww, y: 0, w: ww, h: SIZE/2 - 42 });
+                walls.push({ x: SIZE - ww, y: SIZE/2 + 38, w: ww, h: SIZE/2 - 38 });
+            }
+            addBorderWalls();
+            
+            // Gera entre 12 e 20 paredes internas aleatórias, sem bloquear região central (distância > 55 do centro)
+            const numWalls = Math.floor(Math.random() * 12) + 12; // 12 a 24
+            const center = { x: SIZE/2, y: SIZE/2 };
+            for (let i = 0; i < numWalls; i++) {
+                let w = 0, h = 0;
+                // alterna entre horizontal e vertical
+                if (Math.random() < 0.5) {
+                    w = Math.floor(Math.random() * 100) + 40; // 40-140
+                    h = ww;
+                } else {
+                    w = ww;
+                    h = Math.floor(Math.random() * 100) + 40;
+                }
+                let x = Math.random() * (SIZE - w);
+                let y = Math.random() * (SIZE - h);
+                // Evita sobrepor o centro (distância do centro da parede ao centro do jogo > 55)
+                const rectCenterX = x + w/2;
+                const rectCenterY = y + h/2;
+                const distToCenter = Math.hypot(rectCenterX - center.x, rectCenterY - center.y);
+                if (distToCenter < 65) continue; // não bloqueia o buraco
+                // Evita sobreposição com bordas abertas (verifica se não está tapando as entradas)
+                const isNearLeftEntrance = (x < 80 && y > SIZE/2 - 50 && y < SIZE/2 + 50);
+                const isNearRightEntrance = (x + w > SIZE - 80 && y > SIZE/2 - 50 && y < SIZE/2 + 50);
+                const isNearTopEntrance = (y < 80 && x > SIZE/2 - 50 && x < SIZE/2 + 50);
+                const isNearBottomEntrance = (y + h > SIZE - 80 && x > SIZE/2 - 50 && x < SIZE/2 + 50);
+                if (isNearLeftEntrance || isNearRightEntrance || isNearTopEntrance || isNearBottomEntrance) continue;
                 walls.push({ x, y, w, h });
-            };
-            
-            // Bordas com aberturas (sempre 4 entradas)
-            // superior
-            addWall(0, 0, SIZE/2 - 42, ww);
-            addWall(SIZE/2 + 38, 0, SIZE/2 - 38, ww);
-            // inferior
-            addWall(0, SIZE - ww, SIZE/2 - 42, ww);
-            addWall(SIZE/2 + 38, SIZE - ww, SIZE/2 - 38, ww);
-            // esquerda
-            addWall(0, 0, ww, SIZE/2 - 42);
-            addWall(0, SIZE/2 + 38, ww, SIZE/2 - 38);
-            // direita
-            addWall(SIZE - ww, 0, ww, SIZE/2 - 42);
-            addWall(SIZE - ww, SIZE/2 + 38, ww, SIZE/2 - 38);
-            
-            // Adiciona o layout escolhido (paredes internas)
-            if (mazeLayouts[layoutIndex]) {
-                mazeLayouts[layoutIndex](addWall);
-            } else {
-                // fallback: layout simples sem bloqueio central
-                addWall(200, 100, 16, 150);
-                addWall(200, 350, 16, 150);
-                addWall(380, 100, 16, 150);
-                addWall(380, 350, 16, 150);
             }
             
-            // Nunca bloquear o centro físico: remover qualquer parede que sobreponha a área central (opcional, mas seguro)
-            // Vamos filtrar paredes que estejam muito próximas ao centro (dentro de 70px do centro)
-            const centerX = SIZE/2, centerY = SIZE/2;
-            walls = walls.filter(w => {
-                // verifica se a parede está muito perto do buraco (distância > 60)
-                const rectCenterX = w.x + w.w/2;
-                const rectCenterY = w.y + w.h/2;
-                const distToCenter = Math.hypot(rectCenterX - centerX, rectCenterY - centerY);
-                if (distToCenter < 55) return false; // remove paredes que obstruem o buraco
-                // também garante que não cubra o círculo do buraco
-                return true;
-            });
+            // Adiciona algumas paredes "de corredor" para criar desafio
+            for (let i = 0; i < 6; i++) {
+                const type = Math.floor(Math.random() * 2);
+                let x, y, w, h;
+                if (type === 0) {
+                    w = 16;
+                    h = 120;
+                    x = 100 + Math.random() * 400;
+                    y = 100 + Math.random() * 380;
+                } else {
+                    w = 120;
+                    h = 16;
+                    x = 100 + Math.random() * 380;
+                    y = 100 + Math.random() * 400;
+                }
+                const rectCenterX = x + w/2;
+                const rectCenterY = y + h/2;
+                if (Math.hypot(rectCenterX - center.x, rectCenterY - center.y) < 70) continue;
+                walls.push({ x, y, w, h });
+            }
         }
         
-        // Escolhe um layout aleatório
-        let currentLayout = 0;
-        function randomizeMaze() {
-            currentLayout = Math.floor(Math.random() * mazeLayouts.length);
-            buildMazeWithLayout(currentLayout);
+        // Reinicia o jogo com novo labirinto e tempo zerado
+        function resetGame(newMaze = true) {
+            if (victoryTimer) clearTimeout(victoryTimer);
+            victory = false;
+            if (newMaze) {
+                generateRandomMaze();
+            }
+            randomSpawn();
+            velocityX = 0;
+            velocityY = 0;
+            leftPressed = rightPressed = upPressed = downPressed = false;
+            // Reinicia contagem de tempo
+            startTime = performance.now() / 1000;
+            currentTime = 0;
+            updateStatusTime();
         }
         
-        // Spawn aleatório seguro (evita spawn dentro de parede)
-        const spawnPoints = [
-            { x: 32, y: SIZE/2 },
-            { x: SIZE-32, y: SIZE/2 },
-            { x: SIZE/2, y: 32 },
-            { x: SIZE/2, y: SIZE-32 }
-        ];
-        
+        // Spawn seguro (evita spawn dentro de parede)
         function randomSpawn() {
+            const spawnPoints = [
+                { x: 32, y: SIZE/2 },
+                { x: SIZE-32, y: SIZE/2 },
+                { x: SIZE/2, y: 32 },
+                { x: SIZE/2, y: SIZE-32 }
+            ];
             for (let attempt = 0; attempt < 10; attempt++) {
                 const idx = Math.floor(Math.random() * spawnPoints.length);
                 let sx = spawnPoints[idx].x;
                 let sy = spawnPoints[idx].y;
-                // verifica colisão com paredes
                 let collides = false;
                 for (let w of walls) {
                     if (sx + BALL_RADIUS > w.x && sx - BALL_RADIUS < w.x + w.w &&
@@ -306,12 +399,12 @@
                     return;
                 }
             }
-            // fallback: centro (mas cuidado com sobreposição ao buraco)
+            // fallback: acima do centro
             ballX = SIZE/2;
-            ballY = SIZE/2 - 40; // acima do buraco
+            ballY = SIZE/2 - 50;
         }
         
-        // Detecção de colisão círculo-retângulo e resolução
+        // Colisão e resposta
         function circleRectCollision(cx, cy, r, rect) {
             let closestX = Math.max(rect.x, Math.min(cx, rect.x + rect.w));
             let closestY = Math.max(rect.y, Math.min(cy, rect.y + rect.h));
@@ -323,7 +416,6 @@
         function handleCollisions() {
             for (let wall of walls) {
                 if (circleRectCollision(ballX, ballY, BALL_RADIUS, wall)) {
-                    // resolve empurrando para fora e invertendo velocidade
                     let closestX = Math.max(wall.x, Math.min(ballX, wall.x + wall.w));
                     let closestY = Math.max(wall.y, Math.min(ballY, wall.y + wall.h));
                     let dx = ballX - closestX;
@@ -334,59 +426,86 @@
                         let correction = BALL_RADIUS - dist;
                         ballX += Math.cos(angle) * correction;
                         ballY += Math.sin(angle) * correction;
-                        // elasticidade
                         if (Math.abs(dx) > Math.abs(dy)) velocityX *= -0.4;
                         else velocityY *= -0.4;
                     }
                 }
             }
-            // limites do canvas
             ballX = Math.min(Math.max(ballX, BALL_RADIUS), SIZE - BALL_RADIUS);
             ballY = Math.min(Math.max(ballY, BALL_RADIUS), SIZE - BALL_RADIUS);
         }
         
-        // Efeito de explosão de alegria
-        function showVictoryExplosion() {
-            // criação de muitas partículas coloridas
+        function updateStatusTime() {
+            if (victory) return;
+            if (startTime) {
+                const elapsed = (performance.now() / 1000) - startTime;
+                currentTime = elapsed;
+                const statusDiv = document.getElementById('gameStatus');
+                statusDiv.innerHTML = `⏱️ Tempo: ${currentTime.toFixed(1)}s | ✨ mova a bola até o centro ✨`;
+            }
+        }
+        
+        // Efeito de fogos de artifício (partículas que sobem e explodem)
+        function startFireworks() {
             const particles = [];
             const centerX = SIZE/2, centerY = SIZE/2;
-            for (let i = 0; i < 40; i++) {
+            // Cria 3 fogos diferentes
+            for (let f = 0; f < 5; f++) {
                 const angle = Math.random() * Math.PI * 2;
-                const speed = Math.random() * 6 + 2;
-                const vx = Math.cos(angle) * speed;
-                const vy = Math.sin(angle) * speed;
-                particles.push({
-                    x: centerX, y: centerY,
-                    vx: vx, vy: vy,
-                    life: 1.0,
-                    color: `hsl(${Math.random() * 60 + 30}, 100%, 60%)`
-                });
+                const radius = 40 + Math.random() * 60;
+                const startX = centerX + Math.cos(angle) * radius;
+                const startY = centerY + Math.sin(angle) * radius - 50;
+                const targetY = startY - 80;
+                // Fogo subindo
+                let rocket = { x: startX, y: startY, vx: (Math.random() - 0.5)*2, vy: -6, life: 1, exploded: false };
+                particles.push(rocket);
             }
-            let animFrame;
-            function drawParticles() {
-                ctx.save();
+            
+            function updateFireworks() {
                 for (let i = particles.length-1; i >= 0; i--) {
                     const p = particles[i];
-                    p.x += p.vx;
-                    p.y += p.vy;
-                    p.life -= 0.02;
-                    if (p.life <= 0) {
-                        particles.splice(i,1);
-                        continue;
+                    if (!p.exploded) {
+                        p.x += p.vx;
+                        p.y += p.vy;
+                        p.vy += 0.2; // gravidade
+                        if (p.vy >= 0 || p.y < 50) {
+                            // EXPLODE
+                            p.exploded = true;
+                            const numSparks = 24;
+                            for (let s = 0; s < numSparks; s++) {
+                                const angle2 = Math.random() * Math.PI * 2;
+                                const speed = Math.random() * 5 + 2;
+                                const vx2 = Math.cos(angle2) * speed;
+                                const vy2 = Math.sin(angle2) * speed;
+                                particles.push({
+                                    x: p.x, y: p.y, vx: vx2, vy: vy2,
+                                    life: 1, exploded: true, color: `hsl(${Math.random() * 360}, 100%, 60%)`
+                                });
+                            }
+                            particles.splice(i,1);
+                        }
+                    } else {
+                        p.x += p.vx;
+                        p.y += p.vy;
+                        p.vy += 0.2;
+                        p.life -= 0.02;
+                        if (p.life <= 0 || p.y > SIZE + 50) {
+                            particles.splice(i,1);
+                        }
                     }
+                }
+                // Desenha partículas
+                for (let p of particles) {
                     ctx.beginPath();
-                    ctx.arc(p.x, p.y, 5 * p.life, 0, Math.PI*2);
-                    ctx.fillStyle = p.color;
+                    ctx.arc(p.x, p.y, p.exploded ? 3 * p.life : 4, 0, Math.PI*2);
+                    ctx.fillStyle = p.color || (p.exploded ? "#ffaa44" : "#ffaa66");
                     ctx.fill();
                 }
                 if (particles.length > 0) {
-                    requestAnimationFrame(drawParticles);
-                } else {
-                    ctx.restore();
+                    requestAnimationFrame(updateFireworks);
                 }
-                ctx.restore();
             }
-            drawParticles();
+            updateFireworks();
         }
         
         function checkWin() {
@@ -395,34 +514,24 @@
             const dy = ballY - holeCenter.y;
             if (!victory && Math.hypot(dx, dy) < BALL_RADIUS + HOLE_RADIUS - 2) {
                 victory = true;
+                const elapsed = (performance.now() / 1000) - startTime;
+                const finalTime = elapsed;
+                // Adiciona ao ranking
+                addScoreToRanking(playerName, finalTime);
                 const statusDiv = document.getElementById('gameStatus');
-                statusDiv.innerHTML = '🎉✨💥 ALEGRIA! VOCÊ VENCEU! 💥✨🎉';
+                statusDiv.innerHTML = `🎉 VITÓRIA! Tempo: ${finalTime.toFixed(2)}s 🎉`;
                 statusDiv.style.background = "#fff0d0";
-                showVictoryExplosion();
-                // Toca um "boom" visual e reinicia após 2 segundos
+                startFireworks(); // fogos de artifício
                 if (victoryTimer) clearTimeout(victoryTimer);
                 victoryTimer = setTimeout(() => {
-                    resetGame(true); // reset completo com novo labirinto
-                    statusDiv.innerHTML = '✨ mova a bola até o centro ✨';
+                    resetGame(true);
                     statusDiv.style.background = "#f8fafc";
                     victory = false;
-                }, 2000);
+                }, 3500);
             }
         }
         
-        function resetGame(newMaze = true) {
-            if (victoryTimer) clearTimeout(victoryTimer);
-            victory = false;
-            if (newMaze) {
-                randomizeMaze();
-            }
-            randomSpawn();
-            velocityX = 0;
-            velocityY = 0;
-            leftPressed = rightPressed = upPressed = downPressed = false;
-        }
-        
-        // Atualiza física
+        // Física do jogo
         let lastTimestamp = 0;
         function updatePhysics(deltaTime) {
             if (victory) {
@@ -452,6 +561,7 @@
             ballY += velocityY * deltaTime;
             handleCollisions();
             checkWin();
+            updateStatusTime();
         }
         
         // Desenho
@@ -460,7 +570,6 @@
             ctx.fillStyle = "#eef2f5";
             ctx.fillRect(0, 0, SIZE, SIZE);
             
-            // paredes
             for (let w of walls) {
                 ctx.fillStyle = "#6c7e8a";
                 ctx.fillRect(w.x, w.y, w.w, w.h);
@@ -470,7 +579,7 @@
                 ctx.strokeRect(w.x, w.y, w.w, w.h);
             }
             
-            // buraco central
+            // Buraco central
             ctx.beginPath();
             ctx.arc(SIZE/2, SIZE/2, HOLE_RADIUS, 0, Math.PI*2);
             ctx.fillStyle = "#2d3f4a";
@@ -484,7 +593,6 @@
             ctx.fillStyle = "#03070a";
             ctx.fill();
             
-            // Sombra da bola
             ctx.shadowColor = "rgba(0,0,0,0.3)";
             ctx.shadowBlur = 8;
             const grad = ctx.createRadialGradient(ballX-4, ballY-4, 4, ballX, ballY, BALL_RADIUS);
@@ -516,8 +624,11 @@
         }
         
         // Inicialização
-        randomizeMaze();
+        loadRanking();
+        generateRandomMaze();
         randomSpawn();
+        startTime = performance.now() / 1000;
+        updateStatusTime();
         
         // Controles
         window.addEventListener('keydown', (e) => {
@@ -567,17 +678,14 @@
             btnReset.addEventListener('touchstart', (e) => { e.preventDefault(); resetGame(true); });
         }
         
-        // Prevenir rolagem ao tocar nos botões
         document.querySelectorAll('.ctrl-btn').forEach(btn => {
             btn.addEventListener('touchstart', (e) => e.preventDefault());
         });
         
-        // Impede rolagem da página no body
         document.body.addEventListener('touchmove', (e) => {
             if (e.target.closest('.ctrl-btn') || e.target === canvas) e.preventDefault();
         }, { passive: false });
         
-        // Inicia
         requestAnimationFrame(gameLoop);
     })();
 </script>
