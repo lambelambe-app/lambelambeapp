@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Labirinto Metálico - Bola ao Centro</title>
+    <title>Labirinto Metálico | Bola ao Centro</title>
     <style>
         * {
             margin: 0;
@@ -12,34 +12,31 @@
             user-select: none;
             -webkit-tap-highlight-color: transparent;
         }
-
         body {
-            background: white;
+            background: #ffffff;
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-family: system-ui, 'Segoe UI', sans-serif;
+            font-family: 'Segoe UI', system-ui, sans-serif;
             padding: 16px;
         }
-
         .game-container {
             background: white;
             border-radius: 32px;
             padding: 16px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            box-shadow: 0 12px 28px rgba(0,0,0,0.1);
         }
-
         canvas {
             display: block;
             margin: 0 auto;
             border-radius: 24px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            background-color: #eef2f5;
+            cursor: pointer;
             width: 100%;
             height: auto;
-            background-color: #eef2f5; /* fallback */
         }
-
         .controls {
             display: flex;
             justify-content: center;
@@ -47,20 +44,16 @@
             margin-top: 24px;
             flex-wrap: wrap;
         }
-
         .dpad {
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 10px;
         }
-
         .dpad-row {
             display: flex;
             gap: 16px;
-            justify-content: center;
         }
-
         .ctrl-btn {
             background: #f1f5f9;
             border: 1px solid #cbd5e1;
@@ -87,7 +80,6 @@
             color: #b91c1c;
             width: 80px;
         }
-
         .status {
             background: #f8fafc;
             border: 1px solid #cbd5e1;
@@ -98,7 +90,6 @@
             margin-top: 16px;
             text-align: center;
         }
-
         @media (max-width: 560px) {
             .ctrl-btn { width: 55px; height: 55px; font-size: 26px; }
             .dpad-row { gap: 12px; }
@@ -110,12 +101,11 @@
             margin-top: 16px;
         }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
 </head>
 <body>
 <div>
     <div class="game-container">
-        <div id="gameCanvas"></div>
+        <canvas id="gameCanvas" width="600" height="600"></canvas>
         <div class="controls">
             <div class="dpad">
                 <div class="dpad-row"><div class="ctrl-btn" id="btnUp">▲</div></div>
@@ -134,317 +124,324 @@
 
 <script>
     (function(){
+        // ---------- CONFIGURAÇÕES ----------
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
         const SIZE = 600;
+        canvas.width = SIZE;
+        canvas.height = SIZE;
+        
+        // Dimensões
         const BALL_RADIUS = 14;
         const HOLE_RADIUS = 16;
         
-        // Spawns nas aberturas das bordas
-        const SPAWNS = [
-            { x: 32, y: SIZE/2 },            // esquerda
-            { x: SIZE-32, y: SIZE/2 },       // direita
-            { x: SIZE/2, y: 32 },            // topo
-            { x: SIZE/2, y: SIZE-32 }        // base
-        ];
+        // Posição da bola
+        let ballX = SIZE/2, ballY = SIZE/2;
+        let velocityX = 0, velocityY = 0;
+        const ACC = 380;
+        const MAX_SPEED = 480;
+        const DRAG = 0.98;
         
-        let moveLeft=false, moveRight=false, moveUp=false, moveDown=false;
-        let gameScene = null;
+        // Entradas
+        let leftPressed = false, rightPressed = false, upPressed = false, downPressed = false;
         let victory = false;
         
-        class LabirintoScene extends Phaser.Scene {
-            constructor() { super({ key: 'MazeGame' }); }
+        // --- Definição das paredes (retângulos) ---
+        // Cada parede: { x, y, w, h }
+        let walls = [];
+        
+        function addWall(x, y, w, h) {
+            walls.push({ x, y, w, h });
+        }
+        
+        function buildMaze() {
+            walls = [];
+            const ww = 18;
+            // Bordas com aberturas (4 entradas)
+            // superior
+            addWall(0, 0, SIZE/2 - 42, ww);
+            addWall(SIZE/2 + 38, 0, SIZE/2 - 38, ww);
+            // inferior
+            addWall(0, SIZE - ww, SIZE/2 - 42, ww);
+            addWall(SIZE/2 + 38, SIZE - ww, SIZE/2 - 38, ww);
+            // esquerda
+            addWall(0, 0, ww, SIZE/2 - 42);
+            addWall(0, SIZE/2 + 38, ww, SIZE/2 - 38);
+            // direita
+            addWall(SIZE - ww, 0, ww, SIZE/2 - 42);
+            addWall(SIZE - ww, SIZE/2 + 38, ww, SIZE/2 - 38);
             
-            preload() {
-                // Cria texturas proceduralmente (100% visível)
-                this.makeTextures();
-            }
-            
-            makeTextures() {
-                // --- Bola metálica (prata brilhante) ---
-                const ballG = this.make.graphics({ add: false });
-                ballG.clear();
-                ballG.beginPath();
-                ballG.arc(BALL_RADIUS, BALL_RADIUS, BALL_RADIUS, 0, Math.PI*2);
-                ballG.fillStyle(0x000000, 0.2);
-                ballG.fill();
-                ballG.beginPath();
-                ballG.arc(BALL_RADIUS-2, BALL_RADIUS-2, BALL_RADIUS-1, 0, Math.PI*2);
-                const grad = ballG.createLinearGradient(2,2, BALL_RADIUS*1.3, BALL_RADIUS*1.3);
-                grad.addColorStop(0, '#f4f8ff');
-                grad.addColorStop(0.5, '#b5c4d4');
-                grad.addColorStop(1, '#7a8a9a');
-                ballG.fillStyle(grad);
-                ballG.fill();
-                ballG.beginPath();
-                ballG.arc(BALL_RADIUS-5, BALL_RADIUS-6, 4, 0, Math.PI*2);
-                ballG.fillStyle(0xffffff, 0.7);
-                ballG.fill();
-                ballG.generateTexture('metalBall', BALL_RADIUS*2, BALL_RADIUS*2);
-                
-                // --- Buraco escuro no centro ---
-                const holeG = this.make.graphics({ add: false });
-                holeG.clear();
-                holeG.beginPath();
-                holeG.arc(HOLE_RADIUS, HOLE_RADIUS, HOLE_RADIUS, 0, Math.PI*2);
-                holeG.fillStyle(0x2d3f4a);
-                holeG.fill();
-                holeG.beginPath();
-                holeG.arc(HOLE_RADIUS, HOLE_RADIUS, HOLE_RADIUS-3, 0, Math.PI*2);
-                holeG.fillStyle(0x141e26);
-                holeG.fill();
-                holeG.beginPath();
-                holeG.arc(HOLE_RADIUS, HOLE_RADIUS, HOLE_RADIUS-6, 0, Math.PI*2);
-                holeG.fillStyle(0x03070a);
-                holeG.fill();
-                holeG.generateTexture('hole', HOLE_RADIUS*2, HOLE_RADIUS*2);
-                
-                // --- Parede (cinza escuro com borda) ---
-                const wallG = this.make.graphics({ add: false });
-                wallG.fillStyle(0x6c7e8a);
-                wallG.fillRect(0,0,20,20);
-                wallG.fillStyle(0x4a5c66);
-                wallG.fillRect(2,2,16,16);
-                wallG.lineStyle(1, 0x2c3e46, 0.6);
-                wallG.strokeRect(0,0,20,20);
-                wallG.generateTexture('wall', 20, 20);
-            }
-            
-            create() {
-                victory = false;
-                // FUNDO CLARO ELEGANTE (cinza muito claro)
-                this.cameras.main.setBackgroundColor('#eef2f5');
-                
-                this.walls = this.physics.add.staticGroup();
-                this.buildMaze();
-                
-                // Buraco
-                this.hole = this.add.sprite(SIZE/2, SIZE/2, 'hole');
-                this.hole.setDisplaySize(HOLE_RADIUS*2, HOLE_RADIUS*2);
-                this.physics.add.existing(this.hole, true);
-                this.hole.body.setCircle(HOLE_RADIUS);
-                this.hole.body.setImmovable(true);
-                
-                // Bola
-                this.ball = this.physics.add.sprite(0, 0, 'metalBall');
-                this.ball.setDisplaySize(BALL_RADIUS*2, BALL_RADIUS*2);
-                this.ball.setCircle(BALL_RADIUS);
-                this.ball.setCollideWorldBounds(false);
-                this.ball.setBounce(0.2);
-                this.ball.setDrag(0.98);
-                this.ball.setMaxVelocity(500,500);
-                
-                this.physics.add.collider(this.ball, this.walls);
-                this.physics.add.overlap(this.ball, this.hole, this.winGame, null, this);
-                
-                this.randomSpawn();
-                
-                // Animação suave do buraco
-                this.tweens.add({
-                    targets: this.hole,
-                    scaleX: 1.05,
-                    scaleY: 1.05,
-                    duration: 1200,
-                    yoyo: true,
-                    repeat: -1
-                });
-            }
-            
-            buildMaze() {
-                const ww = 18;
-                const addWall = (x,y,w,h) => {
-                    if(w<=0 || h<=0) return;
-                    const wall = this.walls.create(x, y, 'wall');
-                    wall.setOrigin(0,0);
-                    wall.displayWidth = w;
-                    wall.displayHeight = h;
-                    wall.refreshBody();
-                };
-                
-                // BORDAS COM ABERTURAS (para spawn)
-                addWall(0,0, SIZE/2-42, ww);            // top left
-                addWall(SIZE/2+38,0, SIZE/2-38, ww);   // top right
-                addWall(0,SIZE-ww, SIZE/2-42, ww);      // bottom left
-                addWall(SIZE/2+38,SIZE-ww, SIZE/2-38, ww);
-                addWall(0,0, ww, SIZE/2-42);           // left top
-                addWall(0,SIZE/2+38, ww, SIZE/2-38);    // left bottom
-                addWall(SIZE-ww,0, ww, SIZE/2-42);      // right top
-                addWall(SIZE-ww,SIZE/2+38, ww, SIZE/2-38);
-                
-                // LABIRINTO INTERNO (paredes bem visíveis)
-                addWall(140,80, 16, 220);
-                addWall(140,340, 16, 180);
-                addWall(440,100, 16, 200);
-                addWall(440,340, 16, 180);
-                addWall(200,150, 200, 16);
-                addWall(200,430, 200, 16);
-                addWall(70,220, 60, 16);
-                addWall(70,360, 60, 16);
-                addWall(470,220, 60, 16);
-                addWall(470,360, 60, 16);
-                addWall(80,480, 120, 16);
-                addWall(180,480, 16, 80);
-                addWall(400,80, 120, 16);
-                addWall(400,80, 16, 80);
-                addWall(280,240, 40, 16);
-                addWall(280,340, 40, 16);
-                addWall(340,280, 16, 60);
-                addWall(240,260, 120, 12);
-                addWall(240,328, 120, 12);
-                addWall(260,272, 12, 56);
-                addWall(328,272, 12, 56);
-                addWall(520,260, 16, 70);
-                addWall(70,280, 16, 60);
-            }
-            
-            randomSpawn() {
-                const idx = Math.floor(Math.random() * SPAWNS.length);
-                const pos = SPAWNS[idx];
-                this.ball.setPosition(pos.x, pos.y);
-                this.ball.setVelocity(0,0);
-                this.ball.setAcceleration(0,0);
-            }
-            
-            winGame() {
-                if(victory) return;
-                victory = true;
-                this.ball.setVelocity(0,0);
-                this.ball.setAcceleration(0,0);
-                const statusDiv = document.getElementById('gameStatus');
-                if(statusDiv) {
-                    statusDiv.innerHTML = '🏆 VITÓRIA! 🏆 Bola no buraco!';
-                    statusDiv.style.background = "#e0f2e0";
-                }
-                // Efeito de partículas
-                for(let i=0;i<16;i++) {
-                    const angle = (i/16)*Math.PI*2;
-                    const x = this.hole.x + Math.cos(angle)*30;
-                    const y = this.hole.y + Math.sin(angle)*30;
-                    const spark = this.add.circle(x,y,4,0xffaa55,0.9);
-                    this.tweens.add({ targets: spark, alpha:0, scale:0.2, duration:400, onComplete:()=>spark.destroy() });
-                }
-                this.time.delayedCall(1500, () => {
-                    this.resetGame();
-                    if(statusDiv) {
-                        statusDiv.innerHTML = '✨ mova a bola até o centro ✨';
-                        statusDiv.style.background = "#f8fafc";
+            // Labirinto interno
+            addWall(140,80, 16, 220);
+            addWall(140,340, 16, 180);
+            addWall(440,100, 16, 200);
+            addWall(440,340, 16, 180);
+            addWall(200,150, 200, 16);
+            addWall(200,430, 200, 16);
+            addWall(70,220, 60, 16);
+            addWall(70,360, 60, 16);
+            addWall(470,220, 60, 16);
+            addWall(470,360, 60, 16);
+            addWall(80,480, 120, 16);
+            addWall(180,480, 16, 80);
+            addWall(400,80, 120, 16);
+            addWall(400,80, 16, 80);
+            addWall(280,240, 40, 16);
+            addWall(280,340, 40, 16);
+            addWall(340,280, 16, 60);
+            addWall(240,260, 120, 12);
+            addWall(240,328, 120, 12);
+            addWall(260,272, 12, 56);
+            addWall(328,272, 12, 56);
+            addWall(520,260, 16, 70);
+            addWall(70,280, 16, 60);
+        }
+        
+        // Spawn aleatório nos 4 pontos
+        const spawnPoints = [
+            { x: 32, y: SIZE/2 },
+            { x: SIZE-32, y: SIZE/2 },
+            { x: SIZE/2, y: 32 },
+            { x: SIZE/2, y: SIZE-32 }
+        ];
+        
+        function randomSpawn() {
+            const idx = Math.floor(Math.random() * spawnPoints.length);
+            ballX = spawnPoints[idx].x;
+            ballY = spawnPoints[idx].y;
+            velocityX = 0;
+            velocityY = 0;
+        }
+        
+        // Detecção de colisão círculo-retângulo
+        function circleRectCollision(cx, cy, r, rect) {
+            let closestX = Math.max(rect.x, Math.min(cx, rect.x + rect.w));
+            let closestY = Math.max(rect.y, Math.min(cy, rect.y + rect.h));
+            let dx = cx - closestX;
+            let dy = cy - closestY;
+            return (dx * dx + dy * dy) < r * r;
+        }
+        
+        // Resolve colisão e reposiciona a bola
+        function handleCollisions() {
+            for (let wall of walls) {
+                if (circleRectCollision(ballX, ballY, BALL_RADIUS, wall)) {
+                    // Tentativa simples: recuar usando o vetor velocidade invertido?
+                    // Método mais robusto: testar eixo X e Y separadamente
+                    let overlapX = 0, overlapY = 0;
+                    // Ver eixo X
+                    let prevX = ballX - velocityX;
+                    let testX = prevX;
+                    let collided = false;
+                    // Teste rápido para empurrar
+                    let closestX = Math.max(wall.x, Math.min(ballX, wall.x + wall.w));
+                    let closestY = Math.max(wall.y, Math.min(ballY, wall.y + wall.h));
+                    let dx = ballX - closestX;
+                    let dy = ballY - closestY;
+                    let dist = Math.hypot(dx, dy);
+                    if (dist < BALL_RADIUS) {
+                        let angle = Math.atan2(dy, dx);
+                        let correction = BALL_RADIUS - dist;
+                        ballX += Math.cos(angle) * correction;
+                        ballY += Math.sin(angle) * correction;
+                        // Ajusta velocidades (elasticidade)
+                        if (Math.abs(dx) > Math.abs(dy)) velocityX *= -0.5;
+                        else velocityY *= -0.5;
                     }
-                    victory = false;
-                });
-            }
-            
-            resetGame() {
-                this.randomSpawn();
-                this.ball.setVelocity(0,0);
-                moveLeft=moveRight=moveUp=moveDown=false;
-                this.cameras.main.shake(80,0.005);
-            }
-            
-            update() {
-                if(victory) {
-                    this.ball.setAcceleration(0,0);
-                    return;
                 }
-                let ax=0, ay=0;
-                if(moveLeft) ax = -380;
-                if(moveRight) ax = 380;
-                if(moveUp) ay = -380;
-                if(moveDown) ay = 380;
-                this.ball.setAcceleration(ax, ay);
-                // rotação estética
-                this.ball.angle += this.ball.body.velocity.x * 0.2;
             }
         }
         
-        // Inicialização do Phaser
-        const config = {
-            type: Phaser.AUTO,
-            parent: 'gameCanvas',
-            width: SIZE,
-            height: SIZE,
-            backgroundColor: '#eef2f5',
-            scene: LabirintoScene,
-            physics: { default: 'arcade', arcade: { debug: false, gravity: { x:0, y:0 } } },
-            scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH }
-        };
+        // Verifica vitória (distância ao centro)
+        function checkWin() {
+            const holeCenter = { x: SIZE/2, y: SIZE/2 };
+            const dx = ballX - holeCenter.x;
+            const dy = ballY - holeCenter.y;
+            if (!victory && Math.hypot(dx, dy) < BALL_RADIUS + HOLE_RADIUS - 2) {
+                victory = true;
+                const statusDiv = document.getElementById('gameStatus');
+                statusDiv.innerHTML = '🏆 VITÓRIA! 🏆 Bola no buraco!';
+                statusDiv.style.background = "#e0f2e0";
+                setTimeout(() => {
+                    resetGame();
+                    statusDiv.innerHTML = '✨ mova a bola até o centro ✨';
+                    statusDiv.style.background = "#f8fafc";
+                }, 1500);
+            }
+        }
         
-        const game = new Phaser.Game(config);
+        function resetGame() {
+            victory = false;
+            randomSpawn();
+            velocityX = 0;
+            velocityY = 0;
+            leftPressed = rightPressed = upPressed = downPressed = false;
+        }
         
-        // Aguardar cena
-        let sceneReady = false;
-        game.events.on('ready', () => {
-            setTimeout(() => {
-                const scene = game.scene.getScene('MazeGame');
-                if(scene) {
-                    gameScene = scene;
-                    sceneReady = true;
-                }
-            }, 200);
+        // Atualiza física e entrada
+        function updatePhysics(deltaTime) {
+            if (victory) {
+                velocityX = 0;
+                velocityY = 0;
+                return;
+            }
+            let accX = 0, accY = 0;
+            if (leftPressed) accX = -ACC;
+            if (rightPressed) accX = ACC;
+            if (upPressed) accY = -ACC;
+            if (downPressed) accY = ACC;
+            
+            velocityX += accX * deltaTime;
+            velocityY += accY * deltaTime;
+            let speed = Math.hypot(velocityX, velocityY);
+            if (speed > MAX_SPEED) {
+                velocityX = (velocityX / speed) * MAX_SPEED;
+                velocityY = (velocityY / speed) * MAX_SPEED;
+            }
+            // arrasto
+            velocityX *= DRAG;
+            velocityY *= DRAG;
+            if (Math.abs(velocityX) < 0.5) velocityX = 0;
+            if (Math.abs(velocityY) < 0.5) velocityY = 0;
+            
+            // tentativa de movimento
+            let newX = ballX + velocityX * deltaTime;
+            let newY = ballY + velocityY * deltaTime;
+            // teste colisão temporário
+            ballX = newX;
+            ballY = newY;
+            handleCollisions();
+            // limites das bordas externas (paredes já bloqueiam, mas garantia)
+            ballX = Math.min(Math.max(ballX, BALL_RADIUS), SIZE - BALL_RADIUS);
+            ballY = Math.min(Math.max(ballY, BALL_RADIUS), SIZE - BALL_RADIUS);
+            
+            checkWin();
+        }
+        
+        // ---------- DESENHO ----------
+        function draw() {
+            ctx.clearRect(0, 0, SIZE, SIZE);
+            // Fundo cinza claro
+            ctx.fillStyle = "#eef2f5";
+            ctx.fillRect(0, 0, SIZE, SIZE);
+            
+            // Desenhar paredes
+            ctx.shadowBlur = 0;
+            for (let w of walls) {
+                ctx.fillStyle = "#6c7e8a";
+                ctx.fillRect(w.x, w.y, w.w, w.h);
+                ctx.fillStyle = "#4a5c66";
+                ctx.fillRect(w.x+2, w.y+2, w.w-4, w.h-4);
+                ctx.strokeStyle = "#2c3e46";
+                ctx.lineWidth = 1;
+                ctx.strokeRect(w.x, w.y, w.w, w.h);
+            }
+            
+            // Desenhar buraco central
+            ctx.beginPath();
+            ctx.arc(SIZE/2, SIZE/2, HOLE_RADIUS, 0, Math.PI*2);
+            ctx.fillStyle = "#2d3f4a";
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(SIZE/2, SIZE/2, HOLE_RADIUS-3, 0, Math.PI*2);
+            ctx.fillStyle = "#141e26";
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(SIZE/2, SIZE/2, HOLE_RADIUS-6, 0, Math.PI*2);
+            ctx.fillStyle = "#03070a";
+            ctx.fill();
+            
+            // Sombra da bola
+            ctx.shadowColor = "rgba(0,0,0,0.3)";
+            ctx.shadowBlur = 8;
+            // bola metálica
+            const grad = ctx.createRadialGradient(ballX-4, ballY-4, 4, ballX, ballY, BALL_RADIUS);
+            grad.addColorStop(0, "#f4f8ff");
+            grad.addColorStop(0.5, "#b5c4d4");
+            grad.addColorStop(1, "#7a8a9a");
+            ctx.beginPath();
+            ctx.arc(ballX, ballY, BALL_RADIUS, 0, Math.PI*2);
+            ctx.fillStyle = grad;
+            ctx.fill();
+            ctx.shadowBlur = 0;
+            ctx.beginPath();
+            ctx.arc(ballX-3, ballY-4, 4, 0, Math.PI*2);
+            ctx.fillStyle = "rgba(255,255,255,0.7)";
+            ctx.fill();
+        }
+        
+        // Loop de animação
+        let lastTime = 0;
+        function gameLoop(now) {
+            if (!lastTime) lastTime = now;
+            let delta = Math.min(0.033, (now - lastTime) / 1000);
+            if (delta > 0.01) {
+                updatePhysics(delta);
+                draw();
+            }
+            lastTime = now;
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // Inicialização
+        buildMaze();
+        randomSpawn();
+        
+        // Controles via teclado
+        window.addEventListener('keydown', (e) => {
+            const key = e.key;
+            if (key === 'ArrowLeft' || key === 'a') { leftPressed = true; e.preventDefault(); }
+            else if (key === 'ArrowRight' || key === 'd') { rightPressed = true; e.preventDefault(); }
+            else if (key === 'ArrowUp' || key === 'w') { upPressed = true; e.preventDefault(); }
+            else if (key === 'ArrowDown' || key === 's') { downPressed = true; e.preventDefault(); }
+            else if (key === 'r') { resetGame(); e.preventDefault(); }
+        });
+        window.addEventListener('keyup', (e) => {
+            const key = e.key;
+            if (key === 'ArrowLeft' || key === 'a') leftPressed = false;
+            else if (key === 'ArrowRight' || key === 'd') rightPressed = false;
+            else if (key === 'ArrowUp' || key === 'w') upPressed = false;
+            else if (key === 'ArrowDown' || key === 's') downPressed = false;
         });
         
-        // Função para conectar controles
-        function setupControls() {
-            const up = document.getElementById('btnUp');
-            const down = document.getElementById('btnDown');
-            const left = document.getElementById('btnLeft');
-            const right = document.getElementById('btnRight');
-            const resetBtn = document.getElementById('btnReset');
-            
-            const setDir = (dir,val) => {
-                if(dir==='up') moveUp=val;
-                if(dir==='down') moveDown=val;
-                if(dir==='left') moveLeft=val;
-                if(dir==='right') moveRight=val;
+        // Botões touch/mouse
+        const btnUp = document.getElementById('btnUp');
+        const btnDown = document.getElementById('btnDown');
+        const btnLeft = document.getElementById('btnLeft');
+        const btnRight = document.getElementById('btnRight');
+        const btnReset = document.getElementById('btnReset');
+        
+        function attachButton(btn, dir) {
+            if (!btn) return;
+            const activate = (active) => {
+                if (dir === 'up') upPressed = active;
+                if (dir === 'down') downPressed = active;
+                if (dir === 'left') leftPressed = active;
+                if (dir === 'right') rightPressed = active;
             };
-            
-            const attach = (btn, dir) => {
-                if(!btn) return;
-                btn.addEventListener('mousedown', (e) => { e.preventDefault(); setDir(dir, true); });
-                btn.addEventListener('mouseup', () => setDir(dir, false));
-                btn.addEventListener('mouseleave', () => setDir(dir, false));
-                btn.addEventListener('touchstart', (e) => { e.preventDefault(); setDir(dir, true); });
-                btn.addEventListener('touchend', () => setDir(dir, false));
-                btn.addEventListener('touchcancel', () => setDir(dir, false));
-            };
-            
-            attach(up, 'up');
-            attach(down, 'down');
-            attach(left, 'left');
-            attach(right, 'right');
-            
-            if(resetBtn) {
-                resetBtn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    if(gameScene && !victory) gameScene.resetGame();
-                });
-                resetBtn.addEventListener('touchstart', (e) => { e.preventDefault(); if(gameScene) gameScene.resetGame(); });
-            }
-            
-            // Teclado
-            window.addEventListener('keydown', (e) => {
-                const k = e.key;
-                if(k === 'ArrowLeft' || k === 'a') { moveLeft=true; e.preventDefault(); }
-                else if(k === 'ArrowRight' || k === 'd') { moveRight=true; e.preventDefault(); }
-                else if(k === 'ArrowUp' || k === 'w') { moveUp=true; e.preventDefault(); }
-                else if(k === 'ArrowDown' || k === 's') { moveDown=true; e.preventDefault(); }
-                else if(k === 'r') { if(gameScene) gameScene.resetGame(); e.preventDefault(); }
-            });
-            window.addEventListener('keyup', (e) => {
-                const k = e.key;
-                if(k === 'ArrowLeft' || k === 'a') moveLeft=false;
-                else if(k === 'ArrowRight' || k === 'd') moveRight=false;
-                else if(k === 'ArrowUp' || k === 'w') moveUp=false;
-                else if(k === 'ArrowDown' || k === 's') moveDown=false;
-            });
+            btn.addEventListener('mousedown', (e) => { e.preventDefault(); activate(true); });
+            btn.addEventListener('mouseup', () => activate(false));
+            btn.addEventListener('mouseleave', () => activate(false));
+            btn.addEventListener('touchstart', (e) => { e.preventDefault(); activate(true); });
+            btn.addEventListener('touchend', () => activate(false));
+            btn.addEventListener('touchcancel', () => activate(false));
+        }
+        attachButton(btnUp, 'up');
+        attachButton(btnDown, 'down');
+        attachButton(btnLeft, 'left');
+        attachButton(btnRight, 'right');
+        if (btnReset) {
+            btnReset.addEventListener('click', () => resetGame());
+            btnReset.addEventListener('touchstart', (e) => { e.preventDefault(); resetGame(); });
         }
         
-        setupControls();
+        // Previne rolagem ao tocar nos botões
+        document.querySelectorAll('.ctrl-btn').forEach(btn => {
+            btn.addEventListener('touchstart', (e) => e.preventDefault());
+        });
         
-        // Fallback para garantir referência da cena
-        const interval = setInterval(() => {
-            if(!gameScene && game.scene.getScene('MazeGame')) {
-                gameScene = game.scene.getScene('MazeGame');
-                clearInterval(interval);
-            }
-        }, 300);
+        // Inicia o jogo
+        requestAnimationFrame(gameLoop);
     })();
 </script>
 </body>
