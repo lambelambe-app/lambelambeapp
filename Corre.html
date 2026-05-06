@@ -18,11 +18,12 @@
             --accent: #4ade80;
             --warn: #fbbf24;
             --danger: #ef4444;
-            --radius: 18px;
+            --radius: 0px;
+            --pixel-border: 3px solid #2a2a2a;
         }
         *{margin:0;padding:0;box-sizing:border-box;}
         body{
-            font-family:'Inter',system-ui,sans-serif;
+            font-family:'Press Start 2P','Inter',system-ui,sans-serif;
             background:var(--bg);
             color:var(--text);
             height:100vh;height:100dvh;
@@ -30,76 +31,113 @@
             overflow:hidden;
             -webkit-tap-highlight-color:transparent;
             user-select:none;
+            image-rendering:pixelated;
         }
         .top-nav{
             display:flex;align-items:center;justify-content:space-between;
-            padding:12px 20px;padding-top:max(12px,env(safe-area-inset-top));
+            padding:10px 16px;padding-top:max(10px,env(safe-area-inset-top));
             background:var(--glass);backdrop-filter:blur(20px);
-            border-bottom:1px solid var(--border);z-index:10;
+            border-bottom:3px solid #2a2a2a;
+            z-index:10;
         }
-        .top-nav h1{font-size:1.1rem;font-weight:600;letter-spacing:-0.01em;}
+        .top-nav h1{
+            font-size:1rem;font-weight:400;letter-spacing:2px;
+            text-shadow:2px 2px 0 #4ade80;
+        }
         .nav-btn{
-            background:none;border:none;color:var(--text2);font-size:1.2rem;
-            width:40px;height:40px;border-radius:50%;display:flex;
+            background:#1a1a1a;border:3px solid #333;color:var(--text);
+            font-size:1rem;width:38px;height:38px;display:flex;
             align-items:center;justify-content:center;cursor:pointer;
-            transition:background 0.2s;
+            box-shadow:2px 2px 0 #000;
+            transition:all 0.1s;
         }
-        .nav-btn:active{background:rgba(255,255,255,0.1);}
-        .main-content{flex:1;overflow-y:auto;padding:16px;padding-bottom:20px;scroll-behavior:smooth;-webkit-overflow-scrolling:touch;}
+        .nav-btn:active{transform:translate(1px,1px);box-shadow:1px 1px 0 #000;}
+        .main-content{flex:1;overflow-y:auto;padding:12px;padding-bottom:20px;scroll-behavior:smooth;-webkit-overflow-scrolling:touch;}
         .screen{display:none;animation:fadeIn 0.25s;}
         .screen.active{display:block;}
         @keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
         .card{
             background:var(--glass);backdrop-filter:blur(20px);
-            border:1px solid var(--border);border-radius:var(--radius);
-            padding:18px;margin-bottom:14px;
+            border:3px solid #2a2a2a;
+            padding:16px;margin-bottom:12px;
         }
-        .card-dark{background:rgba(10,10,10,0.8);}
-        .greeting{font-size:0.8rem;color:var(--text3);margin-bottom:4px;}
+        .card-dark{background:rgba(10,10,10,0.9);}
+
+        /* User Row: saudação + nome à esquerda, botões à direita */
+        .user-row{
+            display:flex;gap:12px;align-items:stretch;
+            margin-bottom:12px;
+        }
+        .user-info{
+            flex:1;
+            background:var(--glass);backdrop-filter:blur(20px);
+            border:3px solid #2a2a2a;
+            padding:14px;display:flex;flex-direction:column;justify-content:center;
+        }
+        .greeting{font-size:0.55rem;color:var(--text3);margin-bottom:4px;letter-spacing:1px;}
         .user-name-input{
-            background:transparent;border:none;color:var(--text);
-            font-size:1.4rem;font-weight:600;width:100%;outline:none;
-            font-family:inherit;
-            background:linear-gradient(135deg,#4ade80,#22d3bb);
-            -webkit-background-clip:text;
-            -webkit-text-fill-color:transparent;
+            background:transparent;border:none;color:var(--accent);
+            font-size:0.9rem;width:100%;outline:none;
+            font-family:inherit;text-shadow:2px 2px 0 #000;
             caret-color:var(--accent);
         }
-        .user-name-input::placeholder{color:var(--text3);-webkit-text-fill-color:var(--text3);}
+        .user-name-input::placeholder{color:var(--text3);}
+        .user-actions{
+            display:flex;flex-direction:column;gap:6px;width:90px;
+        }
+        .pixel-btn{
+            flex:1;
+            background:#1a1a1a;border:3px solid #333;color:var(--accent);
+            font-family:inherit;font-size:0.45rem;letter-spacing:1px;
+            cursor:pointer;text-transform:uppercase;
+            box-shadow:3px 3px 0 #000;
+            display:flex;align-items:center;justify-content:center;
+            transition:all 0.1s;padding:4px;
+        }
+        .pixel-btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 #000;}
+        .pixel-btn.accent{background:var(--accent);color:#000;border-color:var(--accent);}
+
         .stat-row{display:flex;justify-content:space-around;align-items:center;margin:14px 0;}
-        .stat-val{font-size:2rem;font-weight:700;font-family:'SF Mono','Fira Code',monospace;}
-        .stat-lab{font-size:0.7rem;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;}
-        .divider{width:1px;height:40px;background:var(--border);}
+        .stat-val{font-size:1.8rem;font-weight:400;font-family:'Press Start 2P','SF Mono','Fira Code',monospace;text-shadow:2px 2px 0 #000;}
+        .stat-lab{font-size:0.5rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;}
+        .divider{width:2px;height:40px;background:#2a2a2a;}
         .slider-section{margin:14px 0;}
-        .slider-label{font-size:0.7rem;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;}
-        input[type=range]{-webkit-appearance:none;width:100%;height:6px;border-radius:3px;background:linear-gradient(to right,#4ade80,#fbbf24,#ef4444);outline:none;margin:8px 0;}
-        input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:50%;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,0.3);cursor:pointer;}
+        .slider-label{font-size:0.5rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;}
+        input[type=range]{
+            -webkit-appearance:none;width:100%;height:8px;
+            border:2px solid #333;background:linear-gradient(to right,#4ade80,#fbbf24,#ef4444);
+            outline:none;margin:8px 0;
+        }
+        input[type=range]::-webkit-slider-thumb{
+            -webkit-appearance:none;width:22px;height:22px;
+            background:#fff;border:2px solid #000;cursor:pointer;
+            box-shadow:2px 2px 0 #000;
+        }
         .btn{
             display:flex;align-items:center;justify-content:center;gap:6px;
-            width:100%;padding:14px;border:none;border-radius:var(--radius);
-            background:var(--accent);color:#000;font-weight:700;
-            font-size:0.9rem;letter-spacing:0.02em;cursor:pointer;
-            transition:all 0.2s;
+            width:100%;padding:14px;border:3px solid #000;
+            background:var(--accent);color:#000;
+            font-family:inherit;font-size:0.7rem;letter-spacing:2px;cursor:pointer;
+            box-shadow:4px 4px 0 #000;transition:all 0.1s;text-transform:uppercase;
         }
-        .btn:active{transform:scale(0.98);opacity:0.9;}
-        .btn-outline{background:transparent;border:1px solid var(--border);color:var(--text);}
-        .btn-sm{padding:10px 14px;font-size:0.8rem;width:auto;display:inline-flex;}
-        .nav-buttons{display:flex;gap:10px;margin-bottom:14px;}
-        .nav-buttons .btn{flex:1;font-size:0.85rem;padding:12px;}
-        .map-container{height:280px;border-radius:14px;margin:14px 0;overflow:hidden;background:#1a1a1a;position:relative;}
+        .btn:active{transform:translate(3px,3px);box-shadow:1px 1px 0 #000;}
+        .btn-outline{background:transparent;border:3px solid #333;color:var(--text);box-shadow:3px 3px 0 #000;}
+        .btn-sm{padding:8px 12px;font-size:0.5rem;width:auto;display:inline-flex;}
+        .map-container{height:280px;border:3px solid #2a2a2a;margin:14px 0;overflow:hidden;background:#1a1a1a;position:relative;}
         .map-gps-status{
             position:absolute;top:10px;left:50%;transform:translateX(-50%);
-            background:rgba(0,0,0,0.7);color:var(--warn);padding:5px 12px;
-            border-radius:20px;font-size:0.7rem;z-index:1000;
+            background:rgba(0,0,0,0.8);color:var(--warn);padding:5px 12px;
+            border:2px solid #333;font-size:0.45rem;z-index:1000;
             backdrop-filter:blur(10px);transition:all 0.3s;white-space:nowrap;
+            text-transform:uppercase;letter-spacing:1px;
         }
         .map-gps-status.ready{color:var(--accent);}
         .toast{
             position:fixed;bottom:100px;left:20px;right:20px;z-index:200;
-            padding:12px 18px;border-radius:12px;text-align:center;
-            font-size:0.85rem;font-weight:500;animation:slideUp 0.3s;
+            padding:12px 18px;border:3px solid #000;text-align:center;
+            font-size:0.6rem;font-family:inherit;animation:slideUp 0.3s;
+            box-shadow:3px 3px 0 #000;background:var(--accent);color:#000;
         }
-        .toast.success{background:var(--accent);color:#000;}
         .toast.error{background:var(--danger);}
         .toast.info{background:rgba(255,255,255,0.9);color:#000;}
         @keyframes slideUp{from{transform:translateY(100%);opacity:0;}to{transform:translateY(0);opacity:1;}}
@@ -110,35 +148,44 @@
         .mt-8{margin-top:8px;}
         .mb-8{margin-bottom:8px;}
         .flex-between{display:flex;justify-content:space-between;align-items:center;}
-        .link{color:var(--accent);text-decoration:underline;cursor:pointer;font-size:0.8rem;}
-        .analysis-result{font-size:0.8rem;color:var(--text2);line-height:1.6;}
+        .badge{
+            display:inline-block;padding:4px 10px;border:2px solid #333;
+            font-size:0.5rem;font-family:inherit;text-transform:uppercase;
+            box-shadow:2px 2px 0 #000;background:var(--accent);color:#000;
+        }
+        .analysis-result{font-size:0.55rem;color:var(--text2);line-height:1.8;font-family:monospace;}
+        .week-bars-container{display:flex;gap:6px;align-items:flex-end;height:80px;}
+        .week-bar{flex:1;text-align:center;}
+        .week-bar-inner{width:100%;border-radius:0;transition:0.3s;border:2px solid #000;box-shadow:2px 2px 0 #000;}
     </style>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
 <body>
     <div class="top-nav">
         <button class="nav-btn" onclick="openProfile()" title="Perfil">👤</button>
-        <h1>MindPace</h1>
+        <h1>MIND PACE</h1>
         <button class="nav-btn" onclick="goHome()" title="Início">🏠</button>
     </div>
 
     <main class="main-content" id="mainContent">
         <!-- Dashboard -->
         <div class="screen active" id="dashboardScreen">
-            <div class="card">
-                <p class="greeting" id="greeting"></p>
-                <input type="text" class="user-name-input" id="userNameInput" placeholder="Corredor" maxlength="30" autocomplete="off">
-            </div>
-
-            <div class="nav-buttons">
-                <button class="btn" onclick="switchScreen('plan')">🎯 Metas</button>
-                <button class="btn" onclick="switchScreen('history')">📊 Histórico</button>
+            <!-- User Row: Info à esquerda, botões empilhados à direita -->
+            <div class="user-row">
+                <div class="user-info">
+                    <p class="greeting" id="greeting"></p>
+                    <input type="text" class="user-name-input" id="userNameInput" placeholder="CORREDOR" maxlength="30" autocomplete="off">
+                </div>
+                <div class="user-actions">
+                    <button class="pixel-btn" onclick="switchScreen('plan')">🎯 Metas</button>
+                    <button class="pixel-btn" onclick="switchScreen('history')">📊 Hist.</button>
+                </div>
             </div>
 
             <div class="card" id="nextWorkoutCard">
                 <div class="flex-between mb-8">
-                    <span class="badge badge-green">HOJE</span>
-                    <span style="font-size:0.9rem;color:var(--text2);" id="workoutType">Corrida Leve</span>
+                    <span class="badge">HOJE</span>
+                    <span style="font-size:0.55rem;color:var(--text2);text-transform:uppercase;letter-spacing:1px;" id="workoutType">Corrida Leve</span>
                 </div>
                 <div class="stat-row" id="workoutStats">
                     <div><div class="stat-val" id="dist">5.0</div><div class="stat-lab">km</div></div>
@@ -148,79 +195,79 @@
                     <div><div class="stat-val" id="dur">30</div><div class="stat-lab">min</div></div>
                 </div>
                 <div class="slider-section">
-                    <div class="slider-label">Sensação de Hoje (ajusta o ritmo)</div>
+                    <div class="slider-label">Sensacao de Hoje</div>
                     <input type="range" id="intensitySlider" min="0.5" max="1.5" step="0.05" value="1.0" oninput="updateIntensity(this.value)">
-                    <div style="display:flex;justify-content:space-between;font-size:0.6rem;color:var(--text3);">
-                        <span>Fácil</span><span>Normal</span><span>Intenso</span>
+                    <div style="display:flex;justify-content:space-between;font-size:0.4rem;color:var(--text3);text-transform:uppercase;">
+                        <span>Facil</span><span>Normal</span><span>Intenso</span>
                     </div>
                 </div>
                 <button class="btn" onclick="startRun()" id="startRunBtn">▶ INICIAR CORRIDA</button>
             </div>
 
             <div class="card card-dark">
-                <h3 style="font-size:0.8rem;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;">Sua Semana</h3>
-                <div id="weeklyBars" style="display:flex;gap:6px;align-items:flex-end;height:80px;"></div>
+                <h3 style="font-size:0.55rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Sua Semana</h3>
+                <div class="week-bars-container" id="weeklyBars"></div>
             </div>
         </div>
 
-        <!-- Tela de Corrida -->
+        <!-- Run Screen -->
         <div class="screen" id="runScreen">
             <div class="map-container" id="map">
-                <div class="map-gps-status" id="gpsStatus">🔍 Obtendo sinal GPS...</div>
+                <div class="map-gps-status" id="gpsStatus">🔍 OBTENDO SINAL GPS...</div>
             </div>
             <div class="card" style="text-align:center;">
                 <div class="stat-val" id="runDist">0.00</div><div class="stat-lab">km</div>
                 <div class="stat-row">
-                    <div><div class="stat-val" id="runPace" style="font-size:1.5rem;">--</div><div class="stat-lab">/km</div></div>
-                    <div><div class="stat-val" id="runTime" style="font-size:1.5rem;">00:00</div><div class="stat-lab">tempo</div></div>
+                    <div><div class="stat-val" id="runPace" style="font-size:1.3rem;">--</div><div class="stat-lab">/km</div></div>
+                    <div><div class="stat-val" id="runTime" style="font-size:1.3rem;">00:00</div><div class="stat-lab">tempo</div></div>
                 </div>
-                <div style="display:flex;gap:10px;justify-content:center;margin-top:10px;">
-                    <button class="btn btn-sm btn-outline" id="pauseResumeBtn" onclick="togglePause()">⏸ Pausar</button>
+                <div style="display:flex;gap:8px;justify-content:center;margin-top:8px;">
+                    <button class="btn btn-sm btn-outline" id="pauseResumeBtn" onclick="togglePause()">⏸</button>
                     <button class="btn btn-sm btn-outline" onclick="manualLocate()">📍</button>
-                    <button class="btn btn-sm btn-outline" onclick="stopRun()" style="border-color:var(--danger);color:var(--danger);">⏹ Parar</button>
+                    <button class="btn btn-sm btn-outline" onclick="stopRun()" style="border-color:var(--danger);color:var(--danger);">⏹</button>
                 </div>
             </div>
         </div>
 
-        <!-- Tela de Metas -->
+        <!-- Plan Screen -->
         <div class="screen" id="planScreen">
-            <h2 style="margin-bottom:14px;">Planejar Meta</h2>
+            <h2 style="margin-bottom:14px;font-size:0.8rem;text-transform:uppercase;letter-spacing:2px;">Planejar Meta</h2>
             <div class="card">
-                <label class="slider-label">Distância Alvo</label>
-                <select id="goalDist" style="width:100%;padding:12px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:12px;color:#fff;margin-bottom:12px;">
+                <label class="slider-label">Distancia Alvo</label>
+                <select id="goalDist" style="width:100%;padding:10px;background:#1a1a1a;border:3px solid #333;color:#fff;margin-bottom:12px;font-family:inherit;font-size:0.6rem;">
                     <option value="5">5 km</option>
                     <option value="10" selected>10 km</option>
                     <option value="21.1">Meia Maratona (21.1 km)</option>
                     <option value="42.195">Maratona (42.195 km)</option>
                 </select>
                 <label class="slider-label">Tempo Desejado (min)</label>
-                <input type="number" id="goalTime" value="60" min="10" max="600" style="width:100%;padding:12px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:12px;color:#fff;margin-bottom:12px;">
-                <label class="slider-label">Semanas até a prova</label>
+                <input type="number" id="goalTime" value="60" min="10" max="600" style="width:100%;padding:10px;background:#1a1a1a;border:3px solid #333;color:#fff;margin-bottom:12px;font-family:inherit;font-size:0.6rem;">
+                <label class="slider-label">Semanas ate a prova</label>
                 <input type="range" id="goalWeeks" min="4" max="24" value="12" oninput="document.getElementById('weeksDisp').textContent=this.value+' semanas'">
-                <span id="weeksDisp" style="color:var(--accent);font-size:0.8rem;">12 semanas</span>
+                <span id="weeksDisp" style="color:var(--accent);font-size:0.5rem;">12 semanas</span>
                 <button class="btn mt-8" onclick="generatePlan()">GERAR PLANO</button>
             </div>
             <div id="planPreview" class="card card-dark hidden"></div>
         </div>
 
-        <!-- Histórico -->
+        <!-- History Screen -->
         <div class="screen" id="historyScreen">
-            <h2 style="margin-bottom:14px;">Histórico</h2>
+            <h2 style="margin-bottom:14px;font-size:0.8rem;text-transform:uppercase;letter-spacing:2px;">Historico</h2>
             <div id="historyList"></div>
-            <button class="btn mt-8" onclick="runKaggleAnalysis()">📈 Análise (Kaggle)</button>
+            <button class="btn mt-8" onclick="runKaggleAnalysis()">📈 Analisar (Kaggle)</button>
             <div id="kaggleAnalysisResult" class="card card-dark analysis-result mt-8 hidden"></div>
         </div>
 
-        <!-- Modal de Perfil -->
-        <div id="profileModal" class="modal hidden" style="position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:200;display:flex;align-items:center;justify-content:center;">
-            <div class="card" style="width:90%;max-width:350px;">
-                <h3 style="margin-bottom:12px;">Perfil</h3>
-                <label>Pace 5K (min/km)</label>
-                <input type="number" id="profilePace" step="0.1" style="width:100%;padding:8px;background:#1a1a1a;border:1px solid var(--border);border-radius:8px;color:#fff;margin-bottom:10px;">
-                <label>Km semanais atuais</label>
-                <input type="number" id="profileKm" min="10" max="200" style="width:100%;padding:8px;background:#1a1a1a;border:1px solid var(--border);border-radius:8px;color:#fff;margin-bottom:10px;">
-                <label>Dias de descanso/semana</label>
-                <input type="number" id="profileRest" min="0" max="7" style="width:100%;padding:8px;background:#1a1a1a;border:1px solid var(--border);border-radius:8px;color:#fff;margin-bottom:14px;">
+        <!-- Profile Modal -->
+        <div id="profileModal" class="modal hidden" style="position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:200;display:flex;align-items:center;justify-content:center;">
+            <div class="card" style="width:90%;max-width:340px;border:3px solid var(--accent);">
+                <h3 style="margin-bottom:12px;font-size:0.7rem;text-transform:uppercase;letter-spacing:2px;">Perfil</h3>
+                <label class="slider-label">Pace 5K (min/km)</label>
+                <input type="number" id="profilePace" step="0.1" style="width:100%;padding:8px;background:#1a1a1a;border:3px solid #333;color:#fff;margin-bottom:10px;font-family:inherit;font-size:0.6rem;">
+                <label class="slider-label">Km semanais atuais</label>
+                <input type="number" id="profileKm" min="10" max="200" style="width:100%;padding:8px;background:#1a1a1a;border:3px solid #333;color:#fff;margin-bottom:10px;font-family:inherit;font-size:0.6rem;">
+                <label class="slider-label">Dias de descanso/semana</label>
+                <input type="number" id="profileRest" min="0" max="7" style="width:100%;padding:8px;background:#1a1a1a;border:3px solid #333;color:#fff;margin-bottom:14px;font-family:inherit;font-size:0.6rem;">
                 <button class="btn" onclick="saveProfile()">SALVAR</button>
                 <button class="btn btn-sm btn-outline mt-8" style="width:100%;" onclick="document.getElementById('profileModal').classList.add('hidden')">Cancelar</button>
             </div>
@@ -231,9 +278,7 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // ============================================
-        // SERVICE WORKER
-        // ============================================
+        // Service Worker
         if('serviceWorker' in navigator){
             window.addEventListener('load',()=>{
                 navigator.serviceWorker.register(
@@ -246,10 +291,7 @@
             });
         }
 
-        // ============================================
-        // APP STATE
-        // ============================================
-        const APP_KEY = 'mindpace_v4';
+        const APP_KEY = 'mindpace_v5';
         let appData = {
             userName: '',
             profile: { pace5k:6.0, restDays:2, intensity:1.0, weeklyKm:30 },
@@ -265,33 +307,22 @@
 
         function loadData(){
             const s = localStorage.getItem(APP_KEY);
-            if(s) try{ const parsed = JSON.parse(s); appData = {...appData, ...parsed}; }catch(e){}
+            if(s) try{ appData = {...appData, ...JSON.parse(s)}; }catch(e){}
         }
         function saveData(){
             localStorage.setItem(APP_KEY, JSON.stringify(appData));
         }
 
-        // ============================================
-        // FUNÇÃO DO BOTÃO INÍCIO
-        // ============================================
         function goHome(){
-            // Vai para o dashboard e faz scroll para o topo
             switchScreen('dashboard');
-            const main = document.getElementById('mainContent');
-            if(main) main.scrollTo({ top: 0, behavior: 'smooth' });
+            document.getElementById('mainContent').scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // ============================================
-        // NOME DO USUÁRIO (ENTER PARA SALVAR)
-        // ============================================
         function setupUserNameInput(){
             const input = document.getElementById('userNameInput');
             input.value = appData.userName || '';
             input.addEventListener('keydown', function(e){
-                if(e.key === 'Enter'){
-                    e.preventDefault();
-                    input.blur();
-                }
+                if(e.key === 'Enter'){ e.preventDefault(); input.blur(); }
             });
             input.addEventListener('blur', function(){
                 const name = input.value.trim();
@@ -303,9 +334,6 @@
             });
         }
 
-        // ============================================
-        // ENGINE (DATASETS EXTERNOS)
-        // ============================================
         class PredictionEngine {
             constructor() { this.marathonModel = null; this.injuryModel = null; }
 
@@ -314,379 +342,292 @@
                 let sumX0=0, sumX1=0, sumY=0, sumX0X0=0, sumX1X1=0, sumX0X1=0, sumX0Y=0, sumX1Y=0;
                 const n = data.length;
                 for(const d of data){
-                    const x0 = d.km4week, x1 = d.sp4week, yi = d.marathonTime;
-                    sumX0 += x0; sumX1 += x1; sumY += yi;
-                    sumX0X0 += x0*x0; sumX1X1 += x1*x1; sumX0X1 += x0*x1;
-                    sumX0Y += x0*yi; sumX1Y += x1*yi;
+                    const x0=d.km4week, x1=d.sp4week, yi=d.marathonTime;
+                    sumX0+=x0;sumX1+=x1;sumY+=yi;sumX0X0+=x0*x0;sumX1X1+=x1*x1;sumX0X1+=x0*x1;sumX0Y+=x0*yi;sumX1Y+=x1*yi;
                 }
-                const det = n*sumX0X0*sumX1X1 + 2*sumX0*sumX1*sumX0X1 - n*sumX0X1*sumX0X1 - sumX0*sumX0*sumX1X1 - sumX1*sumX1*sumX0X0;
-                if(Math.abs(det) < 0.001) return;
-                const intercept = (sumY*sumX0X0*sumX1X1 + sumX0*sumX1X1*sumX1Y + sumX1*sumX0X1*sumX0Y - sumX1*sumX0X0*sumX1Y - sumX0*sumX0X1*sumY - sumX1X1*sumX0Y*sumX0) / det;
-                const coefKm = (n*sumX1X1*sumX0Y + sumX1*sumX0X1*sumY + sumX0*sumX0X1*sumX1Y - sumX1*sumX1X1*sumX0Y - sumX0*sumX0X1*sumY - n*sumX0X1*sumX1Y) / det;
-                const coefSpeed = (n*sumX0X0*sumX1Y + sumX0*sumX0X1*sumY + sumX1*sumX0X1*sumX0Y - sumX1*sumX0X0*sumX0Y - sumX0*sumX0X1*sumY - n*sumX0X1*sumX0Y) / det;
-                this.marathonModel = { coefKm, coefSpeed, intercept };
+                const det=n*sumX0X0*sumX1X1+2*sumX0*sumX1*sumX0X1-n*sumX0X1*sumX0X1-sumX0*sumX0*sumX1X1-sumX1*sumX1*sumX0X0;
+                if(Math.abs(det)<0.001)return;
+                const intercept=(sumY*sumX0X0*sumX1X1+sumX0*sumX1X1*sumX1Y+sumX1*sumX0X1*sumX0Y-sumX1*sumX0X0*sumX1Y-sumX0*sumX0X1*sumY-sumX1X1*sumX0Y*sumX0)/det;
+                const coefKm=(n*sumX1X1*sumX0Y+sumX1*sumX0X1*sumY+sumX0*sumX0X1*sumX1Y-sumX1*sumX1X1*sumX0Y-sumX0*sumX0X1*sumY-n*sumX0X1*sumX1Y)/det;
+                const coefSpeed=(n*sumX0X0*sumX1Y+sumX0*sumX0X1*sumY+sumX1*sumX0X1*sumX0Y-sumX1*sumX0X0*sumX0Y-sumX0*sumX0X1*sumY-n*sumX0X1*sumX0Y)/det;
+                this.marathonModel={coefKm,coefSpeed,intercept};
             }
 
-            predictMarathonTime(kmPerWeek, avgSpeed) {
-                if(!this.marathonModel) return Math.round(320 - 1.2*kmPerWeek - 8.5*avgSpeed);
-                const {coefKm, coefSpeed, intercept} = this.marathonModel;
-                return Math.max(180, Math.min(300, Math.round(intercept + coefKm*kmPerWeek + coefSpeed*avgSpeed)));
+            predictMarathonTime(kmPerWeek,avgSpeed){
+                if(!this.marathonModel)return Math.round(320-1.2*kmPerWeek-8.5*avgSpeed);
+                const{coefKm,coefSpeed,intercept}=this.marathonModel;
+                return Math.max(180,Math.min(300,Math.round(intercept+coefKm*kmPerWeek+coefSpeed*avgSpeed)));
             }
 
-            trainInjury(data) {
-                if(data.length < 5) return;
-                let restW = -15, kmW = 10, exertW = 12, bias = -5;
-                const lr = 0.005;
-                for(let iter=0; iter<200; iter++){
-                    let gB=0, gR=0, gK=0, gE=0;
+            trainInjury(data){
+                if(data.length<5)return;
+                let restW=-15,kmW=10,exertW=12,bias=-5;const lr=0.005;
+                for(let i=0;i<200;i++){
+                    let gB=0,gR=0,gK=0,gE=0;
                     for(const d of data){
-                        const z = bias + restW*d.restDays + kmW*d.kmZ5 + exertW*d.avgExertion;
-                        const pred = 1/(1+Math.exp(-z));
-                        const err = pred - d.injured;
-                        gB += err; gR += err*d.restDays; gK += err*d.kmZ5; gE += err*d.avgExertion;
+                        const z=bias+restW*d.restDays+kmW*d.kmZ5+exertW*d.avgExertion;
+                        const pred=1/(1+Math.exp(-z));const err=pred-d.injured;
+                        gB+=err;gR+=err*d.restDays;gK+=err*d.kmZ5;gE+=err*d.avgExertion;
                     }
-                    bias -= lr*gB/data.length;
-                    restW -= lr*gR/data.length;
-                    kmW -= lr*gK/data.length;
-                    exertW -= lr*gE/data.length;
+                    bias-=lr*gB/data.length;restW-=lr*gR/data.length;kmW-=lr*gK/data.length;exertW-=lr*gE/data.length;
                 }
-                this.injuryModel = { restDaysWeight:restW, kmZ5Weight:kmW, exertionWeight:exertW, bias };
+                this.injuryModel={restDaysWeight:restW,kmZ5Weight:kmW,exertionWeight:exertW,bias};
             }
 
-            injuryRisk(restDays, kmHighIntensity, avgExertion) {
+            injuryRisk(restDays,kmHighIntensity,avgExertion){
                 if(!this.injuryModel){
-                    let score = 0;
-                    if(restDays<1) score+=35; else if(restDays<2) score+=15;
-                    if(kmHighIntensity>8) score+=30; else if(kmHighIntensity>5) score+=15;
-                    if(avgExertion>8) score+=35; else if(avgExertion>6) score+=15;
-                    return Math.min(100, score);
+                    let score=0;
+                    if(restDays<1)score+=35;else if(restDays<2)score+=15;
+                    if(kmHighIntensity>8)score+=30;else if(kmHighIntensity>5)score+=15;
+                    if(avgExertion>8)score+=35;else if(avgExertion>6)score+=15;
+                    return Math.min(100,score);
                 }
-                const {restDaysWeight, kmZ5Weight, exertionWeight, bias} = this.injuryModel;
-                const z = bias + restDaysWeight*restDays + kmZ5Weight*kmHighIntensity + exertionWeight*avgExertion;
-                return Math.min(100, Math.round(100/(1+Math.exp(-z))));
+                const{restDaysWeight,kmZ5Weight,exertionWeight,bias}=this.injuryModel;
+                const z=bias+restDaysWeight*restDays+kmZ5Weight*kmHighIntensity+exertionWeight*avgExertion;
+                return Math.min(100,Math.round(100/(1+Math.exp(-z))));
             }
         }
         const engine = new PredictionEngine();
 
-        // ============================================
-        // ANÁLISE KAGGLE (SEM POP-UPS)
-        // ============================================
-        function runKaggleAnalysis() {
-            const resultDiv = document.getElementById('kaggleAnalysisResult');
+        function runKaggleAnalysis(){
+            const resultDiv=document.getElementById('kaggleAnalysisResult');
             resultDiv.classList.remove('hidden');
-            resultDiv.innerHTML = '<p>A analisar com o modelo preditivo...</p>';
-
-            const km = appData.profile.weeklyKm;
-            const pace = appData.profile.pace5k;
-            const rest = appData.profile.restDays;
-            const marathonTime = engine.predictMarathonTime(km, 60/pace);
-            const injuryRisk = engine.injuryRisk(rest, 4, 6);
-
-            let html = `<p><b>Comparação com base Kaggle:</b></p>`;
-            html += `<p>🏃 Previsão em Maratona: <b>${marathonTime} min</b> (pace médio ${(marathonTime/42.195).toFixed(2)}/km)</p>`;
-            html += `<p>⚠️ Risco estimado de lesão: <b>${injuryRisk}%</b></p>`;
-            if(appData.datasets.marathon) {
-                html += `<p>📊 Baseado em <b>${appData.datasets.marathon.length}</b> corredores (dataset carregado).</p>`;
-            } else {
-                html += `<p>📊 Modelo padrão (carregue um dataset para personalizar).</p>`;
-            }
-            html += `<p class="text-accent">Dados processados localmente.</p>`;
-            resultDiv.innerHTML = html;
-            showToast('Análise concluída!');
+            resultDiv.innerHTML='<p>Analisando com modelo preditivo...</p>';
+            const km=appData.profile.weeklyKm,pace=appData.profile.pace5k,rest=appData.profile.restDays;
+            const marathonTime=engine.predictMarathonTime(km,60/pace);
+            const injuryRisk=engine.injuryRisk(rest,4,6);
+            let html=`<p><b>Comparacao com base Kaggle:</b></p>`;
+            html+=`<p>🏃 Previsao em Maratona: <b>${marathonTime} min</b> (pace medio ${(marathonTime/42.195).toFixed(2)}/km)</p>`;
+            html+=`<p>⚠️ Risco estimado de lesao: <b>${injuryRisk}%</b></p>`;
+            if(appData.datasets.marathon){html+=`<p>📊 Baseado em <b>${appData.datasets.marathon.length}</b> corredores.</p>`;}
+            else{html+=`<p>📊 Modelo padrao (carregue dataset para personalizar).</p>`;}
+            html+=`<p class="text-accent">Dados processados localmente.</p>`;
+            resultDiv.innerHTML=html;
+            showToast('Analise concluida!');
         }
 
-        // ============================================
-        // GPS & MAPA
-        // ============================================
-        function initMap() {
-            if(map) return;
-            map = L.map('map', { zoomControl: false, attributionControl: false }).setView([-8.0100, -34.8549], 13);
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map);
-            routeLine = L.polyline([], { color: '#4ade80', weight: 4 }).addTo(map);
-            map.locate({ setView: true, maxZoom: 16, timeout: 8000, enableHighAccuracy: true });
-            map.on('locationfound', (e) => {
-                userPosition = e.latlng;
-                const gpsStatus = document.getElementById('gpsStatus');
-                if(gpsStatus){ gpsStatus.textContent = '📍 GPS pronto'; gpsStatus.classList.add('ready'); }
-                if(!currentRun) map.setView(e.latlng, 16);
+        function initMap(){
+            if(map)return;
+            map=L.map('map',{zoomControl:false,attributionControl:false}).setView([-8.0100,-34.8549],13);
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{maxZoom:19}).addTo(map);
+            routeLine=L.polyline([],{color:'#4ade80',weight:4}).addTo(map);
+            map.locate({setView:true,maxZoom:16,timeout:8000,enableHighAccuracy:true});
+            map.on('locationfound',(e)=>{
+                userPosition=e.latlng;
+                const gs=document.getElementById('gpsStatus');
+                if(gs){gs.textContent='📍 GPS PRONTO';gs.classList.add('ready');}
+                if(!currentRun)map.setView(e.latlng,16);
             });
-            map.on('locationerror', () => {
-                document.getElementById('gpsStatus').textContent = '⚠️ GPS indisponível';
-                showToast('Ative o GPS do dispositivo.', 'error');
+            map.on('locationerror',()=>{
+                document.getElementById('gpsStatus').textContent='⚠️ GPS INDISPONIVEL';
+                showToast('Ative o GPS do dispositivo.','error');
             });
         }
-        function manualLocate() {
+        function manualLocate(){
             if(map){
-                document.getElementById('gpsStatus').textContent = '🔍 Procurando...';
+                document.getElementById('gpsStatus').textContent='🔍 PROCURANDO...';
                 document.getElementById('gpsStatus').classList.remove('ready');
-                map.locate({ setView: true, maxZoom: 16, timeout: 8000, enableHighAccuracy: true });
+                map.locate({setView:true,maxZoom:16,timeout:8000,enableHighAccuracy:true});
             }
         }
-        function startRun() {
-            if(!navigator.geolocation) { alert('Geolocalização não suportada.'); return; }
+        function startRun(){
+            if(!navigator.geolocation){alert('Geolocalizacao nao suportada.');return;}
             if(navigator.permissions){
-                navigator.permissions.query({ name: 'geolocation' }).then(status => {
-                    if(status.state === 'denied'){ alert('Permissão de localização negada.'); return; }
+                navigator.permissions.query({name:'geolocation'}).then(s=>{
+                    if(s.state==='denied'){alert('Permissao negada.');return;}
                     iniciarCorrida();
                 });
-            } else {
-                iniciarCorrida();
-            }
+            }else iniciarCorrida();
         }
         function iniciarCorrida(){
-            const workout = getTodayWorkout();
-            const plannedDist = workout ? workout.dist : 5;
-            currentRun = {
-                startTime: Date.now(),
-                paused: false,
-                positions: [],
-                distance: 0,
-                plannedDist: plannedDist,
-                watchId: null,
-                gpsErrorCount: 0
-            };
-            switchScreen('run');
-            initMap();
-            routeLine.setLatLngs([]);
-            if(currentMarker) map.removeLayer(currentMarker);
-            currentMarker = null;
-            document.getElementById('gpsStatus').textContent = '🔍 Aguardando GPS...';
+            const workout=getTodayWorkout();const plannedDist=workout?workout.dist:5;
+            currentRun={startTime:Date.now(),paused:false,positions:[],distance:0,plannedDist,watchId:null,gpsErrorCount:0};
+            switchScreen('run');initMap();
+            routeLine.setLatLngs([]);if(currentMarker)map.removeLayer(currentMarker);currentMarker=null;
+            document.getElementById('gpsStatus').textContent='🔍 AGUARDANDO GPS...';
             document.getElementById('gpsStatus').classList.remove('ready');
-            if(userPosition) map.setView(userPosition, 16);
-            else map.locate({ setView: true, maxZoom: 16 });
-            if(currentRun.watchId) navigator.geolocation.clearWatch(currentRun.watchId);
-            const opcoesGPS = { enableHighAccuracy: true, maximumAge: 2000, timeout: 12000 };
-            currentRun.watchId = navigator.geolocation.watchPosition(
-                pos => {
-                    const latlng = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-                    userPosition = latlng;
-                    document.getElementById('gpsStatus').textContent = '📍 GPS ativo';
-                    document.getElementById('gpsStatus').classList.add('ready');
-                    currentRun.gpsErrorCount = 0;
-                    if(currentRun.paused) return;
-                    if(currentRun.positions.length > 0){
-                        const last = currentRun.positions[currentRun.positions.length-1];
-                        const d = haversine(last.lat, last.lng, latlng.lat, latlng.lng);
-                        if(d > 0.002){
-                            currentRun.distance += d;
-                            currentRun.positions.push({ lat: latlng.lat, lng: latlng.lng, time: Date.now() });
-                            routeLine.addLatLng([latlng.lat, latlng.lng]);
-                            if(currentMarker) currentMarker.setLatLng([latlng.lat, latlng.lng]);
-                            else currentMarker = L.circleMarker([latlng.lat, latlng.lng], { radius: 6, color: 'white', fillColor: '#4ade80', fillOpacity: 1 }).addTo(map);
-                            map.panTo([latlng.lat, latlng.lng], { animate: true, duration: 0.5 });
-                            updateRunDisplay();
-                        }
-                    } else {
-                        currentRun.positions.push({ lat: latlng.lat, lng: latlng.lng, time: Date.now() });
-                        routeLine.addLatLng([latlng.lat, latlng.lng]);
-                        currentMarker = L.circleMarker([latlng.lat, latlng.lng], { radius: 6, color: 'white', fillColor: '#4ade80', fillOpacity: 1 }).addTo(map);
-                        map.setView([latlng.lat, latlng.lng], 16);
+            if(userPosition)map.setView(userPosition,16);else map.locate({setView:true,maxZoom:16});
+            if(currentRun.watchId)navigator.geolocation.clearWatch(currentRun.watchId);
+            const opcoes={enableHighAccuracy:true,maximumAge:2000,timeout:12000};
+            currentRun.watchId=navigator.geolocation.watchPosition(pos=>{
+                const latlng={lat:pos.coords.latitude,lng:pos.coords.longitude};userPosition=latlng;
+                document.getElementById('gpsStatus').textContent='📍 GPS ATIVO';document.getElementById('gpsStatus').classList.add('ready');
+                if(currentRun.paused)return;
+                if(currentRun.positions.length>0){
+                    const last=currentRun.positions[currentRun.positions.length-1];
+                    const d=haversine(last.lat,last.lng,latlng.lat,latlng.lng);
+                    if(d>0.002){
+                        currentRun.distance+=d;currentRun.positions.push({lat:latlng.lat,lng:latlng.lng,time:Date.now()});
+                        routeLine.addLatLng([latlng.lat,latlng.lng]);
+                        if(currentMarker)currentMarker.setLatLng([latlng.lat,latlng.lng]);
+                        else currentMarker=L.circleMarker([latlng.lat,latlng.lng],{radius:6,color:'white',fillColor:'#4ade80',fillOpacity:1}).addTo(map);
+                        map.panTo([latlng.lat,latlng.lng],{animate:true,duration:0.5});
+                        updateRunDisplay();
                     }
-                },
-                err => {
-                    console.error('Erro GPS:', err);
-                    currentRun.gpsErrorCount = (currentRun.gpsErrorCount||0)+1;
-                    const gpsStatus = document.getElementById('gpsStatus');
-                    if(err.code === 1){
-                        gpsStatus.textContent = '⛔ Permissão negada';
-                        showToast('Permissão de localização negada.', 'error');
-                    } else if(err.code === 2){
-                        gpsStatus.textContent = '📡 Sinal perdido (tentando…)';
-                    } else if(err.code === 3){
-                        gpsStatus.textContent = '⏱ Timeout (tentando…)';
-                    }
-                },
-                opcoesGPS
-            );
+                }else{
+                    currentRun.positions.push({lat:latlng.lat,lng:latlng.lng,time:Date.now()});
+                    routeLine.addLatLng([latlng.lat,latlng.lng]);
+                    currentMarker=L.circleMarker([latlng.lat,latlng.lng],{radius:6,color:'white',fillColor:'#4ade80',fillOpacity:1}).addTo(map);
+                    map.setView([latlng.lat,latlng.lng],16);
+                }
+            },err=>{
+                const gs=document.getElementById('gpsStatus');
+                if(err.code===1){gs.textContent='⛔ PERMISSAO NEGADA';}
+                else if(err.code===2){gs.textContent='📡 SINAL PERDIDO';}
+                else if(err.code===3){gs.textContent='⏱ TIMEOUT';}
+            },opcoes);
         }
-        function togglePause() {
-            if(!currentRun) return;
-            currentRun.paused = !currentRun.paused;
-            document.getElementById('pauseResumeBtn').textContent = currentRun.paused ? '▶ Retomar' : '⏸ Pausar';
+        function togglePause(){
+            if(!currentRun)return;
+            currentRun.paused=!currentRun.paused;
+            document.getElementById('pauseResumeBtn').textContent=currentRun.paused?'▶':'⏸';
         }
-        function stopRun() {
-            if(!currentRun) return;
-            if(currentRun.watchId) navigator.geolocation.clearWatch(currentRun.watchId);
-            const dist = currentRun.distance;
-            const dur = Math.floor((Date.now() - currentRun.startTime)/1000);
-            const pace = dist > 0.05 ? (dur/60)/dist : 0;
-            appData.logs.unshift({
-                date: new Date().toISOString(),
-                distance: dist,
-                duration: dur,
-                pace: pace,
-                intensity: appData.profile.intensity
-            });
-            saveData();
-            showToast(`Corrida salva: ${dist.toFixed(2)}km em ${formatTime(dur)}`);
-            currentRun = null;
-            switchScreen('dashboard');
-            updateDashboard();
-            updateHistory();
+        function stopRun(){
+            if(!currentRun)return;
+            if(currentRun.watchId)navigator.geolocation.clearWatch(currentRun.watchId);
+            const dist=currentRun.distance,dur=Math.floor((Date.now()-currentRun.startTime)/1000);
+            const pace=dist>0.05?(dur/60)/dist:0;
+            appData.logs.unshift({date:new Date().toISOString(),distance:dist,duration:dur,pace:pace,intensity:appData.profile.intensity});
+            saveData();showToast(`Corrida salva: ${dist.toFixed(2)}km em ${formatTime(dur)}`);
+            currentRun=null;switchScreen('dashboard');updateDashboard();updateHistory();
         }
-        function updateRunDisplay() {
-            if(!currentRun) return;
-            const dist = currentRun.distance;
-            const elapsed = Math.floor((Date.now() - currentRun.startTime)/1000);
-            const pace = dist > 0.05 ? (elapsed/60)/dist : 0;
-            document.getElementById('runDist').textContent = dist.toFixed(2);
-            document.getElementById('runPace').textContent = dist > 0.05 ? formatPace(pace) : '--';
-            document.getElementById('runTime').textContent = formatTime(elapsed);
+        function updateRunDisplay(){
+            if(!currentRun)return;
+            const dist=currentRun.distance,elapsed=Math.floor((Date.now()-currentRun.startTime)/1000);
+            const pace=dist>0.05?(elapsed/60)/dist:0;
+            document.getElementById('runDist').textContent=dist.toFixed(2);
+            document.getElementById('runPace').textContent=dist>0.05?formatPace(pace):'--';
+            document.getElementById('runTime').textContent=formatTime(elapsed);
         }
 
-        // ============================================
-        // PLANEJAMENTO
-        // ============================================
-        function getTodayWorkout() {
-            if(!appData.plan.active || !appData.plan.weeks.length) return null;
-            const elapsed = Math.floor((Date.now() - new Date(appData.plan.createdAt).getTime())/(86400000));
-            const weekIdx = Math.floor(elapsed/7);
-            if(weekIdx >= appData.plan.weeks.length) return null;
-            const week = appData.plan.weeks[weekIdx];
-            const dow = new Date().getDay();
-            let type='easy', dist=week.easyRun;
-            if(dow===5||dow===6){ dist=week.longRun; type='longo'; }
-            else if(dow===2){ dist=week.speedWork; type='velocidade'; }
-            return {dist, type};
+        function getTodayWorkout(){
+            if(!appData.plan.active||!appData.plan.weeks.length)return null;
+            const elapsed=Math.floor((Date.now()-new Date(appData.plan.createdAt).getTime())/(86400000));
+            const weekIdx=Math.floor(elapsed/7);
+            if(weekIdx>=appData.plan.weeks.length)return null;
+            const week=appData.plan.weeks[weekIdx];
+            const dow=new Date().getDay();
+            let t='easy',d=week.easyRun;
+            if(dow===5||dow===6){d=week.longRun;t='longo';}
+            else if(dow===2){d=week.speedWork;t='velocidade';}
+            return{dist:d,type:t};
         }
-        function generatePlan() {
-            const dist = parseFloat(document.getElementById('goalDist').value);
-            const time = parseInt(document.getElementById('goalTime').value);
-            const weeks = parseInt(document.getElementById('goalWeeks').value);
-            appData.plan = { active:true, goalDist:dist, goalTime:time, weeksToRace:weeks, createdAt: new Date().toISOString(), weeks:[] };
-            const targetPace = time/dist;
-            const maxLongRun = dist * 0.75;
-            for(let w=1; w<=weeks; w++){
-                const p = w/weeks;
-                const weekDist = (20 + p*40) * (dist/10);
-                const longRun = Math.round(maxLongRun * p);
-                const easyRuns = Math.round((weekDist - longRun) * 0.6 / 3);
-                const speedWork = Math.round((weekDist - longRun) * 0.4);
-                appData.plan.weeks.push({ week:w, totalKm:Math.round(weekDist), longRun, easyRun:easyRuns, speedWork, targetPace: targetPace * (1 - p*0.15) });
+        function generatePlan(){
+            const dist=parseFloat(document.getElementById('goalDist').value);
+            const time=parseInt(document.getElementById('goalTime').value);
+            const weeks=parseInt(document.getElementById('goalWeeks').value);
+            appData.plan={active:true,goalDist:dist,goalTime:time,weeksToRace:weeks,createdAt:new Date().toISOString(),weeks:[]};
+            const tp=time/dist,ml=dist*0.75;
+            for(let w=1;w<=weeks;w++){
+                const p=w/weeks,wd=(20+p*40)*(dist/10);
+                const lr=Math.round(ml*p),er=Math.round((wd-lr)*0.6/3),sw=Math.round((wd-lr)*0.4);
+                appData.plan.weeks.push({week:w,totalKm:Math.round(wd),longRun:lr,easyRun:er,speedWork:sw,targetPace:tp*(1-p*0.15)});
             }
             saveData();
             document.getElementById('planPreview').classList.remove('hidden');
-            document.getElementById('planPreview').innerHTML = `
+            document.getElementById('planPreview').innerHTML=`
                 <h3 style="color:var(--accent);">Plano ${weeks} semanas</h3>
-                <p style="font-size:0.8rem;">Meta: ${dist}km em ${time}min</p>
+                <p style="font-size:0.5rem;">Meta: ${dist}km em ${time}min</p>
                 ${appData.plan.weeks.slice(0,6).map(w=>`
-                    <div style="font-size:0.75rem;display:flex;justify-content:space-between;margin-top:4px;">
-                        <span>S${w.week}</span><span>${w.totalKm}km</span><span>Longo ${w.longRun}km</span><span style="color:var(--accent);">Pace ${w.targetPace.toFixed(1)}</span>
+                    <div style="font-size:0.45rem;display:flex;justify-content:space-between;margin-top:4px;">
+                        <span>S${w.week}</span><span>${w.totalKm}km</span><span>L${w.longRun}km</span><span style="color:var(--accent);">P${w.targetPace.toFixed(1)}</span>
                     </div>
                 `).join('')}
-                <p style="font-size:0.7rem;color:var(--text3);">...</p>
+                <p style="font-size:0.4rem;color:var(--text3);">...</p>
             `;
-            updateDashboard();
-            showToast('Plano gerado!', 'success');
+            updateDashboard();showToast('Plano gerado!');
         }
 
-        // ============================================
-        // UI AUXILIAR
-        // ============================================
-        function switchScreen(name) {
+        function switchScreen(name){
             document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-            const id = name==='dashboard'?'dashboardScreen': name==='plan'?'planScreen': name==='history'?'historyScreen': 'runScreen';
+            const id=name==='dashboard'?'dashboardScreen':name==='plan'?'planScreen':name==='history'?'historyScreen':'runScreen';
             document.getElementById(id).classList.add('active');
-            if(name==='run'){ document.getElementById('mainContent').style.overflowY='hidden'; if(map) setTimeout(()=>map.invalidateSize(),100); }
-            else document.getElementById('mainContent').style.overflowY='auto';
-            if(name==='history') updateHistory();
-            // Scroll to top on screen change
-            document.getElementById('mainContent').scrollTo({ top: 0, behavior: 'smooth' });
+            if(name==='run'){document.getElementById('mainContent').style.overflowY='hidden';if(map)setTimeout(()=>map.invalidateSize(),100);}
+            else{document.getElementById('mainContent').style.overflowY='auto';}
+            if(name==='history')updateHistory();
+            document.getElementById('mainContent').scrollTo({top:0,behavior:'smooth'});
         }
-        function showToast(msg, type='success') {
-            const t = document.getElementById('toast');
-            t.textContent = msg; t.className = `toast ${type}`;
-            setTimeout(()=>t.classList.add('hidden'), 2500);
+        function showToast(msg,type='success'){
+            const t=document.getElementById('toast');
+            t.textContent=msg;t.className=`toast ${type}`;
+            setTimeout(()=>t.classList.add('hidden'),2500);
         }
-        function updateGreeting() {
-            const h = new Date().getHours();
-            const g = h<12?'Bom dia': h<18?'Boa tarde':'Boa noite';
-            document.getElementById('greeting').textContent = g + ',';
+        function updateGreeting(){
+            const h=new Date().getHours();
+            document.getElementById('greeting').textContent=(h<12?'BOM DIA':h<18?'BOA TARDE':'BOA NOITE');
         }
-        function updateDashboard() {
-            const workout = getTodayWorkout();
-            const dist = workout ? workout.dist : 5;
-            const type = workout ? (workout.type==='longo'?'Longão': workout.type==='velocidade'?'Velocidade':'Corrida Leve') : 'Corrida Leve';
-            const intensity = appData.profile.intensity || 1;
-            const basePace = appData.profile.pace5k * (1 + 0.15*intensity);
-            document.getElementById('dist').textContent = dist.toFixed(1);
-            document.getElementById('pace').textContent = formatPace(basePace);
-            document.getElementById('dur').textContent = Math.round(dist * basePace);
-            document.getElementById('workoutType').textContent = type;
-            const bars = document.getElementById('weeklyBars');
-            const days = ['D','S','T','Q','Q','S','S'];
-            const today = new Date().getDay();
+        function updateDashboard(){
+            const workout=getTodayWorkout();
+            const dist=workout?workout.dist:5;
+            const type=workout?(workout.type==='longo'?'LONGAO':workout.type==='velocidade'?'VELOCIDADE':'CORRIDA LEVE'):'CORRIDA LEVE';
+            const intensity=appData.profile.intensity||1;
+            const basePace=appData.profile.pace5k*(1+0.15*intensity);
+            document.getElementById('dist').textContent=dist.toFixed(1);
+            document.getElementById('pace').textContent=formatPace(basePace);
+            document.getElementById('dur').textContent=Math.round(dist*basePace);
+            document.getElementById('workoutType').textContent=type;
+            const days=['D','S','T','Q','Q','S','S'],today=new Date().getDay();
             let html='';
             for(let i=0;i<7;i++){
-                const h = i<=today ? 25+Math.random()*45 : 10;
-                const c = h>45 ? 'var(--warn)' : 'var(--accent)';
-                html += `<div style="flex:1;text-align:center;"><div style="width:100%;height:${h}px;background:${c};opacity:0.8;border-radius:6px 6px 0 0;"></div><span style="font-size:0.6rem;color:var(--text3);">${days[i]}</span></div>`;
+                const h=i<=today?25+Math.random()*45:10;
+                const c=h>45?'var(--warn)':'var(--accent)';
+                html+=`<div class="week-bar"><div class="week-bar-inner" style="height:${h}px;background:${c};opacity:0.8;"></div><span style="font-size:0.4rem;color:var(--text3);">${days[i]}</span></div>`;
             }
-            bars.innerHTML=html;
+            document.getElementById('weeklyBars').innerHTML=html;
         }
-        function updateIntensity(val) {
-            appData.profile.intensity = parseFloat(val);
-            updateDashboard();
-            saveData();
+        function updateIntensity(val){
+            appData.profile.intensity=parseFloat(val);updateDashboard();saveData();
         }
-        function updateHistory() {
-            const list = document.getElementById('historyList');
+        function updateHistory(){
+            const list=document.getElementById('historyList');
             if(!appData.logs.length){
-                list.innerHTML='<p style="color:var(--text3);text-align:center;padding:40px;">Nenhuma corrida registrada.</p>';
+                list.innerHTML='<p style="color:var(--text3);text-align:center;padding:40px;font-size:0.5rem;">NENHUMA CORRIDA</p>';
                 return;
             }
-            list.innerHTML = appData.logs.map(l=>`
+            list.innerHTML=appData.logs.map(l=>`
                 <div class="card" style="padding:12px;margin-bottom:8px;">
                     <div class="flex-between">
-                        <span style="font-size:0.7rem;color:var(--text3);">${new Date(l.date).toLocaleDateString('pt-BR')}</span>
-                        <span class="badge badge-green">${l.distance.toFixed(2)}km</span>
+                        <span style="font-size:0.45rem;color:var(--text3);">${new Date(l.date).toLocaleDateString('pt-BR')}</span>
+                        <span class="badge">${l.distance.toFixed(2)}km</span>
                     </div>
-                    <div style="font-size:0.8rem;color:var(--text2);margin-top:4px;">⏱ ${formatTime(l.duration)} | 🏃 ${l.pace.toFixed(2)}/km | 🔥 ${l.intensity.toFixed(2)}x</div>
+                    <div style="font-size:0.45rem;color:var(--text2);margin-top:4px;">⏱ ${formatTime(l.duration)} | 🏃 ${l.pace.toFixed(2)}/km | 🔥 ${l.intensity.toFixed(2)}x</div>
                 </div>
             `).join('');
         }
-        function openProfile() {
-            document.getElementById('profilePace').value = appData.profile.pace5k;
-            document.getElementById('profileKm').value = appData.profile.weeklyKm;
-            document.getElementById('profileRest').value = appData.profile.restDays;
+        function openProfile(){
+            document.getElementById('profilePace').value=appData.profile.pace5k;
+            document.getElementById('profileKm').value=appData.profile.weeklyKm;
+            document.getElementById('profileRest').value=appData.profile.restDays;
             document.getElementById('profileModal').classList.remove('hidden');
         }
-        function saveProfile() {
-            appData.profile.pace5k = parseFloat(document.getElementById('profilePace').value)||6;
-            appData.profile.weeklyKm = parseInt(document.getElementById('profileKm').value)||30;
-            appData.profile.restDays = parseInt(document.getElementById('profileRest').value)||2;
-            saveData();
-            updateDashboard();
+        function saveProfile(){
+            appData.profile.pace5k=parseFloat(document.getElementById('profilePace').value)||6;
+            appData.profile.weeklyKm=parseInt(document.getElementById('profileKm').value)||30;
+            appData.profile.restDays=parseInt(document.getElementById('profileRest').value)||2;
+            saveData();updateDashboard();
             document.getElementById('profileModal').classList.add('hidden');
             showToast('Perfil atualizado');
         }
-        function haversine(lat1, lon1, lat2, lon2) {
+        function haversine(lat1,lon1,lat2,lon2){
             const R=6371;
-            const dLat=(lat2-lat1)*Math.PI/180;
-            const dLon=(lon2-lon1)*Math.PI/180;
-            const a=Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
-            return R*2*Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            const dLat=(lat2-lat1)*Math.PI/180,dLon=(lon2-lon1)*Math.PI/180;
+            const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+            return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
         }
-        function formatPace(m){ const min=Math.floor(m); const sec=Math.round((m-min)*60); return `${min}:${sec.toString().padStart(2,'0')}`; }
-        function formatTime(s){ const min=Math.floor(s/60); const sec=s%60; return `${min.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}`; }
+        function formatPace(m){const min=Math.floor(m),sec=Math.round((m-min)*60);return `${min}:${sec.toString().padStart(2,'0')}`;}
+        function formatTime(s){const min=Math.floor(s/60),sec=s%60;return `${min.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}`;}
 
-        // ============================================
-        // INIT
-        // ============================================
-        function init() {
-            loadData();
-            setupUserNameInput();
-            document.getElementById('intensitySlider').value = appData.profile.intensity;
-            updateGreeting();
-            updateDashboard();
-            updateHistory();
-            if(appData.datasets.marathon) engine.trainMarathon(appData.datasets.marathon);
-            if(appData.datasets.injury) engine.trainInjury(appData.datasets.injury);
-            setInterval(updateGreeting, 60000);
+        function init(){
+            loadData();setupUserNameInput();
+            document.getElementById('intensitySlider').value=appData.profile.intensity;
+            updateGreeting();updateDashboard();updateHistory();
+            if(appData.datasets.marathon)engine.trainMarathon(appData.datasets.marathon);
+            if(appData.datasets.injury)engine.trainInjury(appData.datasets.injury);
+            setInterval(updateGreeting,60000);
         }
-        window.addEventListener('load', init);
-        window.addEventListener('resize', ()=>{ document.body.style.height = window.innerHeight+'px'; });
-        document.body.style.height = window.innerHeight+'px';
+        window.addEventListener('load',init);
+        window.addEventListener('resize',()=>{document.body.style.height=window.innerHeight+'px';});
+        document.body.style.height=window.innerHeight+'px';
     </script>
 </body>
 </html>
