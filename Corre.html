@@ -18,7 +18,7 @@
             --accent: #4ade80;
             --warn: #fbbf24;
             --danger: #ef4444;
-            --radius: 20px;
+            --radius: 18px;
         }
         *{margin:0;padding:0;box-sizing:border-box;}
         body{
@@ -38,15 +38,21 @@
             border-bottom:1px solid var(--border);z-index:10;
         }
         .top-nav h1{font-size:1.1rem;font-weight:600;letter-spacing:-0.01em;}
-        .nav-btn{background:none;border:none;color:var(--text2);font-size:1.2rem;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+        .nav-btn{
+            background:none;border:none;color:var(--text2);font-size:1.2rem;
+            width:40px;height:40px;border-radius:50%;display:flex;
+            align-items:center;justify-content:center;cursor:pointer;
+            transition:background 0.2s;
+        }
+        .nav-btn:active{background:rgba(255,255,255,0.1);}
         .main-content{flex:1;overflow-y:auto;padding:16px;padding-bottom:20px;scroll-behavior:smooth;-webkit-overflow-scrolling:touch;}
-        .screen{display:none;animation:fadeIn 0.3s;}
+        .screen{display:none;animation:fadeIn 0.25s;}
         .screen.active{display:block;}
-        @keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+        @keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
         .card{
             background:var(--glass);backdrop-filter:blur(20px);
             border:1px solid var(--border);border-radius:var(--radius);
-            padding:20px;margin-bottom:16px;
+            padding:18px;margin-bottom:14px;
         }
         .card-dark{background:rgba(10,10,10,0.8);}
         .greeting{font-size:0.8rem;color:var(--text3);margin-bottom:4px;}
@@ -60,38 +66,37 @@
             caret-color:var(--accent);
         }
         .user-name-input::placeholder{color:var(--text3);-webkit-text-fill-color:var(--text3);}
-        .stat-row{display:flex;justify-content:space-around;align-items:center;margin:16px 0;}
+        .stat-row{display:flex;justify-content:space-around;align-items:center;margin:14px 0;}
         .stat-val{font-size:2rem;font-weight:700;font-family:'SF Mono','Fira Code',monospace;}
         .stat-lab{font-size:0.7rem;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;}
         .divider{width:1px;height:40px;background:var(--border);}
-        .slider-section{margin:16px 0;}
+        .slider-section{margin:14px 0;}
         .slider-label{font-size:0.7rem;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;}
         input[type=range]{-webkit-appearance:none;width:100%;height:6px;border-radius:3px;background:linear-gradient(to right,#4ade80,#fbbf24,#ef4444);outline:none;margin:8px 0;}
-        input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:28px;height:28px;border-radius:50%;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,0.3);cursor:pointer;}
+        input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:50%;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,0.3);cursor:pointer;}
         .btn{
-            display:flex;align-items:center;justify-content:center;gap:8px;
-            width:100%;padding:16px;border:none;border-radius:var(--radius);
+            display:flex;align-items:center;justify-content:center;gap:6px;
+            width:100%;padding:14px;border:none;border-radius:var(--radius);
             background:var(--accent);color:#000;font-weight:700;
-            font-size:0.95rem;letter-spacing:0.03em;cursor:pointer;
+            font-size:0.9rem;letter-spacing:0.02em;cursor:pointer;
             transition:all 0.2s;
         }
         .btn:active{transform:scale(0.98);opacity:0.9;}
         .btn-outline{background:transparent;border:1px solid var(--border);color:var(--text);}
-        .btn-sm{padding:10px 16px;font-size:0.8rem;width:auto;display:inline-flex;}
-        /* Navegação por botões no dashboard */
-        .nav-buttons{display:flex;gap:12px;margin-bottom:16px;}
-        .nav-buttons .btn{flex:1;}
-        .map-container{height:300px;border-radius:12px;margin:16px 0;overflow:hidden;background:#1a1a1a;position:relative;}
+        .btn-sm{padding:10px 14px;font-size:0.8rem;width:auto;display:inline-flex;}
+        .nav-buttons{display:flex;gap:10px;margin-bottom:14px;}
+        .nav-buttons .btn{flex:1;font-size:0.85rem;padding:12px;}
+        .map-container{height:280px;border-radius:14px;margin:14px 0;overflow:hidden;background:#1a1a1a;position:relative;}
         .map-gps-status{
             position:absolute;top:10px;left:50%;transform:translateX(-50%);
-            background:rgba(0,0,0,0.7);color:var(--warn);padding:6px 12px;
+            background:rgba(0,0,0,0.7);color:var(--warn);padding:5px 12px;
             border-radius:20px;font-size:0.7rem;z-index:1000;
             backdrop-filter:blur(10px);transition:all 0.3s;white-space:nowrap;
         }
         .map-gps-status.ready{color:var(--accent);}
         .toast{
             position:fixed;bottom:100px;left:20px;right:20px;z-index:200;
-            padding:14px 20px;border-radius:12px;text-align:center;
+            padding:12px 18px;border-radius:12px;text-align:center;
             font-size:0.85rem;font-weight:500;animation:slideUp 0.3s;
         }
         .toast.success{background:var(--accent);color:#000;}
@@ -112,7 +117,7 @@
 </head>
 <body>
     <div class="top-nav">
-        <button class="nav-btn" onclick="editProfile()" title="Perfil">👤</button>
+        <button class="nav-btn" onclick="openProfile()" title="Perfil">👤</button>
         <h1>MindPace</h1>
         <button class="nav-btn" onclick="resetApp()" title="Reiniciar">↺</button>
     </div>
@@ -125,7 +130,6 @@
                 <input type="text" class="user-name-input" id="userNameInput" placeholder="Corredor" maxlength="30" autocomplete="off">
             </div>
 
-            <!-- Navegação principal (botões no lugar do Kaggle) -->
             <div class="nav-buttons">
                 <button class="btn" onclick="switchScreen('plan')">🎯 Metas</button>
                 <button class="btn" onclick="switchScreen('history')">📊 Histórico</button>
@@ -154,7 +158,7 @@
             </div>
 
             <div class="card card-dark">
-                <h3 style="font-size:0.8rem;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px;">Sua Semana</h3>
+                <h3 style="font-size:0.8rem;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;">Sua Semana</h3>
                 <div id="weeklyBars" style="display:flex;gap:6px;align-items:flex-end;height:80px;"></div>
             </div>
         </div>
@@ -170,7 +174,7 @@
                     <div><div class="stat-val" id="runPace" style="font-size:1.5rem;">--</div><div class="stat-lab">/km</div></div>
                     <div><div class="stat-val" id="runTime" style="font-size:1.5rem;">00:00</div><div class="stat-lab">tempo</div></div>
                 </div>
-                <div style="display:flex;gap:12px;justify-content:center;margin-top:12px;">
+                <div style="display:flex;gap:10px;justify-content:center;margin-top:10px;">
                     <button class="btn btn-sm btn-outline" id="pauseResumeBtn" onclick="togglePause()">⏸ Pausar</button>
                     <button class="btn btn-sm btn-outline" onclick="manualLocate()">📍</button>
                     <button class="btn btn-sm btn-outline" onclick="stopRun()" style="border-color:var(--danger);color:var(--danger);">⏹ Parar</button>
@@ -180,7 +184,7 @@
 
         <!-- Tela de Metas -->
         <div class="screen" id="planScreen">
-            <h2 style="margin-bottom:16px;">Planejar Meta</h2>
+            <h2 style="margin-bottom:14px;">Planejar Meta</h2>
             <div class="card">
                 <label class="slider-label">Distância Alvo</label>
                 <select id="goalDist" style="width:100%;padding:12px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:12px;color:#fff;margin-bottom:12px;">
@@ -201,7 +205,7 @@
 
         <!-- Histórico -->
         <div class="screen" id="historyScreen">
-            <h2 style="margin-bottom:16px;">Histórico</h2>
+            <h2 style="margin-bottom:14px;">Histórico</h2>
             <div id="historyList"></div>
             <button class="btn mt-8" onclick="runKaggleAnalysis()">📈 Análise (Kaggle)</button>
             <div id="kaggleAnalysisResult" class="card card-dark analysis-result mt-8 hidden"></div>
@@ -212,13 +216,13 @@
             <div class="card" style="width:90%;max-width:350px;">
                 <h3 style="margin-bottom:12px;">Perfil</h3>
                 <label>Pace 5K (min/km)</label>
-                <input type="number" id="profilePace" step="0.1" style="width:100%;padding:8px;background:#1a1a1a;border:1px solid var(--border);border-radius:8px;color:#fff;margin-bottom:12px;">
+                <input type="number" id="profilePace" step="0.1" style="width:100%;padding:8px;background:#1a1a1a;border:1px solid var(--border);border-radius:8px;color:#fff;margin-bottom:10px;">
                 <label>Km semanais atuais</label>
-                <input type="number" id="profileKm" min="10" max="200" style="width:100%;padding:8px;background:#1a1a1a;border:1px solid var(--border);border-radius:8px;color:#fff;margin-bottom:12px;">
+                <input type="number" id="profileKm" min="10" max="200" style="width:100%;padding:8px;background:#1a1a1a;border:1px solid var(--border);border-radius:8px;color:#fff;margin-bottom:10px;">
                 <label>Dias de descanso/semana</label>
-                <input type="number" id="profileRest" min="0" max="7" style="width:100%;padding:8px;background:#1a1a1a;border:1px solid var(--border);border-radius:8px;color:#fff;margin-bottom:12px;">
+                <input type="number" id="profileRest" min="0" max="7" style="width:100%;padding:8px;background:#1a1a1a;border:1px solid var(--border);border-radius:8px;color:#fff;margin-bottom:14px;">
                 <button class="btn" onclick="saveProfile()">SALVAR</button>
-                <button class="btn btn-sm btn-outline mt-8" onclick="document.getElementById('profileModal').classList.add('hidden')">Cancelar</button>
+                <button class="btn btn-sm btn-outline mt-8" style="width:100%;" onclick="document.getElementById('profileModal').classList.add('hidden')">Cancelar</button>
             </div>
         </div>
     </main>
@@ -245,7 +249,7 @@
         // ============================================
         // APP STATE
         // ============================================
-        const APP_KEY = 'mindpace_v2';
+        const APP_KEY = 'mindpace_v3';
         let appData = {
             userName: '',
             profile: { pace5k:6.0, restDays:2, intensity:1.0, weeklyKm:30 },
@@ -297,18 +301,15 @@
 
             trainMarathon(data) {
                 if(data.length < 3) return;
-                const X = data.map(d => [d.km4week, d.sp4week]);
-                const y = data.map(d => d.marathonTime);
                 let sumX0=0, sumX1=0, sumY=0, sumX0X0=0, sumX1X1=0, sumX0X1=0, sumX0Y=0, sumX1Y=0;
-                const n = X.length;
-                for(let i=0; i<n; i++){
-                    const [x0, x1] = X[i];
-                    const yi = y[i];
+                const n = data.length;
+                for(const d of data){
+                    const x0 = d.km4week, x1 = d.sp4week, yi = d.marathonTime;
                     sumX0 += x0; sumX1 += x1; sumY += yi;
                     sumX0X0 += x0*x0; sumX1X1 += x1*x1; sumX0X1 += x0*x1;
                     sumX0Y += x0*yi; sumX1Y += x1*yi;
                 }
-                const det = (n*sumX0X0*sumX1X1 + 2*sumX0*sumX1*sumX0X1 - n*sumX0X1*sumX0X1 - sumX0*sumX0*sumX1X1 - sumX1*sumX1*sumX0X0);
+                const det = n*sumX0X0*sumX1X1 + 2*sumX0*sumX1*sumX0X1 - n*sumX0X1*sumX0X1 - sumX0*sumX0*sumX1X1 - sumX1*sumX1*sumX0X0;
                 if(Math.abs(det) < 0.001) return;
                 const intercept = (sumY*sumX0X0*sumX1X1 + sumX0*sumX1X1*sumX1Y + sumX1*sumX0X1*sumX0Y - sumX1*sumX0X0*sumX1Y - sumX0*sumX0X1*sumY - sumX1X1*sumX0Y*sumX0) / det;
                 const coefKm = (n*sumX1X1*sumX0Y + sumX1*sumX0X1*sumY + sumX0*sumX0X1*sumX1Y - sumX1*sumX1X1*sumX0Y - sumX0*sumX0X1*sumY - n*sumX0X1*sumX1Y) / det;
@@ -358,7 +359,7 @@
         const engine = new PredictionEngine();
 
         // ============================================
-        // CARREGAMENTO DE DATASETS (COM URL PÚBLICA)
+        // CARREGAMENTO DE DATASETS
         // ============================================
         async function fetchDataset(url, type) {
             try {
@@ -405,7 +406,6 @@
             resultDiv.classList.remove('hidden');
             resultDiv.innerHTML = '<p>A analisar...</p>';
 
-            // Se não houver datasets carregados, pede URLs
             if(!appData.datasets.marathon || !appData.datasets.injury) {
                 const marathonUrl = prompt('URL do dataset Marathon Time Predictions (CSV):');
                 if(marathonUrl) await fetchDataset(marathonUrl, 'marathon');
@@ -418,7 +418,7 @@
             const pace = appData.profile.pace5k;
             const rest = appData.profile.restDays;
             const marathonTime = engine.predictMarathonTime(km, 60/pace);
-            const injuryRisk = engine.injuryRisk(rest, 4, 6); // valores médios
+            const injuryRisk = engine.injuryRisk(rest, 4, 6);
 
             let html = `<p><b>Comparação com base Kaggle:</b></p>`;
             html += `<p>🏃 Maratona prevista: <b>${marathonTime} min</b> (pace médio ${(marathonTime/42.195).toFixed(2)}/km)</p>`;
@@ -463,7 +463,9 @@
                     if(status.state === 'denied'){ alert('Permissão de localização negada.'); return; }
                     iniciarCorrida();
                 });
-            } else iniciarCorrida();
+            } else {
+                iniciarCorrida();
+            }
         }
         function iniciarCorrida(){
             const workout = getTodayWorkout();
@@ -524,18 +526,8 @@
                         showToast('Permissão de localização negada.', 'error');
                     } else if(err.code === 2){
                         gpsStatus.textContent = '📡 Sinal perdido (tentando…)';
-                        if(currentRun.gpsErrorCount > 3){
-                            navigator.geolocation.clearWatch(currentRun.watchId);
-                            opcoesGPS.enableHighAccuracy = false;
-                            currentRun.watchId = navigator.geolocation.watchPosition(/* mesmo callback */, arguments.callee, opcoesGPS);
-                        }
                     } else if(err.code === 3){
                         gpsStatus.textContent = '⏱ Timeout (tentando…)';
-                        if(currentRun.gpsErrorCount > 3){
-                            navigator.geolocation.clearWatch(currentRun.watchId);
-                            opcoesGPS.enableHighAccuracy = false;
-                            currentRun.watchId = navigator.geolocation.watchPosition(/* mesmo callback */, arguments.callee, opcoesGPS);
-                        }
                     }
                 },
                 opcoesGPS
@@ -685,7 +677,7 @@
                 </div>
             `).join('');
         }
-        function editProfile() {
+        function openProfile() {
             document.getElementById('profilePace').value = appData.profile.pace5k;
             document.getElementById('profileKm').value = appData.profile.weeklyKm;
             document.getElementById('profileRest').value = appData.profile.restDays;
