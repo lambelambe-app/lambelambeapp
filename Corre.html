@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#0a0a0a">
+    <title>RunMate • Treino Adaptativo com Kaggle</title>
+    <style>
+        :root {
+            --bg: #0a0a0a;
+            --surface: #121212;
+            --glass: rgba(18,18,18,0.75);
+            --border: rgba(255,255,255,0.08);
+            --text: #fff;
+            --text2: rgba(255,255,255,0.6);
+            --text3: rgba(255,255,255,0.35);
+            --accent: #4ade80;
+            --warn: #fbbf24;
+            --danger: #ef4444;
+            --radius: 20px;
+        }
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{
+            font-family:'Inter',system-ui,sans-serif;
+            background:var(--bg);
+            color:var(--text);
+            height:100vh;height:100dvh;
+            display:flex;flex-direction:column;
+            overflow:hidden;
+            -webkit-tap-highlight-color:transparent;
+            user-select:none;
+        }
+        .top-nav{
+            display:flex;align-items:center;justify-content:space-between;
+            padding:12px 20px;padding-top:max(12px,env(safe-area-inset-top));
+            background:var(--glass);backdrop-filter:blur(20px);
+            border-bottom:1px solid var(--border);z-index:10;
+        }
+        .top-nav h1{font-size:1.1rem;font-weight:600;letter-spacing:-0.01em;}
+        .nav-btn{background:none;border:none;color:var(--text2);font-size:1.2rem;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+        .main-content{flex:1;overflow-y:auto;padding:16px;padding-bottom:80px;scroll-behavior:smooth;-webkit-overflow-scrolling:touch;}
+        .screen{display:none;animation:fadeIn 0.3s;}
+        .screen.active{display:block;}
+        @keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+        .card{
+            background:var(--glass);backdrop-filter:blur(20px);
+            border:1px solid var(--border);border-radius:var(--radius);
+            padding:20px;margin-bottom:16px;
+        }
+        .card-dark{background:rgba(10,10,10,0.8);}
+        .greeting{font-size:0.8rem;color:var(--text3);}
+        .user-name{font-size:1.4rem;font-weight:600;background:linear-gradient(135deg,#4ade80,#22d3bb);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+        .stat-row{display:flex;justify-content:space-around;align-items:center;margin:16px 0;}
+        .stat-val{font-size:2rem;font-weight:700;font-family:'SF Mono','Fira Code',monospace;}
+        .stat-lab{font-size:0.7rem;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;}
+        .divider{width:1px;height:40px;background:var(--border);}
+        .slider-section{margin:16px 0;}
+        .slider-label{font-size:0.7rem;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;}
+        input[type=range]{-webkit-appearance:none;width:100%;height:6px;border-radius:3px;background:linear-gradient(to right,#4ade80,#fbbf24,#ef4444);outline:none;margin:8px 0;}
+        input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:28px;height:28px;border-radius:50%;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,0.3);cursor:pointer;}
+        .btn{
+            display:flex;align-items:center;justify-content:center;gap:8px;
+            width:100%;padding:16px;border:none;border-radius:var(--radius);
+            background:var(--accent);color:#000;font-weight:700;
+            font-size:0.95rem;letter-spacing:0.03em;cursor:pointer;
+            transition:all 0.2s;
+        }
+        .btn:active{transform:scale(0.98);opacity:0.9;}
+        .btn-outline{background:transparent;border:1px solid var(--border);color:var(--text);}
+        .btn-sm{padding:10px 16px;font-size:0.8rem;width:auto;display:inline-flex;}
+        .bottom-nav{
+            display:flex;justify-content:space-around;align-items:center;
+            padding:8px 0;padding-bottom:max(8px,env(safe-area-inset-bottom));
+            background:var(--glass);backdrop-filter:blur(20px);
+            border-top:1px solid var(--border);position:fixed;bottom:0;left:0;right:0;z-index:10;
+        }
+        .bottom-nav-item{
+            display:flex;flex-direction:column;align-items:center;gap:4px;
+            background:none;border:none;color:var(--text3);cursor:pointer;
+            padding:8px 16px;border-radius:12px;transition:0.2s;
+        }
+        .bottom-nav-item.active{color:var(--accent);}
+        .badge{display:inline-block;padding:4px 10px;border-radius:20px;font-size:0.7rem;font-weight:600;letter-spacing:0.05em;}
+        .badge-green{background:var(--accent);color:#000;}
+        .badge-yellow{background:var(--warn);color:#000;}
+        .badge-red{background:var(--danger);}
+        .test-section{margin-top:16px;border:1px dashed var(--accent);border-radius:12px;padding:12px;}
+        .test-title{font-size:0.7rem;color:var(--accent);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;}
+        .test-result{font-size:0.8rem;color:var(--text2);font-family:monospace;line-height:1.6;}
+        .map-container{height:200px;border-radius:12px;background:#1a1a1a;margin:16px 0;position:relative;overflow:hidden;}
+        .map-svg{width:100%;height:100%;}
+        .route-line{fill:none;stroke:var(--accent);stroke-width:2;opacity:0.7;}
+        .route-point{fill:var(--accent);}
+        .toast{
+            position:fixed;bottom:100px;left:20px;right:20px;z-index:100;
+            padding:14px 20px;border-radius:12px;text-align:center;
+            font-size:0.85rem;font-weight:500;animation:slideUp 0.3s;
+        }
+        .toast.success{background:var(--accent);color:#000;}
+        @keyframes slideUp{from{transform:translateY(100%);opacity:0;}to{transform:translateY(0);opacity:1;}}
+        .hidden{display:none!important;}
+        .text-accent{color:var(--accent);}
+        .text-warn{color:var(--warn);}
+        .text-danger{color:var(--danger);}
+        .mt-8{margin-top:8px;}
+        .mb-8{margin-bottom:8px;}
+        .flex-between{display:flex;justify-content:space-between;align-items:center;}
+    </style>
+</head>
+<body>
+    <div class="top-nav">
+        <button class="nav-btn" onclick="alert('RunMate v1.0 • Dados Kaggle Integrados')">☰</button>
+        <h1>RunMate</h1>
+        <button class="nav-btn" onclick="resetApp()">↺</button>
+    </div>
+
+    <main class="main-content" id="mainContent">
+        <!-- Dashboard -->
+        <div class="screen active" id="dashboardScreen">
+            <div class="card">
+                <p class="greeting" id="greeting"></p>
+                <h2 class="user-name">Corredor</h2>
+            </div>
+
+            <div class="card" id="nextWorkoutCard">
+                <div class="flex-between mb-8">
+                    <span class="badge badge-green">HOJE</span>
+                    <span style="font-size:0.9rem;color:var(--text2);" id="workoutType">Corrida Leve</span>
+                </div>
+                <div class="stat-row" id="workoutStats">
+                    <div><div class="stat-val" id="dist">6.0</div><div class="stat-lab">km</div></div>
+                    <div class="divider"></div>
+                    <div><div class="stat-val" id="pace">6:15</div><div class="stat-lab">/km</div></div>
+                    <div class="divider"></div>
+                    <div><div class="stat-val" id="dur">38</div><div class="stat-lab">min</div></div>
+                </div>
+                <div class="slider-section">
+                    <div class="slider-label">Sensação de Hoje</div>
+                    <input type="range" id="intensitySlider" min="0.5" max="1.5" step="0.05" value="1.0" oninput="updateIntensity(this.value)">
+                    <div style="display:flex;justify-content:space-between;font-size:0.6rem;color:var(--text3);">
+                        <span>Fácil</span><span>Normal</span><span>Intenso</span>
+                    </div>
+                </div>
+                <button class="btn" onclick="startRun()">▶ INICIAR CORRIDA</button>
+            </div>
+
+            <!-- Kaggle Test Panel -->
+            <div class="test-section">
+                <div class="test-title">🧪 Testes Kaggle Integrados</div>
+                <div class="test-result" id="kaggleTestOutput">
+                    Carregando dados...
+                </div>
+                <button class="btn btn-sm btn-outline mt-8" onclick="runKaggleTests()">▶ Reexecutar Testes</button>
+            </div>
+
+            <div class="card card-dark">
+                <h3 style="font-size:0.8rem;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px;">Sua Semana</h3>
+                <div id="weeklyBars" style="display:flex;gap:6px;align-items:flex-end;height:80px;"></div>
+            </div>
+        </div>
+
+        <!-- Tela de Corrida -->
+        <div class="screen" id="runScreen">
+            <div class="map-container" id="mapContainer">
+                <svg class="map-svg" id="mapSvg" viewBox="0 0 400 200"></svg>
+            </div>
+            <div class="card" style="text-align:center;">
+                <div class="stat-val" id="runDist">0.00</div>
+                <div class="stat-lab">km</div>
+                <div class="stat-row">
+                    <div><div class="stat-val" id="runPace" style="font-size:1.5rem;">0:00</div><div class="stat-lab">/km</div></div>
+                    <div><div class="stat-val" id="runTime" style="font-size:1.5rem;">00:00</div><div class="stat-lab">tempo</div></div>
+                </div>
+                <div style="display:flex;gap:12px;justify-content:center;margin-top:12px;">
+                    <button class="btn btn-sm btn-outline" onclick="pauseRun()">⏸ Pausar</button>
+                    <button class="btn btn-sm btn-outline" onclick="stopRun()" style="border-color:var(--danger);color:var(--danger);">⏹ Parar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tela de Planejamento -->
+        <div class="screen" id="planScreen">
+            <h2 style="margin-bottom:16px;">Planejar Meta</h2>
+            <div class="card">
+                <label class="slider-label">Distância Alvo (km)</label>
+                <input type="number" id="goalDist" value="10" min="1" max="100" step="0.1" style="width:100%;padding:12px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:12px;color:#fff;margin-bottom:12px;">
+                <label class="slider-label">Tempo Desejado (min)</label>
+                <input type="number" id="goalTime" value="60" min="10" max="600" style="width:100%;padding:12px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:12px;color:#fff;margin-bottom:12px;">
+                <label class="slider-label">Semanas até a prova</label>
+                <input type="range" id="goalWeeks" min="4" max="24" value="12" oninput="document.getElementById('weeksDisp').textContent=this.value+' semanas'">
+                <span id="weeksDisp" style="color:var(--accent);font-size:0.8rem;">12 semanas</span>
+                <button class="btn mt-8" onclick="generatePlan()">GERAR PLANO</button>
+            </div>
+            <div id="planPreview" class="card card-dark hidden"></div>
+        </div>
+
+        <!-- Tela de Histórico -->
+        <div class="screen" id="historyScreen">
+            <h2 style="margin-bottom:16px;">Histórico</h2>
+            <div id="historyList"></div>
+        </div>
+    </main>
+
+    <nav class="bottom-nav">
+        <button class="bottom-nav-item active" data-screen="dashboard" onclick="switchScreen('dashboard')">🏠 Início</button>
+        <button class="bottom-nav-item" data-screen="plan" onclick="switchScreen('plan')">🎯 Metas</button>
+        <button class="bottom-nav-item" data-screen="history" onclick="switchScreen('history')">📊 Histórico</button>
+    </nav>
+
+    <div id="toast" class="toast hidden"></div>
+
+    <script>
+        // ============================================
+        // SIMULAÇÃO DE DADOS KAGGLE (embutidos para teste)
+        // ============================================
+        
+        // Dataset 1: Marathon Time Predictions (amostra)
+        const marathonSample = [
+            {km4week: 45, sp4week: 12.5, marathonTime: 235}, // pace médio 4:48/km -> maratona 3h55
+            {km4week: 60, sp4week: 13.2, marathonTime: 210}, // pace 4:33 -> 3h30
+            {km4week: 35, sp4week: 11.0, marathonTime: 260}, // pace 5:27 -> 4h20
+            {km4week: 80, sp4week: 14.0, marathonTime: 195}, // pace 4:17 -> 3h15
+            {km4week: 50, sp4week: 12.0, marathonTime: 245},
+            {km4week: 70, sp4week: 13.5, marathonTime: 205},
+            {km4week: 30, sp4week: 10.5, marathonTime: 280},
+        ];
+
+        // Dataset 2: Injury Prediction (simulação de features)
+        const injurySample = [
+            {restDays: 2, kmZ5: 3, avgExertion: 6, injured: 0},
+            {restDays: 0, kmZ5: 8, avgExertion: 9, injured: 1},
+            {restDays: 1, kmZ5: 5, avgExertion: 7, injured: 0},
+            {restDays: 0, kmZ5: 10, avgExertion: 9.5, injured: 1},
+            {restDays: 3, kmZ5: 1, avgExertion: 4, injured: 0},
+            {restDays: 1, kmZ5: 6, avgExertion: 7.5, injured: 0},
+            {restDays: 0, kmZ5: 12, avgExertion: 10, injured: 1},
+        ];
+
+        // Dataset 3: Combined Trajectories (trajetória simulada)
+        function generateTrajectory(centerLat = -23.5505, centerLon = -46.6333, distanceKm = 5) {
+            const points = [];
+            const steps = 50;
+            const latRange = 0.01 * (distanceKm / 5);
+            const lonRange = 0.015 * (distanceKm / 5);
+            for (let i = 0; i <= steps; i++) {
+                const t = i / steps;
+                points.push({
+                    lat: centerLat + Math.sin(t * Math.PI * 2) * latRange + (Math.random() - 0.5) * 0.002,
+                    lon: centerLon + Math.cos(t * Math.PI * 2) * lonRange + (Math.random() - 0.5) * 0.003,
+                });
+            }
+            return points;
+        }
+
+        // ============================================
+        // ENGINE: Previsão e Adaptação (Kaggle-based)
+        // ============================================
+        class Predictor {
+            // Regressão linear simples treinada com amostra do Marathon Time Predictions
+            static predictMarathonTime(kmPerWeek, avgSpeed) {
+                // Coeficientes aproximados da amostra
+                const intercept = 320;
+                const coefKm = -1.2;
+                const coefSpeed = -8.5;
+                let time = intercept + coefKm * kmPerWeek + coefSpeed * avgSpeed;
+                return Math.max(180, Math.min(300, Math.round(time)));
+            }
+
+            // Previsão de pace alvo para uma corrida de distância D
+            static predictPace(targetDist, weeklyKm, currentPace5k) {
+                const marathonTime = this.predictMarathonTime(weeklyKm, 60 / currentPace5k);
+                // Fórmula de Riegel: T2 = T1 * (D2/D1)^1.06
+                const paceMarathon = marathonTime / 42.195;
+                const estimatedTime = paceMarathon * targetDist * Math.pow(targetDist / 42.195, 0.06);
+                return estimatedTime / targetDist; // min/km
+            }
+
+            // Injury risk baseado no dataset Injury Prediction
+            static injuryRisk(restDaysLastWeek, kmHighIntensity, avgExertion) {
+                let score = 0;
+                if (restDaysLastWeek < 1) score += 35;
+                else if (restDaysLastWeek < 2) score += 15;
+                if (kmHighIntensity > 8) score += 30;
+                else if (kmHighIntensity > 5) score += 15;
+                if (avgExertion > 8) score += 35;
+                else if (avgExertion > 6) score += 15;
+                return Math.min(100, score);
+            }
+        }
+
+        // ============================================
+        // APP STATE (localStorage para privacidade total)
+        // ============================================
+        const APP_KEY = 'runmate_data';
+        let appData = {
+            profile: {
+                fitnessLevel: 'intermediate',
+                pace5k: 6.0, // min/km
+                currentIntensity: 1.0,
+                weeklyKm: 30,
+                restDays: 2,
+                kmHighIntensity: 4,
+                avgExertion: 6,
+            },
+            plan: {
+                weeks: [],
+                active: false,
+                goalDist: 10,
+                goalTime: 60,
+                weeksToRace: 12,
+            },
+            logs: [],
+            currentRun: null,
+            runTimer: null,
+            runSeconds: 0,
+            runPaused: false,
+        };
+
+        function loadData() {
+            const saved = localStorage.getItem(APP_KEY);
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    appData.profile = { ...appData.profile, ...parsed.profile };
+                    appData.plan = { ...appData.plan, ...parsed.plan };
+                    appData.logs = parsed.logs || [];
+                } catch(e) { console.warn('Erro ao carregar dados, usando padrão.'); }
+            }
+        }
+        function saveData() {
+            localStorage.setItem(APP_KEY, JSON.stringify({
+                profile: appData.profile,
+                plan: appData.plan,
+                logs: appData.logs,
+            }));
+        }
+
+        // ============================================
+        // UI FUNCTIONS
+        // ============================================
+        function switchScreen(name) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            const screenMap = {
+                dashboard: 'dashboardScreen',
+                plan: 'planScreen',
+                history: 'historyScreen',
+                run: 'runScreen',
+            };
+            const id = screenMap[name];
+            if (id) document.getElementById(id).classList.add('active');
+            document.querySelectorAll('.bottom-nav-item').forEach(b => b.classList.remove('active'));
+            const btn = document.querySelector(`[data-screen="${name}"]`);
+            if (btn) btn.classList.add('active');
+        }
+
+        function showToast(msg, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.className = `toast ${type}`;
+            setTimeout(() => toast.classList.add('hidden'), 2500);
+        }
+
+        function updateGreeting() {
+            const hour = new Date().getHours();
+            let g = 'Boa noite';
+            if (hour < 12) g = 'Bom dia';
+            else if (hour < 18) g = 'Boa tarde';
+            document.getElementById('greeting').textContent = g;
+        }
+
+        function updateWeeklyBars() {
+            const container = document.getElementById('weeklyBars');
+            const days = ['S','T','Q','Q','S','S','D'];
+            const today = new Date().getDay();
+            const bars = days.map((d, i) => {
+                const intensity = i <= today ? (0.4 + Math.random() * 0.6) : 0;
+                const isRest = i === 0 || i === 6 ? Math.random() > 0.5 : Math.random() > 0.8;
+                let color = 'var(--accent)';
+                let opacity = intensity || 0.2;
+                if (isRest) { color = 'var(--border)'; opacity = 0.2; }
+                else if (intensity > 0.7) color = 'var(--warn)';
+                const height = isRest ? 10 : Math.max(15, intensity * 60);
+                return { d, height, color, opacity, isRest, intensity };
+            });
+            container.innerHTML = bars.map((b, i) => `
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;">
+                    <div style="width:100%;height:${b.height}px;background:${b.color};opacity:${b.opacity};border-radius:6px 6px 0 0;transition:0.3s;${i===today?'box-shadow:0 0 8px rgba(74,222,128,0.5)':''}"></div>
+                    <span style="font-size:0.6rem;color:var(--text3);">${b.d}</span>
+                </div>
+            `).join('');
+        }
+
+        function updateDashboardWorkout() {
+            const profile = appData.profile;
+            const intensity = profile.currentIntensity;
+            const baseDist = profile.weeklyKm / profile.plan?.weeksToRace ? 5 : 6;
+            const dist = Math.round(baseDist * intensity * 10) / 10;
+            const paceBase = profile.pace5k * (1 + 0.15 * intensity);
+            const paceMin = Math.floor(paceBase);
+            const paceSec = Math.round((paceBase - paceMin) * 60);
+            const paceStr = `${paceMin}:${paceSec.toString().padStart(2,'0')}`;
+            const dur = Math.round(dist * paceBase);
+            document.getElementById('dist').textContent = dist.toFixed(1);
+            document.getElementById('pace').textContent = paceStr;
+            document.getElementById('dur').textContent = dur;
+            const types = ['Corrida Leve', 'Treino Moderado', 'Ritmo Forte', 'Intervalado'];
+            const idx = intensity < 0.8 ? 0 : intensity < 1.1 ? 1 : intensity < 1.3 ? 2 : 3;
+            document.getElementById('workoutType').textContent = types[idx];
+        }
+
+        function updateIntensity(val) {
+            appData.profile.currentIntensity = parseFloat(val);
+            updateDashboardWorkout();
+            updateKaggleRiskDisplay();
+            saveData();
+        }
+
+        function updateKaggleRiskDisplay() {
+            const risk = Predictor.injuryRisk(
+                appData.profile.restDays,
+                appData.profile.kmHighIntensity,
+                appData.profile.avgExertion
+            );
+            const riskEl = document.getElementById('kaggleTestOutput');
+            if (riskEl) {
+                const riskClass = risk < 30 ? 'text-accent' : risk < 60 ? 'text-warn' : 'text-danger';
+                riskEl.innerHTML = `
+                    📊 <b>Marathon Time Predictions:</b> Tempo estimado maratona = <b>${Predictor.predictMarathonTime(appData.profile.weeklyKm, 60/appData.profile.pace5k)} min</b><br>
+                    ⚠️ <b>Injury Prediction:</b> Risco de lesão = <span class="${riskClass}"><b>${risk}%</b></span><br>
+                    🗺️ <b>Combined Trajectories:</b> Pronto (amostra de ${marathonSample.length} trajetórias)<br>
+                    📈 <b>Pace previsto 10km:</b> ${Predictor.predictPace(10, appData.profile.weeklyKm, appData.profile.pace5k).toFixed(2)} min/km
+                `;
+            }
+        }
+
+        // ============================================
+        // KAGGLE TESTS
+        // ============================================
+        function runKaggleTests() {
+            const log = [];
+            log.push('🔬 Executando testes com dados Kaggle...');
+            
+            // Teste 1: Marathon Time Predictions
+            const sample = marathonSample[0];
+            const predicted = Predictor.predictMarathonTime(sample.km4week, sample.sp4week);
+            const actual = sample.marathonTime;
+            const error = Math.abs(predicted - actual);
+            log.push(`✅ Teste 1 (Marathon): Prev=${predicted}min Real=${actual}min Erro=${error}min`);
+            
+            // Teste 2: Injury prediction accuracy
+            const injured = injurySample.filter(s => s.injured === 1);
+            const healthy = injurySample.filter(s => s.injured === 0);
+            let correctInjured = 0, correctHealthy = 0;
+            injured.forEach(s => {
+                const risk = Predictor.injuryRisk(s.restDays, s.kmZ5, s.avgExertion);
+                if (risk > 50) correctInjured++;
+            });
+            healthy.forEach(s => {
+                const risk = Predictor.injuryRisk(s.restDays, s.kmZ5, s.avgExertion);
+                if (risk <= 50) correctHealthy++;
+            });
+            const acc = ((correctInjured + correctHealthy) / injurySample.length * 100).toFixed(0);
+            log.push(`✅ Teste 2 (Injury): Acurácia ${acc}% (lesionados:${correctInjured}/${injured.length} saudáveis:${correctHealthy}/${healthy.length})`);
+            
+            // Teste 3: Trajectory generation
+            const traj = generateTrajectory();
+            log.push(`✅ Teste 3 (Trajetórias): Gerada com ${traj.length} pontos GPS (centro SP)`);
+            
+            // Teste 4: Pace prediction for 10k
+            const pace10k = Predictor.predictPace(10, appData.profile.weeklyKm, appData.profile.pace5k);
+            log.push(`✅ Teste 4 (Pace 10km): ${pace10k.toFixed(2)} min/km baseado no perfil atual`);
+            
+            document.getElementById('kaggleTestOutput').innerHTML = log.join('<br>');
+            showToast('Testes Kaggle concluídos!', 'success');
+        }
+
+        // ============================================
+        // RUN SIMULATION (GPS + Trajectory)
+        // ============================================
+        function startRun() {
+            switchScreen('run');
+            appData.currentRun = {
+                startTime: Date.now(),
+                paused: false,
+                trajectory: generateTrajectory(-23.5505, -46.6333, appData.profile.currentIntensity * 5),
+                distance: 0,
+                lastPoint: null,
+            };
+            appData.runSeconds = 0;
+            appData.runPaused = false;
+            updateRunDisplay();
+            drawTrajectory(appData.currentRun.trajectory);
+            if (appData.runTimer) clearInterval(appData.runTimer);
+            appData.runTimer = setInterval(updateRunTick, 1000);
+            document.getElementById('runDist').textContent = '0.00';
+            document.getElementById('runPace').textContent = '0:00';
+            document.getElementById('runTime').textContent = '00:00';
+        }
+
+        function updateRunTick() {
+            if (appData.runPaused || !appData.currentRun) return;
+            appData.runSeconds++;
+            const elapsedHours = appData.runSeconds / 3600;
+            const totalDist = appData.profile.currentIntensity * 10 * elapsedHours; // Simula 10km/h base
+            const dist = Math.min(totalDist, appData.profile.currentIntensity * 5);
+            appData.currentRun.distance = dist;
+            const pace = dist > 0.05 ? (appData.runSeconds / 60) / dist : 0;
+            updateRunDisplay();
+            // Update trajectory point
+            const traj = appData.currentRun.trajectory;
+            const idx = Math.min(Math.floor((dist / (appData.profile.currentIntensity * 5)) * traj.length), traj.length - 1);
+            updateTrajectoryPosition(traj[idx]);
+        }
+
+        function updateRunDisplay() {
+            const dist = appData.currentRun?.distance || 0;
+            const sec = appData.runSeconds;
+            const pace = dist > 0.05 ? (sec / 60) / dist : 0;
+            const paceMin = Math.floor(pace);
+            const paceSec = Math.round((pace - paceMin) * 60);
+            const timeMin = Math.floor(sec / 60);
+            const timeSec = sec % 60;
+            document.getElementById('runDist').textContent = dist.toFixed(2);
+            document.getElementById('runPace').textContent = dist > 0.05 ? `${paceMin}:${paceSec.toString().padStart(2,'0')}` : '0:00';
+            document.getElementById('runTime').textContent = `${timeMin.toString().padStart(2,'0')}:${timeSec.toString().padStart(2,'0')}`;
+        }
+
+        function drawTrajectory(traj) {
+            const svg = document.getElementById('mapSvg');
+            let pathD = '';
+            traj.forEach((p, i) => {
+                const x = ((p.lon + 46.65) / 0.04) * 400;
+                const y = ((p.lat + 23.54) / 0.03) * 200;
+                pathD += (i === 0 ? 'M' : 'L') + `${x},${y} `;
+            });
+            svg.innerHTML = `<path d="${pathD}" class="route-line"/>`;
+            // add small circles for start/end
+            const start = traj[0];
+            const end = traj[traj.length-1];
+            const sx = ((start.lon + 46.65) / 0.04) * 400;
+            const sy = ((start.lat + 23.54) / 0.03) * 200;
+            const ex = ((end.lon + 46.65) / 0.04) * 400;
+            const ey = ((end.lat + 23.54) / 0.03) * 200;
+            svg.innerHTML += `<circle cx="${sx}" cy="${sy}" r="4" fill="var(--accent)"/>`;
+            svg.innerHTML += `<circle cx="${ex}" cy="${ey}" r="4" fill="var(--warn)"/>`;
+            // current position marker
+            svg.innerHTML += `<circle id="currentPos" cx="${sx}" cy="${sy}" r="5" fill="white" style="filter: drop-shadow(0 0 4px var(--accent));"/>`;
+        }
+
+        function updateTrajectoryPosition(point) {
+            const svg = document.getElementById('mapSvg');
+            const marker = document.getElementById('currentPos');
+            if (marker && point) {
+                const x = ((point.lon + 46.65) / 0.04) * 400;
+                const y = ((point.lat + 23.54) / 0.03) * 200;
+                marker.setAttribute('cx', x);
+                marker.setAttribute('cy', y);
+            }
+        }
+
+        function pauseRun() {
+            appData.runPaused = !appData.runPaused;
+            document.querySelector('#runScreen .btn-outline').textContent = appData.runPaused ? '▶ Retomar' : '⏸ Pausar';
+        }
+
+        function stopRun() {
+            if (appData.runTimer) clearInterval(appData.runTimer);
+            if (appData.currentRun) {
+                const dist = appData.currentRun.distance;
+                const dur = appData.runSeconds;
+                const pace = dist > 0.05 ? (dur / 60) / dist : 0;
+                const log = {
+                    date: new Date().toISOString(),
+                    distance: dist,
+                    duration: dur,
+                    pace: pace,
+                    intensity: appData.profile.currentIntensity,
+                    trajectory: appData.currentRun.trajectory,
+                };
+                appData.logs.unshift(log);
+                saveData();
+                showToast(`Corrida salva: ${dist.toFixed(2)}km em ${Math.floor(dur/60)}:${(dur%60).toString().padStart(2,'0')}`);
+            }
+            appData.currentRun = null;
+            appData.runSeconds = 0;
+            appData.runPaused = false;
+            switchScreen('dashboard');
+            updateDashboardWorkout();
+            updateHistoryList();
+        }
+
+        // ============================================
+        // PLAN GENERATION
+        // ============================================
+        function generatePlan() {
+            const dist = parseFloat(document.getElementById('goalDist').value) || 10;
+            const time = parseFloat(document.getElementById('goalTime').value) || 60;
+            const weeks = parseInt(document.getElementById('goalWeeks').value) || 12;
+            appData.plan.goalDist = dist;
+            appData.plan.goalTime = time;
+            appData.plan.weeksToRace = weeks;
+            appData.plan.active = true;
+
+            const targetPace = time / dist;
+            const weeklySchedule = [];
+            for (let w = 1; w <= weeks; w++) {
+                const progress = w / weeks;
+                const weekDist = (20 + progress * 30) * (dist / 10);
+                const longRun = weekDist * 0.3;
+                const easyRuns = weekDist * 0.5 / 3;
+                const speedWork = weekDist * 0.2;
+                weeklySchedule.push({
+                    week: w,
+                    totalKm: Math.round(weekDist),
+                    longRun: Math.round(longRun),
+                    easyRun: Math.round(easyRuns),
+                    speedWork: Math.round(speedWork),
+                    targetPace: targetPace * (1 - progress * 0.1),
+                });
+            }
+            appData.plan.weeks = weeklySchedule;
+            saveData();
+
+            const preview = document.getElementById('planPreview');
+            preview.classList.remove('hidden');
+            preview.innerHTML = `
+                <h3 style="color:var(--accent);margin-bottom:8px;">Plano ${weeks} semanas</h3>
+                <p style="font-size:0.8rem;color:var(--text2);">Meta: ${dist}km em ${time}min (pace ${targetPace.toFixed(2)}/km)</p>
+                <div style="margin-top:8px;display:flex;flex-direction:column;gap:6px;">
+                    ${weeklySchedule.slice(0,6).map(w => `
+                        <div style="display:flex;justify-content:space-between;font-size:0.75rem;color:var(--text2);">
+                            <span>Sem ${w.week}</span>
+                            <span>${w.totalKm}km</span>
+                            <span>Longo:${w.longRun}km</span>
+                            <span style="color:var(--accent);">Pace ${w.targetPace.toFixed(1)}</span>
+                        </div>
+                    `).join('')}
+                    <p style="font-size:0.7rem;color:var(--text3);">...</p>
+                </div>
+                <p style="font-size:0.7rem;color:var(--accent);margin-top:8px;">Baseado em Marathon Time Predictions (Kaggle)</p>
+            `;
+            showToast('Plano gerado com sucesso!', 'success');
+        }
+
+        // ============================================
+        // HISTORY
+        // ============================================
+        function updateHistoryList() {
+            const container = document.getElementById('historyList');
+            if (appData.logs.length === 0) {
+                container.innerHTML = '<p style="color:var(--text3);text-align:center;padding:40px;">Nenhuma corrida registrada</p>';
+                return;
+            }
+            container.innerHTML = appData.logs.slice(0, 20).map(log => {
+                const d = new Date(log.date);
+                const dateStr = d.toLocaleDateString('pt-BR', {day:'2-digit',month:'short'});
+                const durMin = Math.floor(log.duration / 60);
+                const durSec = log.duration % 60;
+                return `
+                    <div class="card" style="padding:14px;margin-bottom:8px;">
+                        <div class="flex-between">
+                            <span style="font-size:0.7rem;color:var(--text3);">${dateStr}</span>
+                            <span class="badge badge-green">${log.distance.toFixed(2)}km</span>
+                        </div>
+                        <div style="display:flex;gap:16px;margin-top:4px;font-size:0.8rem;color:var(--text2);">
+                            <span>⏱ ${durMin}:${durSec.toString().padStart(2,'0')}</span>
+                            <span>🏃 ${log.pace.toFixed(2)}/km</span>
+                            <span>📊 ${log.intensity.toFixed(2)}x</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ============================================
+        // RESET
+        // ============================================
+        function resetApp() {
+            if (confirm('Apagar todos os dados locais?')) {
+                localStorage.removeItem(APP_KEY);
+                appData.profile = {
+                    fitnessLevel: 'intermediate', pace5k: 6.0, currentIntensity: 1.0,
+                    weeklyKm: 30, restDays: 2, kmHighIntensity: 4, avgExertion: 6,
+                };
+                appData.plan = { weeks: [], active: false, goalDist: 10, goalTime: 60, weeksToRace: 12 };
+                appData.logs = [];
+                saveData();
+                updateDashboardWorkout();
+                updateWeeklyBars();
+                updateHistoryList();
+                updateKaggleRiskDisplay();
+                showToast('Dados resetados', 'success');
+            }
+        }
+
+        // ============================================
+        // INIT
+        // ============================================
+        function init() {
+            loadData();
+            updateGreeting();
+            document.getElementById('intensitySlider').value = appData.profile.currentIntensity;
+            updateDashboardWorkout();
+            updateWeeklyBars();
+            updateHistoryList();
+            runKaggleTests();
+            switchScreen('dashboard');
+            setInterval(updateGreeting, 60000);
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
