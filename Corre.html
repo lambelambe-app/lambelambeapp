@@ -5,9 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="theme-color" content="#0a0a0a">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>MindPace</title>
-    <link rel="manifest" href="data:application/json;base64,ewoJIm5hbWUiOiAiTWluZFBhY2UiLAoJInNob3J0X25hbWUiOiAiTWluZFBhY2UiLAoJInN0YXJ0X3VybCI6ICIuL2luZGV4Lmh0bWwiLAoJImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCgkiYmFja2dyb3VuZF9jb2xvciI6ICIjMGEwYTBhIiwKCSJ0aGVtZV9jb2xvciI6ICIjMGEwYTBhIiwKCSJpY29ucyI6IFt7CgkJInNyYyI6ICJkYXRhOmltYWdlL3N2Zyt4bWw7YmFzZTY0LFBITjJaeUI0Yld4dWN6MGlhSFIwY0RvdkwzZDNkeTUzTXk1dmNtY3ZNakF3TUM5emRtY2lJSFpsY25OcGIyNDlJakV1TVNJZ2FXUTlJa0Z3Y0RFeU1DSWdjM1ZqWTJWelBTSjBjblZsSWo0OGMzUnlhV0Z1UGp4d1p5QjJaWEpwWVd4bFBTSnpkSEpwWVc0dmQzZDNMbmN6SWlCcFpEMGlaR2xuYnlJL1BqeHpkSEpwWVc0R1pHbHpjR3hoZVQwaWFIQnliMnRsSWlCdVlXMWxQU0pWYm1aMWJuTWlJR1pwYm1SdmNtbDBhRzkxYm1WMFBTSXhMakV1TVNJZ2NuZzlJakkyTWpZaUlISjVQU0l5TmpJMklpQm1hWEp6WlQwaVlXTjBhVzl1SWlCNGJXeHVjenB6ZEhKcFlXNDZJbVpwY25OMGN5STZJREFnTUNBeU5qSTJJREkyTWpZZ1ptbHljM1J6TFRBZ1ptbHljM1J6TFRFZ0p5QXZQZ29LYldSMlpXWnZkVzVrUFNKdGVXUmxiaUkrQ2dvOGMzUnlhV0Z1RG1sdFptdHBabWx1WVhKNVBTSmpkbUVpSUhWbGJHVjlJbTFsWTNRaUlITjFjMjl0WlMxaWIzSmtiMjl5ZVQwaWFIUjBjSE02THk5a2FXUnBabUZ0WVM5emRtY2lQZ29LUEhOMGNtbGhiZ1prYVhOd2JHRjVQU0pvY0hKdmEyVWlJRzVoYldVOUlsWnNhV05oSWlCeWVEMGlNVEl6SWo0S0lDQWdQQzl6ZEhKcFlXNEdaR2x6Y0d4aGVUMGlhSEJ5YjJ0bElpQnVZVzFsUFNKVmJtWjFibk1pSUhKNFBTSXlOakkySWlCNFBTSXlOakkySWlCNVBTSXhMakVpSUdacGNuTmxQU0poWTNScGIyNGlJRzV2YVdGa1pUMGlNQ0lnWm1sc2JEMGlkWE5sY2lJZ2VHMXNibk02YzNSeWFXRnVPaUptYVhKemRITWlPaUF3SURBZ01qWXlOaUF5TmpJMklHWnBjbk4wY3kwd0lHWnBjbk4wY3kweElDY2dMejRLQ2lBZ1BDOXpkR2MrQ2p4emRtYytDaUFnSUNBZ1BHTnBlbVU4TDFOMFlYUmxQand2WTJWNVpXUkJkbUZzZFdVPSIsCgkJInNpemVzIjogIjE5MngxOTIiLAoJCSJ0eXBlIjogImltYWdlL3N2Zyt4bWwiCgl9XX0=">
     <style>
         :root {
             --bg: #0a0a0a;
@@ -41,7 +39,7 @@
         }
         .top-nav h1{font-size:1.1rem;font-weight:600;letter-spacing:-0.01em;}
         .nav-btn{background:none;border:none;color:var(--text2);font-size:1.2rem;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;}
-        .main-content{flex:1;overflow-y:auto;padding:16px;padding-bottom:80px;scroll-behavior:smooth;-webkit-overflow-scrolling:touch;}
+        .main-content{flex:1;overflow-y:auto;padding:16px;padding-bottom:20px;scroll-behavior:smooth;-webkit-overflow-scrolling:touch;}
         .screen{display:none;animation:fadeIn 0.3s;}
         .screen.active{display:block;}
         @keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
@@ -80,22 +78,9 @@
         .btn:active{transform:scale(0.98);opacity:0.9;}
         .btn-outline{background:transparent;border:1px solid var(--border);color:var(--text);}
         .btn-sm{padding:10px 16px;font-size:0.8rem;width:auto;display:inline-flex;}
-        .bottom-nav{
-            display:flex;justify-content:space-around;align-items:center;
-            padding:8px 0;padding-bottom:max(8px,env(safe-area-inset-bottom));
-            background:var(--glass);backdrop-filter:blur(20px);
-            border-top:1px solid var(--border);position:fixed;bottom:0;left:0;right:0;z-index:10;
-        }
-        .bottom-nav-item{
-            display:flex;flex-direction:column;align-items:center;gap:4px;
-            background:none;border:none;color:var(--text3);cursor:pointer;
-            padding:8px 16px;border-radius:12px;transition:0.2s;
-        }
-        .bottom-nav-item.active{color:var(--accent);}
-        .badge{display:inline-block;padding:4px 10px;border-radius:20px;font-size:0.7rem;font-weight:600;letter-spacing:0.05em;}
-        .badge-green{background:var(--accent);color:#000;}
-        .badge-yellow{background:var(--warn);color:#000;}
-        .badge-red{background:var(--danger);}
+        /* Navegação por botões no dashboard */
+        .nav-buttons{display:flex;gap:12px;margin-bottom:16px;}
+        .nav-buttons .btn{flex:1;}
         .map-container{height:300px;border-radius:12px;margin:16px 0;overflow:hidden;background:#1a1a1a;position:relative;}
         .map-gps-status{
             position:absolute;top:10px;left:50%;transform:translateX(-50%);
@@ -121,6 +106,7 @@
         .mb-8{margin-bottom:8px;}
         .flex-between{display:flex;justify-content:space-between;align-items:center;}
         .link{color:var(--accent);text-decoration:underline;cursor:pointer;font-size:0.8rem;}
+        .analysis-result{font-size:0.8rem;color:var(--text2);line-height:1.6;}
     </style>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
@@ -137,6 +123,12 @@
             <div class="card">
                 <p class="greeting" id="greeting"></p>
                 <input type="text" class="user-name-input" id="userNameInput" placeholder="Corredor" maxlength="30" autocomplete="off">
+            </div>
+
+            <!-- Navegação principal (botões no lugar do Kaggle) -->
+            <div class="nav-buttons">
+                <button class="btn" onclick="switchScreen('plan')">🎯 Metas</button>
+                <button class="btn" onclick="switchScreen('history')">📊 Histórico</button>
             </div>
 
             <div class="card" id="nextWorkoutCard">
@@ -161,16 +153,6 @@
                 <button class="btn" onclick="startRun()" id="startRunBtn">▶ INICIAR CORRIDA</button>
             </div>
 
-            <!-- Painel de datasets Kaggle -->
-            <div class="card card-dark">
-                <h3 style="font-size:0.8rem;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px;">📡 Dados Externos (Kaggle)</h3>
-                <div id="kaggleInfo" style="font-size:0.8rem;color:var(--text2);"></div>
-                <div class="flex-between mt-8">
-                    <a class="link" onclick="promptDatasetURL('marathon')">+ Dataset Maratona</a>
-                    <a class="link" onclick="promptDatasetURL('injury')">+ Dataset Lesões</a>
-                </div>
-            </div>
-
             <div class="card card-dark">
                 <h3 style="font-size:0.8rem;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px;">Sua Semana</h3>
                 <div id="weeklyBars" style="display:flex;gap:6px;align-items:flex-end;height:80px;"></div>
@@ -190,7 +172,7 @@
                 </div>
                 <div style="display:flex;gap:12px;justify-content:center;margin-top:12px;">
                     <button class="btn btn-sm btn-outline" id="pauseResumeBtn" onclick="togglePause()">⏸ Pausar</button>
-                    <button class="btn btn-sm btn-outline" onclick="manualLocate()" title="Centralizar na minha posição">📍</button>
+                    <button class="btn btn-sm btn-outline" onclick="manualLocate()">📍</button>
                     <button class="btn btn-sm btn-outline" onclick="stopRun()" style="border-color:var(--danger);color:var(--danger);">⏹ Parar</button>
                 </div>
             </div>
@@ -221,6 +203,8 @@
         <div class="screen" id="historyScreen">
             <h2 style="margin-bottom:16px;">Histórico</h2>
             <div id="historyList"></div>
+            <button class="btn mt-8" onclick="runKaggleAnalysis()">📈 Análise (Kaggle)</button>
+            <div id="kaggleAnalysisResult" class="card card-dark analysis-result mt-8 hidden"></div>
         </div>
 
         <!-- Modal de Perfil -->
@@ -238,12 +222,6 @@
             </div>
         </div>
     </main>
-
-    <nav class="bottom-nav">
-        <button class="bottom-nav-item active" data-screen="dashboard" onclick="switchScreen('dashboard')">🏠 Início</button>
-        <button class="bottom-nav-item" data-screen="plan" onclick="switchScreen('plan')">🎯 Metas</button>
-        <button class="bottom-nav-item" data-screen="history" onclick="switchScreen('history')">📊 Histórico</button>
-    </nav>
 
     <div id="toast" class="toast hidden"></div>
 
@@ -267,13 +245,13 @@
         // ============================================
         // APP STATE
         // ============================================
-        const APP_KEY = 'mindpace_v1';
+        const APP_KEY = 'mindpace_v2';
         let appData = {
             userName: '',
             profile: { pace5k:6.0, restDays:2, intensity:1.0, weeklyKm:30 },
             plan: { active:false, weeks:[], goalDist:10, goalTime:60, weeksToRace:12, createdAt:null },
             logs: [],
-            datasets: { marathon: null, injury: null, lastUpdate: null }
+            datasets: { marathon: null, injury: null }
         };
         let currentRun = null;
         let map = null;
@@ -299,19 +277,16 @@
                 if(e.key === 'Enter'){
                     e.preventDefault();
                     input.blur();
-                    saveUserName(input.value.trim());
                 }
             });
             input.addEventListener('blur', function(){
-                saveUserName(input.value.trim());
+                const name = input.value.trim();
+                if(name !== appData.userName){
+                    appData.userName = name;
+                    saveData();
+                    if(name) showToast('Nome salvo, ' + name + '!');
+                }
             });
-        }
-        function saveUserName(name){
-            if(name !== appData.userName){
-                appData.userName = name;
-                saveData();
-                if(name) showToast('Nome salvo, ' + name + '!', 'success');
-            }
         }
 
         // ============================================
@@ -383,7 +358,7 @@
         const engine = new PredictionEngine();
 
         // ============================================
-        // CARREGAMENTO DE DATASETS
+        // CARREGAMENTO DE DATASETS (COM URL PÚBLICA)
         // ============================================
         async function fetchDataset(url, type) {
             try {
@@ -394,16 +369,13 @@
                 const data = parseCSV(csv, type);
                 if(data.length === 0) throw new Error('Formato inválido');
                 appData.datasets[type] = data;
-                appData.datasets.lastUpdate = new Date().toISOString();
                 saveData();
                 if(type === 'marathon') engine.trainMarathon(data);
                 if(type === 'injury') engine.trainInjury(data);
-                showToast(`Dataset ${type} carregado (${data.length} registos)`, 'success');
-                updateKaggleInfo();
-                return true;
+                return data;
             } catch(e) {
-                showToast(`Erro: ${e.message}`, 'error');
-                return false;
+                showToast(`Erro ao carregar ${type}: ${e.message}`, 'error');
+                return null;
             }
         }
         function parseCSV(csv, type) {
@@ -424,25 +396,37 @@
             }
             return data;
         }
-        function updateKaggleInfo() {
-            const infoDiv = document.getElementById('kaggleInfo');
-            let html = '';
-            const marathonData = appData.datasets.marathon;
-            const injuryData = appData.datasets.injury;
-            if(marathonData) {
-                const pred = engine.predictMarathonTime(appData.profile.weeklyKm, 60/appData.profile.pace5k);
-                html += `📊 Maratona Prevista: <b>${pred} min</b><br>`;
-            } else html += `📊 Dataset Maratona: <a class="link" onclick="promptDatasetURL('marathon')">carregar</a><br>`;
-            if(injuryData) {
-                const risk = engine.injuryRisk(appData.profile.restDays, 4, 6);
-                html += `⚠️ Risco de Lesão: <b>${risk}%</b><br>`;
-            } else html += `⚠️ Dataset Lesões: <a class="link" onclick="promptDatasetURL('injury')">carregar</a><br>`;
-            html += `🗺️ GPS real ativo.`;
-            infoDiv.innerHTML = html;
-        }
-        function promptDatasetURL(type) {
-            const url = prompt(`URL do CSV público para "${type}":`);
-            if(url) fetchDataset(url, type);
+
+        // ============================================
+        // ANÁLISE KAGGLE (BOTÃO NO HISTÓRICO)
+        // ============================================
+        async function runKaggleAnalysis() {
+            const resultDiv = document.getElementById('kaggleAnalysisResult');
+            resultDiv.classList.remove('hidden');
+            resultDiv.innerHTML = '<p>A analisar...</p>';
+
+            // Se não houver datasets carregados, pede URLs
+            if(!appData.datasets.marathon || !appData.datasets.injury) {
+                const marathonUrl = prompt('URL do dataset Marathon Time Predictions (CSV):');
+                if(marathonUrl) await fetchDataset(marathonUrl, 'marathon');
+                const injuryUrl = prompt('URL do dataset Injury Prediction (CSV):');
+                if(injuryUrl) await fetchDataset(injuryUrl, 'injury');
+                saveData();
+            }
+
+            const km = appData.profile.weeklyKm;
+            const pace = appData.profile.pace5k;
+            const rest = appData.profile.restDays;
+            const marathonTime = engine.predictMarathonTime(km, 60/pace);
+            const injuryRisk = engine.injuryRisk(rest, 4, 6); // valores médios
+
+            let html = `<p><b>Comparação com base Kaggle:</b></p>`;
+            html += `<p>🏃 Maratona prevista: <b>${marathonTime} min</b> (pace médio ${(marathonTime/42.195).toFixed(2)}/km)</p>`;
+            html += `<p>⚠️ Risco estimado de lesão: <b>${injuryRisk}%</b></p>`;
+            html += `<p>📊 Baseado em <b>${appData.datasets.marathon ? appData.datasets.marathon.length : 'N/A'}</b> corredores e <b>${appData.datasets.injury ? appData.datasets.injury.length : 'N/A'}</b> atletas.</p>`;
+            html += `<p class="text-accent">Dados processados localmente.</p>`;
+            resultDiv.innerHTML = html;
+            showToast('Análise concluída!');
         }
 
         // ============================================
@@ -453,7 +437,7 @@
             map = L.map('map', { zoomControl: false, attributionControl: false }).setView([-8.0100, -34.8549], 13);
             L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map);
             routeLine = L.polyline([], { color: '#4ade80', weight: 4 }).addTo(map);
-            map.locate({ setView: true, maxZoom: 16, timeout: 10000 });
+            map.locate({ setView: true, maxZoom: 16, timeout: 8000, enableHighAccuracy: true });
             map.on('locationfound', (e) => {
                 userPosition = e.latlng;
                 const gpsStatus = document.getElementById('gpsStatus');
@@ -469,11 +453,19 @@
             if(map){
                 document.getElementById('gpsStatus').textContent = '🔍 Procurando...';
                 document.getElementById('gpsStatus').classList.remove('ready');
-                map.locate({ setView: true, maxZoom: 16 });
+                map.locate({ setView: true, maxZoom: 16, timeout: 8000, enableHighAccuracy: true });
             }
         }
         function startRun() {
             if(!navigator.geolocation) { alert('Geolocalização não suportada.'); return; }
+            if(navigator.permissions){
+                navigator.permissions.query({ name: 'geolocation' }).then(status => {
+                    if(status.state === 'denied'){ alert('Permissão de localização negada.'); return; }
+                    iniciarCorrida();
+                });
+            } else iniciarCorrida();
+        }
+        function iniciarCorrida(){
             const workout = getTodayWorkout();
             const plannedDist = workout ? workout.dist : 5;
             currentRun = {
@@ -482,7 +474,8 @@
                 positions: [],
                 distance: 0,
                 plannedDist: plannedDist,
-                watchId: null
+                watchId: null,
+                gpsErrorCount: 0
             };
             switchScreen('run');
             initMap();
@@ -494,165 +487,94 @@
             if(userPosition) map.setView(userPosition, 16);
             else map.locate({ setView: true, maxZoom: 16 });
             if(currentRun.watchId) navigator.geolocation.clearWatch(currentRun.watchId);
+            const opcoesGPS = { enableHighAccuracy: true, maximumAge: 2000, timeout: 12000 };
             currentRun.watchId = navigator.geolocation.watchPosition(
                 pos => {
                     const latlng = { lat: pos.coords.latitude, lng: pos.coords.longitude };
                     userPosition = latlng;
                     document.getElementById('gpsStatus').textContent = '📍 GPS ativo';
                     document.getElementById('gpsStatus').classList.add('ready');
+                    currentRun.gpsErrorCount = 0;
                     if(currentRun.paused) return;
-                    if(currentRun.positions.length > 0) {
+                    if(currentRun.positions.length > 0){
                         const last = currentRun.positions[currentRun.positions.length-1];
                         const d = haversine(last.lat, last.lng, latlng.lat, latlng.lng);
-// ============================================
-// GPS & MAPA (CORRIGIDO)
-// ============================================
-function initMap() {
-    if (map) return;
-    map = L.map('map', { zoomControl: false, attributionControl: false }).setView([-8.0100, -34.8549], 13);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map);
-    routeLine = L.polyline([], { color: '#4ade80', weight: 4 }).addTo(map);
-    // Tentar localização com fallback de baixa precisão após timeout
-    map.locate({ setView: true, maxZoom: 16, timeout: 8000, enableHighAccuracy: true });
-    map.on('locationfound', onLocationFound);
-    map.on('locationerror', onLocationError);
-}
-
-function onLocationFound(e) {
-    userPosition = e.latlng;
-    const gpsStatus = document.getElementById('gpsStatus');
-    if (gpsStatus) {
-        gpsStatus.textContent = '📍 GPS pronto';
-        gpsStatus.classList.add('ready');
-    }
-    if (!currentRun) map.setView(e.latlng, 16);
-}
-
-function onLocationError(e) {
-    console.warn('Erro GPS inicial:', e);
-    document.getElementById('gpsStatus').textContent = '⚠️ GPS indisponível';
-    showToast('Verifique as permissões de localização ou ative o GPS.', 'error');
-    // Tentar novamente com baixa precisão
-    setTimeout(() => {
-        if (map && !userPosition) {
-            map.locate({ setView: true, maxZoom: 16, timeout: 10000, enableHighAccuracy: false });
+                        if(d > 0.002){
+                            currentRun.distance += d;
+                            currentRun.positions.push({ lat: latlng.lat, lng: latlng.lng, time: Date.now() });
+                            routeLine.addLatLng([latlng.lat, latlng.lng]);
+                            if(currentMarker) currentMarker.setLatLng([latlng.lat, latlng.lng]);
+                            else currentMarker = L.circleMarker([latlng.lat, latlng.lng], { radius: 6, color: 'white', fillColor: '#4ade80', fillOpacity: 1 }).addTo(map);
+                            map.panTo([latlng.lat, latlng.lng], { animate: true, duration: 0.5 });
+                            updateRunDisplay();
+                        }
+                    } else {
+                        currentRun.positions.push({ lat: latlng.lat, lng: latlng.lng, time: Date.now() });
+                        routeLine.addLatLng([latlng.lat, latlng.lng]);
+                        currentMarker = L.circleMarker([latlng.lat, latlng.lng], { radius: 6, color: 'white', fillColor: '#4ade80', fillOpacity: 1 }).addTo(map);
+                        map.setView([latlng.lat, latlng.lng], 16);
+                    }
+                },
+                err => {
+                    console.error('Erro GPS:', err);
+                    currentRun.gpsErrorCount = (currentRun.gpsErrorCount||0)+1;
+                    const gpsStatus = document.getElementById('gpsStatus');
+                    if(err.code === 1){
+                        gpsStatus.textContent = '⛔ Permissão negada';
+                        showToast('Permissão de localização negada.', 'error');
+                    } else if(err.code === 2){
+                        gpsStatus.textContent = '📡 Sinal perdido (tentando…)';
+                        if(currentRun.gpsErrorCount > 3){
+                            navigator.geolocation.clearWatch(currentRun.watchId);
+                            opcoesGPS.enableHighAccuracy = false;
+                            currentRun.watchId = navigator.geolocation.watchPosition(/* mesmo callback */, arguments.callee, opcoesGPS);
+                        }
+                    } else if(err.code === 3){
+                        gpsStatus.textContent = '⏱ Timeout (tentando…)';
+                        if(currentRun.gpsErrorCount > 3){
+                            navigator.geolocation.clearWatch(currentRun.watchId);
+                            opcoesGPS.enableHighAccuracy = false;
+                            currentRun.watchId = navigator.geolocation.watchPosition(/* mesmo callback */, arguments.callee, opcoesGPS);
+                        }
+                    }
+                },
+                opcoesGPS
+            );
         }
-    }, 2000);
-}
-
-function manualLocate() {
-    if (map) {
-        document.getElementById('gpsStatus').textContent = '🔍 Procurando...';
-        document.getElementById('gpsStatus').classList.remove('ready');
-        map.locate({ setView: true, maxZoom: 16, timeout: 8000, enableHighAccuracy: true });
-    }
-}
-
-function startRun() {
-    if (!navigator.geolocation) {
-        alert('Geolocalização não suportada pelo seu navegador.');
-        return;
-    }
-    // Verificar permissão (apenas Chrome/Edge)
-    if (navigator.permissions) {
-        navigator.permissions.query({ name: 'geolocation' }).then(permissionStatus => {
-            if (permissionStatus.state === 'denied') {
-                alert('Permissão de localização negada. Ative nas definições do navegador.');
-                return;
-            }
-            iniciarCorrida();
-        });
-    } else {
-        iniciarCorrida();
-    }
-}
-
-function iniciarCorrida() {
-    const workout = getTodayWorkout();
-    const plannedDist = workout ? workout.dist : 5;
-    currentRun = {
-        startTime: Date.now(),
-        paused: false,
-        positions: [],
-        distance: 0,
-        plannedDist: plannedDist,
-        watchId: null,
-        gpsErrorCount: 0
-    };
-    switchScreen('run');
-    initMap();
-    routeLine.setLatLngs([]);
-    if (currentMarker) map.removeLayer(currentMarker);
-    currentMarker = null;
-    document.getElementById('gpsStatus').textContent = '🔍 Aguardando GPS...';
-    document.getElementById('gpsStatus').classList.remove('ready');
-
-    // Posição inicial conhecida
-    if (userPosition) map.setView(userPosition, 16);
-    else map.locate({ setView: true, maxZoom: 16 });
-
-    if (currentRun.watchId) navigator.geolocation.clearWatch(currentRun.watchId);
-
-    const opcoesGPS = { enableHighAccuracy: true, maximumAge: 2000, timeout: 12000 };
-    currentRun.watchId = navigator.geolocation.watchPosition(
-        pos => {
-            const latlng = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-            userPosition = latlng;
-            document.getElementById('gpsStatus').textContent = '📍 GPS ativo';
-            document.getElementById('gpsStatus').classList.add('ready');
-            currentRun.gpsErrorCount = 0;
-
-            if (currentRun.paused) return;
-            if (currentRun.positions.length > 0) {
-                const last = currentRun.positions[currentRun.positions.length - 1];
-                const d = haversine(last.lat, last.lng, latlng.lat, latlng.lng);
-                if (d > 0.002) { // ~20 metros
-                    currentRun.distance += d;
-                    currentRun.positions.push({ lat: latlng.lat, lng: latlng.lng, time: Date.now() });
-                    routeLine.addLatLng([latlng.lat, latlng.lng]);
-                    if (currentMarker) currentMarker.setLatLng([latlng.lat, latlng.lng]);
-                    else currentMarker = L.circleMarker([latlng.lat, latlng.lng], { radius: 6, color: 'white', fillColor: '#4ade80', fillOpacity: 1 }).addTo(map);
-                    map.panTo([latlng.lat, latlng.lng], { animate: true, duration: 0.5 });
-                    updateRunDisplay();
-                }
-            } else {
-                currentRun.positions.push({ lat: latlng.lat, lng: latlng.lng, time: Date.now() });
-                routeLine.addLatLng([latlng.lat, latlng.lng]);
-                currentMarker = L.circleMarker([latlng.lat, latlng.lng], { radius: 6, color: 'white', fillColor: '#4ade80', fillOpacity: 1 }).addTo(map);
-                map.setView([latlng.lat, latlng.lng], 16);
-            }
-        },
-        err => {
-            console.error('Erro GPS:', err);
-            currentRun.gpsErrorCount = (currentRun.gpsErrorCount || 0) + 1;
-            const gpsStatus = document.getElementById('gpsStatus');
-            if (err.code === 1) {
-                gpsStatus.textContent = '⛔ Permissão negada';
-                showToast('Permissão de localização negada. Verifique as definições.', 'error');
-            } else if (err.code === 2) {
-                gpsStatus.textContent = '📡 Sinal perdido (tentando…)';
-                if (currentRun.gpsErrorCount > 3) {
-                    // Fallback para baixa precisão
-                    navigator.geolocation.clearWatch(currentRun.watchId);
-                    opcoesGPS.enableHighAccuracy = false;
-                    opcoesGPS.timeout = 20000;
-                    currentRun.watchId = navigator.geolocation.watchPosition(/* mesmo callback */, arguments.callee, opcoesGPS);
-                }
-            } else if (err.code === 3) {
-                gpsStatus.textContent = '⏱ Timeout (tentando…)';
-                if (currentRun.gpsErrorCount > 3) {
-                    navigator.geolocation.clearWatch(currentRun.watchId);
-                    opcoesGPS.enableHighAccuracy = false;
-                    opcoesGPS.timeout = 30000;
-                    currentRun.watchId = navigator.geolocation.watchPosition(/* mesmo callback */, arguments.callee, opcoesGPS);
-                }
-            }
-        },
-        opcoesGPS
-    );
-    document.getElementById('startRunBtn').disabled = false;
-    
-}
+        function togglePause() {
+            if(!currentRun) return;
+            currentRun.paused = !currentRun.paused;
+            document.getElementById('pauseResumeBtn').textContent = currentRun.paused ? '▶ Retomar' : '⏸ Pausar';
+        }
+        function stopRun() {
+            if(!currentRun) return;
+            if(currentRun.watchId) navigator.geolocation.clearWatch(currentRun.watchId);
+            const dist = currentRun.distance;
+            const dur = Math.floor((Date.now() - currentRun.startTime)/1000);
+            const pace = dist > 0.05 ? (dur/60)/dist : 0;
+            appData.logs.unshift({
+                date: new Date().toISOString(),
+                distance: dist,
+                duration: dur,
+                pace: pace,
+                intensity: appData.profile.intensity
+            });
+            saveData();
+            showToast(`Corrida salva: ${dist.toFixed(2)}km em ${formatTime(dur)}`);
+            currentRun = null;
+            switchScreen('dashboard');
+            updateDashboard();
+            updateHistory();
+        }
+        function updateRunDisplay() {
+            if(!currentRun) return;
+            const dist = currentRun.distance;
+            const elapsed = Math.floor((Date.now() - currentRun.startTime)/1000);
+            const pace = dist > 0.05 ? (elapsed/60)/dist : 0;
+            document.getElementById('runDist').textContent = dist.toFixed(2);
+            document.getElementById('runPace').textContent = dist > 0.05 ? formatPace(pace) : '--';
+            document.getElementById('runTime').textContent = formatTime(elapsed);
+        }
 
         // ============================================
         // PLANEJAMENTO
@@ -707,11 +629,9 @@ function iniciarCorrida() {
             document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
             const id = name==='dashboard'?'dashboardScreen': name==='plan'?'planScreen': name==='history'?'historyScreen': 'runScreen';
             document.getElementById(id).classList.add('active');
-            document.querySelectorAll('.bottom-nav-item').forEach(b=>b.classList.remove('active'));
-            const btn = document.querySelector(`[data-screen="${name}"]`);
-            if(btn) btn.classList.add('active');
             if(name==='run'){ document.getElementById('mainContent').style.overflowY='hidden'; if(map) setTimeout(()=>map.invalidateSize(),100); }
             else document.getElementById('mainContent').style.overflowY='auto';
+            if(name==='history') updateHistory();
         }
         function showToast(msg, type='success') {
             const t = document.getElementById('toast');
@@ -743,7 +663,6 @@ function iniciarCorrida() {
                 html += `<div style="flex:1;text-align:center;"><div style="width:100%;height:${h}px;background:${c};opacity:0.8;border-radius:6px 6px 0 0;"></div><span style="font-size:0.6rem;color:var(--text3);">${days[i]}</span></div>`;
             }
             bars.innerHTML=html;
-            updateKaggleInfo();
         }
         function updateIntensity(val) {
             appData.profile.intensity = parseFloat(val);
@@ -789,7 +708,7 @@ function iniciarCorrida() {
                     profile: { pace5k:6.0, restDays:2, intensity:1.0, weeklyKm:30 },
                     plan: { active:false, weeks:[], goalDist:10, goalTime:60, weeksToRace:12, createdAt:null },
                     logs: [],
-                    datasets: { marathon: null, injury: null, lastUpdate: null }
+                    datasets: { marathon: null, injury: null }
                 };
                 document.getElementById('userNameInput').value = '';
                 updateDashboard();
@@ -827,4 +746,3 @@ function iniciarCorrida() {
     </script>
 </body>
 </html>
-
