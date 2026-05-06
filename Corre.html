@@ -504,65 +504,155 @@
                     if(currentRun.positions.length > 0) {
                         const last = currentRun.positions[currentRun.positions.length-1];
                         const d = haversine(last.lat, last.lng, latlng.lat, latlng.lng);
-                        if(d > 0.002) {
-                            currentRun.distance += d;
-                            currentRun.positions.push({ lat: latlng.lat, lng: latlng.lng, time: Date.now() });
-                            routeLine.addLatLng([latlng.lat, latlng.lng]);
-                            if(currentMarker) currentMarker.setLatLng([latlng.lat, latlng.lng]);
-                            else currentMarker = L.circleMarker([latlng.lat, latlng.lng], { radius: 6, color: 'white', fillColor: '#4ade80', fillOpacity: 1 }).addTo(map);
-                            map.panTo([latlng.lat, latlng.lng], { animate: true, duration: 0.5 });
-                            updateRunDisplay();
-                        }
-                    } else {
-                        currentRun.positions.push({ lat: latlng.lat, lng: latlng.lng, time: Date.now() });
-                        routeLine.addLatLng([latlng.lat, latlng.lng]);
-                        currentMarker = L.circleMarker([latlng.lat, latlng.lng], { radius: 6, color: 'white', fillColor: '#4ade80', fillOpacity: 1 }).addTo(map);
-                        map.setView([latlng.lat, latlng.lng], 16);
-                    }
-                },
-                err => {
-                    console.warn('Erro GPS:', err);
-                    document.getElementById('gpsStatus').textContent = '⚠️ Erro no GPS';
-                    showToast('Erro na localização. Verifique as permissões.', 'error');
-                },
-                { enableHighAccuracy: true, maximumAge: 1000, timeout: 15000 }
-            );
-            document.getElementById('startRunBtn').disabled = false;
+// ============================================
+// GPS & MAPA (CORRIGIDO)
+// ============================================
+function initMap() {
+    if (map) return;
+    map = L.map('map', { zoomControl: false, attributionControl: false }).setView([-8.0100, -34.8549], 13);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map);
+    routeLine = L.polyline([], { color: '#4ade80', weight: 4 }).addTo(map);
+    // Tentar localização com fallback de baixa precisão após timeout
+    map.locate({ setView: true, maxZoom: 16, timeout: 8000, enableHighAccuracy: true });
+    map.on('locationfound', onLocationFound);
+    map.on('locationerror', onLocationError);
+}
+
+function onLocationFound(e) {
+    userPosition = e.latlng;
+    const gpsStatus = document.getElementById('gpsStatus');
+    if (gpsStatus) {
+        gpsStatus.textContent = '📍 GPS pronto';
+        gpsStatus.classList.add('ready');
+    }
+    if (!currentRun) map.setView(e.latlng, 16);
+}
+
+function onLocationError(e) {
+    console.warn('Erro GPS inicial:', e);
+    document.getElementById('gpsStatus').textContent = '⚠️ GPS indisponível';
+    showToast('Verifique as permissões de localização ou ative o GPS.', 'error');
+    // Tentar novamente com baixa precisão
+    setTimeout(() => {
+        if (map && !userPosition) {
+            map.locate({ setView: true, maxZoom: 16, timeout: 10000, enableHighAccuracy: false });
         }
-        function togglePause() {
-            if(!currentRun) return;
-            currentRun.paused = !currentRun.paused;
-            document.getElementById('pauseResumeBtn').textContent = currentRun.paused ? '▶ Retomar' : '⏸ Pausar';
-        }
-        function stopRun() {
-            if(!currentRun) return;
-            if(currentRun.watchId) navigator.geolocation.clearWatch(currentRun.watchId);
-            const dist = currentRun.distance;
-            const dur = Math.floor((Date.now() - currentRun.startTime)/1000);
-            const pace = dist > 0.05 ? (dur/60)/dist : 0;
-            appData.logs.unshift({
-                date: new Date().toISOString(),
-                distance: dist,
-                duration: dur,
-                pace: pace,
-                intensity: appData.profile.intensity
-            });
-            saveData();
-            showToast(`Corrida salva: ${dist.toFixed(2)}km em ${formatTime(dur)}`);
-            currentRun = null;
-            switchScreen('dashboard');
-            updateDashboard();
-            updateHistory();
-        }
-        function updateRunDisplay() {
-            if(!currentRun) return;
-            const dist = currentRun.distance;
-            const elapsed = Math.floor((Date.now() - currentRun.startTime)/1000);
-            const pace = dist > 0.05 ? (elapsed/60)/dist : 0;
-            document.getElementById('runDist').textContent = dist.toFixed(2);
-            document.getElementById('runPace').textContent = dist > 0.05 ? formatPace(pace) : '--';
-            document.getElementById('runTime').textContent = formatTime(elapsed);
-        }
+    }, 2000);
+}
+
+function manualLocate() {
+    if (map) {
+        document.getElementById('gpsStatus').textContent = '🔍 Procurando...';
+        document.getElementById('gpsStatus').classList.remove('ready');
+        map.locate({ setView: true, maxZoom: 16, timeout: 8000, enableHighAccuracy: true });
+    }
+}
+
+function startRun() {
+    if (!navigator.geolocation) {
+        alert('Geolocalização não suportada pelo seu navegador.');
+        return;
+    }
+    // Verificar permissão (apenas Chrome/Edge)
+    if (navigator.permissions) {
+        navigator.permissions.query({ name: 'geolocation' }).then(permissionStatus => {
+            if (permissionStatus.state === 'denied') {
+                alert('Permissão de localização negada. Ative nas definições do navegador.');
+                return;
+            }
+            iniciarCorrida();
+        });
+    } else {
+        iniciarCorrida();
+    }
+}
+
+function iniciarCorrida() {
+    const workout = getTodayWorkout();
+    const plannedDist = workout ? workout.dist : 5;
+    currentRun = {
+        startTime: Date.now(),
+        paused: false,
+        positions: [],
+        distance: 0,
+        plannedDist: plannedDist,
+        watchId: null,
+        gpsErrorCount: 0
+    };
+    switchScreen('run');
+    initMap();
+    routeLine.setLatLngs([]);
+    if (currentMarker) map.removeLayer(currentMarker);
+    currentMarker = null;
+    document.getElementById('gpsStatus').textContent = '🔍 Aguardando GPS...';
+    document.getElementById('gpsStatus').classList.remove('ready');
+
+    // Posição inicial conhecida
+    if (userPosition) map.setView(userPosition, 16);
+    else map.locate({ setView: true, maxZoom: 16 });
+
+    if (currentRun.watchId) navigator.geolocation.clearWatch(currentRun.watchId);
+
+    const opcoesGPS = { enableHighAccuracy: true, maximumAge: 2000, timeout: 12000 };
+    currentRun.watchId = navigator.geolocation.watchPosition(
+        pos => {
+            const latlng = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+            userPosition = latlng;
+            document.getElementById('gpsStatus').textContent = '📍 GPS ativo';
+            document.getElementById('gpsStatus').classList.add('ready');
+            currentRun.gpsErrorCount = 0;
+
+            if (currentRun.paused) return;
+            if (currentRun.positions.length > 0) {
+                const last = currentRun.positions[currentRun.positions.length - 1];
+                const d = haversine(last.lat, last.lng, latlng.lat, latlng.lng);
+                if (d > 0.002) { // ~20 metros
+                    currentRun.distance += d;
+                    currentRun.positions.push({ lat: latlng.lat, lng: latlng.lng, time: Date.now() });
+                    routeLine.addLatLng([latlng.lat, latlng.lng]);
+                    if (currentMarker) currentMarker.setLatLng([latlng.lat, latlng.lng]);
+                    else currentMarker = L.circleMarker([latlng.lat, latlng.lng], { radius: 6, color: 'white', fillColor: '#4ade80', fillOpacity: 1 }).addTo(map);
+                    map.panTo([latlng.lat, latlng.lng], { animate: true, duration: 0.5 });
+                    updateRunDisplay();
+                }
+            } else {
+                currentRun.positions.push({ lat: latlng.lat, lng: latlng.lng, time: Date.now() });
+                routeLine.addLatLng([latlng.lat, latlng.lng]);
+                currentMarker = L.circleMarker([latlng.lat, latlng.lng], { radius: 6, color: 'white', fillColor: '#4ade80', fillOpacity: 1 }).addTo(map);
+                map.setView([latlng.lat, latlng.lng], 16);
+            }
+        },
+        err => {
+            console.error('Erro GPS:', err);
+            currentRun.gpsErrorCount = (currentRun.gpsErrorCount || 0) + 1;
+            const gpsStatus = document.getElementById('gpsStatus');
+            if (err.code === 1) {
+                gpsStatus.textContent = '⛔ Permissão negada';
+                showToast('Permissão de localização negada. Verifique as definições.', 'error');
+            } else if (err.code === 2) {
+                gpsStatus.textContent = '📡 Sinal perdido (tentando…)';
+                if (currentRun.gpsErrorCount > 3) {
+                    // Fallback para baixa precisão
+                    navigator.geolocation.clearWatch(currentRun.watchId);
+                    opcoesGPS.enableHighAccuracy = false;
+                    opcoesGPS.timeout = 20000;
+                    currentRun.watchId = navigator.geolocation.watchPosition(/* mesmo callback */, arguments.callee, opcoesGPS);
+                }
+            } else if (err.code === 3) {
+                gpsStatus.textContent = '⏱ Timeout (tentando…)';
+                if (currentRun.gpsErrorCount > 3) {
+                    navigator.geolocation.clearWatch(currentRun.watchId);
+                    opcoesGPS.enableHighAccuracy = false;
+                    opcoesGPS.timeout = 30000;
+                    currentRun.watchId = navigator.geolocation.watchPosition(/* mesmo callback */, arguments.callee, opcoesGPS);
+                }
+            }
+        },
+        opcoesGPS
+    );
+    document.getElementById('startRunBtn').disabled = false;
+    
+}
 
         // ============================================
         // PLANEJAMENTO
