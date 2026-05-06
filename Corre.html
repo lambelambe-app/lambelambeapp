@@ -119,7 +119,7 @@
     <div class="top-nav">
         <button class="nav-btn" onclick="openProfile()" title="Perfil">👤</button>
         <h1>MindPace</h1>
-        <button class="nav-btn" onclick="resetApp()" title="Reiniciar">↺</button>
+        <button class="nav-btn" onclick="goHome()" title="Início">🏠</button>
     </div>
 
     <main class="main-content" id="mainContent">
@@ -249,7 +249,7 @@
         // ============================================
         // APP STATE
         // ============================================
-        const APP_KEY = 'mindpace_v3';
+        const APP_KEY = 'mindpace_v4';
         let appData = {
             userName: '',
             profile: { pace5k:6.0, restDays:2, intensity:1.0, weeklyKm:30 },
@@ -269,6 +269,16 @@
         }
         function saveData(){
             localStorage.setItem(APP_KEY, JSON.stringify(appData));
+        }
+
+        // ============================================
+        // FUNÇÃO DO BOTÃO INÍCIO
+        // ============================================
+        function goHome(){
+            // Vai para o dashboard e faz scroll para o topo
+            switchScreen('dashboard');
+            const main = document.getElementById('mainContent');
+            if(main) main.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         // ============================================
@@ -359,60 +369,12 @@
         const engine = new PredictionEngine();
 
         // ============================================
-        // CARREGAMENTO DE DATASETS
+        // ANÁLISE KAGGLE (SEM POP-UPS)
         // ============================================
-        async function fetchDataset(url, type) {
-            try {
-                showToast(`Carregando dataset ${type}...`, 'info');
-                const response = await fetch(url);
-                if(!response.ok) throw new Error('HTTP '+response.status);
-                const csv = await response.text();
-                const data = parseCSV(csv, type);
-                if(data.length === 0) throw new Error('Formato inválido');
-                appData.datasets[type] = data;
-                saveData();
-                if(type === 'marathon') engine.trainMarathon(data);
-                if(type === 'injury') engine.trainInjury(data);
-                return data;
-            } catch(e) {
-                showToast(`Erro ao carregar ${type}: ${e.message}`, 'error');
-                return null;
-            }
-        }
-        function parseCSV(csv, type) {
-            const lines = csv.split('\n').filter(l => l.trim());
-            if(lines.length < 2) return [];
-            const headers = lines[0].split(',').map(h => h.trim().replace(/"/g,''));
-            const data = [];
-            for(let i=1; i<lines.length; i++) {
-                const values = lines[i].split(',').map(v => v.trim().replace(/"/g,''));
-                if(values.length !== headers.length) continue;
-                const obj = {};
-                for(let j=0; j<headers.length; j++) obj[headers[j]] = parseFloat(values[j]) || values[j];
-                if(type === 'marathon' && obj.km4week !== undefined && obj.sp4week !== undefined && obj.marathonTime !== undefined) {
-                    data.push({km4week:+obj.km4week, sp4week:+obj.sp4week, marathonTime:+obj.marathonTime});
-                } else if(type === 'injury' && obj.restDays !== undefined && obj.kmZ5 !== undefined && obj.avgExertion !== undefined && obj.injured !== undefined) {
-                    data.push({restDays:+obj.restDays, kmZ5:+obj.kmZ5, avgExertion:+obj.avgExertion, injured:+obj.injured});
-                }
-            }
-            return data;
-        }
-
-        // ============================================
-        // ANÁLISE KAGGLE (BOTÃO NO HISTÓRICO)
-        // ============================================
-        async function runKaggleAnalysis() {
+        function runKaggleAnalysis() {
             const resultDiv = document.getElementById('kaggleAnalysisResult');
             resultDiv.classList.remove('hidden');
-            resultDiv.innerHTML = '<p>A analisar...</p>';
-
-            if(!appData.datasets.marathon || !appData.datasets.injury) {
-                const marathonUrl = prompt('URL do dataset Marathon Time Predictions (CSV):');
-                if(marathonUrl) await fetchDataset(marathonUrl, 'marathon');
-                const injuryUrl = prompt('URL do dataset Injury Prediction (CSV):');
-                if(injuryUrl) await fetchDataset(injuryUrl, 'injury');
-                saveData();
-            }
+            resultDiv.innerHTML = '<p>A analisar com o modelo preditivo...</p>';
 
             const km = appData.profile.weeklyKm;
             const pace = appData.profile.pace5k;
@@ -421,9 +383,13 @@
             const injuryRisk = engine.injuryRisk(rest, 4, 6);
 
             let html = `<p><b>Comparação com base Kaggle:</b></p>`;
-            html += `<p>🏃 Maratona prevista: <b>${marathonTime} min</b> (pace médio ${(marathonTime/42.195).toFixed(2)}/km)</p>`;
+            html += `<p>🏃 Previsão em Maratona: <b>${marathonTime} min</b> (pace médio ${(marathonTime/42.195).toFixed(2)}/km)</p>`;
             html += `<p>⚠️ Risco estimado de lesão: <b>${injuryRisk}%</b></p>`;
-            html += `<p>📊 Baseado em <b>${appData.datasets.marathon ? appData.datasets.marathon.length : 'N/A'}</b> corredores e <b>${appData.datasets.injury ? appData.datasets.injury.length : 'N/A'}</b> atletas.</p>`;
+            if(appData.datasets.marathon) {
+                html += `<p>📊 Baseado em <b>${appData.datasets.marathon.length}</b> corredores (dataset carregado).</p>`;
+            } else {
+                html += `<p>📊 Modelo padrão (carregue um dataset para personalizar).</p>`;
+            }
             html += `<p class="text-accent">Dados processados localmente.</p>`;
             resultDiv.innerHTML = html;
             showToast('Análise concluída!');
@@ -624,6 +590,8 @@
             if(name==='run'){ document.getElementById('mainContent').style.overflowY='hidden'; if(map) setTimeout(()=>map.invalidateSize(),100); }
             else document.getElementById('mainContent').style.overflowY='auto';
             if(name==='history') updateHistory();
+            // Scroll to top on screen change
+            document.getElementById('mainContent').scrollTo({ top: 0, behavior: 'smooth' });
         }
         function showToast(msg, type='success') {
             const t = document.getElementById('toast');
@@ -691,22 +659,6 @@
             updateDashboard();
             document.getElementById('profileModal').classList.add('hidden');
             showToast('Perfil atualizado');
-        }
-        function resetApp() {
-            if(confirm('Apagar todos os dados?')){
-                localStorage.removeItem(APP_KEY);
-                appData = {
-                    userName: '',
-                    profile: { pace5k:6.0, restDays:2, intensity:1.0, weeklyKm:30 },
-                    plan: { active:false, weeks:[], goalDist:10, goalTime:60, weeksToRace:12, createdAt:null },
-                    logs: [],
-                    datasets: { marathon: null, injury: null }
-                };
-                document.getElementById('userNameInput').value = '';
-                updateDashboard();
-                updateHistory();
-                showToast('Dados resetados');
-            }
         }
         function haversine(lat1, lon1, lat2, lon2) {
             const R=6371;
