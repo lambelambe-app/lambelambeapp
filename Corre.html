@@ -22,17 +22,21 @@
             --pixel-border: 3px solid #2a2a2a;
         }
         *{margin:0;padding:0;box-sizing:border-box;}
+        html, body {
+            height: 100%;
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            left: 0;
+        }
         body{
             font-family:'Press Start 2P','Inter',system-ui,sans-serif;
             background:var(--bg);
             color:var(--text);
-            height:100vh;height:100dvh;
             display:flex;flex-direction:column;
-            overflow:hidden;
             -webkit-tap-highlight-color:transparent;
             user-select:none;
-            position:fixed;
-            width:100%;
         }
         .top-nav{
             display:flex;align-items:center;justify-content:space-between;
@@ -40,7 +44,7 @@
             background:var(--glass);backdrop-filter:blur(20px);
             border-bottom:3px solid #2a2a2a;
             z-index:10;
-            height:52px;
+            flex-shrink:0;
         }
         .top-nav img.logo{
             height:28px;
@@ -159,6 +163,14 @@
         .week-bars-container{display:flex;gap:6px;align-items:flex-end;height:80px;}
         .week-bar{flex:1;text-align:center;}
         .week-bar-inner{width:100%;border-radius:0;transition:0.3s;border:2px solid #000;box-shadow:2px 2px 0 #000;}
+        .plan-legend {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.45rem;
+            color: var(--text3);
+            margin-bottom: 4px;
+            padding: 0 4px;
+        }
     </style>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
@@ -293,7 +305,7 @@
             });
         }
 
-        const APP_KEY = 'mindpace_v6';
+        const APP_KEY = 'mindpace_v9';
         let appData = {
             userName: '',
             profile: { pace5k:6.0, restDays:2, intensity:1.0, weeklyKm:30 },
@@ -320,6 +332,29 @@
             document.getElementById('mainContent').scrollTo({ top: 0, behavior: 'smooth' });
         }
 
+        function lockViewport() {
+            const viewport = window.visualViewport;
+            if (!viewport) return null;
+            const initialTop = viewport.offsetTop;
+            const handleResize = () => {
+                if (viewport.offsetTop !== initialTop) {
+                    window.scrollTo(0, 0);
+                    document.body.style.transform = `translateY(${initialTop - viewport.offsetTop}px)`;
+                } else {
+                    document.body.style.transform = '';
+                }
+            };
+            viewport.addEventListener('resize', handleResize);
+            viewport.addEventListener('scroll', handleResize);
+            return () => {
+                viewport.removeEventListener('resize', handleResize);
+                viewport.removeEventListener('scroll', handleResize);
+                document.body.style.transform = '';
+            };
+        }
+
+        let unlockViewport = null;
+
         function setupUserNameInput(){
             const input = document.getElementById('userNameInput');
             input.value = appData.userName || '';
@@ -333,13 +368,14 @@
                     saveData();
                     if(name) showToast('Nome salvo, ' + name + '!');
                 }
+                if (unlockViewport) { unlockViewport(); unlockViewport = null; }
             });
-            // Previne que o layout suba ao focar
             input.addEventListener('focus', function(e){
                 e.preventDefault();
+                unlockViewport = lockViewport();
                 setTimeout(() => {
                     document.getElementById('mainContent').scrollTo({ top: 0, behavior: 'instant' });
-                }, 100);
+                }, 50);
             });
         }
 
@@ -397,6 +433,35 @@
             }
         }
         const engine = new PredictionEngine();
+
+        // ============================================
+        // PLAN PREVIEW COM LEGENDA
+        // ============================================
+        function displayPlanPreview(){
+            const preview = document.getElementById('planPreview');
+            if(!appData.plan.active || !appData.plan.weeks.length){
+                preview.classList.add('hidden');
+                return;
+            }
+            preview.classList.remove('hidden');
+            const weeks = appData.plan.weeks;
+            const legenda = `
+                <div class="plan-legend">
+                    <span>Semana</span><span>Total</span><span>Longão (KM)</span><span>Pace (Min/KM)</span>
+                </div>
+            `;
+            const linhas = weeks.map(w=>`
+                <div style="font-size:0.45rem;display:flex;justify-content:space-between;margin-top:4px;">
+                    <span>S${w.week}</span><span>${w.totalKm}km</span><span>${w.longRun}km</span><span style="color:var(--accent);">${w.targetPace.toFixed(1)}</span>
+                </div>
+            `).join('');
+            preview.innerHTML = `
+                <h3 style="color:var(--accent);">Plano ${appData.plan.weeksToRace} semanas</h3>
+                <p style="font-size:0.5rem;">Meta: ${appData.plan.goalDist}km em ${appData.plan.goalTime}min</p>
+                ${legenda}
+                ${linhas}
+            `;
+        }
 
         function runKaggleAnalysis(){
             const resultDiv=document.getElementById('kaggleAnalysisResult');
@@ -521,41 +586,48 @@
             else if(dow===2){d=week.speedWork;t='velocidade';}
             return{dist:d,type:t};
         }
+
         function generatePlan(){
             const dist=parseFloat(document.getElementById('goalDist').value);
             const time=parseInt(document.getElementById('goalTime').value);
             const weeks=parseInt(document.getElementById('goalWeeks').value);
-            appData.plan={active:true,goalDist:dist,goalTime:time,weeksToRace:weeks,createdAt:new Date().toISOString(),weeks:[]};
-            const tp=time/dist,ml=dist*0.75;
-            for(let w=1;w<=weeks;w++){
-                const p=w/weeks,wd=(20+p*40)*(dist/10);
-                const lr=Math.round(ml*p),er=Math.round((wd-lr)*0.6/3),sw=Math.round((wd-lr)*0.4);
-                appData.plan.weeks.push({week:w,totalKm:Math.round(wd),longRun:lr,easyRun:er,speedWork:sw,targetPace:tp*(1-p*0.15)});
+            appData.plan = { active:true, goalDist:dist, goalTime:time, weeksToRace:weeks, createdAt: new Date().toISOString(), weeks:[] };
+            const tp=time/dist, ml=dist*0.75;
+            for(let w=1; w<=weeks; w++){
+                const p=w/weeks, wd=(20+p*40)*(dist/10);
+                const lr=Math.round(ml*p), er=Math.round((wd-lr)*0.6/3), sw=Math.round((wd-lr)*0.4);
+                appData.plan.weeks.push({ week:w, totalKm:Math.round(wd), longRun:lr, easyRun:er, speedWork:sw, targetPace:tp*(1-p*0.15) });
             }
             saveData();
-            document.getElementById('planPreview').classList.remove('hidden');
-            document.getElementById('planPreview').innerHTML=`
-                <h3 style="color:var(--accent);">Plano ${weeks} semanas</h3>
-                <p style="font-size:0.5rem;">Meta: ${dist}km em ${time}min</p>
-                ${appData.plan.weeks.slice(0,6).map(w=>`
-                    <div style="font-size:0.45rem;display:flex;justify-content:space-between;margin-top:4px;">
-                        <span>S${w.week}</span><span>${w.totalKm}km</span><span>L${w.longRun}km</span><span style="color:var(--accent);">P${w.targetPace.toFixed(1)}</span>
-                    </div>
-                `).join('')}
-                <p style="font-size:0.4rem;color:var(--text3);">...</p>
-            `;
-            updateDashboard();showToast('Plano gerado!');
+            displayPlanPreview();
+            updateDashboard();
+            showToast('Plano gerado!');
         }
 
         function switchScreen(name){
             document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
             const id=name==='dashboard'?'dashboardScreen':name==='plan'?'planScreen':name==='history'?'historyScreen':'runScreen';
             document.getElementById(id).classList.add('active');
-            if(name==='run'){document.getElementById('mainContent').style.overflowY='hidden';if(map)setTimeout(()=>map.invalidateSize(),100);}
-            else{document.getElementById('mainContent').style.overflowY='auto';}
-            if(name==='history')updateHistory();
+
+            if(name==='run'){
+                document.getElementById('mainContent').style.overflowY='hidden';
+                if(map) setTimeout(()=>map.invalidateSize(),100);
+            } else {
+                document.getElementById('mainContent').style.overflowY='auto';
+            }
+
+            if(name==='plan' && appData.plan.active){
+                document.getElementById('goalDist').value = appData.plan.goalDist;
+                document.getElementById('goalTime').value = appData.plan.goalTime;
+                document.getElementById('goalWeeks').value = appData.plan.weeksToRace;
+                document.getElementById('weeksDisp').textContent = appData.plan.weeksToRace + ' semanas';
+                displayPlanPreview();
+            }
+
+            if(name==='history') updateHistory();
             document.getElementById('mainContent').scrollTo({top:0,behavior:'smooth'});
         }
+
         function showToast(msg,type='success'){
             const t=document.getElementById('toast');
             t.textContent=msg;t.className=`toast ${type}`;
@@ -635,8 +707,6 @@
             setInterval(updateGreeting,60000);
         }
         window.addEventListener('load',init);
-        window.addEventListener('resize',()=>{document.body.style.height=window.innerHeight+'px';});
-        document.body.style.height=window.innerHeight+'px';
     </script>
 </body>
 </html>
