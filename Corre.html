@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
     <meta name="theme-color" content="#0a0a0a">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <title>MindPace</title>
@@ -31,7 +31,8 @@
             overflow:hidden;
             -webkit-tap-highlight-color:transparent;
             user-select:none;
-            image-rendering:pixelated;
+            position:fixed;
+            width:100%;
         }
         .top-nav{
             display:flex;align-items:center;justify-content:space-between;
@@ -39,10 +40,12 @@
             background:var(--glass);backdrop-filter:blur(20px);
             border-bottom:3px solid #2a2a2a;
             z-index:10;
+            height:52px;
         }
-        .top-nav h1{
-            font-size:1rem;font-weight:400;letter-spacing:2px;
-            text-shadow:2px 2px 0 #4ade80;
+        .top-nav img.logo{
+            height:28px;
+            width:auto;
+            image-rendering:pixelated;
         }
         .nav-btn{
             background:#1a1a1a;border:3px solid #333;color:var(--text);
@@ -63,7 +66,6 @@
         }
         .card-dark{background:rgba(10,10,10,0.9);}
 
-        /* User Row: saudação + nome à esquerda, botões à direita */
         .user-row{
             display:flex;gap:12px;align-items:stretch;
             margin-bottom:12px;
@@ -163,14 +165,14 @@
 <body>
     <div class="top-nav">
         <button class="nav-btn" onclick="openProfile()" title="Perfil">👤</button>
-        <h1>MIND PACE</h1>
+        <img class="logo" src="https://raw.githubusercontent.com/lambelambe-app/lambelambeapp/main/mindpace_ico_top.jpg" alt="Mind Pace" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+        <h1 style="display:none;font-size:1rem;font-weight:400;letter-spacing:2px;text-shadow:2px 2px 0 #4ade80;">MIND PACE</h1>
         <button class="nav-btn" onclick="goHome()" title="Início">🏠</button>
     </div>
 
     <main class="main-content" id="mainContent">
         <!-- Dashboard -->
         <div class="screen active" id="dashboardScreen">
-            <!-- User Row: Info à esquerda, botões empilhados à direita -->
             <div class="user-row">
                 <div class="user-info">
                     <p class="greeting" id="greeting"></p>
@@ -291,7 +293,7 @@
             });
         }
 
-        const APP_KEY = 'mindpace_v5';
+        const APP_KEY = 'mindpace_v6';
         let appData = {
             userName: '',
             profile: { pace5k:6.0, restDays:2, intensity:1.0, weeklyKm:30 },
@@ -331,6 +333,13 @@
                     saveData();
                     if(name) showToast('Nome salvo, ' + name + '!');
                 }
+            });
+            // Previne que o layout suba ao focar
+            input.addEventListener('focus', function(e){
+                e.preventDefault();
+                setTimeout(() => {
+                    document.getElementById('mainContent').scrollTo({ top: 0, behavior: 'instant' });
+                }, 100);
             });
         }
 
