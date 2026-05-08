@@ -1,344 +1,370 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <title>Music Chart Search - v2</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    html, body {
-      height: 100%;
-      overflow: hidden;           /* evita qualquer rolagem da página */
-      background: #2c3e50;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;    /* colado no topo */
-    }
-    #main-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      width: 900px;
-    }
-    /* Container do canvas do Phaser */
-    #game-container {
-      box-shadow: 0 10px 20px rgba(0,0,0,0.5);
-      border-radius: 0 0 12px 12px;
-      overflow: hidden;
-      line-height: 0;             /* remove espaço extra abaixo do canvas */
-    }
-    /* Barra de pesquisa estilizada */
-    .search-bar {
-      display: flex;
-      align-items: center;
-      width: 900px;
-      background: #1a252f;
-      padding: 12px 30px;
-      border-radius: 12px 12px 0 0;
-      gap: 20px;
-    }
-    .date-label {
-      color: #ecf0f1;
-      font-size: 16px;
-      font-weight: 500;
-      margin-right: -10px;
-    }
-    .date-input {
-      width: 160px;
-      padding: 12px 16px;
-      font-size: 18px;
-      font-family: 'Courier New', monospace;
-      text-align: center;
-      background: #2c3e50;
-      border: 2px solid #4a6b8a;
-      border-radius: 30px;
-      color: #2ecc71;
-      outline: none;
-      transition: border-color 0.3s, box-shadow 0.3s;
-    }
-    .date-input:focus {
-      border-color: #f1c40f;
-      box-shadow: 0 0 8px rgba(241,196,15,0.6);
-    }
-    .date-input::placeholder {
-      color: #7f8c8d;
-      font-size: 16px;
-      font-family: 'Segoe UI', sans-serif;
-    }
-    .search-button {
-      width: 48px;
-      height: 48px;
-      background: #e67e22;
-      border: none;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-      color: white;
-      cursor: pointer;
-      transition: background 0.3s, transform 0.2s;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-      line-height: 1;
-    }
-    .search-button:hover {
-      background: #d35400;
-      transform: scale(1.05);
-    }
-    .search-button:active {
-      transform: scale(0.95);
-    }
-    /* Mensagem temporária (ainda via Phaser, para evitar complexidade extra) */
-  </style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>Music Chart App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html, body {
+            height: 100%;
+            overflow: hidden;                /* evita qualquer rolagem */
+            background: #1a252f;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+        #main-container {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+            max-width: 800px;                /* limite para telas grandes */
+            background: #1a252f;
+        }
+        /* Barra de pesquisa superior (estilo app) */
+        .search-bar {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            padding: 10px 16px;
+            background: #0f171e;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+            z-index: 10;
+        }
+        .date-label {
+            color: #bdc3c7;
+            font-size: 14px;
+            margin-right: 8px;
+            white-space: nowrap;
+        }
+        .date-input {
+            flex: 1;
+            max-width: 140px;
+            padding: 10px 14px;
+            font-size: 16px;
+            font-family: 'Courier New', monospace;
+            text-align: center;
+            background: #2c3e50;
+            border: 2px solid #4a6b8a;
+            border-radius: 30px;
+            color: #2ecc71;
+            outline: none;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        .date-input:focus {
+            border-color: #f1c40f;
+            box-shadow: 0 0 8px rgba(241,196,15,0.6);
+        }
+        .date-input::placeholder {
+            color: #7f8c8d;
+            font-size: 14px;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        .search-button {
+            width: 44px;
+            height: 44px;
+            background: #e67e22;
+            border: none;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: white;
+            cursor: pointer;
+            margin-left: 12px;
+            transition: background 0.3s, transform 0.2s;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            line-height: 1;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .search-button:hover {
+            background: #d35400;
+            transform: scale(1.05);
+        }
+        .search-button:active {
+            transform: scale(0.95);
+        }
+        /* Container do canvas (Phaser) ocupando o restante da tela */
+        #game-container {
+            flex: 1;
+            width: 100%;
+            overflow: hidden;
+            position: relative;
+        }
+        /* Ajuste para telas muito pequenas */
+        @media (max-width: 400px) {
+            .date-input {
+                max-width: 120px;
+                font-size: 15px;
+                padding: 8px 12px;
+            }
+            .search-button {
+                width: 38px;
+                height: 38px;
+                font-size: 18px;
+            }
+            .date-label {
+                font-size: 13px;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div id="main-container">
-    <!-- Barra de pesquisa HTML real -->
-    <div class="search-bar">
-      <span class="date-label">📅 Mês/Ano:</span>
-      <input type="text" id="dateInput" class="date-input" placeholder="MM/AAAA" maxlength="7" autocomplete="off" />
-      <button id="searchButton" class="search-button" aria-label="Buscar">➤</button>
+    <div id="main-container">
+        <!-- Barra HTML real -->
+        <div class="search-bar">
+            <span class="date-label">📅</span>
+            <input type="text" id="dateInput" class="date-input" placeholder="MM/AAAA" maxlength="7" autocomplete="off" inputmode="numeric" />
+            <button id="searchButton" class="search-button" aria-label="Buscar">➤</button>
+        </div>
+        <!-- Canvas -->
+        <div id="game-container"></div>
     </div>
-    <!-- Canvas onde o Phaser renderiza os resultados -->
-    <div id="game-container"></div>
-  </div>
 
-  <!-- Phaser 2D -->
-  <script src="https://cdn.jsdelivr.net/npm/phaser@2.6.2/build/phaser.min.js"></script>
-  <script>
-    // ---------- Variáveis globais ----------
-    var chartData = [];
-    var game;
+    <!-- Phaser 2D -->
+    <script src="https://cdn.jsdelivr.net/npm/phaser@2.6.2/build/phaser.min.js"></script>
+    <script>
+        // ---------- Dados globais ----------
+        var chartData = [];
+        var game;
 
-    // Configuração do Phaser (900 x 520, para combinar com a largura do container)
-    game = new Phaser.Game(900, 520, Phaser.CANVAS, 'game-container', {
-      preload: preload,
-      create: create,
-      update: update
-    });
+        // Cria o jogo com dimensões base 800x480 (proporção paisagem)
+        game = new Phaser.Game(800, 480, Phaser.CANVAS, 'game-container', {
+            preload: preload,
+            create: create,
+            update: update
+        });
 
-    // Estados da interface do Phaser
-    var resultsGroup, maskGraphics, scrollUpBtn, scrollDownBtn;
-    var currentScrollY = 0;
-    var rowHeight = 28;
-    var maxVisibleRows = 9;
-    var filteredRows = [];
-    var messageText;
+        // Configura o gerenciador de escala para se comportar como app
+        game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
+        game.scale.pageAlignHorizontally = true;
+        game.scale.pageAlignVertically = true;
+        // Força o redimensionamento quando a janela muda
+        window.addEventListener('resize', function() {
+            game.scale.setResizeCallback(function() {
+                game.scale.refresh();
+            });
+        });
 
-    function preload() {
-      // Carrega o arquivo CSV
-      game.load.text('chartscsv', 'charts.csv');
-    }
+        // Variáveis da interface do Phaser
+        var resultsGroup, scrollUpBtn, scrollDownBtn;
+        var currentScrollY = 0;
+        var rowHeight = 28;
+        var maxVisibleRows = 9;  // 9*28 = 252px, cabe na área de 330px
+        var filteredRows = [];
+        var messageText;
 
-    function create() {
-      // Ajuste do fundo
-      game.stage.backgroundColor = '#1a252f';
-
-      // Parse do CSV
-      var csvText = game.cache.getText('chartscsv');
-      parseCSV(csvText);
-
-      // Título
-      var title = game.add.text(450, 25, '🎵 MUSIC CHART SEARCH', {
-        font: 'bold 26px Arial',
-        fill: '#f1c40f'
-      });
-      title.anchor.setTo(0.5, 0);
-
-      // Área de resultados com máscara
-      maskGraphics = game.add.graphics(30, 70);
-      maskGraphics.beginFill(0xffffff, 0.05);
-      maskGraphics.drawRect(0, 0, 840, 330);
-      maskGraphics.endFill();
-
-      // Grupo de resultados
-      resultsGroup = game.add.group();
-      resultsGroup.x = 30;
-      resultsGroup.y = 70;
-
-      // Máscara do grupo
-      var mask = game.add.graphics(30, 70);
-      mask.beginFill(0x000000);
-      mask.drawRect(0, 0, 840, 330);
-      resultsGroup.mask = mask;
-
-      // Botões de rolagem
-      scrollUpBtn = game.add.text(880, 85, '▲', { font: 'bold 24px Arial', fill: '#3498db' });
-      scrollUpBtn.anchor.setTo(0.5, 0);
-      scrollUpBtn.inputEnabled = true;
-      scrollUpBtn.events.onInputDown.add(scrollUp);
-
-      scrollDownBtn = game.add.text(880, 360, '▼', { font: 'bold 24px Arial', fill: '#3498db' });
-      scrollDownBtn.anchor.setTo(0.5, 0);
-      scrollDownBtn.inputEnabled = true;
-      scrollDownBtn.events.onInputDown.add(scrollDown);
-
-      // Mensagem temporária (na área inferior)
-      messageText = game.add.text(450, 480, '', {
-        font: '16px Arial',
-        fill: '#95a5a6',
-        align: 'center'
-      });
-      messageText.anchor.setTo(0.5, 0);
-
-      // --- Conexão com os elementos HTML ---
-      document.getElementById('searchButton').addEventListener('click', function() {
-        performSearch();
-      });
-      document.getElementById('dateInput').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          performSearch();
+        function preload() {
+            game.load.text('chartscsv', 'charts.csv');
         }
-      });
 
-      // Foca automaticamente no campo de data, se preferir
-      document.getElementById('dateInput').focus();
+        function create() {
+            game.stage.backgroundColor = '#1a252f';
 
-      showMessage('Digite MM/AAAA e clique na seta ou pressione Enter.', '#f1c40f');
-    }
+            // Parse do CSV
+            var csvText = game.cache.getText('chartscsv');
+            parseCSV(csvText);
 
-    function update() {
-      // Não há mais cursor piscante
-    }
+            // Título (ajustado para a nova resolução 800x480)
+            var title = game.add.text(400, 20, '🎵 MUSIC CHART SEARCH', {
+                font: 'bold 22px Arial',
+                fill: '#f1c40f'
+            });
+            title.anchor.setTo(0.5, 0);
 
-    // ---------- Funções de CSV e busca ----------
-    function parseCSV(csv) {
-      var lines = csv.split('\n');
-      var headers = lines[0].split(',');
-      chartData = [];
-      for (var i = 1; i < lines.length; i++) {
-        var line = lines[i].trim();
-        if (line === '') continue;
-        var cols = line.split(',');
-        // Tratamento simples: ignora aspas (como antes)
-        if (cols.length >= 8) {
-          chartData.push({
-            year: parseInt(cols[0]),
-            month: parseInt(cols[1]),
-            country: cols[2],
-            rank: parseInt(cols[3]),
-            track_name: cols[4].replace(/^"|"$/g, ''),
-            artist: cols[5].replace(/^"|"$/g, ''),
-            artist_url: cols[6],
-            track_url: cols[7]
-          });
+            // Área de resultados com máscara
+            var maskGraphics = game.add.graphics(20, 60);
+            maskGraphics.beginFill(0xffffff, 0.05);
+            maskGraphics.drawRect(0, 0, 760, 330);
+            maskGraphics.endFill();
+
+            resultsGroup = game.add.group();
+            resultsGroup.x = 20;
+            resultsGroup.y = 60;
+
+            // Máscara de recorte
+            var mask = game.add.graphics(20, 60);
+            mask.beginFill(0x000000);
+            mask.drawRect(0, 0, 760, 330);
+            resultsGroup.mask = mask;
+
+            // Botões de rolagem
+            scrollUpBtn = game.add.text(785, 75, '▲', { font: 'bold 22px Arial', fill: '#3498db' });
+            scrollUpBtn.anchor.setTo(0.5, 0);
+            scrollUpBtn.inputEnabled = true;
+            scrollUpBtn.events.onInputDown.add(scrollUp);
+
+            scrollDownBtn = game.add.text(785, 360, '▼', { font: 'bold 22px Arial', fill: '#3498db' });
+            scrollDownBtn.anchor.setTo(0.5, 0);
+            scrollDownBtn.inputEnabled = true;
+            scrollDownBtn.events.onInputDown.add(scrollDown);
+
+            // Mensagem de status (na parte inferior)
+            messageText = game.add.text(400, 440, '', {
+                font: '14px Arial',
+                fill: '#95a5a6',
+                align: 'center'
+            });
+            messageText.anchor.setTo(0.5, 0);
+
+            // Conexão com elementos HTML
+            document.getElementById('searchButton').addEventListener('click', function() {
+                performSearch();
+            });
+            document.getElementById('dateInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    performSearch();
+                }
+            });
+
+            // Foco automático (compatível com mobile)
+            setTimeout(function() {
+                document.getElementById('dateInput').focus();
+            }, 300);
+
+            showMessage('Digite o período e toque na seta', '#f1c40f');
         }
-      }
-      console.log('CSV carregado. Registros:', chartData.length);
-    }
 
-    function performSearch() {
-      // Limpa resultados anteriores
-      resultsGroup.removeAll();
-      filteredRows = [];
-      currentScrollY = 0;
-      resultsGroup.y = 70;
+        function update() {
+            // Não é mais necessário o cursor piscante
+        }
 
-      // Pega o valor do input HTML
-      var inputEl = document.getElementById('dateInput');
-      var inputStr = inputEl.value.trim();
+        // ---------- Funções de dados e busca ----------
+        function parseCSV(csv) {
+            var lines = csv.split('\n');
+            var headers = lines[0].split(',');
+            chartData = [];
+            for (var i = 1; i < lines.length; i++) {
+                var line = lines[i].trim();
+                if (line === '') continue;
+                var cols = line.split(',');
+                // Tratamento simples: ignora aspas duplas (como antes)
+                if (cols.length >= 8) {
+                    chartData.push({
+                        year: parseInt(cols[0]),
+                        month: parseInt(cols[1]),
+                        country: cols[2],
+                        rank: parseInt(cols[3]),
+                        track_name: cols[4].replace(/^"|"$/g, ''),
+                        artist: cols[5].replace(/^"|"$/g, ''),
+                        artist_url: cols[6],
+                        track_url: cols[7]
+                    });
+                }
+            }
+        }
 
-      var parts = inputStr.split('/');
-      if (parts.length !== 2) {
-        showMessage('Formato inválido. Use MM/AAAA (ex: 08/2023)', '#e74c3c');
-        return;
-      }
-      var month = parseInt(parts[0]);
-      var year = parseInt(parts[1]);
-      if (isNaN(month) || isNaN(year) || month < 1 || month > 12) {
-        showMessage('Mês ou ano inválidos.', '#e74c3c');
-        return;
-      }
+        function performSearch() {
+            // Limpa resultados anteriores
+            resultsGroup.removeAll();
+            filteredRows = [];
+            currentScrollY = 0;
+            resultsGroup.y = 60;
 
-      // Filtra os dados do CSV
-      var results = chartData.filter(function(entry) {
-        return entry.month === month && entry.year === year;
-      });
+            var inputEl = document.getElementById('dateInput');
+            var inputStr = inputEl.value.trim();
 
-      if (results.length === 0) {
-        showMessage('Nenhum resultado para ' + inputStr, '#e74c3c');
-        return;
-      }
+            var parts = inputStr.split('/');
+            if (parts.length !== 2) {
+                showMessage('Formato: MM/AAAA (ex: 08/2023)', '#e74c3c');
+                return;
+            }
+            var month = parseInt(parts[0]);
+            var year = parseInt(parts[1]);
+            if (isNaN(month) || isNaN(year) || month < 1 || month > 12) {
+                showMessage('Mês ou ano inválidos.', '#e74c3c');
+                return;
+            }
 
-      // Ordenação: país e depois rank
-      results.sort(function(a, b) {
-        if (a.country < b.country) return -1;
-        if (a.country > b.country) return 1;
-        return a.rank - b.rank;
-      });
+            var results = chartData.filter(function(entry) {
+                return entry.month === month && entry.year === year;
+            });
 
-      filteredRows = results;
+            if (results.length === 0) {
+                showMessage('Nenhum resultado para ' + inputStr, '#e74c3c');
+                return;
+            }
 
-      // Cria elementos de texto
-      for (var i = 0; i < results.length; i++) {
-        var entry = results[i];
-        var yPos = i * rowHeight;
+            // Ordena por país e depois rank
+            results.sort(function(a, b) {
+                if (a.country < b.country) return -1;
+                if (a.country > b.country) return 1;
+                return a.rank - b.rank;
+            });
 
-        // País + rank
-        var infoText = game.add.text(10, yPos, entry.country + ' #' + entry.rank, {
-          font: '14px Arial',
-          fill: '#bdc3c7'
-        });
+            filteredRows = results;
 
-        // Artista (link clicável)
-        var artistText = game.add.text(140, yPos, entry.artist, {
-          font: 'bold 14px Arial',
-          fill: '#3498db'
-        });
-        artistText.inputEnabled = true;
-        artistText.events.onInputDown.add(function(item, pointer) {
-          window.open(entry.artist_url, '_blank');
-        });
+            for (var i = 0; i < results.length; i++) {
+                var entry = results[i];
+                var yPos = i * rowHeight;
 
-        // Nome da música
-        var trackText = game.add.text(340, yPos, ' — ' + entry.track_name, {
-          font: '14px Arial',
-          fill: '#ecf0f1'
-        });
+                // País + rank
+                var infoText = game.add.text(10, yPos, entry.country + ' #' + entry.rank, {
+                    font: '13px Arial',
+                    fill: '#bdc3c7'
+                });
 
-        resultsGroup.add(infoText);
-        resultsGroup.add(artistText);
-        resultsGroup.add(trackText);
-      }
+                // Artista (link clicável)
+                var artistText = game.add.text(130, yPos, entry.artist, {
+                    font: 'bold 13px Arial',
+                    fill: '#3498db'
+                });
+                artistText.inputEnabled = true;
+                artistText.events.onInputDown.add(function(item, pointer) {
+                    window.open(entry.artist_url, '_blank');
+                });
 
-      showMessage(results.length + ' músicas encontradas.', '#2ecc71');
-    }
+                // Nome da música
+                var trackText = game.add.text(310, yPos, '— ' + entry.track_name, {
+                    font: '13px Arial',
+                    fill: '#ecf0f1'
+                });
 
-    // Rolagem
-    function scrollUp() {
-      if (filteredRows.length <= maxVisibleRows) return;
-      currentScrollY = Math.min(0, currentScrollY + rowHeight);
-      updateScroll();
-    }
+                resultsGroup.add(infoText);
+                resultsGroup.add(artistText);
+                resultsGroup.add(trackText);
+            }
 
-    function scrollDown() {
-      if (filteredRows.length <= maxVisibleRows) return;
-      var maxScroll = -(filteredRows.length - maxVisibleRows) * rowHeight;
-      currentScrollY = Math.max(maxScroll, currentScrollY - rowHeight);
-      updateScroll();
-    }
+            showMessage(results.length + ' músicas encontradas.', '#2ecc71');
+        }
 
-    function updateScroll() {
-      resultsGroup.y = 70 + currentScrollY;
-    }
+        // Rolagem
+        function scrollUp() {
+            if (filteredRows.length <= maxVisibleRows) return;
+            currentScrollY = Math.min(0, currentScrollY + rowHeight);
+            updateScroll();
+        }
 
-    function showMessage(msg, color) {
-      if (messageText) {
-        messageText.text = msg;
-        messageText.fill = color || '#95a5a6';
-        // Auto limpeza após 4 segundos (opcional)
-        game.time.events.removeAll(); // limpa eventos anteriores
-        game.time.events.add(4000, function() {
-          if (messageText) messageText.text = '';
-        });
-      }
-    }
-  </script>
+        function scrollDown() {
+            if (filteredRows.length <= maxVisibleRows) return;
+            var maxScroll = -(filteredRows.length - maxVisibleRows) * rowHeight;
+            currentScrollY = Math.max(maxScroll, currentScrollY - rowHeight);
+            updateScroll();
+        }
+
+        function updateScroll() {
+            resultsGroup.y = 60 + currentScrollY;
+        }
+
+        function showMessage(msg, color) {
+            if (messageText) {
+                messageText.text = msg;
+                messageText.fill = color || '#95a5a6';
+                // Limpa a mensagem após 4 segundos
+                game.time.events.removeAll();
+                game.time.events.add(4000, function() {
+                    if (messageText) messageText.text = '';
+                });
+            }
+        }
+    </script>
 </body>
 </html>
