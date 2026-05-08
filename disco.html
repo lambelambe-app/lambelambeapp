@@ -1,291 +1,344 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Music Chart Search - Phaser 2D</title>
-    <style>
-        body {
-            margin: 0;
-            background: #2c3e50;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        #game-container {
-            box-shadow: 0 0 30px rgba(0,0,0,0.5);
-            border-radius: 12px;
-            overflow: hidden;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Music Chart Search - v2</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    html, body {
+      height: 100%;
+      overflow: hidden;           /* evita qualquer rolagem da página */
+      background: #2c3e50;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;    /* colado no topo */
+    }
+    #main-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 900px;
+    }
+    /* Container do canvas do Phaser */
+    #game-container {
+      box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+      border-radius: 0 0 12px 12px;
+      overflow: hidden;
+      line-height: 0;             /* remove espaço extra abaixo do canvas */
+    }
+    /* Barra de pesquisa estilizada */
+    .search-bar {
+      display: flex;
+      align-items: center;
+      width: 900px;
+      background: #1a252f;
+      padding: 12px 30px;
+      border-radius: 12px 12px 0 0;
+      gap: 20px;
+    }
+    .date-label {
+      color: #ecf0f1;
+      font-size: 16px;
+      font-weight: 500;
+      margin-right: -10px;
+    }
+    .date-input {
+      width: 160px;
+      padding: 12px 16px;
+      font-size: 18px;
+      font-family: 'Courier New', monospace;
+      text-align: center;
+      background: #2c3e50;
+      border: 2px solid #4a6b8a;
+      border-radius: 30px;
+      color: #2ecc71;
+      outline: none;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    .date-input:focus {
+      border-color: #f1c40f;
+      box-shadow: 0 0 8px rgba(241,196,15,0.6);
+    }
+    .date-input::placeholder {
+      color: #7f8c8d;
+      font-size: 16px;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .search-button {
+      width: 48px;
+      height: 48px;
+      background: #e67e22;
+      border: none;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      color: white;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.2s;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+      line-height: 1;
+    }
+    .search-button:hover {
+      background: #d35400;
+      transform: scale(1.05);
+    }
+    .search-button:active {
+      transform: scale(0.95);
+    }
+    /* Mensagem temporária (ainda via Phaser, para evitar complexidade extra) */
+  </style>
 </head>
 <body>
+  <div id="main-container">
+    <!-- Barra de pesquisa HTML real -->
+    <div class="search-bar">
+      <span class="date-label">📅 Mês/Ano:</span>
+      <input type="text" id="dateInput" class="date-input" placeholder="MM/AAAA" maxlength="7" autocomplete="off" />
+      <button id="searchButton" class="search-button" aria-label="Buscar">➤</button>
+    </div>
+    <!-- Canvas onde o Phaser renderiza os resultados -->
     <div id="game-container"></div>
+  </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/phaser@2.6.2/build/phaser.min.js"></script>
-    <script>
-        // -------------------- DADOS GLOBAIS --------------------
-        var chartData = []; // Armazenará os objetos parseados do CSV
+  <!-- Phaser 2D -->
+  <script src="https://cdn.jsdelivr.net/npm/phaser@2.6.2/build/phaser.min.js"></script>
+  <script>
+    // ---------- Variáveis globais ----------
+    var chartData = [];
+    var game;
 
-        // -------------------- APP PRINCIPAL --------------------
-        var game = new Phaser.Game(800, 600, Phaser.CANVAS, 'game-container', {
-            preload: preload,
-            create: create,
-            update: update
+    // Configuração do Phaser (900 x 520, para combinar com a largura do container)
+    game = new Phaser.Game(900, 520, Phaser.CANVAS, 'game-container', {
+      preload: preload,
+      create: create,
+      update: update
+    });
+
+    // Estados da interface do Phaser
+    var resultsGroup, maskGraphics, scrollUpBtn, scrollDownBtn;
+    var currentScrollY = 0;
+    var rowHeight = 28;
+    var maxVisibleRows = 9;
+    var filteredRows = [];
+    var messageText;
+
+    function preload() {
+      // Carrega o arquivo CSV
+      game.load.text('chartscsv', 'charts.csv');
+    }
+
+    function create() {
+      // Ajuste do fundo
+      game.stage.backgroundColor = '#1a252f';
+
+      // Parse do CSV
+      var csvText = game.cache.getText('chartscsv');
+      parseCSV(csvText);
+
+      // Título
+      var title = game.add.text(450, 25, '🎵 MUSIC CHART SEARCH', {
+        font: 'bold 26px Arial',
+        fill: '#f1c40f'
+      });
+      title.anchor.setTo(0.5, 0);
+
+      // Área de resultados com máscara
+      maskGraphics = game.add.graphics(30, 70);
+      maskGraphics.beginFill(0xffffff, 0.05);
+      maskGraphics.drawRect(0, 0, 840, 330);
+      maskGraphics.endFill();
+
+      // Grupo de resultados
+      resultsGroup = game.add.group();
+      resultsGroup.x = 30;
+      resultsGroup.y = 70;
+
+      // Máscara do grupo
+      var mask = game.add.graphics(30, 70);
+      mask.beginFill(0x000000);
+      mask.drawRect(0, 0, 840, 330);
+      resultsGroup.mask = mask;
+
+      // Botões de rolagem
+      scrollUpBtn = game.add.text(880, 85, '▲', { font: 'bold 24px Arial', fill: '#3498db' });
+      scrollUpBtn.anchor.setTo(0.5, 0);
+      scrollUpBtn.inputEnabled = true;
+      scrollUpBtn.events.onInputDown.add(scrollUp);
+
+      scrollDownBtn = game.add.text(880, 360, '▼', { font: 'bold 24px Arial', fill: '#3498db' });
+      scrollDownBtn.anchor.setTo(0.5, 0);
+      scrollDownBtn.inputEnabled = true;
+      scrollDownBtn.events.onInputDown.add(scrollDown);
+
+      // Mensagem temporária (na área inferior)
+      messageText = game.add.text(450, 480, '', {
+        font: '16px Arial',
+        fill: '#95a5a6',
+        align: 'center'
+      });
+      messageText.anchor.setTo(0.5, 0);
+
+      // --- Conexão com os elementos HTML ---
+      document.getElementById('searchButton').addEventListener('click', function() {
+        performSearch();
+      });
+      document.getElementById('dateInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          performSearch();
+        }
+      });
+
+      // Foca automaticamente no campo de data, se preferir
+      document.getElementById('dateInput').focus();
+
+      showMessage('Digite MM/AAAA e clique na seta ou pressione Enter.', '#f1c40f');
+    }
+
+    function update() {
+      // Não há mais cursor piscante
+    }
+
+    // ---------- Funções de CSV e busca ----------
+    function parseCSV(csv) {
+      var lines = csv.split('\n');
+      var headers = lines[0].split(',');
+      chartData = [];
+      for (var i = 1; i < lines.length; i++) {
+        var line = lines[i].trim();
+        if (line === '') continue;
+        var cols = line.split(',');
+        // Tratamento simples: ignora aspas (como antes)
+        if (cols.length >= 8) {
+          chartData.push({
+            year: parseInt(cols[0]),
+            month: parseInt(cols[1]),
+            country: cols[2],
+            rank: parseInt(cols[3]),
+            track_name: cols[4].replace(/^"|"$/g, ''),
+            artist: cols[5].replace(/^"|"$/g, ''),
+            artist_url: cols[6],
+            track_url: cols[7]
+          });
+        }
+      }
+      console.log('CSV carregado. Registros:', chartData.length);
+    }
+
+    function performSearch() {
+      // Limpa resultados anteriores
+      resultsGroup.removeAll();
+      filteredRows = [];
+      currentScrollY = 0;
+      resultsGroup.y = 70;
+
+      // Pega o valor do input HTML
+      var inputEl = document.getElementById('dateInput');
+      var inputStr = inputEl.value.trim();
+
+      var parts = inputStr.split('/');
+      if (parts.length !== 2) {
+        showMessage('Formato inválido. Use MM/AAAA (ex: 08/2023)', '#e74c3c');
+        return;
+      }
+      var month = parseInt(parts[0]);
+      var year = parseInt(parts[1]);
+      if (isNaN(month) || isNaN(year) || month < 1 || month > 12) {
+        showMessage('Mês ou ano inválidos.', '#e74c3c');
+        return;
+      }
+
+      // Filtra os dados do CSV
+      var results = chartData.filter(function(entry) {
+        return entry.month === month && entry.year === year;
+      });
+
+      if (results.length === 0) {
+        showMessage('Nenhum resultado para ' + inputStr, '#e74c3c');
+        return;
+      }
+
+      // Ordenação: país e depois rank
+      results.sort(function(a, b) {
+        if (a.country < b.country) return -1;
+        if (a.country > b.country) return 1;
+        return a.rank - b.rank;
+      });
+
+      filteredRows = results;
+
+      // Cria elementos de texto
+      for (var i = 0; i < results.length; i++) {
+        var entry = results[i];
+        var yPos = i * rowHeight;
+
+        // País + rank
+        var infoText = game.add.text(10, yPos, entry.country + ' #' + entry.rank, {
+          font: '14px Arial',
+          fill: '#bdc3c7'
         });
 
-        // Variáveis da interface
-        var inputText, searchButton, resultsGroup, maskGraphics;
-        var scrollUpBtn, scrollDownBtn;
-        var currentScrollY = 0;
-        var rowHeight = 24;
-        var maxVisibleRows = 10;
-        var filteredRows = [];
+        // Artista (link clicável)
+        var artistText = game.add.text(140, yPos, entry.artist, {
+          font: 'bold 14px Arial',
+          fill: '#3498db'
+        });
+        artistText.inputEnabled = true;
+        artistText.events.onInputDown.add(function(item, pointer) {
+          window.open(entry.artist_url, '_blank');
+        });
 
-        // Input virtual
-        var inputString = '';
-        var cursorBlink = 0;
+        // Nome da música
+        var trackText = game.add.text(340, yPos, ' — ' + entry.track_name, {
+          font: '14px Arial',
+          fill: '#ecf0f1'
+        });
 
-        function preload() {
-            // Carrega o arquivo CSV
-            this.load.text('chartscsv', 'charts.csv');
-        }
+        resultsGroup.add(infoText);
+        resultsGroup.add(artistText);
+        resultsGroup.add(trackText);
+      }
 
-        function create() {
-            game.stage.backgroundColor = '#1a252f';
+      showMessage(results.length + ' músicas encontradas.', '#2ecc71');
+    }
 
-            // Parseia o CSV assim que carregado
-            var csvText = this.cache.getText('chartscsv');
-            parseCSV(csvText);
+    // Rolagem
+    function scrollUp() {
+      if (filteredRows.length <= maxVisibleRows) return;
+      currentScrollY = Math.min(0, currentScrollY + rowHeight);
+      updateScroll();
+    }
 
-            // Título
-            var title = game.add.text(400, 40, '🎵 MUSIC CHART SEARCH', {
-                font: 'bold 28px Arial',
-                fill: '#f1c40f',
-                boundsAlignH: 'center'
-            });
-            title.anchor.set(0.5, 0);
+    function scrollDown() {
+      if (filteredRows.length <= maxVisibleRows) return;
+      var maxScroll = -(filteredRows.length - maxVisibleRows) * rowHeight;
+      currentScrollY = Math.max(maxScroll, currentScrollY - rowHeight);
+      updateScroll();
+    }
 
-            // Rótulo do campo de pesquisa
-            game.add.text(150, 100, 'Mês/Ano (MM/AAAA):', { font: '18px Arial', fill: '#ecf0f1' });
+    function updateScroll() {
+      resultsGroup.y = 70 + currentScrollY;
+    }
 
-            // Retângulo de fundo do input
-            var inputBg = game.add.graphics(150, 130);
-            inputBg.beginFill(0x34495e);
-            inputBg.drawRect(0, 0, 200, 36);
-            inputBg.endFill();
-
-            // Texto do input
-            inputText = game.add.text(160, 138, '', { font: '20px Courier', fill: '#2ecc71' });
-
-            // Botão de busca
-            var btnBg = game.add.graphics(370, 128);
-            btnBg.beginFill(0xe67e22);
-            btnBg.drawRect(0, 0, 130, 40);
-            btnBg.endFill();
-            searchButton = game.add.text(435, 138, '🔍 Buscar', { font: 'bold 20px Arial', fill: '#ffffff' });
-            searchButton.anchor.set(0.5, 0);
-            searchButton.inputEnabled = true;
-            searchButton.events.onInputDown.add(performSearch, this);
-
-            // Área de resultados com máscara
-            maskGraphics = game.add.graphics(40, 200);
-            maskGraphics.beginFill(0xffffff, 0.1);
-            maskGraphics.drawRect(0, 0, 720, 300);
-            maskGraphics.endFill();
-
-            // Grupo de resultados (será cortado pela máscara)
-            resultsGroup = game.add.group();
-            resultsGroup.x = 40;
-            resultsGroup.y = 200;
-
-            // Máscara para o grupo
-            var mask = game.add.graphics(40, 200);
-            mask.beginFill(0x000000);
-            mask.drawRect(0, 0, 720, 300);
-            resultsGroup.mask = mask;
-
-            // Botões de rolagem
-            scrollUpBtn = game.add.text(770, 210, '▲', { font: 'bold 24px Arial', fill: '#3498db' });
-            scrollUpBtn.inputEnabled = true;
-            scrollUpBtn.events.onInputDown.add(scrollUp, this);
-
-            scrollDownBtn = game.add.text(770, 470, '▼', { font: 'bold 24px Arial', fill: '#3498db' });
-            scrollDownBtn.inputEnabled = true;
-            scrollDownBtn.events.onInputDown.add(scrollDown, this);
-
-            // Captura de teclado para o campo de busca
-            game.input.keyboard.addCallbacks(this, null, handleKeyPress, null);
-
-            // Mensagem inicial
-            game.add.text(400, 520, 'Digite o período e clique em Buscar.', {
-                font: '16px Arial', fill: '#95a5a6'
-            }).anchor.set(0.5, 0);
-        }
-
-        function update() {
-            // Cursor piscante no campo de busca
-            cursorBlink += game.time.elapsed;
-            if (cursorBlink > 500) {
-                cursorBlink = 0;
-                if (inputText) {
-                    var txt = inputString;
-                    if (inputText.text.length > 0 && inputText.text[inputText.text.length-1] === '|') {
-                        inputText.text = txt; // remove cursor
-                    } else {
-                        inputText.text = txt ? txt + '|' : '|';
-                    }
-                }
-            }
-        }
-
-        // -------------------- FUNÇÕES AUXILIARES --------------------
-        function handleKeyPress(char) {
-            // Apenas quando o jogo está focado
-            if (char.match(/[0-9\/]/i)) {
-                inputString += char;
-                inputText.text = inputString;
-                cursorBlink = 0;
-            } else if (char === 'Backspace' && inputString.length > 0) {
-                inputString = inputString.slice(0, -1);
-                inputText.text = inputString;
-                cursorBlink = 0;
-            } else if (char === 'Enter') {
-                performSearch();
-            }
-        }
-
-        function parseCSV(csv) {
-            var lines = csv.split('\n');
-            var headers = lines[0].split(','); // year,month,country,rank,track,artist,artist_url,track_url
-            chartData = [];
-            for (var i = 1; i < lines.length; i++) {
-                var line = lines[i].trim();
-                if (line === '') continue;
-                // Tratamento simples de vírgulas dentro de aspas (não implementado para simplicidade)
-                var cols = line.split(',');
-                if (cols.length === headers.length) {
-                    chartData.push({
-                        year: parseInt(cols[0]),
-                        month: parseInt(cols[1]),
-                        country: cols[2],
-                        rank: parseInt(cols[3]),
-                        track_name: cols[4].replace(/^"|"$/g, ''), // remove aspas simples
-                        artist: cols[5].replace(/^"|"$/g, ''),
-                        artist_url: cols[6],
-                        track_url: cols[7]
-                    });
-                }
-            }
-            console.log('CSV carregado. Total de entradas:', chartData.length);
-        }
-
-        function performSearch() {
-            // Limpa resultados anteriores
-            resultsGroup.removeAll();
-            filteredRows = [];
-
-            // Parse da string MM/AAAA
-            var parts = inputString.split('/');
-            if (parts.length !== 2) {
-                showMessage('Formato inválido. Use MM/AAAA');
-                return;
-            }
-            var month = parseInt(parts[0]);
-            var year = parseInt(parts[1]);
-            if (isNaN(month) || isNaN(year) || month < 1 || month > 12) {
-                showMessage('Mês ou Ano inválidos.');
-                return;
-            }
-
-            // Filtra os dados
-            var results = chartData.filter(function(entry) {
-                return entry.month === month && entry.year === year;
-            });
-
-            if (results.length === 0) {
-                showMessage('Nenhum resultado para ' + inputString);
-                return;
-            }
-
-            // Ordena por país e rank
-            results.sort(function(a, b) {
-                if (a.country < b.country) return -1;
-                if (a.country > b.country) return 1;
-                return a.rank - b.rank;
-            });
-
-            filteredRows = results;
-            currentScrollY = 0;
-            resultsGroup.y = 200;
-
-            // Cria os elementos de texto
-            for (var i = 0; i < results.length; i++) {
-                var entry = results[i];
-                var yPos = i * rowHeight;
-
-                // País + rank
-                var infoText = game.add.text(10, yPos, entry.country + ' #' + entry.rank, {
-                    font: '14px Arial',
-                    fill: '#bdc3c7'
-                });
-
-                // Artista (link clicável)
-                var artistText = game.add.text(120, yPos, entry.artist, {
-                    font: 'bold 14px Arial',
-                    fill: '#3498db'
-                });
-                artistText.inputEnabled = true;
-                artistText.events.onInputDown.add(openArtistLink, this, 0, entry.artist_url);
-
-                // Nome da música
-                var trackText = game.add.text(320, yPos, ' — ' + entry.track_name, {
-                    font: '14px Arial',
-                    fill: '#ecf0f1'
-                });
-
-                resultsGroup.add(infoText);
-                resultsGroup.add(artistText);
-                resultsGroup.add(trackText);
-            }
-
-            showMessage(results.length + ' músicas encontradas.');
-        }
-
-        function openArtistLink(item, pointer, url) {
-            window.open(url, '_blank');
-        }
-
-        function scrollUp() {
-            if (filteredRows.length <= maxVisibleRows) return;
-            currentScrollY = Math.min(0, currentScrollY + rowHeight);
-            updateScroll();
-        }
-
-        function scrollDown() {
-            var maxScroll = -(filteredRows.length - maxVisibleRows) * rowHeight;
-            currentScrollY = Math.max(maxScroll, currentScrollY - rowHeight);
-            updateScroll();
-        }
-
-        function updateScroll() {
-            resultsGroup.y = 200 + currentScrollY;
-        }
-
-        function showMessage(msg) {
-            // Remove mensagens antigas (exceto as principais)
-            var oldMsg = game.world.getByName('tempMsg');
-            if (oldMsg) oldMsg.destroy();
-
-            var message = game.add.text(400, 560, msg, {
-                font: '18px Arial', fill: '#e74c3c', align: 'center'
-            });
-            message.anchor.set(0.5, 0);
-            message.name = 'tempMsg';
-            game.time.events.add(2500, function() { message.destroy(); }, this);
-        }
-    </script>
+    function showMessage(msg, color) {
+      if (messageText) {
+        messageText.text = msg;
+        messageText.fill = color || '#95a5a6';
+        // Auto limpeza após 4 segundos (opcional)
+        game.time.events.removeAll(); // limpa eventos anteriores
+        game.time.events.add(4000, function() {
+          if (messageText) messageText.text = '';
+        });
+      }
+    }
+  </script>
 </body>
 </html>
