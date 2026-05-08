@@ -22,15 +22,97 @@
     <title>Tetris Holográfico PWA</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
-        body { background: #000; display: flex; justify-content: center; align-items: center; min-height: 100vh; font-family: 'Courier New', monospace; touch-action: none; margin: 0; padding: 0; }
-        #game-container { position: relative; box-shadow: 0 0 30px rgba(0, 255, 255, 0.3); border-radius: 16px; overflow: hidden; }
-        .scanline { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 20; background: repeating-linear-gradient(0deg, rgba(0,255,255,0.03) 0px, rgba(0,255,255,0.03) 2px, transparent 2px, transparent 6px); }
-        .touch-controls { position: absolute; bottom: 20px; left: 0; right: 0; display: flex; justify-content: center; gap: 15px; padding: 10px; z-index: 30; pointer-events: none; }
-        .touch-btn { pointer-events: auto; background: rgba(0, 20, 40, 0.85); backdrop-filter: blur(8px); border: 1px solid #0ff; color: #0ff; font-size: 20px; font-weight: bold; padding: 12px 20px; border-radius: 60px; font-family: monospace; cursor: pointer; transition: 0.1s linear; box-shadow: 0 0 8px rgba(0,255,255,0.3); min-width: 70px; text-align: center; }
-        .touch-btn:active { background: #0ff; color: #000; transform: scale(0.96); }
-        @media (max-width: 700px) { .touch-btn { padding: 8px 14px; font-size: 16px; min-width: 60px; } }
-        .footer { position: absolute; bottom: 8px; left: 0; right: 0; text-align: center; font-size: 10px; color: #0ff; opacity: 0.6; z-index: 25; pointer-events: none; }
-        @media (display-mode: standalone) { .footer { display: none; } .touch-controls { bottom: 30px; } }
+        body {
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Courier New', monospace;
+            touch-action: none;
+            margin: 0;
+            padding: 0;
+        }
+        #game-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            height: auto;
+            aspect-ratio: 800 / 700;
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.3);
+            border-radius: 16px;
+            overflow: hidden;
+            background: #010118;
+        }
+        /* Fallback se o canvas demorar */
+        canvas {
+            display: block;
+            width: 100% !important;
+            height: 100% !important;
+        }
+        .scanline {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 20;
+            background: repeating-linear-gradient(0deg, rgba(0,255,255,0.03) 0px, rgba(0,255,255,0.03) 2px, transparent 2px, transparent 6px);
+        }
+        .touch-controls {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            padding: 10px;
+            z-index: 30;
+            pointer-events: none;
+        }
+        .touch-btn {
+            pointer-events: auto;
+            background: rgba(0, 20, 40, 0.85);
+            backdrop-filter: blur(8px);
+            border: 1px solid #0ff;
+            color: #0ff;
+            font-size: 20px;
+            font-weight: bold;
+            padding: 12px 20px;
+            border-radius: 60px;
+            font-family: monospace;
+            cursor: pointer;
+            transition: 0.1s linear;
+            box-shadow: 0 0 8px rgba(0,255,255,0.3);
+            min-width: 70px;
+            text-align: center;
+        }
+        .touch-btn:active {
+            background: #0ff;
+            color: #000;
+            transform: scale(0.96);
+        }
+        @media (max-width: 700px) {
+            .touch-btn { padding: 8px 14px; font-size: 16px; min-width: 60px; }
+        }
+        .footer {
+            position: absolute;
+            bottom: 8px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 10px;
+            color: #0ff;
+            opacity: 0.6;
+            z-index: 25;
+            pointer-events: none;
+        }
+        @media (display-mode: standalone) {
+            .footer { display: none; }
+            .touch-controls { bottom: 30px; }
+        }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
 </head>
@@ -44,94 +126,408 @@
     <button class="touch-btn" id="btn-hold">⤓ HOLD</button>
 </div>
 <div class="scanline"></div>
-<div class="footer">TETRIS HOLOGRÁFICO PWA | ↑ girar | Espaço queda | H hold | Instale o app!</div>
+<div class="footer">TETRIS HOLOGRÁFICO | ↑ girar | Espaço queda | H hold | Instale o app!</div>
 
 <script>
-    // === SERVICE WORKER REGISTRATION ===
-    if ('serviceWorker' in navigator) {
-        // Service worker simples para cache e offline
-        const swCode = `self.addEventListener('install', event => { event.waitUntil(caches.open('tetris-cache-v1').then(cache => cache.addAll(['/']))) }); self.addEventListener('fetch', event => { event.respondWith(caches.match(event.request).then(response => response || fetch(event.request))) });`;
-        const blob = new Blob([swCode], {type: 'application/javascript'});
-        const swUrl = URL.createObjectURL(blob);
-        navigator.serviceWorker.register(swUrl).then(() => console.log('SW registrado')).catch(e => console.log('SW falhou', e));
-    }
+    (function(){
+        // Garantir que o DOM está pronto
+        window.addEventListener('DOMContentLoaded', () => {
+            // Configuração do jogo
+            const CONFIG = {
+                GRID_W: 10, GRID_H: 20, BLOCK_SIZE: 30,
+                COLORS: { I: 0x00ffff, O: 0xffff00, T: 0xdd44ff, S: 0x44ff44, Z: 0xff4444, J: 0x4488ff, L: 0xffaa44 },
+                LINE_SCORES: [0, 40, 100, 300, 1200]
+            };
+            const TETROMINOS = {
+                I: { shape: [[1,1,1,1]], color: 'I' }, O: { shape: [[1,1],[1,1]], color: 'O' }, T: { shape: [[0,1,0],[1,1,1]], color: 'T' },
+                S: { shape: [[0,1,1],[1,1,0]], color: 'S' }, Z: { shape: [[1,1,0],[0,1,1]], color: 'Z' },
+                J: { shape: [[1,0,0],[1,1,1]], color: 'J' }, L: { shape: [[0,0,1],[1,1,1]], color: 'L' }
+            };
+            const PIECES_KEYS = Object.keys(TETROMINOS);
 
-    // === JOGO TETRIS (Phaser) ===
-    const CONFIG = {
-        GRID_W: 10, GRID_H: 20, BLOCK_SIZE: 30, PREVIEW_SIZE: 25,
-        COLORS: { I: 0x00ffff, O: 0xffff00, T: 0xdd44ff, S: 0x44ff44, Z: 0xff4444, J: 0x4488ff, L: 0xffaa44 },
-        LINE_SCORES: [0, 40, 100, 300, 1200]
-    };
-    const TETROMINOS = {
-        I: { shape: [[1,1,1,1]], color: 'I' }, O: { shape: [[1,1],[1,1]], color: 'O' }, T: { shape: [[0,1,0],[1,1,1]], color: 'T' },
-        S: { shape: [[0,1,1],[1,1,0]], color: 'S' }, Z: { shape: [[1,1,0],[0,1,1]], color: 'Z' },
-        J: { shape: [[1,0,0],[1,1,1]], color: 'J' }, L: { shape: [[0,0,1],[1,1,1]], color: 'L' }
-    };
-    const PIECES_KEYS = Object.keys(TETROMINOS);
+            class TetrisGame extends Phaser.Scene {
+                constructor() { super('TetrisScene'); }
 
-    class TetrisGame extends Phaser.Scene {
-        constructor() { super('TetrisScene'); }
-        init() { this.board = Array(CONFIG.GRID_H).fill().map(() => Array(CONFIG.GRID_W).fill(0)); this.score = 0; this.lines = 0; this.level = 1; this.gameSpeed = 1000; this.holdPiece = null; this.canHold = true; this.gameRunning = true; this.gamePaused = false; this.highScore = localStorage.getItem('tetrisHigh') ? parseInt(localStorage.getItem('tetrisHigh')) : 0; this.updateUI(); }
-        preload() {}
-        create() {
-            this.boardWidthPx = CONFIG.GRID_W * CONFIG.BLOCK_SIZE;
-            this.boardHeightPx = CONFIG.GRID_H * CONFIG.BLOCK_SIZE;
-            this.boardX = (this.cameras.main.width - this.boardWidthPx) / 2;
-            this.boardY = 60;
-            this.boardGraphics = this.add.graphics();
-            this.pieceGraphics = this.add.graphics();
-            this.drawBoardBackground();
-            this.nextX = this.boardX + this.boardWidthPx + 20;
-            this.nextY = this.boardY + 20;
-            this.nextGraphics = this.add.graphics();
-            this.drawPreviewPanel(this.nextX, this.nextY, "NEXT");
-            this.holdX = this.boardX - 110;
-            this.holdY = this.boardY + 20;
-            this.holdGraphics = this.add.graphics();
-            this.drawPreviewPanel(this.holdX, this.holdY, "HOLD");
-            this.scoreText = this.add.text(this.boardX, this.boardY - 30, `SCORE: 0`, { fontFamily: 'Courier New', fontSize: '18px', color: '#0ff' });
-            this.linesText = this.add.text(this.boardX + 140, this.boardY - 30, `LINES: 0`, { fontFamily: 'Courier New', fontSize: '18px', color: '#0ff' });
-            this.levelText = this.add.text(this.boardX + 280, this.boardY - 30, `LEVEL: 1`, { fontFamily: 'Courier New', fontSize: '18px', color: '#0ff' });
-            this.highText = this.add.text(this.boardX + this.boardWidthPx - 120, this.boardY - 30, `HIGH: ${this.highScore}`, { fontFamily: 'Courier New', fontSize: '16px', color: '#f0f' });
-            this.nextPiece = this.getRandomPiece();
-            this.spawnNewPiece();
-            this.input.keyboard.on('keydown-LEFT', () => this.movePiece(-1,0)); this.input.keyboard.on('keydown-RIGHT', () => this.movePiece(1,0));
-            this.input.keyboard.on('keydown-DOWN', () => this.movePiece(0,1)); this.input.keyboard.on('keydown-UP', () => this.rotatePiece());
-            this.input.keyboard.on('keydown-SPACE', () => this.hardDrop()); this.input.keyboard.on('keydown-H', () => this.holdCurrentPiece());
-            this.input.keyboard.on('keydown-P', () => this.togglePause());
-            document.getElementById('btn-left').onclick = () => this.movePiece(-1,0); document.getElementById('btn-right').onclick = () => this.movePiece(1,0);
-            document.getElementById('btn-rotate').onclick = () => this.rotatePiece(); document.getElementById('btn-drop').onclick = () => this.hardDrop();
-            document.getElementById('btn-hold').onclick = () => this.holdCurrentPiece();
-            this.lastDropTime = this.time.now;
-            this.drawBoard();
-            this.drawNext(); this.drawHold();
-        }
-        update(time) { if (this.gameRunning && !this.gamePaused && time - this.lastDropTime >= this.gameSpeed) { this.movePiece(0,1); this.lastDropTime = time; } }
-        togglePause() { if (!this.gameRunning) return; this.gamePaused = !this.gamePaused; if (this.gamePaused) { this.pauseOverlay = this.add.rectangle(this.cameras.main.width/2, this.cameras.main.height/2, 300, 80, 0x000000, 0.85).setOrigin(0.5); this.pauseText = this.add.text(this.cameras.main.width/2, this.cameras.main.height/2, "PAUSADO", { fontSize: '32px', fill: '#0ff' }).setOrigin(0.5); } else { if (this.pauseOverlay) this.pauseOverlay.destroy(); if (this.pauseText) this.pauseText.destroy(); this.lastDropTime = this.time.now; } }
-        getRandomPiece() { const key = PIECES_KEYS[Math.floor(Math.random() * PIECES_KEYS.length)]; const data = TETROMINOS[key]; return { shape: data.shape.map(row => [...row]), colorKey: data.color, colorHex: CONFIG.COLORS[data.color], x: Math.floor(CONFIG.GRID_W/2) - Math.ceil(data.shape[0].length/2), y: 0 }; }
-        spawnNewPiece() { if (!this.nextPiece) this.nextPiece = this.getRandomPiece(); this.currentPiece = { shape: this.nextPiece.shape.map(row => [...row]), colorKey: this.nextPiece.colorKey, colorHex: this.nextPiece.colorHex, x: Math.floor(CONFIG.GRID_W/2) - Math.ceil(this.nextPiece.shape[0].length/2), y: 0 }; this.nextPiece = this.getRandomPiece(); this.canHold = true; this.drawNext(); this.drawHold(); if (this.collision(this.currentPiece)) this.gameOver(); this.drawPiece(); }
-        collision(piece) { for (let y=0; y<piece.shape.length; y++) for (let x=0; x<piece.shape[y].length; x++) if (piece.shape[y][x]) { let bx = piece.x+x, by = piece.y+y; if (bx<0 || bx>=CONFIG.GRID_W || by>=CONFIG.GRID_H) return true; if (by>=0 && this.board[by][bx] !== 0) return true; } return false; }
-        movePiece(dx, dy) { if (!this.gameRunning || this.gamePaused || !this.currentPiece) return false; this.currentPiece.x += dx; this.currentPiece.y += dy; if (this.collision(this.currentPiece)) { this.currentPiece.x -= dx; this.currentPiece.y -= dy; if (dy === 1) this.lockPiece(); return false; } this.drawPiece(); return true; }
-        rotatePiece() { if (!this.gameRunning || this.gamePaused || !this.currentPiece) return; const original = this.currentPiece.shape; const rotated = this.rotateMatrix(original); const oldX = this.currentPiece.x; this.currentPiece.shape = rotated; if (this.currentPiece.x + rotated[0].length > CONFIG.GRID_W) this.currentPiece.x = CONFIG.GRID_W - rotated[0].length; if (this.currentPiece.x < 0) this.currentPiece.x = 0; if (!this.collision(this.currentPiece)) { this.drawPiece(); return; } for (let off of [-1,1,-2,2]) { this.currentPiece.x = oldX + off; if (this.currentPiece.x + rotated[0].length > CONFIG.GRID_W) this.currentPiece.x = CONFIG.GRID_W - rotated[0].length; if (this.currentPiece.x < 0) this.currentPiece.x = 0; if (!this.collision(this.currentPiece)) { this.drawPiece(); return; } } this.currentPiece.shape = original; this.currentPiece.x = oldX; }
-        rotateMatrix(mat) { const n=mat.length, m=mat[0].length; const r=Array(m).fill().map(()=>Array(n).fill(0)); for(let i=0;i<n;i++)for(let j=0;j<m;j++) r[j][n-1-i]=mat[i][j]; return r; }
-        hardDrop() { if (!this.gameRunning || this.gamePaused || !this.currentPiece) return; while (!this.collision(this.currentPiece)) this.currentPiece.y++; this.currentPiece.y--; this.lockPiece(); }
-        lockPiece() { for (let y=0; y<this.currentPiece.shape.length; y++) for (let x=0; x<this.currentPiece.shape[y].length; x++) if (this.currentPiece.shape[y][x]) { let bx = this.currentPiece.x + x, by = this.currentPiece.y + y; if (by>=0 && by<CONFIG.GRID_H) this.board[by][bx] = this.currentPiece.colorKey; } this.drawBoard(); this.clearLines(); this.spawnNewPiece(); this.drawPiece(); this.updateUI(); }
-        clearLines() { let cleared = 0; for (let y=CONFIG.GRID_H-1; y>=0; ) { let full = true; for (let x=0; x<CONFIG.GRID_W; x++) if (this.board[y][x]===0) { full=false; break; } if (full) { for (let r=y; r>0; r--) this.board[r] = [...this.board[r-1]]; this.board[0] = new Array(CONFIG.GRID_W).fill(0); cleared++; this.tweens.add({ targets: {dummy:1}, duration: 50, onUpdate: ()=>this.drawBoard() }); } else y--; } if (cleared>0) { this.score += CONFIG.LINE_SCORES[cleared] * this.level; this.lines += cleared; this.level = Math.floor(this.lines/10)+1; this.gameSpeed = Math.max(180, 1000 - (this.level-1)*60); this.updateUI(); this.saveHighScore(); this.drawBoard(); } }
-        holdCurrentPiece() { if (!this.gameRunning || this.gamePaused || !this.canHold) return; if (this.holdPiece === null) { this.holdPiece = { shape: this.currentPiece.shape.map(r=>[...r]), colorKey: this.currentPiece.colorKey, colorHex: this.currentPiece.colorHex }; this.spawnNewPiece(); } else { const temp = { shape: this.currentPiece.shape.map(r=>[...r]), colorKey: this.currentPiece.colorKey, colorHex: this.currentPiece.colorHex }; this.currentPiece = { shape: this.holdPiece.shape.map(r=>[...r]), colorKey: this.holdPiece.colorKey, colorHex: this.holdPiece.colorHex, x: Math.floor(CONFIG.GRID_W/2)-Math.ceil(this.holdPiece.shape[0].length/2), y:0 }; if (this.collision(this.currentPiece)) { this.gameOver(); return; } this.holdPiece = temp; } this.canHold = false; this.drawHold(); this.drawPiece(); }
-        drawBoardBackground() { this.boardGraphics.clear(); this.boardGraphics.fillStyle(0x001133,0.9); this.boardGraphics.fillRect(this.boardX, this.boardY, this.boardWidthPx, this.boardHeightPx); this.boardGraphics.lineStyle(2,0x0ff,0.8); this.boardGraphics.strokeRect(this.boardX, this.boardY, this.boardWidthPx, this.boardHeightPx); for(let i=0;i<=CONFIG.GRID_W;i++){ this.boardGraphics.lineStyle(0.5,0x0ff,0.2); this.boardGraphics.beginPath(); this.boardGraphics.moveTo(this.boardX+i*CONFIG.BLOCK_SIZE, this.boardY); this.boardGraphics.lineTo(this.boardX+i*CONFIG.BLOCK_SIZE, this.boardY+this.boardHeightPx); this.boardGraphics.stroke(); } for(let i=0;i<=CONFIG.GRID_H;i++){ this.boardGraphics.beginPath(); this.boardGraphics.moveTo(this.boardX, this.boardY+i*CONFIG.BLOCK_SIZE); this.boardGraphics.lineTo(this.boardX+this.boardWidthPx, this.boardY+i*CONFIG.BLOCK_SIZE); this.boardGraphics.stroke(); } }
-        drawBoard() { this.drawBoardBackground(); for(let y=0;y<CONFIG.GRID_H;y++) for(let x=0;x<CONFIG.GRID_W;x++) if(this.board[y][x]!==0) this.drawBlock(x,y,CONFIG.COLORS[this.board[y][x]]); }
-        drawBlock(x,y,colorHex) { let px=this.boardX+x*CONFIG.BLOCK_SIZE, py=this.boardY+y*CONFIG.BLOCK_SIZE; this.boardGraphics.fillStyle(colorHex,1); this.boardGraphics.fillRect(px,py,CONFIG.BLOCK_SIZE-1,CONFIG.BLOCK_SIZE-1); this.boardGraphics.fillStyle(colorHex,0.5); this.boardGraphics.fillRect(px+2,py+2,CONFIG.BLOCK_SIZE-5,CONFIG.BLOCK_SIZE-5); this.boardGraphics.lineStyle(1,colorHex,0.7); this.boardGraphics.strokeRect(px,py,CONFIG.BLOCK_SIZE-1,CONFIG.BLOCK_SIZE-1); }
-        drawPiece() { this.pieceGraphics.clear(); if(!this.currentPiece) return; for(let y=0;y<this.currentPiece.shape.length;y++) for(let x=0;x<this.currentPiece.shape[y].length;x++) if(this.currentPiece.shape[y][x]){ let bx=this.currentPiece.x+x, by=this.currentPiece.y+y; if(by>=0 && by<CONFIG.GRID_H){ let px=this.boardX+bx*CONFIG.BLOCK_SIZE, py=this.boardY+by*CONFIG.BLOCK_SIZE; this.pieceGraphics.fillStyle(this.currentPiece.colorHex,1); this.pieceGraphics.fillRect(px,py,CONFIG.BLOCK_SIZE-1,CONFIG.BLOCK_SIZE-1); this.pieceGraphics.fillStyle(this.currentPiece.colorHex,0.7); this.pieceGraphics.fillRect(px+2,py+2,CONFIG.BLOCK_SIZE-5,CONFIG.BLOCK_SIZE-5); this.pieceGraphics.lineStyle(1,0xffffff,0.9); this.pieceGraphics.strokeRect(px,py,CONFIG.BLOCK_SIZE-1,CONFIG.BLOCK_SIZE-1); } } }
-        drawPreviewPanel(x,y,title){ let g=(title==="NEXT"?this.nextGraphics:this.holdGraphics); g.clear(); g.fillStyle(0x001133,0.8); g.fillRect(x,y,100,100); g.lineStyle(1,0x0ff,0.8); g.strokeRect(x,y,100,100); let txt=this.add.text(x+10,y-18,title,{fontSize:'12px',fill:'#0ff',fontFamily:'monospace'}); txt.setDepth(10); if(this.previewTexts && this.previewTexts[title]) this.previewTexts[title].destroy(); else this.previewTexts={}; this.previewTexts[title]=txt; }
-        drawNext(){ if(!this.nextGraphics) return; this.nextGraphics.clear(); this.drawPreviewPanel(this.nextX,this.nextY,"NEXT"); if(this.nextPiece){ let shape=this.nextPiece.shape, color=CONFIG.COLORS[this.nextPiece.colorKey], blockW=22, startX=this.nextX+(100-(shape[0].length*blockW))/2, startY=this.nextY+(100-(shape.length*blockW))/2; for(let y=0;y<shape.length;y++) for(let x=0;x<shape[y].length;x++) if(shape[y][x]){ this.nextGraphics.fillStyle(color,1); this.nextGraphics.fillRect(startX+x*blockW, startY+y*blockW, blockW-1, blockW-1); this.nextGraphics.fillStyle(color,0.5); this.nextGraphics.fillRect(startX+x*blockW+2, startY+y*blockW+2, blockW-5, blockW-5); } } }
-        drawHold(){ if(!this.holdGraphics) return; this.holdGraphics.clear(); this.drawPreviewPanel(this.holdX,this.holdY,"HOLD"); if(this.holdPiece){ let shape=this.holdPiece.shape, color=CONFIG.COLORS[this.holdPiece.colorKey], blockW=22, startX=this.holdX+(100-(shape[0].length*blockW))/2, startY=this.holdY+(100-(shape.length*blockW))/2; for(let y=0;y<shape.length;y++) for(let x=0;x<shape[y].length;x++) if(shape[y][x]){ this.holdGraphics.fillStyle(color,1); this.holdGraphics.fillRect(startX+x*blockW, startY+y*blockW, blockW-1, blockW-1); this.holdGraphics.fillStyle(color,0.5); this.holdGraphics.fillRect(startX+x*blockW+2, startY+y*blockW+2, blockW-5, blockW-5); } } }
-        updateUI(){ this.scoreText.setText(`SCORE: ${this.score}`); this.linesText.setText(`LINES: ${this.lines}`); this.levelText.setText(`LEVEL: ${this.level}`); this.highText.setText(`HIGH: ${this.highScore}`); }
-        saveHighScore(){ if(this.score>this.highScore){ this.highScore=this.score; localStorage.setItem('tetrisHigh',this.highScore); this.updateUI(); } }
-        gameOver(){ this.gameRunning=false; let rect=this.add.rectangle(this.cameras.main.width/2,this.cameras.main.height/2,400,200,0x000000,0.9).setOrigin(0.5); rect.setStrokeStyle(2,0xff3366); this.add.text(this.cameras.main.width/2,this.cameras.main.height/2-50,"GAME OVER",{fontSize:'32px',fill:'#ff3366',fontFamily:'monospace'}).setOrigin(0.5); this.add.text(this.cameras.main.width/2,this.cameras.main.height/2,`SCORE: ${this.score}`,{fontSize:'20px',fill:'#0ff'}).setOrigin(0.5); this.add.text(this.cameras.main.width/2,this.cameras.main.height/2+50,"Clique para reiniciar",{fontSize:'14px',fill:'#aaa'}).setOrigin(0.5); this.input.once('pointerdown',()=>{ this.scene.restart(); }); }
-    }
+                init() {
+                    this.board = Array(CONFIG.GRID_H).fill().map(() => Array(CONFIG.GRID_W).fill(0));
+                    this.score = 0; this.lines = 0; this.level = 1; this.gameSpeed = 1000;
+                    this.holdPiece = null; this.canHold = true; this.gameRunning = true; this.gamePaused = false;
+                    this.highScore = localStorage.getItem('tetrisHigh') ? parseInt(localStorage.getItem('tetrisHigh')) : 0;
+                }
 
-    const config = { type: Phaser.AUTO, parent: 'game-container', width: Math.min(800, window.innerWidth), height: Math.min(700, window.innerHeight), backgroundColor: '#010118', scene: TetrisGame, scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH, width: 800, height: 700 }, input: { activePointers: 3, touch: true } };
-    window.game = new Phaser.Game(config);
+                create() {
+                    // Dimensões baseadas no tamanho real do container
+                    const containerWidth = this.cameras.main.width;
+                    const containerHeight = this.cameras.main.height;
+                    this.blockSize = Math.min(30, containerWidth / (CONFIG.GRID_W + 8)); // dinâmico
+                    this.boardWidthPx = CONFIG.GRID_W * this.blockSize;
+                    this.boardHeightPx = CONFIG.GRID_H * this.blockSize;
+                    this.boardX = (containerWidth - this.boardWidthPx) / 2;
+                    this.boardY = 70;
+                    
+                    this.boardGraphics = this.add.graphics();
+                    this.pieceGraphics = this.add.graphics();
+                    this.drawBoardBackground();
+
+                    // Área Next
+                    this.nextX = this.boardX + this.boardWidthPx + 15;
+                    this.nextY = this.boardY + 20;
+                    this.nextGraphics = this.add.graphics();
+                    this.drawPreviewPanel(this.nextX, this.nextY, "NEXT", 80);
+
+                    // Área Hold
+                    this.holdX = this.boardX - 95;
+                    this.holdY = this.boardY + 20;
+                    this.holdGraphics = this.add.graphics();
+                    this.drawPreviewPanel(this.holdX, this.holdY, "HOLD", 80);
+
+                    // Textos UI
+                    this.scoreText = this.add.text(this.boardX, this.boardY - 30, `SCORE: 0`, { fontFamily: 'Courier New', fontSize: '18px', color: '#0ff' });
+                    this.linesText = this.add.text(this.boardX + 130, this.boardY - 30, `LINES: 0`, { fontFamily: 'Courier New', fontSize: '18px', color: '#0ff' });
+                    this.levelText = this.add.text(this.boardX + 260, this.boardY - 30, `LEVEL: 1`, { fontFamily: 'Courier New', fontSize: '18px', color: '#0ff' });
+                    this.highText = this.add.text(this.boardX + this.boardWidthPx - 100, this.boardY - 30, `HIGH: ${this.highScore}`, { fontFamily: 'Courier New', fontSize: '16px', color: '#f0f' });
+
+                    // Inicializar peças
+                    this.nextPiece = this.getRandomPiece();
+                    this.spawnNewPiece();
+
+                    // Controles de teclado
+                    this.input.keyboard.on('keydown-LEFT', () => this.movePiece(-1,0));
+                    this.input.keyboard.on('keydown-RIGHT', () => this.movePiece(1,0));
+                    this.input.keyboard.on('keydown-DOWN', () => this.movePiece(0,1));
+                    this.input.keyboard.on('keydown-UP', () => this.rotatePiece());
+                    this.input.keyboard.on('keydown-SPACE', () => this.hardDrop());
+                    this.input.keyboard.on('keydown-H', () => this.holdCurrentPiece());
+                    this.input.keyboard.on('keydown-P', () => this.togglePause());
+
+                    // Botões touch
+                    document.getElementById('btn-left').onclick = () => this.movePiece(-1,0);
+                    document.getElementById('btn-right').onclick = () => this.movePiece(1,0);
+                    document.getElementById('btn-rotate').onclick = () => this.rotatePiece();
+                    document.getElementById('btn-drop').onclick = () => this.hardDrop();
+                    document.getElementById('btn-hold').onclick = () => this.holdCurrentPiece();
+
+                    this.lastDropTime = this.time.now;
+                    this.drawBoard();
+                    this.drawNext(); this.drawHold();
+                }
+
+                update(time) {
+                    if (this.gameRunning && !this.gamePaused && time - this.lastDropTime >= this.gameSpeed) {
+                        this.movePiece(0,1);
+                        this.lastDropTime = time;
+                    }
+                }
+
+                togglePause() {
+                    if (!this.gameRunning) return;
+                    this.gamePaused = !this.gamePaused;
+                    if (this.gamePaused) {
+                        this.pauseOverlay = this.add.rectangle(this.cameras.main.width/2, this.cameras.main.height/2, 300, 80, 0x000000, 0.85).setOrigin(0.5);
+                        this.pauseText = this.add.text(this.cameras.main.width/2, this.cameras.main.height/2, "PAUSADO", { fontSize: '32px', fill: '#0ff' }).setOrigin(0.5);
+                    } else {
+                        if (this.pauseOverlay) this.pauseOverlay.destroy();
+                        if (this.pauseText) this.pauseText.destroy();
+                        this.lastDropTime = this.time.now;
+                    }
+                }
+
+                getRandomPiece() {
+                    const key = PIECES_KEYS[Math.floor(Math.random() * PIECES_KEYS.length)];
+                    const data = TETROMINOS[key];
+                    return {
+                        shape: data.shape.map(row => [...row]),
+                        colorKey: data.color,
+                        colorHex: CONFIG.COLORS[data.color],
+                        x: Math.floor(CONFIG.GRID_W/2) - Math.ceil(data.shape[0].length/2),
+                        y: 0
+                    };
+                }
+
+                spawnNewPiece() {
+                    if (!this.nextPiece) this.nextPiece = this.getRandomPiece();
+                    this.currentPiece = {
+                        shape: this.nextPiece.shape.map(row => [...row]),
+                        colorKey: this.nextPiece.colorKey,
+                        colorHex: this.nextPiece.colorHex,
+                        x: Math.floor(CONFIG.GRID_W/2) - Math.ceil(this.nextPiece.shape[0].length/2),
+                        y: 0
+                    };
+                    this.nextPiece = this.getRandomPiece();
+                    this.canHold = true;
+                    this.drawNext(); this.drawHold();
+                    if (this.collision(this.currentPiece)) this.gameOver();
+                    this.drawPiece();
+                }
+
+                collision(piece) {
+                    for (let y=0; y<piece.shape.length; y++)
+                        for (let x=0; x<piece.shape[y].length; x++)
+                            if (piece.shape[y][x]) {
+                                let bx = piece.x + x, by = piece.y + y;
+                                if (bx<0 || bx>=CONFIG.GRID_W || by>=CONFIG.GRID_H) return true;
+                                if (by>=0 && this.board[by][bx] !== 0) return true;
+                            }
+                    return false;
+                }
+
+                movePiece(dx, dy) {
+                    if (!this.gameRunning || this.gamePaused || !this.currentPiece) return false;
+                    this.currentPiece.x += dx;
+                    this.currentPiece.y += dy;
+                    if (this.collision(this.currentPiece)) {
+                        this.currentPiece.x -= dx;
+                        this.currentPiece.y -= dy;
+                        if (dy === 1) this.lockPiece();
+                        return false;
+                    }
+                    this.drawPiece();
+                    return true;
+                }
+
+                rotatePiece() {
+                    if (!this.gameRunning || this.gamePaused || !this.currentPiece) return;
+                    const original = this.currentPiece.shape;
+                    const rotated = this.rotateMatrix(original);
+                    const oldX = this.currentPiece.x;
+                    this.currentPiece.shape = rotated;
+                    if (this.currentPiece.x + rotated[0].length > CONFIG.GRID_W) this.currentPiece.x = CONFIG.GRID_W - rotated[0].length;
+                    if (this.currentPiece.x < 0) this.currentPiece.x = 0;
+                    if (!this.collision(this.currentPiece)) { this.drawPiece(); return; }
+                    for (let off of [-1,1,-2,2]) {
+                        this.currentPiece.x = oldX + off;
+                        if (this.currentPiece.x + rotated[0].length > CONFIG.GRID_W) this.currentPiece.x = CONFIG.GRID_W - rotated[0].length;
+                        if (this.currentPiece.x < 0) this.currentPiece.x = 0;
+                        if (!this.collision(this.currentPiece)) { this.drawPiece(); return; }
+                    }
+                    this.currentPiece.shape = original;
+                    this.currentPiece.x = oldX;
+                }
+
+                rotateMatrix(mat) {
+                    const n=mat.length, m=mat[0].length;
+                    const r=Array(m).fill().map(()=>Array(n).fill(0));
+                    for(let i=0;i<n;i++) for(let j=0;j<m;j++) r[j][n-1-i]=mat[i][j];
+                    return r;
+                }
+
+                hardDrop() {
+                    if (!this.gameRunning || this.gamePaused || !this.currentPiece) return;
+                    while (!this.collision(this.currentPiece)) this.currentPiece.y++;
+                    this.currentPiece.y--;
+                    this.lockPiece();
+                }
+
+                lockPiece() {
+                    for (let y=0; y<this.currentPiece.shape.length; y++)
+                        for (let x=0; x<this.currentPiece.shape[y].length; x++)
+                            if (this.currentPiece.shape[y][x]) {
+                                let bx = this.currentPiece.x + x, by = this.currentPiece.y + y;
+                                if (by>=0 && by<CONFIG.GRID_H) this.board[by][bx] = this.currentPiece.colorKey;
+                            }
+                    this.drawBoard();
+                    this.clearLines();
+                    this.spawnNewPiece();
+                    this.drawPiece();
+                    this.updateUI();
+                }
+
+                clearLines() {
+                    let cleared = 0;
+                    for (let y=CONFIG.GRID_H-1; y>=0; ) {
+                        let full = true;
+                        for (let x=0; x<CONFIG.GRID_W; x++) if (this.board[y][x]===0) { full=false; break; }
+                        if (full) {
+                            for (let r=y; r>0; r--) this.board[r] = [...this.board[r-1]];
+                            this.board[0] = new Array(CONFIG.GRID_W).fill(0);
+                            cleared++;
+                            this.tweens.add({ targets: {dummy:1}, duration: 50, onUpdate: ()=>this.drawBoard() });
+                        } else y--;
+                    }
+                    if (cleared>0) {
+                        this.score += CONFIG.LINE_SCORES[cleared] * this.level;
+                        this.lines += cleared;
+                        this.level = Math.floor(this.lines/10)+1;
+                        this.gameSpeed = Math.max(180, 1000 - (this.level-1)*60);
+                        this.updateUI();
+                        this.saveHighScore();
+                        this.drawBoard();
+                    }
+                }
+
+                holdCurrentPiece() {
+                    if (!this.gameRunning || this.gamePaused || !this.canHold) return;
+                    if (this.holdPiece === null) {
+                        this.holdPiece = { shape: this.currentPiece.shape.map(r=>[...r]), colorKey: this.currentPiece.colorKey, colorHex: this.currentPiece.colorHex };
+                        this.spawnNewPiece();
+                    } else {
+                        const temp = { shape: this.currentPiece.shape.map(r=>[...r]), colorKey: this.currentPiece.colorKey, colorHex: this.currentPiece.colorHex };
+                        this.currentPiece = {
+                            shape: this.holdPiece.shape.map(r=>[...r]), colorKey: this.holdPiece.colorKey, colorHex: this.holdPiece.colorHex,
+                            x: Math.floor(CONFIG.GRID_W/2)-Math.ceil(this.holdPiece.shape[0].length/2), y:0
+                        };
+                        if (this.collision(this.currentPiece)) { this.gameOver(); return; }
+                        this.holdPiece = temp;
+                    }
+                    this.canHold = false;
+                    this.drawHold();
+                    this.drawPiece();
+                }
+
+                drawBoardBackground() {
+                    this.boardGraphics.clear();
+                    this.boardGraphics.fillStyle(0x001133,0.9);
+                    this.boardGraphics.fillRect(this.boardX, this.boardY, this.boardWidthPx, this.boardHeightPx);
+                    this.boardGraphics.lineStyle(2,0x0ff,0.8);
+                    this.boardGraphics.strokeRect(this.boardX, this.boardY, this.boardWidthPx, this.boardHeightPx);
+                    for(let i=0;i<=CONFIG.GRID_W;i++){
+                        this.boardGraphics.lineStyle(0.5,0x0ff,0.2);
+                        this.boardGraphics.beginPath();
+                        this.boardGraphics.moveTo(this.boardX+i*this.blockSize, this.boardY);
+                        this.boardGraphics.lineTo(this.boardX+i*this.blockSize, this.boardY+this.boardHeightPx);
+                        this.boardGraphics.stroke();
+                    }
+                    for(let i=0;i<=CONFIG.GRID_H;i++){
+                        this.boardGraphics.beginPath();
+                        this.boardGraphics.moveTo(this.boardX, this.boardY+i*this.blockSize);
+                        this.boardGraphics.lineTo(this.boardX+this.boardWidthPx, this.boardY+i*this.blockSize);
+                        this.boardGraphics.stroke();
+                    }
+                }
+
+                drawBoard() {
+                    this.drawBoardBackground();
+                    for(let y=0;y<CONFIG.GRID_H;y++)
+                        for(let x=0;x<CONFIG.GRID_W;x++)
+                            if(this.board[y][x]!==0)
+                                this.drawBlock(x,y,CONFIG.COLORS[this.board[y][x]]);
+                }
+
+                drawBlock(x,y,colorHex) {
+                    let px=this.boardX+x*this.blockSize, py=this.boardY+y*this.blockSize;
+                    this.boardGraphics.fillStyle(colorHex,1);
+                    this.boardGraphics.fillRect(px,py,this.blockSize-1,this.blockSize-1);
+                    this.boardGraphics.fillStyle(colorHex,0.5);
+                    this.boardGraphics.fillRect(px+2,py+2,this.blockSize-5,this.blockSize-5);
+                    this.boardGraphics.lineStyle(1,colorHex,0.7);
+                    this.boardGraphics.strokeRect(px,py,this.blockSize-1,this.blockSize-1);
+                }
+
+                drawPiece() {
+                    this.pieceGraphics.clear();
+                    if(!this.currentPiece) return;
+                    for(let y=0; y<this.currentPiece.shape.length; y++)
+                        for(let x=0; x<this.currentPiece.shape[y].length; x++)
+                            if(this.currentPiece.shape[y][x]){
+                                let bx=this.currentPiece.x+x, by=this.currentPiece.y+y;
+                                if(by>=0 && by<CONFIG.GRID_H){
+                                    let px=this.boardX+bx*this.blockSize, py=this.boardY+by*this.blockSize;
+                                    this.pieceGraphics.fillStyle(this.currentPiece.colorHex,1);
+                                    this.pieceGraphics.fillRect(px,py,this.blockSize-1,this.blockSize-1);
+                                    this.pieceGraphics.fillStyle(this.currentPiece.colorHex,0.7);
+                                    this.pieceGraphics.fillRect(px+2,py+2,this.blockSize-5,this.blockSize-5);
+                                    this.pieceGraphics.lineStyle(1,0xffffff,0.9);
+                                    this.pieceGraphics.strokeRect(px,py,this.blockSize-1,this.blockSize-1);
+                                }
+                            }
+                }
+
+                drawPreviewPanel(x,y,title,size=80) {
+                    const g = (title==="NEXT"?this.nextGraphics:this.holdGraphics);
+                    g.clear();
+                    g.fillStyle(0x001133,0.8);
+                    g.fillRect(x,y,size,size);
+                    g.lineStyle(1,0x0ff,0.8);
+                    g.strokeRect(x,y,size,size);
+                    if(this.previewTexts && this.previewTexts[title]) this.previewTexts[title].destroy();
+                    else this.previewTexts = {};
+                    this.previewTexts[title] = this.add.text(x+10, y-18, title, { fontSize:'12px', fill:'#0ff', fontFamily:'monospace' });
+                }
+
+                drawNext() {
+                    if(!this.nextGraphics) return;
+                    this.nextGraphics.clear();
+                    this.drawPreviewPanel(this.nextX, this.nextY, "NEXT", 80);
+                    if(this.nextPiece){
+                        let shape=this.nextPiece.shape, color=CONFIG.COLORS[this.nextPiece.colorKey];
+                        let blockW = 22;
+                        let startX = this.nextX + (80 - (shape[0].length*blockW))/2;
+                        let startY = this.nextY + (80 - (shape.length*blockW))/2;
+                        for(let y=0; y<shape.length; y++)
+                            for(let x=0; x<shape[y].length; x++)
+                                if(shape[y][x]){
+                                    this.nextGraphics.fillStyle(color,1);
+                                    this.nextGraphics.fillRect(startX+x*blockW, startY+y*blockW, blockW-1, blockW-1);
+                                    this.nextGraphics.fillStyle(color,0.5);
+                                    this.nextGraphics.fillRect(startX+x*blockW+2, startY+y*blockW+2, blockW-5, blockW-5);
+                                }
+                    }
+                }
+
+                drawHold() {
+                    if(!this.holdGraphics) return;
+                    this.holdGraphics.clear();
+                    this.drawPreviewPanel(this.holdX, this.holdY, "HOLD", 80);
+                    if(this.holdPiece){
+                        let shape=this.holdPiece.shape, color=CONFIG.COLORS[this.holdPiece.colorKey];
+                        let blockW = 22;
+                        let startX = this.holdX + (80 - (shape[0].length*blockW))/2;
+                        let startY = this.holdY + (80 - (shape.length*blockW))/2;
+                        for(let y=0; y<shape.length; y++)
+                            for(let x=0; x<shape[y].length; x++)
+                                if(shape[y][x]){
+                                    this.holdGraphics.fillStyle(color,1);
+                                    this.holdGraphics.fillRect(startX+x*blockW, startY+y*blockW, blockW-1, blockW-1);
+                                    this.holdGraphics.fillStyle(color,0.5);
+                                    this.holdGraphics.fillRect(startX+x*blockW+2, startY+y*blockW+2, blockW-5, blockW-5);
+                                }
+                    }
+                }
+
+                updateUI() {
+                    this.scoreText.setText(`SCORE: ${this.score}`);
+                    this.linesText.setText(`LINES: ${this.lines}`);
+                    this.levelText.setText(`LEVEL: ${this.level}`);
+                    this.highText.setText(`HIGH: ${this.highScore}`);
+                }
+
+                saveHighScore() {
+                    if(this.score > this.highScore){
+                        this.highScore = this.score;
+                        localStorage.setItem('tetrisHigh', this.highScore);
+                        this.updateUI();
+                    }
+                }
+
+                gameOver() {
+                    this.gameRunning = false;
+                    let rect = this.add.rectangle(this.cameras.main.width/2, this.cameras.main.height/2, 400,200,0x000000,0.9).setOrigin(0.5);
+                    rect.setStrokeStyle(2,0xff3366);
+                    this.add.text(this.cameras.main.width/2, this.cameras.main.height/2-50, "GAME OVER", { fontSize:'32px', fill:'#ff3366', fontFamily:'monospace' }).setOrigin(0.5);
+                    this.add.text(this.cameras.main.width/2, this.cameras.main.height/2, `SCORE: ${this.score}`, { fontSize:'20px', fill:'#0ff' }).setOrigin(0.5);
+                    this.add.text(this.cameras.main.width/2, this.cameras.main.height/2+50, "Clique para reiniciar", { fontSize:'14px', fill:'#aaa' }).setOrigin(0.5);
+                    this.input.once('pointerdown', () => { this.scene.restart(); });
+                }
+            }
+
+            const gameConfig = {
+                type: Phaser.AUTO,
+                parent: 'game-container',
+                width: 800,
+                height: 700,
+                backgroundColor: '#010118',
+                scene: TetrisGame,
+                scale: {
+                    mode: Phaser.Scale.FIT,
+                    autoCenter: Phaser.Scale.CENTER_BOTH,
+                    width: 800,
+                    height: 700
+                },
+                input: { activePointers: 3, touch: true }
+            };
+            new Phaser.Game(gameConfig);
+        });
+    })();
 </script>
 </body>
 </html>
