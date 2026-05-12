@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Caranguejos de Mangue: Ecos da Maré (MVP)</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #1a3a2a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        #game-container {
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.min.js"></script>
+    <script>
+        // Configuração principal do jogo
+        const config = {
+            type: Phaser.AUTO,
+            width: 800,
+            height: 500,
+            parent: 'game-container',
+            backgroundColor: '#2d5e3b',
+            scene: {
+                preload: preload,
+                create: create,
+                update: update
+            },
+            physics: {
+                default: 'arcade',
+                arcade: {
+                    gravity: { y: 0 },
+                    debug: false
+                }
+            },
+            scale: {
+                mode: Phaser.Scale.FIT,
+                autoCenter: Phaser.Scale.CENTER_BOTH
+            }
+        };
+
+        const game = new Phaser.Game(config);
+
+        // Variáveis globais da cena
+        let teco, vovoSiri;
+        let cursors;
+        let fragmentos = [];
+        let pocadeReflexos; // Painel visual para conexão
+        let slots = []; // Slots onde arrastamos fragmentos
+        let linhasConexao = [];
+        let mensagemTutorial;
+        let estado = 'explorando'; // explorando, conectando, resolvido
+        let fragmentosColetados = 0;
+        let noResolvido = false;
+        let grupoFragmentos;
+        let grupoUI;
+
+        function preload() {
+            // Nada para carregar externamente, tudo será gerado via graphics
+        }
+
+        function create() {
+            // Criação do cenário rico do manguezal
+            criarCenario();
+
+            // Personagens
+            criarTeco();
+            criarVovoSiri();
+
+            // Fragmentos interativos (ecos do Outro Mundo)
+            criarFragmentos();
+
+            // Poça dos Reflexos (UI para conexão)
+            criarPocaReflexos();
+
+            // Mensagem tutorial
+            mensagemTutorial = this.add.text(400, 460, '🦀 Explore o mangue! Clique nos fragmentos brilhantes para coletá-los.', {
+                fontSize: '14px',
+                fill: '#FFD166',
+                fontStyle: 'bold',
+                backgroundColor: '#1a3a2a',
+                padding: { x: 10, y: 5 },
+                align: 'center'
+            }).setOrigin(0.5).setDepth(10);
+
+            // Controles de teclado
+            cursors = this.input.keyboard.createCursorKeys();
+
+            // Física para Teco e colisões
+            this.physics.add.existing(teco);
+            teco.body.setCollideWorldBounds(true);
+
+            // Entrada de arrasto para fragmentos (já na criação dos fragmentos)
+            this.input.on('drag', function(pointer, gameObject, dragX, dragY) {
+                if (estado === 'conectando' && gameObject.data('tipo') === 'fragmento') {
+                    gameObject.x = dragX;
+                    gameObject.y = dragY;
+                }
+            });
+
+            this.input.on('dragstart', function(pointer, gameObject) {
+                if (estado === 'conectando' && gameObject.data('tipo') === 'fragmento') {
+                    gameObject.setDepth(20);
+                    gameObject.setScale(1.2);
+                }
+            });
+
+            this.input.on('dragend', function(pointer, gameObject) {
+                if (gameObject.data('tipo') === 'fragmento') {
+                    gameObject.setDepth(10);
+                    gameObject.setScale(1.0);
+                    verificarEncaixe(gameObject);
+                }
+            });
+
+            // Botão "Poça" para ativar modo conexão
+            criarBotaoPoca();
+
+            // Grupo UI para organização
+            grupoUI = this.add.group();
+        }
+
+        function update() {
+            if (estado === 'explorando') {
+                // Movimentação de Teco
+                if (cursors.left.isDown) {
+                    teco.x -= 2;
+                    teco.flipX = true;
+                } else if (cursors.right.isDown) {
+                    teco.x += 2;
+                    teco.flipX = false;
+                }
+                if (cursors.up.isDown) {
+                    teco.y -= 2;
+                } else if (cursors.down.isDown) {
+                    teco.y += 2;
+                }
+
+                // Verificar proximidade com Vó Siri para dica
+                if (Phaser.Math.Distance.Between(teco.x, teco.y, vovoSiri.x, vovoSiri.y) < 60) {
+                    if (!vovoSiri.getData('falando')) {
+                        vovoSiri.setData('falando', true);
+                        mostrarDicaVovo();
+                    }
+                } else {
+                    vovoSiri.setData('falando', false);
+                }
+            }
+        }
+
+        // ---------- FUNÇÕES DE CRIAÇÃO VISUAL ----------
+
+        function criarCenario() {
+            const graphics = this.add.graphics();
+
+            // Céu e mangue
+            graphics.fillStyle(0x87CEEB, 0.3);
+            graphics.fillRect(0, 0, 800, 250);
+            
+            // Água do mangue
+            graphics.fillStyle(0x3A6B4C);
+            graphics.fillRect(0, 200, 800, 180);
+            graphics.fillStyle(0x2D5E3B);
+            graphics.fillRect(0, 300, 800, 200);
+            
+            // Textura de lama e raízes
+            graphics.fillStyle(0x5C4033);
+            for (let i = 0; i < 20; i++) {
+                let x = Phaser.Math.Between(0, 800);
+                let y = Phaser.Math.Between(200, 500);
+                graphics.fillCircle(x, y, Phaser.Math.Between(10, 30));
+            }
+            
+            // Raízes de mangue (estilizadas)
+            graphics.lineStyle(4, 0x4A3728);
+            graphics.beginPath();
+            graphics.moveTo(100, 300);
+            graphics.lineTo(120, 450);
+            graphics.strokePath();
+            graphics.beginPath();
+            graphics.moveTo(200, 280);
+            graphics.lineTo(190, 430);
+            graphics.strokePath();
+            graphics.beginPath();
+            graphics.moveTo(600, 310);
+            graphics.lineTo(620, 460);
+            graphics.strokePath();
+            graphics.beginPath();
+            graphics.moveTo(700, 290);
+            graphics.lineTo(680, 440);
+            graphics.strokePath();
+
+            // Sol ou luz suave
+            graphics.fillStyle(0xFFD166, 0.5);
+            graphics.fillCircle(700, 100, 50);
+
+            // Texto do título
+            this.add.text(400, 20, '🦀 Caranguejos de Mangue: Ecos da Maré', {
+                fontSize: '20px',
+                fontFamily: 'Arial',
+                fill: '#FFE066',
+                fontStyle: 'bold',
+                stroke: '#1a3a2a',
+                strokeThickness: 3
+            }).setOrigin(0.5).setDepth(15);
+        }
+
+        function criarTeco() {
+            // Caranguejo protagonista usando círculos e linhas
+            const graphics = this.add.graphics();
+            graphics.fillStyle(0xE65C1E);
+            graphics.fillCircle(0, 0, 16);
+            graphics.fillStyle(0xCC4A14);
+            graphics.fillCircle(-8, -8, 6);
+            graphics.fillCircle(8, -8, 6);
+            // Olhos
+            graphics.fillStyle(0xFFFFFF);
+            graphics.fillCircle(-5, -12, 4);
+            graphics.fillCircle(5, -12, 4);
+            graphics.fillStyle(0x000000);
+            graphics.fillCircle(-5, -12, 2);
+            graphics.fillCircle(5, -12, 2);
+            // Patas
+            graphics.lineStyle(3, 0xCC4A14);
+            graphics.beginPath();
+            graphics.moveTo(-12, 5); graphics.lineTo(-20, 15);
+            graphics.strokePath();
+            graphics.beginPath();
+            graphics.moveTo(12, 5); graphics.lineTo(20, 15);
+            graphics.strokePath();
+            
+            // Converter para textura e sprite
+            graphics.generateTexture('teco', 40, 40);
+            graphics.destroy();
+            teco = this.physics.add.sprite(150, 380, 'teco');
+            teco.setDepth(5);
+            teco.setData('nome', 'Teco');
+            teco.setInteractive();
+            this.input.setDraggable(teco);
+        }
+
+        function criarVovoSiri() {
+            const graphics = this.add.graphics();
+            graphics.fillStyle(0x8B5A2B);
+            graphics.fillCircle(0, 0, 18);
+            graphics.fillStyle(0x6B4226);
+            graphics.fillCircle(-10, -10, 8);
+            graphics.fillCircle(10, -10, 8);
+            graphics.fillStyle(0xFFFFFF);
+            graphics.fillCircle(-6, -15, 5);
+            graphics.fillCircle(6, -15, 5);
+            graphics.fillStyle(0x000000);
+            graphics.fillCircle(-6, -15, 3);
+            graphics.fillCircle(6, -15, 3);
+            graphics.lineStyle(2, 0x6B4226);
+            graphics.beginPath();
+            graphics.moveTo(-14, 8); graphics.lineTo(-24, 18);
+            graphics.strokePath();
+            graphics.beginPath();
+            graphics.moveTo(14, 8); graphics.lineTo(24, 18);
+            graphics.strokePath();
+            
+            graphics.generateTexture('vovo', 50, 50);
+            graphics.destroy();
+            vovoSiri = this.physics.add.sprite(680, 370, 'vovo');
+            vovoSiri.setDepth(5);
+            vovoSiri.setData('nome', 'Vó Siri');
+            vovoSiri.setData('falando', false);
+            
+            // Balão de dica oculto
+            this.add.text(680, 330, '🐚 Clique nos brilhos!', {
+                fontSize: '11px',
+                fill: '#fff',
+                backgroundColor: '#333',
+                padding: { x: 5, y: 3 }
+            }).setOrigin(0.5).setDepth(16).setName('dicaVovo');
+        }
+
+        function criarFragmentos() {
+            const posicoes = [
+                { x: 250, y: 350, tipo: 'pegada', desc: 'Pegada estranha' },
+                { x: 500, y: 420, tipo: 'som', desc: 'Som de batida' },
+                { x: 650, y: 280, tipo: 'sombra', desc: 'Sombra reta (Onda desenhou)' }
+            ];
+
+            fragmentos = [];
+            posicoes.forEach((p, index) => {
+                const graphics = this.add.graphics();
+                // Visual como um cristal brilhante ou eco
+                if (p.tipo === 'pegada') {
+                    graphics.fillStyle(0xFFAA00, 0.9);
+                    graphics.fillCircle(0, 0, 12);
+                    graphics.fillStyle(0xFFD700);
+                    graphics.fillCircle(0, 0, 6);
+                } else if (p.tipo === 'som') {
+                    graphics.fillStyle(0x00AAFF, 0.9);
+                    graphics.fillStar(0, 0, 5, 12, 6);
+                } else {
+                    graphics.fillStyle(0xAA55FF, 0.9);
+                    graphics.fillRect(-10, -10, 20, 20);
+                    graphics.fillStyle(0xCC88FF);
+                    graphics.fillRect(-4, -4, 8, 8);
+                }
+                
+                graphics.generateTexture('frag' + index, 30, 30);
+                graphics.destroy();
+                
+                const frag = this.physics.add.sprite(p.x, p.y, 'frag' + index);
+                frag.setDepth(6);
+                frag.setData('tipo', 'fragmento');
+                frag.setData('tipoEco', p.tipo);
+                frag.setData('descricao', p.desc);
+                frag.setData('coletado', false);
+                frag.setInteractive();
+                this.input.setDraggable(frag);
+                
+                // Animação flutuante
+                this.tweens.add({
+                    targets: frag,
+                    y: frag.y - 5,
+                    duration: 1000,
+                    yoyo: true,
+                    repeat: -1,
+                    ease: 'Sine.easeInOut'
+                });
+                
+                frag.on('pointerdown', () => {
+                    if (estado === 'explorando' && !frag.getData('coletado')) {
+                        frag.setData('coletado', true);
+                        fragmentosColetados++;
+                        frag.setTint(0xbbbbbb);
+                        frag.disableInteractive();
+                        mensagemTutorial.setText('✨ Fragmento coletado! (' + fragmentosColetados + '/3) Clique no botão Poça para conectar.');
+                        if (fragmentosColetados === 3) {
+                            mensagemTutorial.setText('🌟 Todos fragmentos coletados! Vá até a Poça dos Reflexos para conectá-los.');
+                        }
+                    }
+                });
+                
+                fragmentos.push(frag);
+            });
+        }
+
+        function criarPocaReflexos() {
+            // Painel visual que aparece ao ativar modo conexão
+            pocadeReflexos = this.add.container(400, 380);
+            pocadeReflexos.setVisible(false);
+            pocadeReflexos.setDepth(20);
+            
+            const bg = this.add.graphics();
+            bg.fillStyle(0x1A3A2A, 0.95);
+            bg.fillRoundedRect(-250, -100, 500, 200, 20);
+            bg.lineStyle(2, 0xFFD166);
+            bg.strokeRoundedRect(-250, -100, 500, 200, 20);
+            pocadeReflexos.add(bg);
+            
+            // Slots para fragmentos
+            const slotEsq = this.add.graphics();
+            slotEsq.lineStyle(2, 0xFFFFFF, 0.5);
+            slotEsq.strokeCircle(-100, 0, 30);
+            pocadeReflexos.add(slotEsq);
+            
+            const slotDir = this.add.graphics();
+            slotDir.lineStyle(2, 0xFFFFFF, 0.5);
+            slotDir.strokeCircle(100, 0, 30);
+            pocadeReflexos.add(slotDir);
+            
+            // Botão fechar
+            const fecharBtn = this.add.text(220, -90, '✖', { fontSize: '20px', fill: '#fff' })
+                .setInteractive({ useHandCursor: true })
+                .on('pointerdown', () => {
+                    pocadeReflexos.setVisible(false);
+                    estado = 'explorando';
+                    mensagemTutorial.setText('Continue explorando...');
+                });
+            pocadeReflexos.add(fecharBtn);
+            
+            // Texto instrução
+            const instr = this.add.text(0, 70, 'Arraste dois fragmentos para os círculos para uni-los', {
+                fontSize: '13px', fill: '#FFD166', align: 'center'
+            }).setOrigin(0.5);
+            pocadeReflexos.add(instr);
+            
+            slots = [
+                { x: -100, y: 0, ocupado: false, frag: null },
+                { x: 100, y: 0, ocupado: false, frag: null }
+            ];
+        }
+
+        function criarBotaoPoca() {
+            const btn = this.add.text(400, 480, '🌊 Poça dos Reflexos', {
+                fontSize: '16px',
+                fill: '#ffffff',
+                backgroundColor: '#2E4C3E',
+                padding: { x: 15, y: 8 },
+                borderRadius: 10
+            }).setOrigin(0.5).setDepth(25).setInteractive({ useHandCursor: true });
+            
+            btn.on('pointerover', () => btn.setStyle({ backgroundColor: '#3E6B55' }));
+            btn.on('pointerout', () => btn.setStyle({ backgroundColor: '#2E4C3E' }));
+            btn.on('pointerdown', () => {
+                if (fragmentosColetados < 3 && !noResolvido) {
+                    mensagemTutorial.setText('🔍 Colete todos os 3 fragmentos primeiro!');
+                    return;
+                }
+                if (noResolvido) {
+                    mensagemTutorial.setText('✨ O manguezal já está em paz. Obrigado!');
+                    return;
+                }
+                estado = 'conectando';
+                pocadeReflexos.setVisible(true);
+                mensagemTutorial.setText('🧩 Arraste os fragmentos para os círculos e conecte-os!');
+                // Resetar slots
+                slots.forEach(s => { s.ocupado = false; s.frag = null; });
+            });
+        }
+
+        // ---------- LÓGICA DE CONEXÃO ----------
+
+        function verificarEncaixe(frag) {
+            if (estado !== 'conectando') return;
+            
+            // Verificar se soltou próximo de algum slot
+            slots.forEach((slot, index) => {
+                const dist = Phaser.Math.Distance.Between(frag.x, frag.y, pocadeReflexos.x + slot.x, pocadeReflexos.y + slot.y);
+                if (dist < 35 && !slot.ocupado) {
+                    // Encaixar no slot
+                    frag.x = pocadeReflexos.x + slot.x;
+                    frag.y = pocadeReflexos.y + slot.y;
+                    slot.ocupado = true;
+                    slot.frag = frag;
+                    frag.disableInteractive();
+                    
+                    // Verificar se ambos slots estão ocupados
+                    if (slots[0].ocupado && slots[1].ocupado) {
+                        this.time.delayedCall(300, () => tentarConexao());
+                    }
+                }
+            });
+        }
+
+        function tentarConexao() {
+            const frag1 = slots[0].frag;
+            const frag2 = slots[1].frag;
+            const tipo1 = frag1.getData('tipoEco');
+            const tipo2 = frag2.getData('tipoEco');
+            
+            // Combinação correta: pegada + som = construção humana
+            // Qualquer outra combinação mostra erro
+            let conexaoValida = false;
+            if ((tipo1 === 'pegada' && tipo2 === 'som') || (tipo1 === 'som' && tipo2 === 'pegada')) {
+                conexaoValida = true;
+            }
+            
+            if (conexaoValida) {
+                mostrarResultadoConexao(true);
+            } else {
+                mostrarResultadoConexao(false);
+            }
+            
+            // Resetar slots
+            slots[0].ocupado = false; slots[0].frag = null;
+            slots[1].ocupado = false; slots[1].frag = null;
+        }
+
+        function mostrarResultadoConexao(sucesso) {
+            pocadeReflexos.setVisible(false);
+            estado = 'explorando';
+            
+            if (sucesso) {
+                // Animação de restauração
+                const texto = this.add.text(400, 250, '🌿 Conexão revelada: "Algo duro está chegando..." \nVó Siri lembra das estacas.', {
+                    fontSize: '16px', fill: '#FFE066', align: 'center',
+                    backgroundColor: '#1A3A2A', padding: {x: 15, y: 10}
+                }).setOrigin(0.5).setDepth(30);
+                
+                this.time.delayedCall(3000, () => {
+                    texto.destroy();
+                    resolverNo();
+                });
+            } else {
+                const texto = this.add.text(400, 250, '❌ Esses ecos não se conectam... Tente outra combinação.', {
+                    fontSize: '15px', fill: '#FF9999', align: 'center',
+                    backgroundColor: '#1A3A2A', padding: {x: 15, y: 10}
+                }).setOrigin(0.5).setDepth(30);
+                this.time.delayedCall(2000, () => texto.destroy());
+            }
+        }
+
+        function resolverNo() {
+            noResolvido = true;
+            estado = 'resolvido';
+            
+            // Efeito visual: mangue fica mais vibrante
+            const overlay = this.add.graphics();
+            overlay.fillStyle(0x88AA55, 0.2);
+            overlay.fillRect(0, 0, 800, 500);
+            overlay.setDepth(4);
+            
+            mensagemTutorial.setText('💚 O manguezal agradece! A comunidade decidiu desviar o canal para proteger o lar.');
+            
+            // Aparece Vó Siri com mensagem final
+            const falaFinal = this.add.text(400, 150, 'Vó Siri: "Com escuta e união, ensinamos ao Outro Mundo que aqui é casa de alguém." 🦀', {
+                fontSize: '14px', fill: '#FFFFFF', align: 'center',
+                wordWrap: { width: 400 },
+                backgroundColor: '#2E4C3E', padding: {x: 10, y: 8}
+            }).setOrigin(0.5).setDepth(30);
+            
+            // Opção de reiniciar
+            const reiniciar = this.add.text(400, 420, '🔄 Jogar novamente', {
+                fontSize: '16px', fill: '#FFD166', backgroundColor: '#1A3A2A', padding: {x: 10, y: 5}
+            }).setOrigin(0.5).setDepth(30).setInteractive({ useHandCursor: true });
+            
+            reiniciar.on('pointerdown', () => {
+                this.scene.restart();
+            });
+        }
+
+        function mostrarDicaVovo() {
+            if (fragmentosColetados === 0) {
+                this.add.text(vovoSiri.x - 40, vovoSiri.y - 50, 'Procure os brilhos...', {
+                    fontSize: '12px', fill: '#fff', backgroundColor: '#333', padding: {x: 5, y: 3}
+                }).setOrigin(0.5).setDepth(25).destroy(3000);
+            }
+        }
+
+        // Extensão para fillStar no Phaser Graphics (para fragmento som)
+        Phaser.GameObjects.Graphics.prototype.fillStar = function (cx, cy, points, outerRadius, innerRadius) {
+            const step = Math.PI / points;
+            const path = [];
+            for (let i = 0; i < 2 * points; i++) {
+                const radius = i % 2 === 0 ? outerRadius : innerRadius;
+                const angle = i * step - Math.PI / 2;
+                path.push({ x: cx + radius * Math.cos(angle), y: cy + radius * Math.sin(angle) });
+            }
+            this.beginPath();
+            this.moveTo(path[0].x, path[0].y);
+            for (let i = 1; i < path.length; i++) {
+                this.lineTo(path[i].x, path[i].y);
+            }
+            this.closePath();
+            this.fillPath();
+        };
+    </script>
+</body>
+</html>
