@@ -3,655 +3,300 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Caranguejos de Mangue - MVP Phaser 2D</title>
+    <title>Caranguejos de Mangue - MVP Phaser 2D (Corrigido)</title>
     <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background: #0a1a0f;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            font-family: 'Arial', sans-serif;
-        }
-        #game-container {
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 0 30px rgba(0,0,0,0.6);
-        }
+        body { margin: 0; padding: 0; background: #0a1a0f; display: flex; justify-content: center; align-items: center; min-height: 100vh; font-family: 'Arial', sans-serif; }
+        #game-container { border-radius: 12px; overflow: hidden; box-shadow: 0 0 30px rgba(0,0,0,0.6); }
     </style>
 </head>
 <body>
     <div id="game-container"></div>
-
     <script src="https://cdn.jsdelivr.net/npm/phaser@2.6.2/build/phaser.min.js"></script>
     <script>
-        // ==================== CONFIGURAÇÃO DO JOGO ====================
         const game = new Phaser.Game({
-            width: 800,
-            height: 500,
-            renderer: Phaser.AUTO,
-            parent: 'game-container',
-            transparent: false,
-            antialias: true,
-            state: {
-                preload: preload,
-                create: create,
-                update: update,
-                render: render
-            }
+            width: 800, height: 500, renderer: Phaser.AUTO,
+            parent: 'game-container', transparent: false, antialias: true,
+            state: { preload: preload, create: create, update: update }
         });
 
-        // ==================== VARIÁVEIS GLOBAIS ====================
-        let teco, vovoSiri, tina, onda, seuChico;
+        let teco, vovoSiri, tina, onda;
         let cursors;
         let fragmentos = [];
         let pocadeReflexos;
         let slots = [];
-        let estado = 'explorando'; // explorando | conectando | resolvido
+        let estado = 'explorando';
         let fragmentosColetados = 0;
         let noResolvido = false;
-        let grupoFragmentos;
-        let botoesUI = [];
         let textoMensagem;
-        let conexaoFeita = false;
 
-        // ==================== PRELOAD ====================
-        function preload() {
-            // Gerar texturas proceduralmente
-            gerarTexturas();
-        }
+        function preload() { gerarTexturas(); }
 
         function gerarTexturas() {
-            // --- Teco (protagonista) ---
+            // Teco
             const bmdTeco = game.make.bitmapData(48, 48);
-            bmdTeco.ctx.fillStyle = '#E65C1E';
-            bmdTeco.ctx.beginPath();
-            bmdTeco.ctx.arc(24, 24, 18, 0, Math.PI * 2);
-            bmdTeco.ctx.fill();
-            bmdTeco.ctx.fillStyle = '#CC4A14';
-            bmdTeco.ctx.beginPath();
-            bmdTeco.ctx.arc(16, 14, 8, 0, Math.PI * 2);
-            bmdTeco.ctx.fill();
-            bmdTeco.ctx.beginPath();
-            bmdTeco.ctx.arc(32, 14, 8, 0, Math.PI * 2);
-            bmdTeco.ctx.fill();
-            bmdTeco.ctx.fillStyle = '#FFFFFF';
-            bmdTeco.ctx.beginPath();
-            bmdTeco.ctx.arc(19, 11, 5, 0, Math.PI * 2);
-            bmdTeco.ctx.fill();
-            bmdTeco.ctx.beginPath();
-            bmdTeco.ctx.arc(29, 11, 5, 0, Math.PI * 2);
-            bmdTeco.ctx.fill();
-            bmdTeco.ctx.fillStyle = '#000000';
-            bmdTeco.ctx.beginPath();
-            bmdTeco.ctx.arc(19, 11, 3, 0, Math.PI * 2);
-            bmdTeco.ctx.fill();
-            bmdTeco.ctx.beginPath();
-            bmdTeco.ctx.arc(29, 11, 3, 0, Math.PI * 2);
-            bmdTeco.ctx.fill();
-            bmdTeco.ctx.strokeStyle = '#CC4A14';
-            bmdTeco.ctx.lineWidth = 3;
-            bmdTeco.ctx.beginPath();
-            bmdTeco.ctx.moveTo(6, 28);
-            bmdTeco.ctx.lineTo(0, 38);
-            bmdTeco.ctx.stroke();
-            bmdTeco.ctx.beginPath();
-            bmdTeco.ctx.moveTo(42, 28);
-            bmdTeco.ctx.lineTo(48, 38);
-            bmdTeco.ctx.stroke();
+            const t = bmdTeco.ctx;
+            t.fillStyle = '#E65C1E'; t.beginPath(); t.arc(24, 24, 18, 0, Math.PI*2); t.fill();
+            t.fillStyle = '#CC4A14'; t.beginPath(); t.arc(16, 14, 8, 0, Math.PI*2); t.fill();
+            t.beginPath(); t.arc(32, 14, 8, 0, Math.PI*2); t.fill();
+            t.fillStyle = '#FFF'; t.beginPath(); t.arc(19, 11, 5, 0, Math.PI*2); t.fill();
+            t.beginPath(); t.arc(29, 11, 5, 0, Math.PI*2); t.fill();
+            t.fillStyle = '#000'; t.beginPath(); t.arc(19, 11, 3, 0, Math.PI*2); t.fill();
+            t.beginPath(); t.arc(29, 11, 3, 0, Math.PI*2); t.fill();
+            t.strokeStyle = '#CC4A14'; t.lineWidth = 3;
+            t.beginPath(); t.moveTo(6, 28); t.lineTo(0, 38); t.stroke();
+            t.beginPath(); t.moveTo(42, 28); t.lineTo(48, 38); t.stroke();
             game.cache.addBitmapData('teco', bmdTeco);
 
-            // --- Vó Siri ---
+            // Vó Siri
             const bmdVovo = game.make.bitmapData(56, 56);
-            bmdVovo.ctx.fillStyle = '#8B5E3C';
-            bmdVovo.ctx.beginPath();
-            bmdVovo.ctx.arc(28, 28, 22, 0, Math.PI * 2);
-            bmdVovo.ctx.fill();
-            bmdVovo.ctx.fillStyle = '#6B4226';
-            bmdVovo.ctx.beginPath();
-            bmdVovo.ctx.arc(18, 16, 10, 0, Math.PI * 2);
-            bmdVovo.ctx.fill();
-            bmdVovo.ctx.beginPath();
-            bmdVovo.ctx.arc(38, 16, 10, 0, Math.PI * 2);
-            bmdVovo.ctx.fill();
-            bmdVovo.ctx.fillStyle = '#FFF';
-            bmdVovo.ctx.beginPath();
-            bmdVovo.ctx.arc(22, 12, 6, 0, Math.PI * 2);
-            bmdVovo.ctx.fill();
-            bmdVovo.ctx.beginPath();
-            bmdVovo.ctx.arc(34, 12, 6, 0, Math.PI * 2);
-            bmdVovo.ctx.fill();
-            bmdVovo.ctx.fillStyle = '#000';
-            bmdVovo.ctx.beginPath();
-            bmdVovo.ctx.arc(22, 12, 3, 0, Math.PI * 2);
-            bmdVovo.ctx.fill();
-            bmdVovo.ctx.beginPath();
-            bmdVovo.ctx.arc(34, 12, 3, 0, Math.PI * 2);
-            bmdVovo.ctx.fill();
+            const v = bmdVovo.ctx;
+            v.fillStyle = '#8B5E3C'; v.beginPath(); v.arc(28, 28, 22, 0, Math.PI*2); v.fill();
+            v.fillStyle = '#6B4226'; v.beginPath(); v.arc(18, 16, 10, 0, Math.PI*2); v.fill();
+            v.beginPath(); v.arc(38, 16, 10, 0, Math.PI*2); v.fill();
+            v.fillStyle = '#FFF'; v.beginPath(); v.arc(22, 12, 6, 0, Math.PI*2); v.fill();
+            v.beginPath(); v.arc(34, 12, 6, 0, Math.PI*2); v.fill();
+            v.fillStyle = '#000'; v.beginPath(); v.arc(22, 12, 3, 0, Math.PI*2); v.fill();
+            v.beginPath(); v.arc(34, 12, 3, 0, Math.PI*2); v.fill();
             game.cache.addBitmapData('vovo', bmdVovo);
 
-            // --- Tina (artista) ---
+            // Tina
             const bmdTina = game.make.bitmapData(44, 44);
-            bmdTina.ctx.fillStyle = '#F4A460';
-            bmdTina.ctx.beginPath();
-            bmdTina.ctx.arc(22, 22, 16, 0, Math.PI * 2);
-            bmdTina.ctx.fill();
-            bmdTina.ctx.fillStyle = '#D2691E';
-            bmdTina.ctx.beginPath();
-            bmdTina.ctx.arc(12, 12, 7, 0, Math.PI * 2);
-            bmdTina.ctx.fill();
-            bmdTina.ctx.beginPath();
-            bmdTina.ctx.arc(32, 12, 7, 0, Math.PI * 2);
-            bmdTina.ctx.fill();
-            bmdTina.ctx.fillStyle = '#FFF';
-            bmdTina.ctx.beginPath();
-            bmdTina.ctx.arc(15, 9, 4, 0, Math.PI * 2);
-            bmdTina.ctx.fill();
-            bmdTina.ctx.beginPath();
-            bmdTina.ctx.arc(29, 9, 4, 0, Math.PI * 2);
-            bmdTina.ctx.fill();
-            bmdTina.ctx.fillStyle = '#000';
-            bmdTina.ctx.beginPath();
-            bmdTina.ctx.arc(15, 9, 2, 0, Math.PI * 2);
-            bmdTina.ctx.fill();
-            bmdTina.ctx.beginPath();
-            bmdTina.ctx.arc(29, 9, 2, 0, Math.PI * 2);
-            bmdTina.ctx.fill();
+            const ti = bmdTina.ctx;
+            ti.fillStyle = '#F4A460'; ti.beginPath(); ti.arc(22, 22, 16, 0, Math.PI*2); ti.fill();
+            ti.fillStyle = '#D2691E'; ti.beginPath(); ti.arc(12, 12, 7, 0, Math.PI*2); ti.fill();
+            ti.beginPath(); ti.arc(32, 12, 7, 0, Math.PI*2); ti.fill();
+            ti.fillStyle = '#FFF'; ti.beginPath(); ti.arc(15, 9, 4, 0, Math.PI*2); ti.fill();
+            ti.beginPath(); ti.arc(29, 9, 4, 0, Math.PI*2); ti.fill();
+            ti.fillStyle = '#000'; ti.beginPath(); ti.arc(15, 9, 2, 0, Math.PI*2); ti.fill();
+            ti.beginPath(); ti.arc(29, 9, 2, 0, Math.PI*2); ti.fill();
             game.cache.addBitmapData('tina', bmdTina);
 
-            // --- Onda (não verbal) ---
+            // Onda
             const bmdOnda = game.make.bitmapData(40, 40);
-            bmdOnda.ctx.fillStyle = '#7B68EE';
-            bmdOnda.ctx.beginPath();
-            bmdOnda.ctx.arc(20, 20, 15, 0, Math.PI * 2);
-            bmdOnda.ctx.fill();
-            bmdOnda.ctx.fillStyle = '#FFD700';
-            bmdOnda.ctx.beginPath();
-            bmdOnda.ctx.arc(20, 20, 8, 0, Math.PI * 2);
-            bmdOnda.ctx.fill();
-            bmdOnda.ctx.fillStyle = '#FFF';
-            bmdOnda.ctx.beginPath();
-            bmdOnda.ctx.arc(15, 14, 4, 0, Math.PI * 2);
-            bmdOnda.ctx.fill();
-            bmdOnda.ctx.beginPath();
-            bmdOnda.ctx.arc(25, 14, 4, 0, Math.PI * 2);
-            bmdOnda.ctx.fill();
-            bmdOnda.ctx.fillStyle = '#000';
-            bmdOnda.ctx.beginPath();
-            bmdOnda.ctx.arc(15, 14, 2, 0, Math.PI * 2);
-            bmdOnda.ctx.fill();
-            bmdOnda.ctx.beginPath();
-            bmdOnda.ctx.arc(25, 14, 2, 0, Math.PI * 2);
-            bmdOnda.ctx.fill();
+            const o = bmdOnda.ctx;
+            o.fillStyle = '#7B68EE'; o.beginPath(); o.arc(20, 20, 15, 0, Math.PI*2); o.fill();
+            o.fillStyle = '#FFD700'; o.beginPath(); o.arc(20, 20, 8, 0, Math.PI*2); o.fill();
+            o.fillStyle = '#FFF'; o.beginPath(); o.arc(15, 14, 4, 0, Math.PI*2); o.fill();
+            o.beginPath(); o.arc(25, 14, 4, 0, Math.PI*2); o.fill();
+            o.fillStyle = '#000'; o.beginPath(); o.arc(15, 14, 2, 0, Math.PI*2); o.fill();
+            o.beginPath(); o.arc(25, 14, 2, 0, Math.PI*2); o.fill();
             game.cache.addBitmapData('onda', bmdOnda);
 
-            // --- Fragmentos (ecos) ---
-            const tiposFragmento = ['pegada', 'som', 'sombra'];
-            const coresFragmento = { pegada: '#FFAA00', som: '#00AAFF', sombra: '#AA55FF' };
-
-            tiposFragmento.forEach(tipo => {
+            // Fragmentos
+            const defs = [
+                { chave: 'frag_pegada', tipo: 'pegada', cor: '#FFAA00' },
+                { chave: 'frag_som', tipo: 'som', cor: '#00AAFF' },
+                { chave: 'frag_sombra', tipo: 'sombra', cor: '#AA55FF' }
+            ];
+            defs.forEach(d => {
                 const bmd = game.make.bitmapData(36, 36);
-                bmd.ctx.fillStyle = coresFragmento[tipo];
-                bmd.ctx.shadowColor = 'rgba(255,255,255,0.8)';
-                bmd.ctx.shadowBlur = 12;
-                if (tipo === 'pegada') {
-                    bmd.ctx.beginPath();
-                    bmd.ctx.arc(18, 18, 14, 0, Math.PI * 2);
-                    bmd.ctx.fill();
-                    bmd.ctx.fillStyle = '#FFD700';
-                    bmd.ctx.beginPath();
-                    bmd.ctx.arc(18, 18, 7, 0, Math.PI * 2);
-                    bmd.ctx.fill();
-                } else if (tipo === 'som') {
-                    desenharEstrela(bmd.ctx, 18, 18, 6, 14, 6);
-                    bmd.ctx.fill();
+                const c = bmd.ctx;
+                c.fillStyle = d.cor; c.shadowColor = 'rgba(255,255,255,0.8)'; c.shadowBlur = 12;
+                if (d.tipo === 'pegada') {
+                    c.beginPath(); c.arc(18, 18, 14, 0, Math.PI*2); c.fill();
+                    c.fillStyle = '#FFD700'; c.shadowBlur = 0; c.beginPath(); c.arc(18, 18, 7, 0, Math.PI*2); c.fill();
+                } else if (d.tipo === 'som') {
+                    desenharEstrela(c, 18, 18, 6, 14, 6); c.fill();
                 } else {
-                    bmd.ctx.fillRect(4, 4, 28, 28);
-                    bmd.ctx.fillStyle = '#CC88FF';
-                    bmd.ctx.fillRect(10, 10, 16, 16);
+                    c.fillRect(4, 4, 28, 28);
+                    c.fillStyle = '#CC88FF'; c.fillRect(10, 10, 16, 16);
                 }
-                game.cache.addBitmapData('frag_' + tipo, bmd);
+                game.cache.addBitmapData(d.chave, bmd);
             });
         }
 
-        function desenharEstrela(ctx, cx, cy, pontas, raioExterno, raioInterno) {
-            const passo = Math.PI / pontas;
-            ctx.beginPath();
+        function desenharEstrela(ctx, cx, cy, pontas, raioExt, raioInt) {
+            const passo = Math.PI / pontas; ctx.beginPath();
             for (let i = 0; i < 2 * pontas; i++) {
-                const raio = i % 2 === 0 ? raioExterno : raioInterno;
+                const raio = i % 2 === 0 ? raioExt : raioInt;
                 const angulo = i * passo - Math.PI / 2;
-                const x = cx + raio * Math.cos(angulo);
-                const y = cy + raio * Math.sin(angulo);
+                const x = cx + raio * Math.cos(angulo), y = cy + raio * Math.sin(angulo);
                 i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
             }
             ctx.closePath();
         }
 
-        // ==================== CREATE ====================
         function create() {
             game.stage.backgroundColor = '#1a3a2a';
+            criarCenario();
 
-            // Camadas do cenário
-            criarCenarioDetalhado();
-
-            // Personagens
-            teco = game.add.sprite(120, 360, game.cache.getBitmapData('teco'));
-            teco.anchor.set(0.5);
-            game.physics.arcade.enable(teco);
-            teco.body.collideWorldBounds = true;
-            teco.inputEnabled = true;
-            teco.input.enableDrag(false);
+            // Agora sim: CHAVES CORRETAS
+            teco = game.add.sprite(120, 360, 'teco');
+            teco.anchor.set(0.5); game.physics.arcade.enable(teco); teco.body.collideWorldBounds = true;
             teco.scale.set(1.2);
-            teco.nome = 'Teco';
 
-            vovoSiri = game.add.sprite(680, 360, game.cache.getBitmapData('vovo'));
-            vovoSiri.anchor.set(0.5);
-            vovoSiri.scale.set(1.1);
-            vovoSiri.inputEnabled = true;
-            vovoSiri.nome = 'Vó Siri';
+            vovoSiri = game.add.sprite(680, 360, 'vovo'); vovoSiri.anchor.set(0.5); vovoSiri.scale.set(1.1);
+            tina = game.add.sprite(300, 400, 'tina'); tina.anchor.set(0.5);
+            onda = game.add.sprite(550, 430, 'onda'); onda.anchor.set(0.5);
 
-            tina = game.add.sprite(300, 400, game.cache.getBitmapData('tina'));
-            tina.anchor.set(0.5);
-            tina.scale.set(1.0);
-            tina.nome = 'Tina';
-
-            onda = game.add.sprite(550, 430, game.cache.getBitmapData('onda'));
-            onda.anchor.set(0.5);
-            onda.scale.set(1.0);
-            onda.nome = 'Onda';
-
-            // Fragmentos interativos
             criarFragmentos();
-
-            // Interface: Poça dos Reflexos
             criarPocaReflexos();
 
-            // Texto de mensagem
             textoMensagem = game.add.text(400, 30, '🦀 Explore o mangue com as setas. Clique nos brilhos!', {
-                font: 'bold 16px Arial',
-                fill: '#FFE066',
-                stroke: '#1a3a2a',
-                strokeThickness: 4,
-                align: 'center'
+                font: 'bold 16px Arial', fill: '#FFE066', stroke: '#1a3a2a', strokeThickness: 4, align: 'center'
             });
-            textoMensagem.anchor.set(0.5);
-            textoMensagem.fixedToCamera = true;
+            textoMensagem.anchor.set(0.5); textoMensagem.fixedToCamera = true;
 
-            // Botão Poça
             const btnPoca = game.add.text(400, 470, '🌊 Poça dos Reflexos', {
-                font: 'bold 18px Arial',
-                fill: '#FFFFFF',
-                backgroundColor: '#2E4C3E',
-                padding: { left: 15, right: 15, top: 8, bottom: 8 },
+                font: 'bold 18px Arial', fill: '#FFFFFF', backgroundColor: '#2E4C3E',
+                padding: { left: 15, right: 15, top: 8, bottom: 8 }
             });
-            btnPoca.anchor.set(0.5);
-            btnPoca.fixedToCamera = true;
-            btnPoca.inputEnabled = true;
+            btnPoca.anchor.set(0.5); btnPoca.fixedToCamera = true; btnPoca.inputEnabled = true;
             btnPoca.events.onInputDown.add(ativarPoca, this);
 
-            // Controles
             cursors = game.input.keyboard.createCursorKeys();
-            game.input.keyboard.addKeyCapture([Phaser.Keyboard.LEFT, Phaser.Keyboard.RIGHT, Phaser.Keyboard.UP, Phaser.Keyboard.DOWN]);
         }
 
-        // ==================== CENÁRIO RICO ====================
-        function criarCenarioDetalhado() {
-            const graphics = game.add.graphics(0, 0);
-
-            // Gradiente do céu
+        function criarCenario() {
+            const g = game.add.graphics(0, 0);
             for (let i = 0; i < 200; i++) {
                 const cor = Phaser.Color.interpolateColor(0x87CEEB, 0xB0E0E6, 200, i);
-                graphics.beginFill(cor, 0.15);
-                graphics.drawRect(0, i, 800, 1);
+                g.beginFill(cor, 0.15); g.drawRect(0, i, 800, 1);
             }
-
-            // Água do mangue
-            graphics.beginFill(0x3A6B4C, 0.8);
-            graphics.drawRect(0, 200, 800, 100);
-            graphics.beginFill(0x2D5E3B, 0.9);
-            graphics.drawRect(0, 300, 800, 200);
-
-            // Textura de lama
+            g.beginFill(0x3A6B4C, 0.8); g.drawRect(0, 200, 800, 100);
+            g.beginFill(0x2D5E3B, 0.9); g.drawRect(0, 300, 800, 200);
             for (let i = 0; i < 40; i++) {
-                const x = Phaser.Math.between(0, 800);
-                const y = Phaser.Math.between(250, 500);
-                const raio = Phaser.Math.between(5, 25);
-                const cor = Phaser.Color.interpolateColor(0x5C4033, 0x4A3728, 300, y);
-                graphics.beginFill(cor, 0.5);
-                graphics.drawCircle(x, y, raio);
+                const x = Phaser.Math.between(0, 800), y = Phaser.Math.between(250, 500), r = Phaser.Math.between(5, 25);
+                g.beginFill(Phaser.Color.interpolateColor(0x5C4033, 0x4A3728, 300, y), 0.5);
+                g.drawCircle(x, y, r);
             }
-
-            // Raízes detalhadas
-            graphics.lineStyle(6, 0x4A3728, 0.9);
-            graphics.moveTo(80, 280);
-            graphics.lineTo(100, 400);
-            graphics.lineTo(130, 420);
-            graphics.moveTo(250, 270);
-            graphics.lineTo(240, 390);
-            graphics.lineTo(220, 440);
-            graphics.moveTo(500, 290);
-            graphics.lineTo(520, 430);
-            graphics.lineTo(550, 460);
-            graphics.moveTo(720, 260);
-            graphics.lineTo(700, 380);
-            graphics.lineTo(670, 420);
-
-            // Vegetação
+            g.lineStyle(6, 0x4A3728, 0.9);
+            g.moveTo(80, 280); g.lineTo(100, 400); g.lineTo(130, 420);
+            g.moveTo(250, 270); g.lineTo(240, 390); g.lineTo(220, 440);
+            g.moveTo(720, 260); g.lineTo(700, 380); g.lineTo(670, 420);
             for (let i = 0; i < 15; i++) {
-                const x = Phaser.Math.between(0, 800);
-                const y = Phaser.Math.between(180, 250);
-                graphics.beginFill(0x2E5E2E, 0.6);
-                graphics.drawCircle(x, y, Phaser.Math.between(8, 20));
+                g.beginFill(0x2E5E2E, 0.6);
+                g.drawCircle(Phaser.Math.between(0, 800), Phaser.Math.between(180, 250), Phaser.Math.between(8, 20));
             }
-
-            // Efeitos de luz
-            graphics.beginFill(0xFFD166, 0.08);
-            graphics.drawCircle(680, 80, 120);
-            graphics.beginFill(0xFFD166, 0.04);
-            graphics.drawCircle(680, 80, 200);
-
-            // Pedras e conchas
-            for (let i = 0; i < 10; i++) {
-                const x = Phaser.Math.between(0, 800);
-                const y = Phaser.Math.between(300, 480);
-                graphics.beginFill(0x888888, 0.5);
-                graphics.drawEllipse(x, y, Phaser.Math.between(8, 20), Phaser.Math.between(5, 12));
-            }
+            g.beginFill(0xFFD166, 0.08); g.drawCircle(680, 80, 120);
+            g.beginFill(0xFFD166, 0.04); g.drawCircle(680, 80, 200);
         }
 
-        // ==================== FRAGMENTOS ====================
         function criarFragmentos() {
-            const posicoes = [
+            const pos = [
                 { x: 200, y: 350, tipo: 'pegada' },
                 { x: 480, y: 400, tipo: 'som' },
                 { x: 620, y: 300, tipo: 'sombra' }
             ];
-
-            grupoFragmentos = game.add.group();
-
-            posicoes.forEach((p, idx) => {
-                const frag = game.add.sprite(p.x, p.y, game.cache.getBitmapData('frag_' + p.tipo));
-                frag.anchor.set(0.5);
-                frag.inputEnabled = true;
-                frag.tipoEco = p.tipo;
-                frag.coletado = false;
+            pos.forEach(p => {
+                const frag = game.add.sprite(p.x, p.y, 'frag_' + p.tipo); // CHAVE CORRETA
+                frag.anchor.set(0.5); frag.inputEnabled = true; frag.tipoEco = p.tipo; frag.coletado = false;
                 frag.scale.set(1.3);
-                
-                // Animação pulsante
                 game.add.tween(frag).to({ y: frag.y - 8 }, 800, Phaser.Easing.Sinusoidal.InOut, true, 0, -1, true);
                 game.add.tween(frag.scale).to({ x: 1.4, y: 1.4 }, 800, Phaser.Easing.Sinusoidal.InOut, true, 0, -1, true);
-
                 frag.events.onInputDown.add(coletarFragmento, this);
-                grupoFragmentos.add(frag);
                 fragmentos.push(frag);
             });
         }
 
         function coletarFragmento(frag) {
             if (estado !== 'explorando' || frag.coletado) return;
-
-            frag.coletado = true;
-            fragmentosColetados++;
-            frag.tint = 0xAAAAAA;
-            frag.inputEnabled = false;
+            frag.coletado = true; fragmentosColetados++;
+            frag.tint = 0xAAAAAA; frag.inputEnabled = false;
             game.add.tween(frag).to({ alpha: 0.4 }, 300, Phaser.Easing.Linear.None, true);
-
             atualizarMensagem();
-            
-            // Som de coleta
-            emitirSomColeta();
         }
 
         function atualizarMensagem() {
-            if (fragmentosColetados === 3) {
-                textoMensagem.setText('🌟 Todos fragmentos coletados! Clique em "Poça dos Reflexos" para conectar.');
-            } else {
-                textoMensagem.setText('✨ Fragmento coletado! (' + fragmentosColetados + '/3)');
-            }
+            if (fragmentosColetados === 3) textoMensagem.setText('🌟 Todos fragmentos coletados! Clique em "Poça dos Reflexos".');
+            else textoMensagem.setText('✨ Fragmento coletado! (' + fragmentosColetados + '/3)');
         }
 
-        // ==================== POÇA DOS REFLEXOS ====================
         function criarPocaReflexos() {
-            pocadeReflexos = game.add.group();
-            pocadeReflexos.visible = false;
-            pocadeReflexos.fixedToCamera = true;
-
+            pocadeReflexos = game.add.group(); pocadeReflexos.visible = false; pocadeReflexos.fixedToCamera = true;
             const bg = game.add.graphics(0, 0);
-            bg.beginFill(0x0D1F0D, 0.92);
-            bg.drawRoundedRect(100, 100, 600, 300, 25);
-            bg.lineStyle(3, 0xFFD166, 0.8);
-            bg.drawRoundedRect(100, 100, 600, 300, 25);
+            bg.beginFill(0x0D1F0D, 0.92); bg.drawRoundedRect(100, 100, 600, 300, 25);
+            bg.lineStyle(3, 0xFFD166, 0.8); bg.drawRoundedRect(100, 100, 600, 300, 25);
             pocadeReflexos.add(bg);
-
-            // Slots
-            const slotEsq = game.add.graphics(0, 0);
-            slotEsq.lineStyle(2, 0xFFFFFF, 0.6);
-            slotEsq.drawCircle(220, 280, 50);
-            pocadeReflexos.add(slotEsq);
-
-            const slotDir = game.add.graphics(0, 0);
-            slotDir.lineStyle(2, 0xFFFFFF, 0.6);
-            slotDir.drawCircle(580, 280, 50);
-            pocadeReflexos.add(slotDir);
-
-            // Textos
-            const titulo = game.add.text(400, 130, 'Poça dos Reflexos', { font: 'bold 22px Arial', fill: '#FFD166' });
-            titulo.anchor.set(0.5);
-            pocadeReflexos.add(titulo);
-
-            const instr = game.add.text(400, 170, 'Arraste dois fragmentos para os círculos', { font: '15px Arial', fill: '#CCCCCC' });
-            instr.anchor.set(0.5);
-            pocadeReflexos.add(instr);
-
-            // Botão fechar
-            const btnFechar = game.add.text(680, 120, '✖', { font: 'bold 26px Arial', fill: '#FFFFFF' });
-            btnFechar.anchor.set(0.5);
-            btnFechar.inputEnabled = true;
-            btnFechar.events.onInputDown.add(fecharPoca, this);
-            pocadeReflexos.add(btnFechar);
-
-            // Inicializar slots vazios
-            slots = [
-                { x: 220, y: 280, ocupado: false, frag: null },
-                { x: 580, y: 280, ocupado: false, frag: null }
-            ];
+            const slotEsq = game.add.graphics(0, 0); slotEsq.lineStyle(2, 0xFFFFFF, 0.6); slotEsq.drawCircle(220, 280, 50);
+            const slotDir = game.add.graphics(0, 0); slotDir.lineStyle(2, 0xFFFFFF, 0.6); slotDir.drawCircle(580, 280, 50);
+            pocadeReflexos.add(slotEsq); pocadeReflexos.add(slotDir);
+            const titulo = game.add.text(400, 130, 'Poça dos Reflexos', { font: 'bold 22px Arial', fill: '#FFD166' }); titulo.anchor.set(0.5);
+            const instr = game.add.text(400, 170, 'Arraste dois fragmentos', { font: '15px Arial', fill: '#CCC' }); instr.anchor.set(0.5);
+            pocadeReflexos.add(titulo); pocadeReflexos.add(instr);
+            const btnF = game.add.text(680, 120, '✖', { font: 'bold 26px Arial', fill: '#FFF' }); btnF.anchor.set(0.5); btnF.inputEnabled = true;
+            btnF.events.onInputDown.add(fecharPoca, this); pocadeReflexos.add(btnF);
+            slots = [{ x: 220, y: 280, ocupado: false, frag: null }, { x: 580, y: 280, ocupado: false, frag: null }];
         }
 
         function ativarPoca() {
-            if (fragmentosColetados < 3) {
-                textoMensagem.setText('🔍 Colete todos os 3 fragmentos primeiro!');
-                return;
-            }
-            if (noResolvido) {
-                textoMensagem.setText('💚 O manguezal já está em paz!');
-                return;
-            }
-
-            estado = 'conectando';
-            pocadeReflexos.visible = true;
-            textoMensagem.setText('🧩 Arraste os fragmentos brilhantes para os círculos.');
-
-            // Resetar slots
+            if (fragmentosColetados < 3) { textoMensagem.setText('🔍 Colete todos os 3 fragmentos primeiro!'); return; }
+            if (noResolvido) { textoMensagem.setText('💚 O manguezal já está em paz!'); return; }
+            estado = 'conectando'; pocadeReflexos.visible = true;
+            textoMensagem.setText('🧩 Arraste os fragmentos para os círculos.');
             slots.forEach(s => { s.ocupado = false; s.frag = null; });
-
-            // Tornar fragmentos arrastáveis novamente
             fragmentos.forEach(f => {
                 if (f.coletado) {
-                    f.inputEnabled = true;
-                    f.input.enableDrag(true);
+                    f.inputEnabled = true; f.input.enableDrag(true);
                     f.events.onDragStop.add(verificarEncaixe, this);
-                    f.tint = 0xFFFFFF;
-                    f.alpha = 1;
+                    f.tint = 0xFFFFFF; f.alpha = 1;
                 }
             });
         }
 
         function fecharPoca() {
-            pocadeReflexos.visible = false;
-            estado = 'explorando';
+            pocadeReflexos.visible = false; estado = 'explorando';
             textoMensagem.setText('Continue explorando o mangue...');
-            fragmentos.forEach(f => {
-                f.input.enableDrag(false);
-                f.events.onDragStop.removeAll();
-            });
+            fragmentos.forEach(f => { f.input.enableDrag(false); f.events.onDragStop.removeAll(); });
         }
 
         function verificarEncaixe(frag) {
             if (estado !== 'conectando') return;
-
             slots.forEach(slot => {
                 const dist = Phaser.Math.distance(frag.x, frag.y, slot.x, slot.y);
                 if (dist < 45 && !slot.ocupado) {
-                    // Encaixar no slot
                     game.add.tween(frag).to({ x: slot.x, y: slot.y }, 200, Phaser.Easing.Back.InOut, true);
-                    slot.ocupado = true;
-                    slot.frag = frag;
-                    frag.inputEnabled = false;
-
-                    if (slots[0].ocupado && slots[1].ocupado) {
-                        game.time.events.add(400, tentarConexao, this);
-                    }
+                    slot.ocupado = true; slot.frag = frag; frag.inputEnabled = false;
+                    if (slots[0].ocupado && slots[1].ocupado) game.time.events.add(400, tentarConexao, this);
                 }
             });
         }
 
         function tentarConexao() {
-            const frag1 = slots[0].frag;
-            const frag2 = slots[1].frag;
-            const tipo1 = frag1.tipoEco;
-            const tipo2 = frag2.tipoEco;
-
-            const conexaoValida = (tipo1 === 'pegada' && tipo2 === 'som') || (tipo1 === 'som' && tipo2 === 'pegada');
-
-            slots[0].ocupado = false; slots[0].frag = null;
-            slots[1].ocupado = false; slots[1].frag = null;
-
-            pocadeReflexos.visible = false;
-            estado = 'explorando';
-
-            if (conexaoValida) {
-                resolverDesafio();
-            } else {
+            const f1 = slots[0].frag, f2 = slots[1].frag;
+            const valido = (f1.tipoEco === 'pegada' && f2.tipoEco === 'som') || (f1.tipoEco === 'som' && f2.tipoEco === 'pegada');
+            slots[0].ocupado = false; slots[1].ocupado = false;
+            pocadeReflexos.visible = false; estado = 'explorando';
+            if (valido) resolverDesafio();
+            else {
                 textoMensagem.setText('❌ Esses ecos não se conectam... Tente outra combinação.');
-                fragmentos.forEach(f => {
-                    f.input.enableDrag(false);
-                    f.events.onDragStop.removeAll();
-                });
+                fragmentos.forEach(f => { f.input.enableDrag(false); f.events.onDragStop.removeAll(); });
             }
         }
 
         function resolverDesafio() {
-            noResolvido = true;
-            estado = 'resolvido';
-            conexaoFeita = true;
-
-            // Animação de restauração
-            const overlay = game.add.graphics(0, 0);
-            overlay.beginFill(0x88CC66, 0.25);
-            overlay.drawRect(0, 0, 800, 500);
-            
+            noResolvido = true; estado = 'resolvido';
+            const overlay = game.add.graphics(0, 0); overlay.beginFill(0x88CC66, 0.25); overlay.drawRect(0, 0, 800, 500);
             textoMensagem.setText('🌿 Conexão revelada: "Algo duro está chegando ao mangue..."');
-
-            // Diálogo com Vó Siri
-            game.time.events.add(2000, () => {
-                textoMensagem.setText('🦀 Vó Siri: "Na minha juventude, os sem-casco fincavam troncos retos..."');
-            });
-
-            game.time.events.add(4500, () => {
-                textoMensagem.setText('💡 Teco entende: é preciso mostrar que aqui é casa de alguém.');
-            });
-
+            game.time.events.add(2000, () => textoMensagem.setText('🦀 Vó Siri: "Na minha juventude, os sem-casco fincavam troncos retos..."'));
+            game.time.events.add(4500, () => textoMensagem.setText('💡 Teco entende: é preciso mostrar que aqui é casa de alguém.'));
             game.time.events.add(7000, () => {
                 textoMensagem.setText('🌈 A comunidade decide desviar o canalzinho com união e escuta.');
-                criarBotaoReiniciar();
-            });
-
-            emitirSomResolucao();
-        }
-
-        function criarBotaoReiniciar() {
-            const btn = game.add.text(400, 460, '🔄 Jogar novamente', {
-                font: 'bold 18px Arial',
-                fill: '#FFE066',
-                backgroundColor: '#1A3A2A',
-                padding: { left: 15, right: 15, top: 8, bottom: 8 }
-            });
-            btn.anchor.set(0.5);
-            btn.fixedToCamera = true;
-            btn.inputEnabled = true;
-            btn.events.onInputDown.add(() => game.state.restart(), this);
-        }
-
-        // ==================== SOM AMBIENTE SIMPLES ====================
-        function emitirSomColeta() {
-            try {
-                const ctx = new (window.AudioContext || window.webkitAudioContext)();
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(880, ctx.currentTime);
-                gain.gain.setValueAtTime(0.15, ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                osc.start();
-                osc.stop(ctx.currentTime + 0.2);
-            } catch(e) {}
-        }
-
-        function emitirSomResolucao() {
-            try {
-                const ctx = new (window.AudioContext || window.webkitAudioContext)();
-                [0, 0.15, 0.3].forEach(delay => {
-                    const osc = ctx.createOscillator();
-                    const gain = ctx.createGain();
-                    osc.type = 'triangle';
-                    osc.frequency.setValueAtTime(660, ctx.currentTime + delay);
-                    gain.gain.setValueAtTime(0.12, ctx.currentTime + delay);
-                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + 0.4);
-                    osc.connect(gain);
-                    gain.connect(ctx.destination);
-                    osc.start(ctx.currentTime + delay);
-                    osc.stop(ctx.currentTime + delay + 0.4);
+                const btn = game.add.text(400, 460, '🔄 Jogar novamente', {
+                    font: 'bold 18px Arial', fill: '#FFE066', backgroundColor: '#1A3A2A',
+                    padding: { left: 15, right: 15, top: 8, bottom: 8 }
                 });
-            } catch(e) {}
+                btn.anchor.set(0.5); btn.fixedToCamera = true; btn.inputEnabled = true;
+                btn.events.onInputDown.add(() => game.state.restart(), this);
+            });
         }
 
-        // ==================== UPDATE ====================
         function update() {
             if (estado === 'explorando' || estado === 'resolvido') {
                 const vel = 160;
                 teco.body.velocity.set(0);
-
-                if (cursors.left.isDown) {
-                    teco.body.velocity.x = -vel;
-                    teco.scale.x = 1.2;
-                } else if (cursors.right.isDown) {
-                    teco.body.velocity.x = vel;
-                    teco.scale.x = -1.2;
-                }
-
+                if (cursors.left.isDown) { teco.body.velocity.x = -vel; teco.scale.x = 1.2; }
+                else if (cursors.right.isDown) { teco.body.velocity.x = vel; teco.scale.x = -1.2; }
                 if (cursors.up.isDown) teco.body.velocity.y = -vel;
                 else if (cursors.down.isDown) teco.body.velocity.y = vel;
 
-                // Interação com personagens
-                if (Phaser.Math.distance(teco.x, teco.y, vovoSiri.x, vovoSiri.y) < 50) {
-                    if (!noResolvido) textoMensagem.setText('🦀 Vó Siri: "Procure os ecos brilhantes, pequeno..."');
-                }
-                if (Phaser.Math.distance(teco.x, teco.y, tina.x, tina.y) < 50) {
-                    textoMensagem.setText('🎨 Tina molda bolhas de lama com mensagens de união.');
-                }
-                if (Phaser.Math.distance(teco.x, teco.y, onda.x, onda.y) < 50) {
-                    textoMensagem.setText('🐚 Onda desenha sinais nas poças... ela viu algo diferente.');
-                }
+                if (Phaser.Math.distance(teco.x, teco.y, vovoSiri.x, vovoSiri.y) < 60 && !noResolvido)
+                    textoMensagem.setText('🦀 Vó Siri: "Procure os ecos brilhantes, pequeno..."');
+                if (Phaser.Math.distance(teco.x, teco.y, tina.x, tina.y) < 60)
+                    textoMensagem.setText('🎨 Tina molda bolhas com mensagens de união.');
+                if (Phaser.Math.distance(teco.x, teco.y, onda.x, onda.y) < 60)
+                    textoMensagem.setText('🐚 Onda desenha sinais nas poças...');
             }
-        }
-
-        function render() {
-            // Debug opcional
-            // game.debug.text('Estado: ' + estado, 10, 480);
         }
     </script>
 </body>
