@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Keystore (.jks) para Android</title>
+    <!-- Forge para criptografia no cliente -->
+    <script src="https://cdn.jsdelivr.net/npm/node-forge@1.3.1/dist/forge.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+        }
+        body {
+            background: #f4f6fb;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 1.5rem;
+        }
+        .container {
+            background: white;
+            padding: 2rem 2rem 1.8rem;
+            border-radius: 1.5rem;
+            box-shadow: 0 20px 35px rgba(0, 0, 0, 0.05);
+            max-width: 600px;
+            width: 100%;
+        }
+        h1 {
+            font-size: 1.7rem;
+            font-weight: 600;
+            color: #1a1f36;
+            margin-bottom: 0.2rem;
+        }
+        .subtitle {
+            color: #5e6278;
+            margin-bottom: 1.8rem;
+            font-size: 0.95rem;
+        }
+        .form-group {
+            margin-bottom: 1.2rem;
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: #2d3148;
+            margin-bottom: 0.3rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .tooltip {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #e8ecf1;
+            color: #3b3f55;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            cursor: help;
+            margin-left: 0.2rem;
+        }
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 220px;
+            background: #1a1f36;
+            color: #fff;
+            text-align: left;
+            border-radius: 8px;
+            padding: 0.6rem 0.8rem;
+            position: absolute;
+            z-index: 10;
+            bottom: 130%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-weight: 400;
+            font-size: 0.75rem;
+            line-height: 1.4;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            pointer-events: none;
+            white-space: normal;
+            box-shadow: 0 8px 18px rgba(0,0,0,0.15);
+        }
+        .tooltip .tooltiptext::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #1a1f36 transparent transparent transparent;
+        }
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+        input {
+            padding: 0.7rem 0.9rem;
+            border: 1.5px solid #dce0e8;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            transition: border 0.2s;
+            outline: none;
+            background: #fafbfc;
+        }
+        input:focus {
+            border-color: #5b6af0;
+            box-shadow: 0 0 0 3px rgba(91,106,240,0.1);
+        }
+        .row {
+            display: flex;
+            gap: 0.8rem;
+        }
+        .row .form-group {
+            flex: 1;
+        }
+        button {
+            background: #1a1f36;
+            color: white;
+            font-weight: 600;
+            font-size: 1rem;
+            padding: 0.85rem 1.5rem;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 0.8rem;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background: #2f3555;
+        }
+        button:disabled {
+            background: #b0b8cc;
+            cursor: not-allowed;
+        }
+        #download-area {
+            margin-top: 1.5rem;
+            text-align: center;
+        }
+        .download-link {
+            display: inline-block;
+            background: #eef1ff;
+            color: #1a1f36;
+            font-weight: 600;
+            padding: 0.7rem 1.8rem;
+            border-radius: 10px;
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: background 0.2s;
+        }
+        .download-link:hover {
+            background: #dde2ff;
+        }
+        .alert {
+            background: #fff8e5;
+            border-left: 4px solid #f0b400;
+            padding: 0.8rem 1rem;
+            border-radius: 8px;
+            font-size: 0.82rem;
+            color: #5c4a1f;
+            margin-top: 1.2rem;
+        }
+        hr {
+            margin: 1.5rem 0 0.8rem;
+            border: none;
+            border-top: 1px solid #edf0f5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Gerador de Keystore</h1>
+        <p class="subtitle">Preencha os dados para gerar seu arquivo <strong>.jks</strong> (formato PKCS12 compatível com Android).</p>
+
+        <div class="form-group">
+            <label>Senha do Keystore <span class="tooltip">?<span class="tooltiptext">Senha mestra que protege o arquivo. Guarde bem! Mínimo 6 caracteres.</span></span></label>
+            <input type="password" id="storePass" placeholder="Mínimo 6 caracteres" required>
+        </div>
+
+        <div class="form-group">
+            <label>Alias da chave <span class="tooltip">?<span class="tooltiptext">Nome amigável para identificar sua chave dentro do keystore. Ex: "upload" ou "minhaappkey".</span></span></label>
+            <input type="text" id="alias" placeholder="upload" required>
+        </div>
+
+        <div class="form-group">
+            <label>Senha da chave <span class="tooltip">?<span class="tooltiptext">Senha específica para a chave. Pode ser igual à do keystore. Mínimo 6 caracteres.</span></span></label>
+            <input type="password" id="keyPass" placeholder="Mínimo 6 caracteres" required>
+        </div>
+
+        <div class="row">
+            <div class="form-group">
+                <label>Nome Comum (CN) <span class="tooltip">?<span class="tooltiptext">Normalmente seu nome ou nome da empresa. Ex: "João Silva".</span></span></label>
+                <input type="text" id="cn" placeholder="Seu nome" required>
+            </div>
+            <div class="form-group">
+                <label>Organização (O) <span class="tooltip">?<span class="tooltiptext">Nome da sua empresa ou projeto.</span></span></label>
+                <input type="text" id="org" placeholder="Minha Empresa">
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="form-group">
+                <label>Unidade Organizacional (OU) <span class="tooltip">?<span class="tooltiptext">Departamento ou setor (opcional).</span></span></label>
+                <input type="text" id="ou" placeholder="Dev">
+            </div>
+            <div class="form-group">
+                <label>Localidade (L) <span class="tooltip">?<span class="tooltiptext">Cidade onde você está.</span></span></label>
+                <input type="text" id="locality" placeholder="São Paulo">
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="form-group">
+                <label>Estado (ST) <span class="tooltip">?<span class="tooltiptext">Sigla ou nome do estado.</span></span></label>
+                <input type="text" id="state" placeholder="SP">
+            </div>
+            <div class="form-group">
+                <label>País (C) <span class="tooltip">?<span class="tooltiptext">Código ISO de 2 letras. Ex: BR, US, PT.</span></span></label>
+                <input type="text" id="country" placeholder="BR" maxlength="2" minlength="2" required>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Validade (dias) <span class="tooltip">?<span class="tooltiptext">Duração do certificado. Recomendado 10000 dias (~27 anos) para apps Android.</span></span></label>
+            <input type="number" id="validity" placeholder="10000" value="10000" required>
+        </div>
+
+        <button id="generateBtn" onclick="generateKeystore()">🔽 Gerar Keystore (.jks)</button>
+
+        <div id="download-area"></div>
+        <div id="alert-area"></div>
+        <hr>
+        <p style="font-size:0.8rem; color:#6b7085;">⚡ Nenhum dado é enviado — tudo acontece no seu navegador. Após o download, guarde o arquivo e as senhas em local seguro. Se perdê-los, você não conseguirá atualizar seu app na Play Store.</p>
+    </div>
+
+    <script>
+        function generateKeystore() {
+            const storePass = document.getElementById('storePass').value;
+            const alias = document.getElementById('alias').value.trim();
+            const keyPass = document.getElementById('keyPass').value;
+            const cn = document.getElementById('cn').value.trim();
+            const org = document.getElementById('org').value.trim();
+            const ou = document.getElementById('ou').value.trim();
+            const locality = document.getElementById('locality').value.trim();
+            const state = document.getElementById('state').value.trim();
+            const country = document.getElementById('country').value.trim().toUpperCase();
+            const validityDays = parseInt(document.getElementById('validity').value, 10);
+
+            // Validações básicas
+            if (!storePass || storePass.length < 6) {
+                alert('A senha do keystore deve ter pelo menos 6 caracteres.');
+                return;
+            }
+            if (!alias) {
+                alert('Informe um alias para a chave.');
+                return;
+            }
+            if (!keyPass || keyPass.length < 6) {
+                alert('A senha da chave deve ter pelo menos 6 caracteres.');
+                return;
+            }
+            if (!cn) {
+                alert('O Nome Comum (CN) é obrigatório.');
+                return;
+            }
+            if (!country || country.length !== 2) {
+                alert('O código do país deve ter exatamente 2 letras (ex: BR).');
+                return;
+            }
+            if (!validityDays || validityDays < 1) {
+                alert('Informe uma validade válida (número de dias).');
+                return;
+            }
+
+            document.getElementById('generateBtn').disabled = true;
+            document.getElementById('generateBtn').textContent = 'Gerando...';
+
+            // Usamos setTimeout para não travar a interface durante a geração
+            setTimeout(() => {
+                try {
+                    // Gerar par de chaves RSA 2048
+                    const keys = forge.pki.rsa.generateKeyPair(2048);
+                    
+                    // Criar certificado autoassinado
+                    const cert = forge.pki.createCertificate();
+                    cert.publicKey = keys.publicKey;
+                    cert.serialNumber = '01' + Math.floor(Math.random() * 1000000).toString();
+                    
+                    const now = new Date();
+                    cert.validity.notBefore = now;
+                    cert.validity.notAfter = new Date(now.getTime() + validityDays * 24 * 60 * 60 * 1000);
+                    
+                    const attrs = [
+                        { name: 'commonName', value: cn },
+                        { name: 'organizationName', value: org || cn },
+                        { name: 'organizationalUnitName', value: ou || '' },
+                        { name: 'localityName', value: locality || '' },
+                        { name: 'stateOrProvinceName', value: state || '' },
+                        { name: 'countryName', value: country }
+                    ].filter(attr => attr.value !== '');
+                    
+                    cert.setSubject(attrs);
+                    cert.setIssuer(attrs);
+                    
+                    // Extensões básicas para uso em assinatura de código
+                    cert.setExtensions([
+                        { name: 'basicConstraints', cA: false },
+                        { name: 'keyUsage', digitalSignature: true, keyEncipherment: true },
+                        { name: 'extKeyUsage', codeSigning: true }
+                    ]);
+                    
+                    // Assinar o certificado com a chave privada
+                    cert.sign(keys.privateKey, forge.md.sha256.create());
+                    
+                    // Criar o PKCS12 (keystore)
+                    const p12Asn1 = forge.pkcs12.toPkcs12Asn1(
+                        keys.privateKey,
+                        [cert],
+                        keyPass,
+                        { algorithm: '3des' }
+                    );
+                    const p12Der = forge.asn1.toDer(p12Asn1).getBytes();
+                    
+                    // Preparar download
+                    const blob = new Blob([p12Der], { type: 'application/x-pkcs12' });
+                    const url = URL.createObjectURL(blob);
+                    
+                    const downloadArea = document.getElementById('download-area');
+                    downloadArea.innerHTML = `
+                        <a class="download-link" href="${url}" download="keystore.jks">📥 Baixar keystore.jks</a>
+                        <p style="font-size:0.8rem; color:#4a4f66; margin-top:0.5rem;">O arquivo foi gerado como <strong>keystore.jks</strong> (PKCS12).</p>
+                    `;
+                    
+                    document.getElementById('alert-area').innerHTML = `
+                        <div class="alert">
+                            ✅ <strong>Keystore criado com sucesso!</strong> Lembre-se:<br>
+                            • Senha do keystore: <strong>${storePass}</strong><br>
+                            • Alias: <strong>${alias}</strong><br>
+                            • Senha da chave: <strong>${keyPass}</strong><br>
+                            Guarde essas informações em um local seguro. Você precisará delas para assinar atualizações do seu app.
+                        </div>
+                    `;
+                    
+                } catch (error) {
+                    console.error(error);
+                    alert('Ocorreu um erro ao gerar o keystore. Verifique os dados e tente novamente.');
+                } finally {
+                    document.getElementById('generateBtn').disabled = false;
+                    document.getElementById('generateBtn').textContent = '🔽 Gerar Keystore (.jks)';
+                }
+            }, 100);
+        }
+    </script>
+</body>
+</html>
