@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>LEEO · Troca de livros por capa</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, 'Segoe UI', 'Inter', -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif;
+        }
+
+        body {
+            background: #f4f7fc;
+            padding: 20px 16px 40px;
+        }
+
+        /* Cores do modelo: azul-escuro, marrom, verde, vermelho */
+        :root {
+            --deepblue: #0a2f44;
+            --brown: #8b5a2b;
+            --green: #2e7d64;
+            --red: #c84a2e;
+            --light-bg: #ffffff;
+            --soft-gray: #eef2f5;
+            --shadow-sm: 0 8px 20px rgba(0,0,0,0.05);
+            --border-radius: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* header */
+        .logo-area {
+            background: var(--deepblue);
+            color: white;
+            padding: 20px 24px;
+            border-radius: var(--border-radius);
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-sm);
+        }
+        .logo-area h1 {
+            font-size: 1.8rem;
+            letter-spacing: -0.3px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .logo-area h1 span {
+            background: var(--brown);
+            padding: 4px 12px;
+            border-radius: 40px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        .mode-badge {
+            background: rgba(255,255,240,0.2);
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            display: inline-block;
+        }
+        .user-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 12px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .user-info {
+            background: rgba(255,255,255,0.15);
+            padding: 6px 14px;
+            border-radius: 40px;
+            font-size: 0.9rem;
+        }
+        button, .button-like {
+            background: white;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 40px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 0.85rem;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+        button.primary {
+            background: var(--green);
+            color: white;
+        }
+        button.secondary {
+            background: var(--deepblue);
+            color: white;
+        }
+        button.warning {
+            background: var(--red);
+            color: white;
+        }
+        button.outline {
+            background: transparent;
+            border: 1px solid var(--deepblue);
+            color: var(--deepblue);
+        }
+        button.small {
+            padding: 4px 12px;
+            font-size: 0.75rem;
+        }
+
+        /* grid principal */
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+        @media (max-width: 850px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+                gap: 28px;
+            }
+        }
+
+        .card {
+            background: var(--light-bg);
+            border-radius: 28px;
+            padding: 20px;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 0;
+        }
+        .card h3 {
+            font-size: 1.4rem;
+            margin-bottom: 16px;
+            border-left: 5px solid var(--brown);
+            padding-left: 14px;
+            color: #1a2c3e;
+        }
+        .camera-area {
+            background: #1e2a32;
+            border-radius: 24px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            position: relative;
+            aspect-ratio: 4 / 3;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        video, .camera-placeholder {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            background: #0f1a1f;
+        }
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin: 16px 0;
+        }
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+        .form-row input, .form-row textarea {
+            flex: 1;
+            padding: 12px 14px;
+            border: 1px solid #cddfe7;
+            border-radius: 24px;
+            font-size: 0.9rem;
+            background: white;
+        }
+        .form-row textarea {
+            min-width: 100%;
+        }
+        .status-chip {
+            background: var(--soft-gray);
+            padding: 8px 12px;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .books-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+            max-height: 380px;
+            overflow-y: auto;
+            padding-right: 6px;
+        }
+        .book-card {
+            background: #fef9ef;
+            border-radius: 20px;
+            padding: 12px;
+            border: 1px solid #f0e2ce;
+            transition: 0.1s;
+        }
+        .book-card img {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 12px;
+            background: #e9dfcf;
+        }
+        .book-card strong {
+            display: block;
+            margin-top: 8px;
+            font-size: 0.9rem;
+        }
+        .book-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .tabs {
+            display: flex;
+            gap: 6px;
+            border-bottom: 2px solid var(--soft-gray);
+            margin-bottom: 20px;
+        }
+        .tab-btn {
+            background: none;
+            box-shadow: none;
+            border-radius: 30px;
+            padding: 8px 16px;
+            font-weight: 500;
+            color: #3b5c74;
+        }
+        .tab-btn.active {
+            background: var(--deepblue);
+            color: white;
+        }
+        .tab-pane {
+            display: none;
+        }
+        .tab-pane.active-pane {
+            display: block;
+        }
+        .search-bar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+        .search-bar input {
+            flex: 1;
+            padding: 12px;
+            border-radius: 40px;
+            border: 1px solid #ccc;
+        }
+        .feedback-msg {
+            font-size: 0.8rem;
+            padding: 6px;
+            color: var(--green);
+        }
+        hr {
+            margin: 18px 0;
+            border-color: #e2e8f0;
+        }
+        .flex-between {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="logo-area">
+        <h1>📖 LEEO <span>leitura de capas</span></h1>
+        <div class="user-bar" id="userBar">
+            <div class="user-info" id="userInfoDisplay">🔓 Visitante</div>
+            <div id="authButtons">
+                <button id="loginDemoBtn" class="outline">📱 Entrar Demo</button>
+                <button id="logoutBtn" style="display:none" class="small">Sair</button>
+            </div>
+        </div>
+        <div class="mode-badge" id="globalModeHint">Modo: 1 livro por vez</div>
+    </div>
+
+    <div class="dashboard">
+        <!-- COLUNA ESQUERDA: CAPTURA E RECONHECIMENTO -->
+        <div class="card">
+            <h3>📷 Capturar capa</h3>
+            <div class="camera-area">
+                <video id="videoPreview" autoplay playsinline muted style="display:none; width:100%; height:100%; object-fit:cover;"></video>
+                <div id="cameraPlaceholder" style="display:flex; align-items:center; justify-content:center; width:100%; height:100%; background:#1f2e36; color:#bdd3e6;">📸 Câmera inativa<br>Clique em "Iniciar câmera"</div>
+            </div>
+            <div class="btn-group">
+                <button id="startCameraBtn" class="primary">🎥 Iniciar câmera</button>
+                <button id="stopCameraBtn" class="secondary">⏹️ Parar câmera</button>
+                <button id="switchModeBtn" class="outline">🔄 Mudar para muitos livros</button>
+            </div>
+            <div class="status-chip" id="modeStatus">Modo 1 livro: clique em "Salvar" após conferir</div>
+
+            <div class="form-row">
+                <input type="text" id="tituloInput" placeholder="Título *">
+                <input type="text" id="autorInput" placeholder="Autor">
+            </div>
+            <div class="form-row">
+                <input type="text" id="editoraInput" placeholder="Editora">
+                <input type="text" id="anoInput" placeholder="Ano">
+                <input type="text" id="isbnInput" placeholder="ISBN">
+            </div>
+            <div class="form-row">
+                <textarea id="obsInput" rows="2" placeholder="Observações (ex: estado de conservação)"></textarea>
+            </div>
+            <div class="btn-group">
+                <button id="saveBookBtn" class="primary">💾 Salvar reconhecimento</button>
+                <button id="clearFieldsBtn" class="outline">🧹 Limpar campos</button>
+                <button id="captureFromCameraBtn" class="secondary">📸 Capturar capa agora</button>
+            </div>
+            <div id="bulkFeedback" class="feedback-msg"></div>
+        </div>
+
+        <!-- COLUNA DIREITA: ACERVO, TROCAS, BUSCA E HISTÓRICO -->
+        <div class="card">
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="myBooks">📚 Meu Acervo</button>
+                <button class="tab-btn" data-tab="search">🔍 Buscar livros</button>
+                <button class="tab-btn" data-tab="trades">🔄 Trocas</button>
+                <button class="tab-btn" data-tab="history">📜 Histórico</button>
+            </div>
+            <!-- Meu Acervo -->
+            <div id="myBooksPane" class="tab-pane active-pane">
+                <div class="flex-between"><span>📖 Livros disponibilizados</span><button id="refreshAcervoBtn" class="small outline">Atualizar</button></div>
+                <div id="myBooksList" class="books-grid">Nenhum livro cadastrado.</div>
+            </div>
+            <!-- Busca -->
+            <div id="searchPane" class="tab-pane">
+                <div class="search-bar">
+                    <input type="text" id="searchInput" placeholder="Título, autor, ISBN...">
+                    <button id="doSearchBtn" class="primary">Buscar</button>
+                </div>
+                <div id="searchResults" class="books-grid">Digite um termo para buscar livros de outros leitores.</div>
+            </div>
+            <!-- Trocas (pedidos) -->
+            <div id="tradesPane" class="tab-pane">
+                <h4 style="margin-top:0">📨 Pedidos recebidos</h4>
+                <div id="receivedRequestsList"></div>
+                <h4>📤 Pedidos enviados</h4>
+                <div id="sentRequestsList"></div>
+                <button id="refreshTradesBtn" class="small outline mt-2">Atualizar pedidos</button>
+            </div>
+            <!-- Histórico -->
+            <div id="historyPane" class="tab-pane">
+                <div id="historyList">Nenhuma troca concluída ainda.</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ---------- MOCK DE DADOS E PERSISTÊNCIA (localStorage) ----------
+    let currentUser = null;   // { id, name, email, city }
+    let allUsers = [];
+    let allBooks = [];        // cada livro: { id, ownerId, title, author, publisher, year, isbn, obs, coverDataUrl, available, createdAt }
+    let allTrades = [];       // { id, requesterId, ownerId, bookOfferedId, bookRequestedId, message, status, createdAt, completedAt, evaluation }
+
+    // Dados iniciais (seed)
+    function initDatabase() {
+        if(!localStorage.getItem('leelo_users')) {
+            const demoUser1 = { id: 'u1', name: 'Ana Silva', email: 'ana@email.com', city: 'São Paulo, SP' };
+            const demoUser2 = { id: 'u2', name: 'Carlos Lima', email: 'carlos@email.com', city: 'Rio de Janeiro, RJ' };
+            allUsers = [demoUser1, demoUser2];
+            localStorage.setItem('leelo_users', JSON.stringify(allUsers));
+            const demoBooks = [
+                { id: 'b1', ownerId: 'u2', title: 'O Alquimista', author: 'Paulo Coelho', publisher: 'Rocco', year: '1988', isbn: '978857542', obs: 'Ótimo estado', coverDataUrl: '', available: true, createdAt: Date.now() },
+                { id: 'b2', ownerId: 'u2', title: '1984', author: 'George Orwell', publisher: 'Companhia', year: '1949', isbn: '97885359', obs: 'Capa dura', coverDataUrl: '', available: true, createdAt: Date.now() },
+                { id: 'b3', ownerId: 'u1', title: 'Dom Casmurro', author: 'Machado de Assis', publisher: 'Penguin', year: '1899', isbn: '978857827', obs: 'Com anotações', coverDataUrl: '', available: true, createdAt: Date.now() }
+            ];
+            localStorage.setItem('leelo_books', JSON.stringify(demoBooks));
+            localStorage.setItem('leelo_trades', JSON.stringify([]));
+        }
+        allUsers = JSON.parse(localStorage.getItem('leelo_users'));
+        allBooks = JSON.parse(localStorage.getItem('leelo_books'));
+        allTrades = JSON.parse(localStorage.getItem('leelo_trades'));
+    }
+    function persistAll() {
+        localStorage.setItem('leelo_users', JSON.stringify(allUsers));
+        localStorage.setItem('leelo_books', JSON.stringify(allBooks));
+        localStorage.setItem('leelo_trades', JSON.stringify(allTrades));
+    }
+
+    // helpers
+    function getBooksByUser(userId) { return allBooks.filter(b => b.ownerId === userId); }
+    function getAvailableOtherBooks(currentUserId) { return allBooks.filter(b => b.ownerId !== currentUserId && b.available === true); }
+
+    // ---------- SIMULAÇÃO DE RECONHECIMENTO DE CAPA (MOCK REALISTA) ----------
+    const mockBookDatabase = [
+        { title:"A Culpa é das Estrelas", author:"John Green", publisher:"Intrínseca", year:"2012", isbn:"978858057", obs:"Capa comum" },
+        { title:"Harry Potter e a Pedra Filosofal", author:"J.K. Rowling", publisher:"Rocco", year:"2000", isbn:"978853251", obs:"Edição especial" },
+        { title:"O Hobbit", author:"J.R.R. Tolkien", publisher:"HarperCollins", year:"1937", isbn:"978859508", obs:"Capa ilustrada" },
+        { title:"Sapiens", author:"Yuval Noah Harari", publisher:"L&PM", year:"2015", isbn:"978852543", obs:"Bom estado" },
+        { title:"É assim que acaba", author:"Colleen Hoover", publisher:"Galera", year:"2016", isbn:"978850110", obs:"Novo" }
+    ];
+    function simulateRecognitionFromImage() {
+        // Simula extração de dados a partir da capa (mock)
+        const randomIndex = Math.floor(Math.random() * mockBookDatabase.length);
+        const mock = mockBookDatabase[randomIndex];
+        return {
+            title: mock.title,
+            author: mock.author,
+            publisher: mock.publisher,
+            year: mock.year,
+            isbn: mock.isbn + Math.floor(Math.random()*100),
+            obs: mock.obs
+        };
+    }
+
+    // UI Elements & stream
+    let mediaStream = null;
+    const video = document.getElementById('videoPreview');
+    const placeholderDiv = document.getElementById('cameraPlaceholder');
+    let currentMode = 'single'; // 'single' ou 'bulk'
+    let bulkCounter = 0;
+
+    // Função capturar foto do video e retornar dataURL + simular reconhecimento
+    async function captureAndRecognize() {
+        if(!video.videoWidth || !mediaStream) {
+            alert("Câmera não está ativa. Inicie a câmera primeiro.");
+            return null;
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const imageDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+        // simular reconhecimento
+        const recog = simulateRecognitionFromImage();
+        return { ...recog, coverDataUrl: imageDataUrl };
+    }
+
+    function fillFormWithData(bookData) {
+        document.getElementById('tituloInput').value = bookData.title || '';
+        document.getElementById('autorInput').value = bookData.author || '';
+        document.getElementById('editoraInput').value = bookData.publisher || '';
+        document.getElementById('anoInput').value = bookData.year || '';
+        document.getElementById('isbnInput').value = bookData.isbn || '';
+        document.getElementById('obsInput').value = bookData.obs || '';
+    }
+
+    function clearForm() {
+        document.getElementById('tituloInput').value = '';
+        document.getElementById('autorInput').value = '';
+        document.getElementById('editoraInput').value = '';
+        document.getElementById('anoInput').value = '';
+        document.getElementById('isbnInput').value = '';
+        document.getElementById('obsInput').value = '';
+    }
+
+    function playBeepAndVibrate() {
+        // som simples com Web Audio
+        try {
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            oscillator.connect(gain);
+            gain.connect(audioCtx.destination);
+            oscillator.frequency.value = 880;
+            gain.gain.value = 0.2;
+            oscillator.start();
+            gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.3);
+            oscillator.stop(audioCtx.currentTime + 0.3);
+        } catch(e) { }
+        if(navigator.vibrate) navigator.vibrate(200);
+    }
+
+    async function saveCurrentBook(automatic = false) {
+        if(!currentUser) { alert("Faça login demo para cadastrar livros."); return false; }
+        let title = document.getElementById('tituloInput').value.trim();
+        if(!title) { alert("Informe o título do livro (ou capture uma capa primeiro)."); return false; }
+        const author = document.getElementById('autorInput').value.trim();
+        const publisher = document.getElementById('editoraInput').value.trim();
+        const year = document.getElementById('anoInput').value.trim();
+        const isbn = document.getElementById('isbnInput').value.trim();
+        const obs = document.getElementById('obsInput').value.trim();
+        const cover = ''; // mock, mas poderiamos guardar a ultima capa tirada, mas para simplificar usaremos string vazia (podemos pegar da última captura)
+        // valida duplicata (mesmo isbn para o mesmo dono)
+        const exists = allBooks.some(b => b.ownerId === currentUser.id && b.isbn === isbn && b.isbn !== '');
+        if(exists && !confirm("ISBN já cadastrado para você. Deseja adicionar outro exemplar mesmo assim?")) return false;
+        const newBook = {
+            id: Date.now() + '-' + Math.random(),
+            ownerId: currentUser.id,
+            title, author, publisher, year, isbn, obs,
+            coverDataUrl: '',
+            available: true,
+            createdAt: Date.now()
+        };
+        allBooks.push(newBook);
+        persistAll();
+        if(automatic) playBeepAndVibrate();
+        clearForm();
+        renderMyAcervo();
+        renderSearchResults();
+        updateDashboardStats();
+        return true;
+    }
+
+    async function onCaptureSingle() {
+        if(!mediaStream) { alert("Ligue a câmera primeiro"); return; }
+        const recognized = await captureAndRecognize();
+        if(recognized) fillFormWithData(recognized);
+        playBeepAndVibrate();
+    }
+
+    async function onBulkCaptureAndSave() {
+        if(!currentUser) { alert("Faça login para cadastrar vários livros"); return; }
+        if(!mediaStream) { alert("Câmera precisa estar ativa"); return; }
+        const recognized = await captureAndRecognize();
+        if(recognized) {
+            fillFormWithData(recognized);
+            const titleField = document.getElementById('tituloInput').value.trim();
+            if(titleField) {
+                await saveCurrentBook(true);
+                bulkCounter++;
+                document.getElementById('bulkFeedback').innerHTML = `✅ Livro salvo automaticamente! (${bulkCounter} livro(s) cadastrado(s) nesta sessão)`;
+                setTimeout(()=>{if(document.getElementById('bulkFeedback')) document.getElementById('bulkFeedback').innerHTML = '';}, 2000);
+                // limpa campos para próximo livro
+                clearForm();
+            } else {
+                alert("Não foi possível reconhecer, insira manualmente ou tente outra capa.");
+            }
+        }
+    }
+
+    // Render acervo (com editar/excluir/disponibilidade)
+    function renderMyAcervo() {
+        if(!currentUser) { document.getElementById('myBooksList').innerHTML = '<p>Faça login para ver seus livros.</p>'; return; }
+        const myBooks = getBooksByUser(currentUser.id);
+        if(myBooks.length === 0) { document.getElementById('myBooksList').innerHTML = '<p>Você ainda não cadastrou livros.</p>'; return; }
+        let html = '';
+        myBooks.forEach(book => {
+            html += `<div class="book-card">
+                        <img src="https://placehold.co/400x200?text=${encodeURIComponent(book.title.substring(0,1))}" alt="capa">
+                        <strong>${escapeHtml(book.title)}</strong>
+                        <small>${escapeHtml(book.author)} • ${book.year}</small>
+                        <div class="book-actions">
+                            <button class="small outline" onclick="toggleAvailability('${book.id}')">${book.available ? '✅ Disponível' : '❌ Indisponível'}</button>
+                            <button class="small warning" onclick="deleteBook('${book.id}')">Excluir</button>
+                            <button class="small" onclick="editBook('${book.id}')">✏️ Editar</button>
+                        </div>
+                    </div>`;
+        });
+        document.getElementById('myBooksList').innerHTML = html;
+    }
+
+    window.toggleAvailability = (bookId) => {
+        const book = allBooks.find(b => b.id === bookId);
+        if(book) { book.available = !book.available; persistAll(); renderMyAcervo(); renderSearchResults(); }
+    };
+    window.deleteBook = (bookId) => {
+        if(confirm("Remover este livro?")) { allBooks = allBooks.filter(b => b.id !== bookId); persistAll(); renderMyAcervo(); renderSearchResults(); updateTradeUI(); }
+    };
+    window.editBook = (bookId) => {
+        const book = allBooks.find(b => b.id === bookId);
+        if(book) {
+            document.getElementById('tituloInput').value = book.title;
+            document.getElementById('autorInput').value = book.author;
+            document.getElementById('editoraInput').value = book.publisher;
+            document.getElementById('anoInput').value = book.year;
+            document.getElementById('isbnInput').value = book.isbn;
+            document.getElementById('obsInput').value = book.obs;
+            // remover depois de salvar? simples: após editar, salvar como novo mas deletar anterior
+            deleteBook(bookId);
+            alert("Edite os campos e clique em Salvar reconhecimento para atualizar.");
+        }
+    };
+
+    function renderSearchResults(term = '') {
+        if(!currentUser) { document.getElementById('searchResults').innerHTML = '<p>Faça login para buscar livros de outros leitores.</p>'; return; }
+        let books = getAvailableOtherBooks(currentUser.id);
+        if(term) {
+            const lower = term.toLowerCase();
+            books = books.filter(b => b.title.toLowerCase().includes(lower) || b.author.toLowerCase().includes(lower) || b.isbn.includes(lower));
+        }
+        if(books.length === 0) { document.getElementById('searchResults').innerHTML = '<p>Nenhum livro disponível para troca encontrado.</p>'; return; }
+        let html = '';
+        books.forEach(book => {
+            const owner = allUsers.find(u => u.id === book.ownerId);
+            html += `<div class="book-card">
+                        <strong>📘 ${escapeHtml(book.title)}</strong><br>
+                        <small>${escapeHtml(book.author)} • ${book.year}</small><br>
+                        <small>👤 ${owner?.name || 'Usuário'} (${owner?.city || ''})</small>
+                        <div class="book-actions"><button class="small primary" onclick="proposeTrade('${book.id}')">🔄 Propor troca</button></div>
+                    </div>`;
+        });
+        document.getElementById('searchResults').innerHTML = html;
+    }
+
+    window.proposeTrade = (targetBookId) => {
+        if(!currentUser) return;
+        const targetBook = allBooks.find(b => b.id === targetBookId);
+        if(!targetBook) return;
+        const myBooks = getBooksByUser(currentUser.id).filter(b => b.available && b.id !== targetBookId);
+        if(myBooks.length === 0) { alert("Você não tem livros disponíveis para oferecer. Cadastre pelo menos um."); return; }
+        let options = myBooks.map(b => `<option value="${b.id}">${b.title}</option>`).join('');
+        const userMessage = prompt("Mensagem para o dono (opcional):", "Olá, gostaria de trocar este livro!");
+        if(userMessage === null) return;
+        const bookIdOffer = prompt(`Escolha o ID do livro que você oferece:\n${myBooks.map(b=>`${b.id} - ${b.title}`).join('\n')}\nDigite o ID:`);
+        const offerBook = myBooks.find(b => b.id === bookIdOffer);
+        if(!offerBook) { alert("ID inválido"); return; }
+        const newTrade = {
+            id: Date.now() + '' + Math.random(),
+            requesterId: currentUser.id,
+            ownerId: targetBook.ownerId,
+            bookOfferedId: offerBook.id,
+            bookRequestedId: targetBook.id,
+            message: userMessage || "Proposta de troca via LEEO",
+            status: 'pending',
+            createdAt: Date.now(),
+            completedAt: null
+        };
+        allTrades.push(newTrade);
+        persistAll();
+        updateTradeUI();
+        alert("Proposta enviada!");
+    };
+
+    function updateTradeUI() {
+        if(!currentUser) return;
+        const received = allTrades.filter(t => t.ownerId === currentUser.id && t.status === 'pending');
+        const sent = allTrades.filter(t => t.requesterId === currentUser.id);
+        const receivedHtml = received.map(t => {
+            const requester = allUsers.find(u=>u.id===t.requesterId);
+            const bookReq = allBooks.find(b=>b.id===t.bookRequestedId);
+            const bookOff = allBooks.find(b=>b.id===t.bookOfferedId);
+            return `<div style="border-bottom:1px solid #ddd; padding:8px;"><b>${requester?.name}</b> quer: ${bookReq?.title} <br> Oferece: ${bookOff?.title}<br>Msg: ${t.message}<br><button onclick="answerTrade('${t.id}', 'accepted')">✅ Aceitar</button> <button onclick="answerTrade('${t.id}', 'refused')">❌ Recusar</button></div>`;
+        }).join('');
+        const sentHtml = sent.map(t => {
+            const owner = allUsers.find(u=>u.id===t.ownerId);
+            const bookTarget = allBooks.find(b=>b.id===t.bookRequestedId);
+            const statusText = t.status === 'pending' ? '⏳ Pendente' : (t.status === 'accepted' ? '✅ Acordada (aguardando conclusão)' : '❌ Recusada');
+            return `<div>📤 Para ${owner?.name}: ${bookTarget?.title} - ${statusText}</div>`;
+        }).join('');
+        document.getElementById('receivedRequestsList').innerHTML = receivedHtml || "<p>Nenhum pedido recebido</p>";
+        document.getElementById('sentRequestsList').innerHTML = sentHtml || "<p>Nenhum pedido enviado</p>";
+        // histórico (trocas concluídas)
+        const completed = allTrades.filter(t => t.status === 'completed' && (t.requesterId === currentUser.id || t.ownerId === currentUser.id));
+        document.getElementById('historyList').innerHTML = completed.map(t => `<div>✅ Troca finalizada em ${new Date(t.completedAt).toLocaleDateString()}</div>`).join('') || "<div>Nenhuma troca concluída</div>";
+    }
+    window.answerTrade = (tradeId, answer) => {
+        const trade = allTrades.find(t=>t.id===tradeId);
+        if(trade) {
+            if(answer === 'accepted') { trade.status = 'accepted'; }
+            else { trade.status = 'refused'; }
+            persistAll();
+            updateTradeUI();
+            renderMyAcervo();
+        }
+    };
+    function finalizeTradeFlow(){ /* poderia ser avançado, mas MVP simplificado */ }
+
+    // Câmera
+    async function startCamera() {
+        if(mediaStream) stopCamera();
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            video.srcObject = stream;
+            mediaStream = stream;
+            video.style.display = 'block';
+            placeholderDiv.style.display = 'none';
+            await video.play();
+        } catch(e) { alert("Erro ao acessar câmera: "+e.message); }
+    }
+    function stopCamera() {
+        if(mediaStream) {
+            mediaStream.getTracks().forEach(track => track.stop());
+            mediaStream = null;
+        }
+        video.style.display = 'none';
+        placeholderDiv.style.display = 'flex';
+        video.srcObject = null;
+    }
+    function switchMode() {
+        if(currentMode === 'single') {
+            currentMode = 'bulk';
+            document.getElementById('modeStatus').innerHTML = '⚡ Modo vários livros: cada captura salva automaticamente!';
+            document.getElementById('globalModeHint').innerHTML = 'Modo: vários livros (salva direto)';
+            document.getElementById('switchModeBtn').innerHTML = '🔁 Mudar para 1 livro';
+            document.getElementById('saveBookBtn').style.display = 'none';
+        } else {
+            currentMode = 'single';
+            document.getElementById('modeStatus').innerHTML = '📘 Modo 1 livro: confirme os dados antes de salvar.';
+            document.getElementById('globalModeHint').innerHTML = 'Modo: 1 livro por vez';
+            document.getElementById('switchModeBtn').innerHTML = '🔄 Mudar para muitos livros';
+            document.getElementById('saveBookBtn').style.display = 'inline-flex';
+        }
+    }
+
+    function updateDashboardStats() { renderMyAcervo(); renderSearchResults(); updateTradeUI(); }
+
+    // login demo
+    function loginDemo() {
+        if(currentUser) return;
+        const demoUser = allUsers.find(u => u.id === 'u1');
+        if(demoUser) currentUser = demoUser;
+        else { currentUser = { id: 'guest', name: 'Leitor(a)', city: 'Demo', email: 'demo@leelo.com' }; }
+        document.getElementById('userInfoDisplay').innerHTML = `👤 ${currentUser.name} (${currentUser.city})`;
+        document.getElementById('loginDemoBtn').style.display = 'none';
+        document.getElementById('logoutBtn').style.display = 'inline-block';
+        updateDashboardStats();
+        clearForm();
+    }
+    function logout() {
+        currentUser = null;
+        document.getElementById('userInfoDisplay').innerHTML = '🔓 Visitante';
+        document.getElementById('loginDemoBtn').style.display = 'inline-block';
+        document.getElementById('logoutBtn').style.display = 'none';
+        renderMyAcervo();
+        renderSearchResults();
+        updateTradeUI();
+    }
+
+    // event handlers
+    document.getElementById('startCameraBtn').onclick = startCamera;
+    document.getElementById('stopCameraBtn').onclick = stopCamera;
+    document.getElementById('switchModeBtn').onclick = switchMode;
+    document.getElementById('saveBookBtn').onclick = () => saveCurrentBook(false);
+    document.getElementById('clearFieldsBtn').onclick = clearForm;
+    document.getElementById('captureFromCameraBtn').onclick = async () => { if(currentMode === 'single') await onCaptureSingle(); else await onBulkCaptureAndSave(); };
+    document.getElementById('doSearchBtn').onclick = () => { const term = document.getElementById('searchInput').value; renderSearchResults(term); };
+    document.getElementById('refreshAcervoBtn').onclick = () => renderMyAcervo();
+    document.getElementById('refreshTradesBtn').onclick = () => updateTradeUI();
+    document.getElementById('loginDemoBtn').onclick = loginDemo;
+    document.getElementById('logoutBtn').onclick = logout;
+
+    function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, function(m){if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;});}
+
+    // Tabs
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const paneId = btn.getAttribute('data-tab');
+            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active-pane'));
+            if(paneId === 'myBooks') document.getElementById('myBooksPane').classList.add('active-pane');
+            if(paneId === 'search') document.getElementById('searchPane').classList.add('active-pane');
+            if(paneId === 'trades') document.getElementById('tradesPane').classList.add('active-pane');
+            if(paneId === 'history') document.getElementById('historyPane').classList.add('active-pane');
+        });
+    });
+    initDatabase();
+    if(allUsers.length) loginDemo();
+    else loginDemo();
+    updateDashboardStats();
+</script>
+</body>
+</html>
