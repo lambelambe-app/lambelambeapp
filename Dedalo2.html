@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Dédalo | Arraste a Esfera</title>
+    <title>Dédalo | Modo Clássico / Casual</title>
     <style>
         * {
             margin: 0;
@@ -37,7 +37,9 @@
             overflow-y: visible;
             max-height: none;
             margin-top: 0;
+            position: relative;
         }
+        /* Barra superior */
         .top-bar {
             display: flex;
             justify-content: space-between;
@@ -45,8 +47,9 @@
             width: 100%;
             margin-bottom: 24px;
             gap: 16px;
+            flex-wrap: wrap;
         }
-        .timer-panel, .best-panel, .reset-btn {
+        .timer-panel, .best-panel {
             background: rgba(0, 0, 0, 0.55);
             backdrop-filter: blur(8px);
             border: 1px solid rgba(255, 200, 100, 0.6);
@@ -76,14 +79,75 @@
             text-shadow: 0 0 4px rgba(0,0,0,0.5);
             line-height: 1.2;
         }
-        .reset-btn {
+        /* Toggle switch moderno */
+        .mode-switch {
+            background: rgba(0, 0, 0, 0.55);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 200, 100, 0.6);
+            border-radius: 48px;
+            padding: 4px 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
             cursor: pointer;
-            transition: 0.05s linear;
+        }
+        .mode-switch span {
+            font-size: 0.65rem;
+            color: #FFE5B4;
+            font-weight: 500;
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 22px;
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #2c3e46;
+            transition: 0.2s;
+            border-radius: 22px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 2px;
+            bottom: 2px;
+            background-color: #FFE5B4;
+            transition: 0.2s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: #FF8C42;
+        }
+        input:checked + .slider:before {
+            transform: translateX(22px);
+        }
+        /* Botão reset */
+        .reset-btn {
+            background: rgba(160, 65, 45, 0.9);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 200, 100, 0.6);
+            border-radius: 48px;
+            padding: 4px 14px;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 4px;
-            padding: 4px 14px;
+            cursor: pointer;
+            transition: 0.05s linear;
         }
         .reset-btn:active {
             transform: translateY(2px);
@@ -105,26 +169,65 @@
             border-radius: 32px;
             box-shadow: 0 12px 28px rgba(0, 0, 0, 0.6), inset 0 0 0 2px rgba(255, 215, 150, 0.25);
             background-color: #1e2a32;
-            cursor: grab;
             width: 100%;
             height: auto;
-            touch-action: none; /* previne rolagem durante arrasto */
+            touch-action: none;
         }
-        canvas:active {
-            cursor: grabbing;
+        /* D-pad (modo clássico) */
+        .dpad-wrapper {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            margin-bottom: 6px;
+        }
+        .dpad {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        .dpad-row {
+            display: flex;
+            gap: 18px;
+            justify-content: center;
+        }
+        .ctrl-btn {
+            background: rgba(30, 40, 52, 0.9);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 200, 120, 0.7);
+            border-radius: 60px;
+            width: 65px;
+            height: 65px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: bold;
+            color: #FFE5B4;
+            text-shadow: 0 2px 4px black;
+            box-shadow: 0 5px 0 rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255,255,255,0.15);
+            transition: 0.05s linear;
+            cursor: pointer;
+        }
+        .ctrl-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px 0 rgba(0, 0, 0, 0.4);
+            background: rgba(50, 65, 82, 0.95);
         }
         footer {
             text-align: center;
             font-size: 0.65rem;
             color: #ccb;
-            margin-top: 6px;
+            margin-top: 12px;
             opacity: 0.8;
         }
         @media (max-width: 560px) {
-            .timer-panel, .best-panel, .reset-btn { padding: 2px 10px; min-width: 75px; }
+            .timer-panel, .best-panel { padding: 2px 10px; min-width: 75px; }
             .timer-value { font-size: 1rem; }
             .best-value { font-size: 0.85rem; }
-            footer { margin-top: 4px; font-size: 0.6rem; }
+            .ctrl-btn { width: 55px; height: 55px; font-size: 24px; }
+            .dpad-row { gap: 12px; }
+            footer { margin-top: 8px; font-size: 0.6rem; }
         }
     </style>
 </head>
@@ -140,6 +243,14 @@
                 <div class="best-label">🏆 MELHOR</div>
                 <div class="best-value" id="bestDisplay">---</div>
             </div>
+            <label class="mode-switch">
+                <span>🎮 CLÁSSICO</span>
+                <div class="switch">
+                    <input type="checkbox" id="modeToggle">
+                    <span class="slider"></span>
+                </div>
+                <span>🖐️ CASUAL</span>
+            </label>
             <div class="reset-btn" id="btnReset">
                 <div class="reset-icon">⟳</div>
                 <div class="reset-label">NOVO</div>
@@ -148,12 +259,24 @@
 
         <canvas id="gameCanvas" width="600" height="600"></canvas>
 
-        <footer>✨ arraste a esfera diretamente para movê-la | teletransporte nas bordas ✨</footer>
+        <div class="dpad-wrapper" id="dpadWrapper">
+            <div class="dpad">
+                <div class="dpad-row"><div class="ctrl-btn" id="btnUp">▲</div></div>
+                <div class="dpad-row">
+                    <div class="ctrl-btn" id="btnLeft">◀</div>
+                    <div class="ctrl-btn" id="btnDown">▼</div>
+                    <div class="ctrl-btn" id="btnRight">▶</div>
+                </div>
+            </div>
+        </div>
+
+        <footer>✨ aberturas nas bordas teletransportam para o lado oposto ✨</footer>
     </div>
 </div>
 
 <script>
     (function(){
+        // ---------- CONFIGURAÇÕES GERAIS ----------
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const SIZE = 600;
@@ -181,6 +304,11 @@
         const bestDisplay = document.getElementById('bestDisplay');
         const timerDisplay = document.getElementById('timerDisplay');
         
+        // Modo de controle: false = clássico (D-pad+física), true = casual (arrasto)
+        let casualMode = false;
+        const modeToggle = document.getElementById('modeToggle');
+        const dpadWrapper = document.getElementById('dpadWrapper');
+        
         function formatTime(seconds) {
             if (seconds === null) return "---";
             const mins = Math.floor(seconds / 60);
@@ -206,7 +334,7 @@
             }
         }
         
-        // ---------- GERADOR DFS COM ABERTURAS ALEATÓRIAS ----------
+        // ---------- GERADOR DFS (mesmo da Versão 1) ----------
         const CELL_SIZE = 46;
         const WALL_THICK = 10;
         const GRID_W = Math.floor(SIZE / CELL_SIZE);
@@ -276,7 +404,6 @@
                     }
                 }
             }
-            // Bordas com aberturas
             for (let col = 0; col < GRID_W; col++) {
                 if (col !== openings.top) addWall(OFFSET_X + col*CELL_SIZE, OFFSET_Y, CELL_SIZE, WALL_THICK, 'dark');
                 if (col !== openings.bottom) addWall(OFFSET_X + col*CELL_SIZE, OFFSET_Y + GRID_H*CELL_SIZE - WALL_THICK, CELL_SIZE, WALL_THICK, 'dark');
@@ -309,7 +436,6 @@
             const pos = getOpeningPosition(chosen);
             ballX = pos.x;
             ballY = pos.y;
-            // evita spawn colado
             for (let attempt = 0; attempt < 5; attempt++) {
                 let collides = false;
                 for (let w of walls) {
@@ -325,7 +451,7 @@
             }
         }
         
-        // ---------- TELEPORTE (mesma lógica) ----------
+        // ---------- TELEPORTE (comum a ambos os modos) ----------
         function handleTeleport() {
             if (victory) return;
             const tolerance = BALL_RADIUS * 1.5;
@@ -375,7 +501,77 @@
             }
         }
         
-        // Colisão com paredes (para verificar se posição é válida)
+        // ---------- MODO CLÁSSICO (física + colisão) ----------
+        let leftPressed = false, rightPressed = false, upPressed = false, downPressed = false;
+        const ACC = 400;
+        const MAX_SPEED = 500;
+        const DRAG = 0.98;
+        
+        function circleRectCollision(cx, cy, r, rect) {
+            let closestX = Math.max(rect.x, Math.min(cx, rect.x + rect.w));
+            let closestY = Math.max(rect.y, Math.min(cy, rect.y + rect.h));
+            let dx = cx - closestX, dy = cy - closestY;
+            return dx*dx + dy*dy < r*r;
+        }
+        
+        function handleCollisionsClassic() {
+            for (let w of walls) {
+                if (circleRectCollision(ballX, ballY, BALL_RADIUS, w)) {
+                    let closestX = Math.max(w.x, Math.min(ballX, w.x + w.w));
+                    let closestY = Math.max(w.y, Math.min(ballY, w.y + w.h));
+                    let dx = ballX - closestX, dy = ballY - closestY;
+                    let dist = Math.hypot(dx, dy);
+                    if (dist < BALL_RADIUS) {
+                        let angle = Math.atan2(dy, dx);
+                        let correction = BALL_RADIUS - dist;
+                        ballX += Math.cos(angle) * correction;
+                        ballY += Math.sin(angle) * correction;
+                        if (w.type === 'light') {
+                            velocityX = -velocityX * 1.3;
+                            velocityY = -velocityY * 1.3;
+                        } else {
+                            if (Math.abs(dx) > Math.abs(dy)) velocityX *= -0.5;
+                            else velocityY *= -0.5;
+                        }
+                    }
+                }
+            }
+        }
+        
+        function updatePhysicsClassic(delta) {
+            if (victory) {
+                velocityX = 0; velocityY = 0;
+                return;
+            }
+            let ax = 0, ay = 0;
+            if (leftPressed) ax = -ACC;
+            if (rightPressed) ax = ACC;
+            if (upPressed) ay = -ACC;
+            if (downPressed) ay = ACC;
+            let moving = (ax !== 0 || ay !== 0);
+            if (moving && !gameStarted && !victory) {
+                gameStarted = true;
+                startTime = performance.now() / 1000;
+            }
+            velocityX += ax * delta;
+            velocityY += ay * delta;
+            let spd = Math.hypot(velocityX, velocityY);
+            if (spd > MAX_SPEED) {
+                velocityX = velocityX / spd * MAX_SPEED;
+                velocityY = velocityY / spd * MAX_SPEED;
+            }
+            velocityX *= DRAG;
+            velocityY *= DRAG;
+            if (Math.abs(velocityX) < 0.2) velocityX = 0;
+            if (Math.abs(velocityY) < 0.2) velocityY = 0;
+            ballX += velocityX * delta;
+            ballY += velocityY * delta;
+            handleCollisionsClassic();
+            handleTeleport();
+            checkWin();
+        }
+        
+        // ---------- MODO CASUAL (arrasto direto) ----------
         function isCollidingWithWall(x, y) {
             for (let w of walls) {
                 let closestX = Math.max(w.x, Math.min(x, w.x + w.w));
@@ -388,23 +584,17 @@
             return false;
         }
         
-        // Move a bola para uma posição válida (respeitando paredes)
         function tryMoveBallTo(desiredX, desiredY) {
             if (victory) return;
-            // Se a posição desejada for válida (não colide), move
             if (!isCollidingWithWall(desiredX, desiredY)) {
                 ballX = desiredX;
                 ballY = desiredY;
-                velocityX = 0;
-                velocityY = 0;
-                // Dispara início do cronômetro no primeiro movimento
                 if (!gameStarted && !victory) {
                     gameStarted = true;
                     startTime = performance.now() / 1000;
-                    currentTime = 0;
                 }
             } else {
-                // Se colidir, tenta encontrar a posição livre mais próxima (simples: recuo radial)
+                // tenta recuo radial simples
                 for (let ang = 0; ang < 360; ang += 10) {
                     let rad = ang * Math.PI/180;
                     let testX = desiredX + Math.cos(rad) * 5;
@@ -416,14 +606,13 @@
                     }
                 }
             }
-            // Aplica teletransporte se saiu da tela (opcional)
             handleTeleport();
-            // Garante que a bola não fique colada
             ballX = Math.min(Math.max(ballX, BALL_RADIUS), SIZE - BALL_RADIUS);
             ballY = Math.min(Math.max(ballY, BALL_RADIUS), SIZE - BALL_RADIUS);
+            checkWin();
         }
         
-        // ---------- EVENTOS DE ARRASTO (TOUCH E MOUSE) ----------
+        // Eventos de arrasto (modo casual)
         function getCanvasCoords(e) {
             const rect = canvas.getBoundingClientRect();
             const scaleX = canvas.width / rect.width;
@@ -444,33 +633,42 @@
         }
         
         function onDragStart(e) {
+            if (!casualMode) return;
             e.preventDefault();
             const { x, y } = getCanvasCoords(e);
             tryMoveBallTo(x, y);
         }
         
         function onDragMove(e) {
+            if (!casualMode) return;
             e.preventDefault();
             const { x, y } = getCanvasCoords(e);
             tryMoveBallTo(x, y);
         }
         
         function onDragEnd(e) {
+            if (!casualMode) return;
             e.preventDefault();
-            // não faz nada especial
         }
         
-        // Registra eventos
-        canvas.addEventListener('touchstart', onDragStart, { passive: false });
-        canvas.addEventListener('touchmove', onDragMove, { passive: false });
-        canvas.addEventListener('touchend', onDragEnd);
-        canvas.addEventListener('mousedown', onDragStart);
-        window.addEventListener('mousemove', (e) => {
-            if (e.buttons === 1) { // botão esquerdo pressionado
-                onDragMove(e);
+        // Ativar/desativar modos
+        function setMode(isCasual) {
+            casualMode = isCasual;
+            // Mostra/esconde D-pad
+            dpadWrapper.style.display = casualMode ? 'none' : 'flex';
+            // Remove eventos de teclado se não for clássico
+            if (casualMode) {
+                // desliga teclado
+                leftPressed = rightPressed = upPressed = downPressed = false;
+            } else {
+                // garante que o canvas não capture arrasto
             }
+        }
+        
+        modeToggle.addEventListener('change', (e) => {
+            setMode(e.target.checked);
+            resetGame(false); // reinicia sem gerar novo labirinto, apenas reposiciona
         });
-        window.addEventListener('mouseup', onDragEnd);
         
         // ---------- EFEITOS DE VITÓRIA (queda e fogos) ----------
         function startFallingEffect(callback) {
@@ -573,6 +771,7 @@
             if(newMaze) generateNewMaze();
             randomSpawn();
             velocityX = 0; velocityY = 0;
+            leftPressed = rightPressed = upPressed = downPressed = false;
         }
         
         function updateTimerDisplay() {
@@ -585,7 +784,32 @@
             requestAnimationFrame(updateTimerDisplay);
         }
         
-        // Desenho (igual à versão anterior)
+        // ---------- LOOP PRINCIPAL ----------
+        let lastFrame = 0;
+        function gameLoop(now) {
+            if(!lastFrame) lastFrame = now;
+            let delta = Math.min(0.033, (now-lastFrame)/1000);
+            if(delta>0.01) {
+                if (!casualMode) {
+                    updatePhysicsClassic(delta);
+                } else {
+                    // No modo casual, a física é substituída pelo arrasto; só teleporte e verificação de vitória
+                    // Já chamamos checkWin dentro do arrasto, mas garantimos:
+                    handleTeleport();
+                    checkWin();
+                }
+                draw();
+                // Atualiza tempo manualmente (já chamado no loop)
+                if (gameStarted && !victory && startTime) {
+                    currentTime = (performance.now()/1000) - startTime;
+                    timerDisplay.innerText = currentTime.toFixed(1) + " s";
+                }
+            }
+            lastFrame = now;
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // Desenho (mesmo das versões anteriores)
         function draw() {
             ctx.clearRect(0,0,SIZE,SIZE);
             ctx.fillStyle = "#1e2a32";
@@ -639,37 +863,73 @@
             ctx.fill();
         }
         
-        let lastFrame = 0;
-        function updatePhysics(delta) {
-            if(victory) return;
-            // Não há aceleração, pois o movimento é por arrasto.
-            // Apenas aplica teletransporte e colisão (já tratadas no arrasto, mas repetimos para segurança)
-            handleTeleport();
-            checkWin();
-        }
-        
-        function gameLoop(now) {
-            if(!lastFrame) lastFrame = now;
-            let delta = Math.min(0.033, (now-lastFrame)/1000);
-            if(delta>0.01) {
-                updatePhysics(delta);
-                draw();
-            }
-            lastFrame = now;
-            requestAnimationFrame(gameLoop);
-        }
-        
-        // Inicialização
+        // ---------- INICIALIZAÇÃO ----------
         loadBestTime();
         generateNewMaze();
         randomSpawn();
         updateTimerDisplay();
         
+        // Configura modo padrão (clássico)
+        setMode(false);
+        modeToggle.checked = false;
+        
+        // Eventos de teclado (apenas no modo clássico)
+        window.addEventListener('keydown', (e) => {
+            if (casualMode) return;
+            const k = e.key;
+            if(k === 'ArrowLeft' || k === 'a') { leftPressed=true; e.preventDefault(); }
+            else if(k === 'ArrowRight' || k === 'd') { rightPressed=true; e.preventDefault(); }
+            else if(k === 'ArrowUp' || k === 'w') { upPressed=true; e.preventDefault(); }
+            else if(k === 'ArrowDown' || k === 's') { downPressed=true; e.preventDefault(); }
+            else if(k === 'r') { resetGame(true); e.preventDefault(); }
+        });
+        window.addEventListener('keyup', (e) => {
+            if (casualMode) return;
+            const k = e.key;
+            if(k === 'ArrowLeft' || k === 'a') leftPressed=false;
+            else if(k === 'ArrowRight' || k === 'd') rightPressed=false;
+            else if(k === 'ArrowUp' || k === 'w') upPressed=false;
+            else if(k === 'ArrowDown' || k === 's') downPressed=false;
+        });
+        
+        // Botões D-pad (apenas no modo clássico)
+        const attach = (btn, dir) => {
+            if(!btn) return;
+            const set = (active) => {
+                if (casualMode) return;
+                if(dir==='up') upPressed=active;
+                if(dir==='down') downPressed=active;
+                if(dir==='left') leftPressed=active;
+                if(dir==='right') rightPressed=active;
+            };
+            btn.addEventListener('mousedown', (e)=>{e.preventDefault(); set(true);});
+            btn.addEventListener('mouseup', ()=>set(false));
+            btn.addEventListener('mouseleave', ()=>set(false));
+            btn.addEventListener('touchstart', (e)=>{e.preventDefault(); set(true);});
+            btn.addEventListener('touchend', ()=>set(false));
+            btn.addEventListener('touchcancel', ()=>set(false));
+        };
+        attach(document.getElementById('btnUp'), 'up');
+        attach(document.getElementById('btnDown'), 'down');
+        attach(document.getElementById('btnLeft'), 'left');
+        attach(document.getElementById('btnRight'), 'right');
+        
+        // Reset button
         const resetBtn = document.getElementById('btnReset');
         if(resetBtn) {
             resetBtn.addEventListener('click', ()=>resetGame(true));
             resetBtn.addEventListener('touchstart', (e)=>{e.preventDefault(); resetGame(true);});
         }
+        
+        // Eventos de arrasto (modo casual)
+        canvas.addEventListener('touchstart', onDragStart, { passive: false });
+        canvas.addEventListener('touchmove', onDragMove, { passive: false });
+        canvas.addEventListener('touchend', onDragEnd);
+        canvas.addEventListener('mousedown', onDragStart);
+        window.addEventListener('mousemove', (e) => {
+            if (casualMode && e.buttons === 1) onDragMove(e);
+        });
+        window.addEventListener('mouseup', onDragEnd);
         
         document.body.addEventListener('touchmove', e=>{ if(e.target===canvas) e.preventDefault(); }, {passive:false});
         
