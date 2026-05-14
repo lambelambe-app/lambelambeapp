@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Dédalo | Arraste a Esfera</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            background: #666666;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            font-family: 'Segoe UI', 'Poppins', system-ui, sans-serif;
+            padding: 0 16px;
+            overflow-y: auto;
+        }
+        .game-container {
+            background: rgba(20, 28, 38, 0.85);
+            backdrop-filter: blur(12px);
+            border-radius: 48px;
+            padding: 15px 20px 19px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 215, 150, 0.4);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: fit-content;
+            max-width: 100%;
+            overflow-y: visible;
+            max-height: none;
+            margin-top: 0;
+        }
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 24px;
+            gap: 16px;
+        }
+        .timer-panel, .best-panel, .reset-btn {
+            background: rgba(0, 0, 0, 0.55);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 200, 100, 0.6);
+            border-radius: 48px;
+            padding: 4px 18px;
+            text-align: center;
+            min-width: 95px;
+        }
+        .timer-label, .best-label {
+            font-size: 0.6rem;
+            letter-spacing: 1px;
+            color: #c0b090;
+        }
+        .timer-value {
+            font-family: 'Courier New', 'Fira Code', monospace;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #FFE5B4;
+            text-shadow: 0 0 4px rgba(0,0,0,0.5);
+            line-height: 1.2;
+        }
+        .best-value {
+            font-family: 'Courier New', 'Fira Code', monospace;
+            font-size: 1rem;
+            font-weight: bold;
+            color: #FFD966;
+            text-shadow: 0 0 4px rgba(0,0,0,0.5);
+            line-height: 1.2;
+        }
+        .reset-btn {
+            cursor: pointer;
+            transition: 0.05s linear;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            padding: 4px 14px;
+        }
+        .reset-btn:active {
+            transform: translateY(2px);
+            background: rgba(180, 75, 55, 0.95);
+        }
+        .reset-icon {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #FFE5B4;
+        }
+        .reset-label {
+            font-size: 0.6rem;
+            letter-spacing: 1px;
+            color: #ffd7a0;
+        }
+        canvas {
+            display: block;
+            margin: 0 auto 20px auto;
+            border-radius: 32px;
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.6), inset 0 0 0 2px rgba(255, 215, 150, 0.25);
+            background-color: #1e2a32;
+            cursor: grab;
+            width: 100%;
+            height: auto;
+            touch-action: none; /* previne rolagem durante arrasto */
+        }
+        canvas:active {
+            cursor: grabbing;
+        }
+        footer {
+            text-align: center;
+            font-size: 0.65rem;
+            color: #ccb;
+            margin-top: 6px;
+            opacity: 0.8;
+        }
+        @media (max-width: 560px) {
+            .timer-panel, .best-panel, .reset-btn { padding: 2px 10px; min-width: 75px; }
+            .timer-value { font-size: 1rem; }
+            .best-value { font-size: 0.85rem; }
+            footer { margin-top: 4px; font-size: 0.6rem; }
+        }
+    </style>
+</head>
+<body>
+<div>
+    <div class="game-container">
+        <div class="top-bar">
+            <div class="timer-panel">
+                <div class="timer-label">⏱️ TEMPO</div>
+                <div class="timer-value" id="timerDisplay">0.0 s</div>
+            </div>
+            <div class="best-panel">
+                <div class="best-label">🏆 MELHOR</div>
+                <div class="best-value" id="bestDisplay">---</div>
+            </div>
+            <div class="reset-btn" id="btnReset">
+                <div class="reset-icon">⟳</div>
+                <div class="reset-label">NOVO</div>
+            </div>
+        </div>
+
+        <canvas id="gameCanvas" width="600" height="600"></canvas>
+
+        <footer>✨ arraste a esfera diretamente para movê-la | teletransporte nas bordas ✨</footer>
+    </div>
+</div>
+
+<script>
+    (function(){
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const SIZE = 600;
+        canvas.width = SIZE;
+        canvas.height = SIZE;
+        
+        const BALL_RADIUS = 13;
+        const TARGET_RADIUS = 20;
+        
+        let ballX = SIZE/2, ballY = SIZE/2;
+        let velocityX = 0, velocityY = 0;
+        let victory = false;
+        let victoryTimer = null;
+        let isFalling = false;
+        
+        let gameStarted = false;
+        let startTime = null;
+        let currentTime = 0;
+        
+        let walls = [];
+        const targetCenter = { x: SIZE/2, y: SIZE/2 };
+        
+        // Melhor tempo persistente
+        let bestTime = null;
+        const bestDisplay = document.getElementById('bestDisplay');
+        const timerDisplay = document.getElementById('timerDisplay');
+        
+        function formatTime(seconds) {
+            if (seconds === null) return "---";
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
+        }
+        
+        function loadBestTime() {
+            const stored = localStorage.getItem('dedaloBestTime');
+            if (stored !== null) {
+                bestTime = parseFloat(stored);
+                bestDisplay.innerText = formatTime(bestTime);
+            } else {
+                bestTime = null;
+                bestDisplay.innerText = "---";
+            }
+        }
+        function saveBestTime(timeSec) {
+            if (bestTime === null || timeSec < bestTime) {
+                bestTime = timeSec;
+                localStorage.setItem('dedaloBestTime', bestTime);
+                bestDisplay.innerText = formatTime(bestTime);
+            }
+        }
+        
+        // ---------- GERADOR DFS COM ABERTURAS ALEATÓRIAS ----------
+        const CELL_SIZE = 46;
+        const WALL_THICK = 10;
+        const GRID_W = Math.floor(SIZE / CELL_SIZE);
+        const GRID_H = GRID_W;
+        const OFFSET_X = (SIZE - GRID_W * CELL_SIZE) / 2;
+        const OFFSET_Y = (SIZE - GRID_H * CELL_SIZE) / 2;
+        
+        let cells = [];
+        let wallsGrid = [];
+        
+        function initDFS() {
+            cells = Array(GRID_H).fill().map(() => Array(GRID_W).fill(false));
+            wallsGrid = Array(GRID_H).fill().map(() => Array(GRID_W).fill().map(() => ({ right: true, bottom: true })));
+            const startX = Math.floor(GRID_W/2);
+            const startY = Math.floor(GRID_H/2);
+            dfsCarve(startX, startY);
+        }
+        
+        function dfsCarve(x, y) {
+            cells[y][x] = true;
+            const dirs = [[0,-1],[1,0],[0,1],[-1,0]];
+            for (let i = dirs.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [dirs[i], dirs[j]] = [dirs[j], dirs[i]];
+            }
+            for (let [dx, dy] of dirs) {
+                const nx = x + dx;
+                const ny = y + dy;
+                if (nx >= 0 && nx < GRID_W && ny >= 0 && ny < GRID_H && !cells[ny][nx]) {
+                    if (dx === 1) wallsGrid[y][x].right = false;
+                    else if (dx === -1) wallsGrid[y][nx].right = false;
+                    else if (dy === 1) wallsGrid[y][x].bottom = false;
+                    else if (dy === -1) wallsGrid[ny][x].bottom = false;
+                    dfsCarve(nx, ny);
+                }
+            }
+        }
+        
+        let openings = { top: 0, bottom: 0, left: 0, right: 0 };
+        
+        function generateRandomOpenings() {
+            openings = {
+                top: Math.floor(Math.random() * GRID_W),
+                bottom: Math.floor(Math.random() * GRID_W),
+                left: Math.floor(Math.random() * GRID_H),
+                right: Math.floor(Math.random() * GRID_H)
+            };
+        }
+        
+        function buildWallsFromDFS() {
+            walls = [];
+            const addWall = (x, y, w, h, type) => {
+                if (w <= 0 || h <= 0) return;
+                walls.push({ x, y, w, h, type });
+            };
+            for (let row = 0; row < GRID_H; row++) {
+                for (let col = 0; col < GRID_W; col++) {
+                    const cx = OFFSET_X + col * CELL_SIZE;
+                    const cy = OFFSET_Y + row * CELL_SIZE;
+                    if (wallsGrid[row][col].right) {
+                        let type = Math.random() < 0.3 ? 'light' : 'dark';
+                        addWall(cx + CELL_SIZE, cy, WALL_THICK, CELL_SIZE, type);
+                    }
+                    if (wallsGrid[row][col].bottom) {
+                        let type = Math.random() < 0.3 ? 'light' : 'dark';
+                        addWall(cx, cy + CELL_SIZE, CELL_SIZE, WALL_THICK, type);
+                    }
+                }
+            }
+            // Bordas com aberturas
+            for (let col = 0; col < GRID_W; col++) {
+                if (col !== openings.top) addWall(OFFSET_X + col*CELL_SIZE, OFFSET_Y, CELL_SIZE, WALL_THICK, 'dark');
+                if (col !== openings.bottom) addWall(OFFSET_X + col*CELL_SIZE, OFFSET_Y + GRID_H*CELL_SIZE - WALL_THICK, CELL_SIZE, WALL_THICK, 'dark');
+            }
+            for (let row = 0; row < GRID_H; row++) {
+                if (row !== openings.left) addWall(OFFSET_X, OFFSET_Y + row*CELL_SIZE, WALL_THICK, CELL_SIZE, 'dark');
+                if (row !== openings.right) addWall(OFFSET_X + GRID_W*CELL_SIZE - WALL_THICK, OFFSET_Y + row*CELL_SIZE, WALL_THICK, CELL_SIZE, 'dark');
+            }
+            walls = walls.filter(w => Math.hypot(w.x + w.w/2 - targetCenter.x, w.y + w.h/2 - targetCenter.y) > TARGET_RADIUS + 12);
+        }
+        
+        function generateNewMaze() {
+            initDFS();
+            generateRandomOpenings();
+            buildWallsFromDFS();
+        }
+        
+        function getOpeningPosition(side) {
+            switch(side) {
+                case 'top': return { x: OFFSET_X + openings.top * CELL_SIZE + CELL_SIZE/2, y: OFFSET_Y + 5 };
+                case 'bottom': return { x: OFFSET_X + openings.bottom * CELL_SIZE + CELL_SIZE/2, y: OFFSET_Y + GRID_H*CELL_SIZE - 5 };
+                case 'left': return { x: OFFSET_X + 5, y: OFFSET_Y + openings.left * CELL_SIZE + CELL_SIZE/2 };
+                case 'right': return { x: OFFSET_X + GRID_W*CELL_SIZE - 5, y: OFFSET_Y + openings.right * CELL_SIZE + CELL_SIZE/2 };
+            }
+        }
+        
+        function randomSpawn() {
+            const sides = ['top', 'bottom', 'left', 'right'];
+            const chosen = sides[Math.floor(Math.random() * 4)];
+            const pos = getOpeningPosition(chosen);
+            ballX = pos.x;
+            ballY = pos.y;
+            // evita spawn colado
+            for (let attempt = 0; attempt < 5; attempt++) {
+                let collides = false;
+                for (let w of walls) {
+                    if (ballX + BALL_RADIUS > w.x && ballX - BALL_RADIUS < w.x + w.w &&
+                        ballY + BALL_RADIUS > w.y && ballY - BALL_RADIUS < w.y + w.h) {
+                        collides = true;
+                        break;
+                    }
+                }
+                if (!collides) break;
+                ballX += (Math.random() - 0.5) * 15;
+                ballY += (Math.random() - 0.5) * 15;
+            }
+        }
+        
+        // ---------- TELEPORTE (mesma lógica) ----------
+        function handleTeleport() {
+            if (victory) return;
+            const tolerance = BALL_RADIUS * 1.5;
+            if (ballX + BALL_RADIUS < 0) {
+                const openingY = OFFSET_Y + openings.left * CELL_SIZE + CELL_SIZE/2;
+                if (Math.abs(ballY - openingY) < CELL_SIZE/2 + tolerance) {
+                    const target = getOpeningPosition('right');
+                    ballX = target.x;
+                    ballY = target.y;
+                } else {
+                    ballX = BALL_RADIUS;
+                }
+                velocityX = 0; velocityY = 0;
+            }
+            if (ballX - BALL_RADIUS > SIZE) {
+                const openingY = OFFSET_Y + openings.right * CELL_SIZE + CELL_SIZE/2;
+                if (Math.abs(ballY - openingY) < CELL_SIZE/2 + tolerance) {
+                    const target = getOpeningPosition('left');
+                    ballX = target.x;
+                    ballY = target.y;
+                } else {
+                    ballX = SIZE - BALL_RADIUS;
+                }
+                velocityX = 0; velocityY = 0;
+            }
+            if (ballY + BALL_RADIUS < 0) {
+                const openingX = OFFSET_X + openings.top * CELL_SIZE + CELL_SIZE/2;
+                if (Math.abs(ballX - openingX) < CELL_SIZE/2 + tolerance) {
+                    const target = getOpeningPosition('bottom');
+                    ballX = target.x;
+                    ballY = target.y;
+                } else {
+                    ballY = BALL_RADIUS;
+                }
+                velocityX = 0; velocityY = 0;
+            }
+            if (ballY - BALL_RADIUS > SIZE) {
+                const openingX = OFFSET_X + openings.bottom * CELL_SIZE + CELL_SIZE/2;
+                if (Math.abs(ballX - openingX) < CELL_SIZE/2 + tolerance) {
+                    const target = getOpeningPosition('top');
+                    ballX = target.x;
+                    ballY = target.y;
+                } else {
+                    ballY = SIZE - BALL_RADIUS;
+                }
+                velocityX = 0; velocityY = 0;
+            }
+        }
+        
+        // Colisão com paredes (para verificar se posição é válida)
+        function isCollidingWithWall(x, y) {
+            for (let w of walls) {
+                let closestX = Math.max(w.x, Math.min(x, w.x + w.w));
+                let closestY = Math.max(w.y, Math.min(y, w.y + w.h));
+                let dx = x - closestX, dy = y - closestY;
+                if (dx*dx + dy*dy < BALL_RADIUS * BALL_RADIUS) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        
+        // Move a bola para uma posição válida (respeitando paredes)
+        function tryMoveBallTo(desiredX, desiredY) {
+            if (victory) return;
+            // Se a posição desejada for válida (não colide), move
+            if (!isCollidingWithWall(desiredX, desiredY)) {
+                ballX = desiredX;
+                ballY = desiredY;
+                velocityX = 0;
+                velocityY = 0;
+                // Dispara início do cronômetro no primeiro movimento
+                if (!gameStarted && !victory) {
+                    gameStarted = true;
+                    startTime = performance.now() / 1000;
+                    currentTime = 0;
+                }
+            } else {
+                // Se colidir, tenta encontrar a posição livre mais próxima (simples: recuo radial)
+                for (let ang = 0; ang < 360; ang += 10) {
+                    let rad = ang * Math.PI/180;
+                    let testX = desiredX + Math.cos(rad) * 5;
+                    let testY = desiredY + Math.sin(rad) * 5;
+                    if (!isCollidingWithWall(testX, testY)) {
+                        ballX = testX;
+                        ballY = testY;
+                        break;
+                    }
+                }
+            }
+            // Aplica teletransporte se saiu da tela (opcional)
+            handleTeleport();
+            // Garante que a bola não fique colada
+            ballX = Math.min(Math.max(ballX, BALL_RADIUS), SIZE - BALL_RADIUS);
+            ballY = Math.min(Math.max(ballY, BALL_RADIUS), SIZE - BALL_RADIUS);
+        }
+        
+        // ---------- EVENTOS DE ARRASTO (TOUCH E MOUSE) ----------
+        function getCanvasCoords(e) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            let clientX, clientY;
+            if (e.touches) {
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            } else {
+                clientX = e.clientX;
+                clientY = e.clientY;
+            }
+            let canvasX = (clientX - rect.left) * scaleX;
+            let canvasY = (clientY - rect.top) * scaleY;
+            canvasX = Math.min(Math.max(canvasX, BALL_RADIUS), SIZE - BALL_RADIUS);
+            canvasY = Math.min(Math.max(canvasY, BALL_RADIUS), SIZE - BALL_RADIUS);
+            return { x: canvasX, y: canvasY };
+        }
+        
+        function onDragStart(e) {
+            e.preventDefault();
+            const { x, y } = getCanvasCoords(e);
+            tryMoveBallTo(x, y);
+        }
+        
+        function onDragMove(e) {
+            e.preventDefault();
+            const { x, y } = getCanvasCoords(e);
+            tryMoveBallTo(x, y);
+        }
+        
+        function onDragEnd(e) {
+            e.preventDefault();
+            // não faz nada especial
+        }
+        
+        // Registra eventos
+        canvas.addEventListener('touchstart', onDragStart, { passive: false });
+        canvas.addEventListener('touchmove', onDragMove, { passive: false });
+        canvas.addEventListener('touchend', onDragEnd);
+        canvas.addEventListener('mousedown', onDragStart);
+        window.addEventListener('mousemove', (e) => {
+            if (e.buttons === 1) { // botão esquerdo pressionado
+                onDragMove(e);
+            }
+        });
+        window.addEventListener('mouseup', onDragEnd);
+        
+        // ---------- EFEITOS DE VITÓRIA (queda e fogos) ----------
+        function startFallingEffect(callback) {
+            if (isFalling) return;
+            isFalling = true;
+            let step = 0;
+            const origR = BALL_RADIUS;
+            function anim() {
+                if (step < 10) {
+                    const scale = 1 - (step/10)*0.8;
+                    const r = origR * scale;
+                    ctx.save();
+                    ctx.shadowBlur = 0;
+                    ctx.beginPath();
+                    ctx.arc(ballX, ballY, r, 0, Math.PI*2);
+                    ctx.fillStyle = "#7a8a9a";
+                    ctx.fill();
+                    ctx.restore();
+                    step++;
+                    requestAnimationFrame(anim);
+                } else {
+                    isFalling = false;
+                    if (callback) callback();
+                }
+            }
+            anim();
+        }
+        
+        function startFireworks() {
+            const particles = [];
+            const cx = targetCenter.x, cy = targetCenter.y;
+            for (let i=0;i<6;i++) {
+                const a = Math.random() * Math.PI*2;
+                const r = 40 + Math.random()*60;
+                const x = cx + Math.cos(a)*r;
+                const y = cy + Math.sin(a)*r - 40;
+                particles.push({ x, y, vx: (Math.random()-0.5)*2, vy: -7, life:1, exploded:false });
+            }
+            function update() {
+                for(let i=particles.length-1;i>=0;i--) {
+                    const p = particles[i];
+                    if(!p.exploded) {
+                        p.x += p.vx; p.y += p.vy; p.vy += 0.2;
+                        if(p.vy >=0 || p.y<50) {
+                            p.exploded = true;
+                            for(let s=0;s<22;s++) {
+                                const a2 = Math.random()*Math.PI*2;
+                                const sp = Math.random()*5+2;
+                                particles.push({
+                                    x: p.x, y: p.y, vx: Math.cos(a2)*sp, vy: Math.sin(a2)*sp,
+                                    life:1, exploded:true, color: `hsl(${Math.random()*360},100%,60%)`
+                                });
+                            }
+                            particles.splice(i,1);
+                        }
+                    } else {
+                        p.x += p.vx; p.y += p.vy; p.vy += 0.2;
+                        p.life -= 0.02;
+                        if(p.life<=0 || p.y>SIZE+50) particles.splice(i,1);
+                    }
+                }
+                for(let p of particles) {
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.exploded?3*p.life:4, 0, Math.PI*2);
+                    ctx.fillStyle = p.color || "#ffaa66";
+                    ctx.fill();
+                }
+                if(particles.length>0) requestAnimationFrame(update);
+            }
+            update();
+        }
+        
+        function checkWin() {
+            if (victory) return;
+            const dist = Math.hypot(ballX - targetCenter.x, ballY - targetCenter.y);
+            if (dist < BALL_RADIUS + 5) {
+                victory = true;
+                const elapsed = currentTime;
+                saveBestTime(elapsed);
+                startFallingEffect(() => startFireworks());
+                if (victoryTimer) clearTimeout(victoryTimer);
+                victoryTimer = setTimeout(() => {
+                    resetGame(true);
+                    victory = false;
+                    gameStarted = false;
+                    startTime = null;
+                    currentTime = 0;
+                    timerDisplay.innerText = "0.0 s";
+                }, 3500);
+            }
+        }
+        
+        function resetGame(newMaze=true) {
+            if(victoryTimer) clearTimeout(victoryTimer);
+            victory = false;
+            gameStarted = false;
+            startTime = null;
+            currentTime = 0;
+            timerDisplay.innerText = "0.0 s";
+            if(newMaze) generateNewMaze();
+            randomSpawn();
+            velocityX = 0; velocityY = 0;
+        }
+        
+        function updateTimerDisplay() {
+            if (!victory && gameStarted && startTime) {
+                currentTime = (performance.now() / 1000) - startTime;
+                timerDisplay.innerText = currentTime.toFixed(1) + " s";
+            } else if (!gameStarted) {
+                timerDisplay.innerText = "0.0 s";
+            }
+            requestAnimationFrame(updateTimerDisplay);
+        }
+        
+        // Desenho (igual à versão anterior)
+        function draw() {
+            ctx.clearRect(0,0,SIZE,SIZE);
+            ctx.fillStyle = "#1e2a32";
+            ctx.fillRect(0,0,SIZE,SIZE);
+            for(let w of walls) {
+                if(w.type === 'dark') {
+                    ctx.fillStyle = "#2d5a3b";
+                    ctx.fillRect(w.x, w.y, w.w, w.h);
+                    ctx.fillStyle = "#1f3e2a";
+                    ctx.fillRect(w.x+2, w.y+2, w.w-4, w.h-4);
+                } else {
+                    ctx.fillStyle = "#8bc34a";
+                    ctx.fillRect(w.x, w.y, w.w, w.h);
+                    ctx.fillStyle = "#6a9e3a";
+                    ctx.fillRect(w.x+2, w.y+2, w.w-4, w.h-4);
+                }
+                ctx.strokeStyle = "#1e2a1a";
+                ctx.strokeRect(w.x, w.y, w.w, w.h);
+            }
+            ctx.shadowBlur = 0;
+            ctx.beginPath();
+            ctx.arc(targetCenter.x, targetCenter.y, TARGET_RADIUS, 0, Math.PI*2);
+            ctx.fillStyle = "#8B0000";
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(targetCenter.x, targetCenter.y, TARGET_RADIUS-5, 0, Math.PI*2);
+            ctx.fillStyle = "#FF4500";
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(targetCenter.x, targetCenter.y, TARGET_RADIUS-10, 0, Math.PI*2);
+            ctx.fillStyle = "#FFD700";
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(targetCenter.x, targetCenter.y, 5, 0, Math.PI*2);
+            ctx.fillStyle = "#FFF8DC";
+            ctx.fill();
+            ctx.shadowColor = "rgba(0,0,0,0.4)";
+            ctx.shadowBlur = 8;
+            const grad = ctx.createRadialGradient(ballX-4, ballY-4, 4, ballX, ballY, BALL_RADIUS);
+            grad.addColorStop(0, "#f4f8ff");
+            grad.addColorStop(0.5, "#b5c4d4");
+            grad.addColorStop(1, "#7a8a9a");
+            ctx.beginPath();
+            ctx.arc(ballX, ballY, BALL_RADIUS, 0, Math.PI*2);
+            ctx.fillStyle = grad;
+            ctx.fill();
+            ctx.shadowBlur = 0;
+            ctx.beginPath();
+            ctx.arc(ballX-3, ballY-4, 4, 0, Math.PI*2);
+            ctx.fillStyle = "rgba(255,255,255,0.7)";
+            ctx.fill();
+        }
+        
+        let lastFrame = 0;
+        function updatePhysics(delta) {
+            if(victory) return;
+            // Não há aceleração, pois o movimento é por arrasto.
+            // Apenas aplica teletransporte e colisão (já tratadas no arrasto, mas repetimos para segurança)
+            handleTeleport();
+            checkWin();
+        }
+        
+        function gameLoop(now) {
+            if(!lastFrame) lastFrame = now;
+            let delta = Math.min(0.033, (now-lastFrame)/1000);
+            if(delta>0.01) {
+                updatePhysics(delta);
+                draw();
+            }
+            lastFrame = now;
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // Inicialização
+        loadBestTime();
+        generateNewMaze();
+        randomSpawn();
+        updateTimerDisplay();
+        
+        const resetBtn = document.getElementById('btnReset');
+        if(resetBtn) {
+            resetBtn.addEventListener('click', ()=>resetGame(true));
+            resetBtn.addEventListener('touchstart', (e)=>{e.preventDefault(); resetGame(true);});
+        }
+        
+        document.body.addEventListener('touchmove', e=>{ if(e.target===canvas) e.preventDefault(); }, {passive:false});
+        
+        requestAnimationFrame(gameLoop);
+    })();
+</script>
+</body>
+</html>
