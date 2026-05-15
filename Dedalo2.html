@@ -37,9 +37,7 @@
             overflow-y: visible;
             max-height: none;
             margin-top: 0;
-            position: relative;
         }
-        /* Barra superior */
         .top-bar {
             display: flex;
             justify-content: space-between;
@@ -79,7 +77,6 @@
             text-shadow: 0 0 4px rgba(0,0,0,0.5);
             line-height: 1.2;
         }
-        /* Toggle switch moderno */
         .mode-switch {
             background: rgba(0, 0, 0, 0.55);
             backdrop-filter: blur(8px);
@@ -135,7 +132,6 @@
         input:checked + .slider:before {
             transform: translateX(22px);
         }
-        /* Botão reset */
         .reset-btn {
             background: rgba(160, 65, 45, 0.9);
             backdrop-filter: blur(8px);
@@ -173,7 +169,6 @@
             height: auto;
             touch-action: none;
         }
-        /* D-pad (modo clássico) */
         .dpad-wrapper {
             display: flex;
             justify-content: center;
@@ -299,12 +294,10 @@
         let walls = [];
         const targetCenter = { x: SIZE/2, y: SIZE/2 };
         
-        // Melhor tempo persistente
         let bestTime = null;
         const bestDisplay = document.getElementById('bestDisplay');
         const timerDisplay = document.getElementById('timerDisplay');
         
-        // Modo de controle: false = clássico (D-pad+física), true = casual (arrasto)
         let casualMode = false;
         const modeToggle = document.getElementById('modeToggle');
         const dpadWrapper = document.getElementById('dpadWrapper');
@@ -334,7 +327,7 @@
             }
         }
         
-        // ---------- GERADOR DFS (mesmo da Versão 1) ----------
+        // ---------- GERADOR DFS (labirinto) ----------
         const CELL_SIZE = 46;
         const WALL_THICK = 10;
         const GRID_W = Math.floor(SIZE / CELL_SIZE);
@@ -451,7 +444,7 @@
             }
         }
         
-        // ---------- TELEPORTE (comum a ambos os modos) ----------
+        // ---------- TELEPORTE (comum) ----------
         function handleTeleport() {
             if (victory) return;
             const tolerance = BALL_RADIUS * 1.5;
@@ -501,7 +494,7 @@
             }
         }
         
-        // ---------- MODO CLÁSSICO (física + colisão) ----------
+        // ---------- MODO CLÁSSICO (física) ----------
         let leftPressed = false, rightPressed = false, upPressed = false, downPressed = false;
         const ACC = 400;
         const MAX_SPEED = 500;
@@ -571,12 +564,14 @@
             checkWin();
         }
         
-        // ---------- MODO CASUAL (arrasto direto) ----------
-        function isCollidingWithWall(x, y) {
+        // ---------- MODO CASUAL (arrasto COM COLISÃO PERFEITA) ----------
+        // Verifica se um círculo em (x,y) colide com alguma parede
+        function isColliding(x, y) {
             for (let w of walls) {
                 let closestX = Math.max(w.x, Math.min(x, w.x + w.w));
                 let closestY = Math.max(w.y, Math.min(y, w.y + w.h));
-                let dx = x - closestX, dy = y - closestY;
+                let dx = x - closestX;
+                let dy = y - closestY;
                 if (dx*dx + dy*dy < BALL_RADIUS * BALL_RADIUS) {
                     return true;
                 }
@@ -584,35 +579,38 @@
             return false;
         }
         
-        function tryMoveBallTo(desiredX, desiredY) {
+        // Move a bola gradualmente de (oldX, oldY) para (newX, newY) respeitando colisões
+        function moveWithCollision(oldX, oldY, newX, newY) {
             if (victory) return;
-            if (!isCollidingWithWall(desiredX, desiredY)) {
-                ballX = desiredX;
-                ballY = desiredY;
-                if (!gameStarted && !victory) {
-                    gameStarted = true;
-                    startTime = performance.now() / 1000;
-                }
-            } else {
-                // tenta recuo radial simples
-                for (let ang = 0; ang < 360; ang += 10) {
-                    let rad = ang * Math.PI/180;
-                    let testX = desiredX + Math.cos(rad) * 5;
-                    let testY = desiredY + Math.sin(rad) * 5;
-                    if (!isCollidingWithWall(testX, testY)) {
-                        ballX = testX;
-                        ballY = testY;
-                        break;
-                    }
+            // Se o destino já é válido, mova diretamente
+            if (!isColliding(newX, newY)) {
+                ballX = newX;
+                ballY = newY;
+                return;
+            }
+            // Caso contrário, tenta mover em pequenos passos ao longo da linha
+            let steps = 10;
+            let stepX = (newX - oldX) / steps;
+            let stepY = (newY - oldY) / steps;
+            let testX = oldX, testY = oldY;
+            for (let i = 1; i <= steps; i++) {
+                let nextX = oldX + stepX * i;
+                let nextY = oldY + stepY * i;
+                if (!isColliding(nextX, nextY)) {
+                    testX = nextX;
+                    testY = nextY;
+                } else {
+                    break;
                 }
             }
-            handleTeleport();
-            ballX = Math.min(Math.max(ballX, BALL_RADIUS), SIZE - BALL_RADIUS);
-            ballY = Math.min(Math.max(ballY, BALL_RADIUS), SIZE - BALL_RADIUS);
-            checkWin();
+            ballX = testX;
+            ballY = testY;
         }
         
-        // Eventos de arrasto (modo casual)
+        // Eventos de arrasto com verificação de colisão
+        let dragActive = false;
+        let lastDragX = ballX, lastDragY = ballY;
+        
         function getCanvasCoords(e) {
             const rect = canvas.getBoundingClientRect();
             const scaleX = canvas.width / rect.width;
@@ -633,42 +631,35 @@
         }
         
         function onDragStart(e) {
-            if (!casualMode) return;
+            if (!casualMode || victory) return;
             e.preventDefault();
+            dragActive = true;
             const { x, y } = getCanvasCoords(e);
-            tryMoveBallTo(x, y);
+            lastDragX = ballX;
+            lastDragY = ballY;
+            moveWithCollision(ballX, ballY, x, y);
+            // Inicia o cronômetro no primeiro toque
+            if (!gameStarted && !victory) {
+                gameStarted = true;
+                startTime = performance.now() / 1000;
+            }
         }
         
         function onDragMove(e) {
-            if (!casualMode) return;
+            if (!casualMode || victory || !dragActive) return;
             e.preventDefault();
             const { x, y } = getCanvasCoords(e);
-            tryMoveBallTo(x, y);
+            moveWithCollision(ballX, ballY, x, y);
+            // Atualiza último ponto conhecido
+            lastDragX = ballX;
+            lastDragY = ballY;
         }
         
         function onDragEnd(e) {
             if (!casualMode) return;
             e.preventDefault();
+            dragActive = false;
         }
-        
-        // Ativar/desativar modos
-        function setMode(isCasual) {
-            casualMode = isCasual;
-            // Mostra/esconde D-pad
-            dpadWrapper.style.display = casualMode ? 'none' : 'flex';
-            // Remove eventos de teclado se não for clássico
-            if (casualMode) {
-                // desliga teclado
-                leftPressed = rightPressed = upPressed = downPressed = false;
-            } else {
-                // garante que o canvas não capture arrasto
-            }
-        }
-        
-        modeToggle.addEventListener('change', (e) => {
-            setMode(e.target.checked);
-            resetGame(false); // reinicia sem gerar novo labirinto, apenas reposiciona
-        });
         
         // ---------- EFEITOS DE VITÓRIA (queda e fogos) ----------
         function startFallingEffect(callback) {
@@ -772,6 +763,10 @@
             randomSpawn();
             velocityX = 0; velocityY = 0;
             leftPressed = rightPressed = upPressed = downPressed = false;
+            // Reseta variáveis de arrasto
+            dragActive = false;
+            lastDragX = ballX;
+            lastDragY = ballY;
         }
         
         function updateTimerDisplay() {
@@ -793,13 +788,12 @@
                 if (!casualMode) {
                     updatePhysicsClassic(delta);
                 } else {
-                    // No modo casual, a física é substituída pelo arrasto; só teleporte e verificação de vitória
-                    // Já chamamos checkWin dentro do arrasto, mas garantimos:
+                    // No modo casual, apenas teleporte e vitória, pois o movimento já foi tratado no arrasto
                     handleTeleport();
                     checkWin();
                 }
                 draw();
-                // Atualiza tempo manualmente (já chamado no loop)
+                // Atualiza exibição do tempo
                 if (gameStarted && !victory && startTime) {
                     currentTime = (performance.now()/1000) - startTime;
                     timerDisplay.innerText = currentTime.toFixed(1) + " s";
@@ -809,7 +803,6 @@
             requestAnimationFrame(gameLoop);
         }
         
-        // Desenho (mesmo das versões anteriores)
         function draw() {
             ctx.clearRect(0,0,SIZE,SIZE);
             ctx.fillStyle = "#1e2a32";
@@ -869,11 +862,23 @@
         randomSpawn();
         updateTimerDisplay();
         
-        // Configura modo padrão (clássico)
         setMode(false);
         modeToggle.checked = false;
         
-        // Eventos de teclado (apenas no modo clássico)
+        function setMode(isCasual) {
+            casualMode = isCasual;
+            dpadWrapper.style.display = casualMode ? 'none' : 'flex';
+            if (casualMode) {
+                leftPressed = rightPressed = upPressed = downPressed = false;
+            }
+        }
+        
+        modeToggle.addEventListener('change', (e) => {
+            setMode(e.target.checked);
+            resetGame(false);
+        });
+        
+        // Eventos de teclado (modo clássico)
         window.addEventListener('keydown', (e) => {
             if (casualMode) return;
             const k = e.key;
@@ -892,7 +897,6 @@
             else if(k === 'ArrowDown' || k === 's') downPressed=false;
         });
         
-        // Botões D-pad (apenas no modo clássico)
         const attach = (btn, dir) => {
             if(!btn) return;
             const set = (active) => {
@@ -914,7 +918,6 @@
         attach(document.getElementById('btnLeft'), 'left');
         attach(document.getElementById('btnRight'), 'right');
         
-        // Reset button
         const resetBtn = document.getElementById('btnReset');
         if(resetBtn) {
             resetBtn.addEventListener('click', ()=>resetGame(true));
@@ -927,7 +930,7 @@
         canvas.addEventListener('touchend', onDragEnd);
         canvas.addEventListener('mousedown', onDragStart);
         window.addEventListener('mousemove', (e) => {
-            if (casualMode && e.buttons === 1) onDragMove(e);
+            if (casualMode && dragActive) onDragMove(e);
         });
         window.addEventListener('mouseup', onDragEnd);
         
