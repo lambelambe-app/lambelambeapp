@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Dédalo | Modo Clássico / Casual</title>
+    <title>Dédalo | Modo Clássico / Casual (Colisão Perfeita)</title>
     <style>
         * {
             margin: 0;
@@ -327,7 +327,7 @@
             }
         }
         
-        // ---------- GERADOR DFS (labirinto) ----------
+        // ---------- GERADOR DFS (labirinto) - IDÊNTICO AO ANTERIOR ----------
         const CELL_SIZE = 46;
         const WALL_THICK = 10;
         const GRID_W = Math.floor(SIZE / CELL_SIZE);
@@ -444,7 +444,7 @@
             }
         }
         
-        // ---------- TELEPORTE (comum) ----------
+        // ---------- TELEPORTE ----------
         function handleTeleport() {
             if (victory) return;
             const tolerance = BALL_RADIUS * 1.5;
@@ -494,7 +494,7 @@
             }
         }
         
-        // ---------- MODO CLÁSSICO (física) ----------
+        // ---------- MODO CLÁSSICO ----------
         let leftPressed = false, rightPressed = false, upPressed = false, downPressed = false;
         const ACC = 400;
         const MAX_SPEED = 500;
@@ -564,52 +564,62 @@
             checkWin();
         }
         
-        // ---------- MODO CASUAL (arrasto COM COLISÃO PERFEITA) ----------
-        // Verifica se um círculo em (x,y) colide com alguma parede
+        // ---------- MODO CASUAL - COLISÃO CONTÍNUA PERFEITA ----------
+        // Retorna a distância do ponto mais próximo do retângulo a um círculo
+        function closestPointOnRect(cx, cy, rect) {
+            let closestX = Math.max(rect.x, Math.min(cx, rect.x + rect.w));
+            let closestY = Math.max(rect.y, Math.min(cy, rect.y + rect.h));
+            return { x: closestX, y: closestY };
+        }
+        
+        // Teste de colisão entre um círculo e um retângulo (parede)
+        function collidesWithWall(x, y, r, wall) {
+            let closest = closestPointOnRect(x, y, wall);
+            let dx = x - closest.x;
+            let dy = y - closest.y;
+            return (dx*dx + dy*dy) < r*r;
+        }
+        
+        // Verifica se a posição (x,y) colide com alguma parede
         function isColliding(x, y) {
             for (let w of walls) {
-                let closestX = Math.max(w.x, Math.min(x, w.x + w.w));
-                let closestY = Math.max(w.y, Math.min(y, w.y + w.h));
-                let dx = x - closestX;
-                let dy = y - closestY;
-                if (dx*dx + dy*dy < BALL_RADIUS * BALL_RADIUS) {
-                    return true;
-                }
+                if (collidesWithWall(x, y, BALL_RADIUS, w)) return true;
             }
             return false;
         }
         
-        // Move a bola gradualmente de (oldX, oldY) para (newX, newY) respeitando colisões
-        function moveWithCollision(oldX, oldY, newX, newY) {
-            if (victory) return;
-            // Se o destino já é válido, mova diretamente
-            if (!isColliding(newX, newY)) {
-                ballX = newX;
-                ballY = newY;
-                return;
-            }
-            // Caso contrário, tenta mover em pequenos passos ao longo da linha
-            let steps = 10;
+        // Move a bola de (oldX, oldY) para (newX, newY) com colisão contínua (sweep)
+        // Retorna a posição final válida (onde para ao colidir).
+        function moveWithSweep(oldX, oldY, newX, newY) {
+            if (victory) return { x: oldX, y: oldY };
+            let steps = Math.ceil(Math.hypot(newX - oldX, newY - oldY) / 2); // passo de no máximo 2px
+            steps = Math.max(steps, 1);
             let stepX = (newX - oldX) / steps;
             let stepY = (newY - oldY) / steps;
-            let testX = oldX, testY = oldY;
+            let curX = oldX, curY = oldY;
             for (let i = 1; i <= steps; i++) {
                 let nextX = oldX + stepX * i;
                 let nextY = oldY + stepY * i;
                 if (!isColliding(nextX, nextY)) {
-                    testX = nextX;
-                    testY = nextY;
+                    curX = nextX;
+                    curY = nextY;
                 } else {
+                    // Colidiu: tenta deslizar na parede (movimento tangencial)
+                    // Simplificamos: recua um pouco e tenta em outra direção
+                    let angle = Math.atan2(nextY - curY, nextX - curX);
+                    let tryX = curX + Math.cos(angle) * 1;
+                    let tryY = curY + Math.sin(angle) * 1;
+                    if (!isColliding(tryX, tryY)) {
+                        curX = tryX;
+                        curY = tryY;
+                    }
                     break;
                 }
             }
-            ballX = testX;
-            ballY = testY;
+            return { x: curX, y: curY };
         }
         
-        // Eventos de arrasto com verificação de colisão
         let dragActive = false;
-        let lastDragX = ballX, lastDragY = ballY;
         
         function getCanvasCoords(e) {
             const rect = canvas.getBoundingClientRect();
@@ -635,10 +645,10 @@
             e.preventDefault();
             dragActive = true;
             const { x, y } = getCanvasCoords(e);
-            lastDragX = ballX;
-            lastDragY = ballY;
-            moveWithCollision(ballX, ballY, x, y);
-            // Inicia o cronômetro no primeiro toque
+            // Aplica movimento contínuo da posição atual para o ponto clicado
+            let newPos = moveWithSweep(ballX, ballY, x, y);
+            ballX = newPos.x;
+            ballY = newPos.y;
             if (!gameStarted && !victory) {
                 gameStarted = true;
                 startTime = performance.now() / 1000;
@@ -649,10 +659,9 @@
             if (!casualMode || victory || !dragActive) return;
             e.preventDefault();
             const { x, y } = getCanvasCoords(e);
-            moveWithCollision(ballX, ballY, x, y);
-            // Atualiza último ponto conhecido
-            lastDragX = ballX;
-            lastDragY = ballY;
+            let newPos = moveWithSweep(ballX, ballY, x, y);
+            ballX = newPos.x;
+            ballY = newPos.y;
         }
         
         function onDragEnd(e) {
@@ -661,7 +670,7 @@
             dragActive = false;
         }
         
-        // ---------- EFEITOS DE VITÓRIA (queda e fogos) ----------
+        // ---------- EFEITOS DE VITÓRIA ----------
         function startFallingEffect(callback) {
             if (isFalling) return;
             isFalling = true;
@@ -763,10 +772,7 @@
             randomSpawn();
             velocityX = 0; velocityY = 0;
             leftPressed = rightPressed = upPressed = downPressed = false;
-            // Reseta variáveis de arrasto
             dragActive = false;
-            lastDragX = ballX;
-            lastDragY = ballY;
         }
         
         function updateTimerDisplay() {
@@ -788,12 +794,12 @@
                 if (!casualMode) {
                     updatePhysicsClassic(delta);
                 } else {
-                    // No modo casual, apenas teleporte e vitória, pois o movimento já foi tratado no arrasto
+                    // No modo casual, apenas teleporte e verificação de vitória (movimento já resolvido no arrasto)
                     handleTeleport();
                     checkWin();
+                    // Atualiza tempo se necessário (já tratado no timer display)
                 }
                 draw();
-                // Atualiza exibição do tempo
                 if (gameStarted && !victory && startTime) {
                     currentTime = (performance.now()/1000) - startTime;
                     timerDisplay.innerText = currentTime.toFixed(1) + " s";
@@ -862,9 +868,6 @@
         randomSpawn();
         updateTimerDisplay();
         
-        setMode(false);
-        modeToggle.checked = false;
-        
         function setMode(isCasual) {
             casualMode = isCasual;
             dpadWrapper.style.display = casualMode ? 'none' : 'flex';
@@ -878,7 +881,10 @@
             resetGame(false);
         });
         
-        // Eventos de teclado (modo clássico)
+        setMode(false);
+        modeToggle.checked = false;
+        
+        // Eventos de teclado para modo clássico
         window.addEventListener('keydown', (e) => {
             if (casualMode) return;
             const k = e.key;
@@ -924,7 +930,6 @@
             resetBtn.addEventListener('touchstart', (e)=>{e.preventDefault(); resetGame(true);});
         }
         
-        // Eventos de arrasto (modo casual)
         canvas.addEventListener('touchstart', onDragStart, { passive: false });
         canvas.addEventListener('touchmove', onDragMove, { passive: false });
         canvas.addEventListener('touchend', onDragEnd);
