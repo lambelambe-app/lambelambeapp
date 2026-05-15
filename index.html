@@ -256,14 +256,83 @@
 <script>
     // ==================== CONFIGURAÇÕES ====================
     // Para usar YouTube, preencha sua chave aqui (deixe vazio para não exibir)
-    const YOUTUBE_API_KEY = "AIzaSyAq1vULczFTYA_kM1cZ2XYjxSNjC-P7jCo"; // ex: "AIzaSyABCDEFGH..."
-    const YOUTUBE_CATEGORIES = "10";
-    const MAX_YOUTUBE_RESULTS = 6;
-    const LIMITE_EVENTOS = 5;       // máximo de eventos gratuitos
-    const ALERTA_EMAIL = "lambelambeapp@gmail.com";
+   async function fetchYouTubeLiveEvents() {
+    const section = document.getElementById("youtubeSection");
+    const container = document.getElementById("youtubeEventsContainer");
+    if (!YOUTUBE_API_KEY || YOUTUBE_API_KEY === "") {
+        section.style.display = "none";
+        return;
+    }
+    section.style.display = "block";
+    container.innerHTML = `<div class="empty-state"><i class="fas fa-spinner fa-pulse"></i><p>Buscando transmissões ao vivo...</p></div>`;
+    
+    // Função auxiliar para buscar em uma categoria específica
+    async function buscaPorCategoria(categoryId) {
+        const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&eventType=live&type=video&maxResults=${MAX_YOUTUBE_RESULTS}&videoCategoryId=${categoryId}&key=${YOUTUBE_API_KEY}`;
+        const res = await fetch(url);
+        const data = await res.json();
+        if (data.error) throw new Error(data.error.message);
+        return data.items || [];
+    }
 
-    let userCity = null;
-    let manualEvents = [];
+    try {
+        let items = [];
+        // Tenta primeiro a categoria Entretenimento (24)
+        try {
+            items = await buscaPorCategoria("24");
+        } catch(e) {
+            console.warn("Erro na categoria 24:", e);
+        }
+        // Se não encontrar nada, tenta Música (10)
+        if (!items.length) {
+            try {
+                items = await buscaPorCategoria("10");
+            } catch(e) {
+                console.warn("Erro na categoria 10:", e);
+            }
+        }
+        // Se ainda não encontrar, testa Gaming (20) - quase sempre tem lives
+        if (!items.length) {
+            try {
+                items = await buscaPorCategoria("20");
+            } catch(e) {
+                console.warn("Erro na categoria 20:", e);
+            }
+        }
+        
+        if (!items.length) {
+            container.innerHTML = `<div class="empty-state"><i class="fas fa-video-slash"></i><p>Nenhuma live no momento</p></div>`;
+            return;
+        }
+
+        const videoIds = items.map(item => item.id.videoId).join(',');
+        const detailsRes = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet,liveStreamingDetails&id=${videoIds}&key=${YOUTUBE_API_KEY}`);
+        const detailsData = await detailsRes.json();
+        if (detailsData.error) throw new Error(detailsData.error.message);
+
+        container.innerHTML = detailsData.items.map(video => {
+            const thumb = video.snippet.thumbnails?.maxres?.url || video.snippet.thumbnails?.high?.url || video.snippet.thumbnails?.medium?.url;
+            const liveDetails = video.liveStreamingDetails || {};
+            const scheduledTime = liveDetails.scheduledStartTime || liveDetails.actualStartTime;
+            const displayTime = scheduledTime ? `📅 ${new Date(scheduledTime).toLocaleString('pt-BR')}` : "🔴 AO VIVO AGORA";
+            return `
+                <div class="event-card">
+                    <img class="card-banner" src="${thumb}" onerror="this.src='https://placehold.co/600x400/e63946/white?text=YouTube+Live'">
+                    <div class="card-content">
+                        <div class="card-title"><span>${escapeHtml(video.snippet.title)}</span></div>
+                        <div style="font-size:0.7rem; color:#2c7da0;"><i class="fab fa-youtube"></i> ${escapeHtml(video.snippet.channelTitle)}</div>
+                        <div class="datetime-highlight"><i class="fas fa-calendar-alt"></i> ${displayTime}</div>
+                        <div class="desc">${escapeHtml(video.snippet.description?.substring(0, 100) || '')}</div>
+                        <a href="https://www.youtube.com/watch?v=${video.id}" target="_blank" class="event-link"><i class="fab fa-youtube"></i> Assistir</a>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    } catch (err) {
+        console.error("Erro na API do YouTube:", err);
+        container.innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Erro ao carregar transmissões: ${err.message}</p></div>`;
+    }
+}
 
     // ==================== GEOLOCALIZAÇÃO AUTOMÁTICA ====================
     async function detectUserLocation() {
