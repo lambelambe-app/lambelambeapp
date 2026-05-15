@@ -3,624 +3,520 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Dédalo | Modo Clássico / Casual (Colisão Perfeita)</title>
+    <title>Dédalo | Aberturas e Teletransporte</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
-        }
-        body {
-            background: #666666;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            font-family: 'Segoe UI', 'Poppins', system-ui, sans-serif;
-            padding: 0 16px;
-            overflow-y: auto;
-        }
-        .game-container {
-            background: rgba(20, 28, 38, 0.85);
-            backdrop-filter: blur(12px);
-            border-radius: 48px;
-            padding: 15px 20px 19px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 215, 150, 0.4);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: fit-content;
-            max-width: 100%;
-            overflow-y: visible;
-            max-height: none;
-            margin-top: 0;
-        }
-        .top-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
-            margin-bottom: 24px;
-            gap: 16px;
-            flex-wrap: wrap;
-        }
-        .timer-panel, .best-panel {
-            background: rgba(0, 0, 0, 0.55);
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 200, 100, 0.6);
-            border-radius: 48px;
-            padding: 4px 18px;
-            text-align: center;
-            min-width: 95px;
-        }
-        .timer-label, .best-label {
-            font-size: 0.6rem;
-            letter-spacing: 1px;
-            color: #c0b090;
-        }
-        .timer-value {
-            font-family: 'Courier New', 'Fira Code', monospace;
-            font-size: 1.2rem;
-            font-weight: bold;
-            color: #FFE5B4;
-            text-shadow: 0 0 4px rgba(0,0,0,0.5);
-            line-height: 1.2;
-        }
-        .best-value {
-            font-family: 'Courier New', 'Fira Code', monospace;
-            font-size: 1rem;
-            font-weight: bold;
-            color: #FFD966;
-            text-shadow: 0 0 4px rgba(0,0,0,0.5);
-            line-height: 1.2;
-        }
-        .mode-switch {
-            background: rgba(0, 0, 0, 0.55);
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 200, 100, 0.6);
-            border-radius: 48px;
-            padding: 4px 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-        }
-        .mode-switch span {
-            font-size: 0.65rem;
-            color: #FFE5B4;
-            font-weight: 500;
-        }
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 44px;
-            height: 22px;
-        }
-        .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #2c3e46;
-            transition: 0.2s;
-            border-radius: 22px;
-        }
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 18px;
-            width: 18px;
-            left: 2px;
-            bottom: 2px;
-            background-color: #FFE5B4;
-            transition: 0.2s;
-            border-radius: 50%;
-        }
-        input:checked + .slider {
-            background-color: #FF8C42;
-        }
-        input:checked + .slider:before {
-            transform: translateX(22px);
-        }
-        .reset-btn {
-            background: rgba(160, 65, 45, 0.9);
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 200, 100, 0.6);
-            border-radius: 48px;
-            padding: 4px 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 4px;
-            cursor: pointer;
-            transition: 0.05s linear;
-        }
-        .reset-btn:active {
-            transform: translateY(2px);
-            background: rgba(180, 75, 55, 0.95);
-        }
-        .reset-icon {
-            font-size: 1.3rem;
-            font-weight: bold;
-            color: #FFE5B4;
-        }
-        .reset-label {
-            font-size: 0.6rem;
-            letter-spacing: 1px;
-            color: #ffd7a0;
-        }
-        canvas {
-            display: block;
-            margin: 0 auto 20px auto;
-            border-radius: 32px;
-            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.6), inset 0 0 0 2px rgba(255, 215, 150, 0.25);
-            background-color: #1e2a32;
-            width: 100%;
-            height: auto;
-            touch-action: none;
-        }
-        .dpad-wrapper {
-            display: flex;
-            justify-content: center;
-            width: 100%;
-            margin-bottom: 6px;
-        }
-        .dpad {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px;
-        }
-        .dpad-row {
-            display: flex;
-            gap: 18px;
-            justify-content: center;
-        }
-        .ctrl-btn {
-            background: rgba(30, 40, 52, 0.9);
-            backdrop-filter: blur(4px);
-            border: 1px solid rgba(255, 200, 120, 0.7);
-            border-radius: 60px;
-            width: 65px;
-            height: 65px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 28px;
-            font-weight: bold;
-            color: #FFE5B4;
-            text-shadow: 0 2px 4px black;
-            box-shadow: 0 5px 0 rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255,255,255,0.15);
-            transition: 0.05s linear;
-            cursor: pointer;
-        }
-        .ctrl-btn:active {
-            transform: translateY(3px);
-            box-shadow: 0 2px 0 rgba(0, 0, 0, 0.4);
-            background: rgba(50, 65, 82, 0.95);
-        }
-        footer {
-            text-align: center;
-            font-size: 0.65rem;
-            color: #ccb;
-            margin-top: 12px;
-            opacity: 0.8;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
+        body { background: #666666; min-height: 100vh; display: flex; justify-content: center; align-items: flex-start; font-family: system-ui, sans-serif; padding: 10px; overflow-y: auto; }
+        .game-container { background: rgba(20, 28, 38, 0.85); backdrop-filter: blur(12px); border-radius: 48px; padding: 15px 20px 19px; box-shadow: 0 20px 40px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.1); border: 1px solid rgba(255,215,150,0.4); display: flex; flex-direction: column; align-items: center; width: fit-content; max-width: 100%; }
+        .top-bar { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 20px; gap: 12px; flex-wrap: wrap; }
+        .panel { background: rgba(0,0,0,0.55); backdrop-filter: blur(8px); border: 1px solid rgba(255,200,100,0.6); border-radius: 48px; padding: 4px 18px; text-align: center; min-width: 95px; }
+        .label { font-size: 0.6rem; letter-spacing: 1px; color: #c0b090; text-transform: uppercase; }
+        .value { font-family: 'Courier New', monospace; font-size: 1.2rem; font-weight: bold; color: #FFE5B4; }
+        .mode-switch { background: rgba(0,0,0,0.55); backdrop-filter: blur(8px); border: 1px solid rgba(255,200,100,0.6); border-radius: 48px; padding: 4px 12px; display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.65rem; font-weight: bold; color: #FFE5B4; }
+        .switch { position: relative; width: 44px; height: 22px; background: #2c3e46; border-radius: 22px; transition: 0.2s; }
+        .switch::before { content: ""; position: absolute; width: 18px; height: 18px; left: 2px; top: 2px; background: #FFE5B4; border-radius: 50%; transition: 0.2s; }
+        input:checked + .switch { background: #FF8C42; }
+        input:checked + .switch::before { transform: translateX(22px); }
+        .btn { background: #a0412d; border: 1px solid #ffc864; border-radius: 48px; padding: 4px 14px; color: #FFE5B4; cursor: pointer; font-size: 0.65rem; font-weight: bold; }
+        canvas { background: #1e2a32; border-radius: 32px; box-shadow: 0 12px 28px rgba(0,0,0,0.6), inset 0 0 0 2px rgba(255,215,150,0.25); width: 100%; height: auto; touch-action: none; display: block; margin-bottom: 20px; }
+        .dpad { display: grid; grid-template-areas: ". up ." "left down right"; gap: 12px; margin-top: 0; margin-bottom: 6px; }
+        .ctrl-btn { width: 65px; height: 65px; background: rgba(30,40,52,0.9); border: 1px solid #ffc878; border-radius: 60px; display: flex; align-items: center; justify-content: center; color: #FFE5B4; font-size: 28px; cursor: pointer; box-shadow: 0 5px 0 rgba(0,0,0,0.3); transition: 0.05s; }
+        .ctrl-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 rgba(0,0,0,0.4); }
+        footer { text-align: center; font-size: 0.65rem; color: #ccb; margin-top: 8px; opacity: 0.8; }
+        input[type="checkbox"] { display: none; }
         @media (max-width: 560px) {
-            .timer-panel, .best-panel { padding: 2px 10px; min-width: 75px; }
-            .timer-value { font-size: 1rem; }
-            .best-value { font-size: 0.85rem; }
             .ctrl-btn { width: 55px; height: 55px; font-size: 24px; }
-            .dpad-row { gap: 12px; }
-            footer { margin-top: 8px; font-size: 0.6rem; }
+            .dpad { gap: 8px; }
+            .value { font-size: 1rem; }
         }
     </style>
 </head>
 <body>
-<div>
-    <div class="game-container">
-        <div class="top-bar">
-            <div class="timer-panel">
-                <div class="timer-label">⏱️ TEMPO</div>
-                <div class="timer-value" id="timerDisplay">0.0 s</div>
-            </div>
-            <div class="best-panel">
-                <div class="best-label">🏆 MELHOR</div>
-                <div class="best-value" id="bestDisplay">---</div>
-            </div>
-            <label class="mode-switch">
-                <span>🎮 CLÁSSICO</span>
-                <div class="switch">
-                    <input type="checkbox" id="modeToggle">
-                    <span class="slider"></span>
-                </div>
-                <span>🖐️ CASUAL</span>
-            </label>
-            <div class="reset-btn" id="btnReset">
-                <div class="reset-icon">⟳</div>
-                <div class="reset-label">NOVO</div>
-            </div>
-        </div>
-
-        <canvas id="gameCanvas" width="600" height="600"></canvas>
-
-        <div class="dpad-wrapper" id="dpadWrapper">
-            <div class="dpad">
-                <div class="dpad-row"><div class="ctrl-btn" id="btnUp">▲</div></div>
-                <div class="dpad-row">
-                    <div class="ctrl-btn" id="btnLeft">◀</div>
-                    <div class="ctrl-btn" id="btnDown">▼</div>
-                    <div class="ctrl-btn" id="btnRight">▶</div>
-                </div>
-            </div>
-        </div>
-
-        <footer>✨ aberturas nas bordas teletransportam para o lado oposto ✨</footer>
+<div class="game-container">
+    <div class="top-bar">
+        <div class="panel"><div class="label">Tempo</div><div class="value" id="timer">0.0 s</div></div>
+        <div class="panel"><div class="label">Melhor</div><div class="value" id="best">---</div></div>
+        <label class="mode-switch">
+            CLÁSSICO <input type="checkbox" id="modeToggle"><div class="switch"></div> CASUAL
+        </label>
+        <button class="btn" id="resetBtn">NOVO</button>
     </div>
+    <canvas id="canvas" width="600" height="600"></canvas>
+    <div class="dpad" id="dpad">
+        <div class="ctrl-btn" style="grid-area: up" id="btnUp">▲</div>
+        <div class="ctrl-btn" style="grid-area: left" id="btnLeft">◀</div>
+        <div class="ctrl-btn" style="grid-area: down" id="btnDown">▼</div>
+        <div class="ctrl-btn" style="grid-area: right" id="btnRight">▶</div>
+    </div>
+    <footer>✨ aberturas nas bordas teletransportam para o lado oposto ✨</footer>
 </div>
 
 <script>
     (function(){
-        // ---------- CONFIGURAÇÕES GERAIS ----------
-        const canvas = document.getElementById('gameCanvas');
+        // ---------- CONFIGURAÇÕES ----------
+        const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
         const SIZE = 600;
         canvas.width = SIZE;
         canvas.height = SIZE;
         
-        const BALL_RADIUS = 13;
+        const BALL_RADIUS = 12;
         const TARGET_RADIUS = 20;
         
-        let ballX = SIZE/2, ballY = SIZE/2;
-        let velocityX = 0, velocityY = 0;
-        let victory = false;
-        let victoryTimer = null;
-        let isFalling = false;
-        
-        let gameStarted = false;
-        let startTime = null;
-        let currentTime = 0;
-        
+        // Variáveis da bola e estado
+        let ball = { x: SIZE/2, y: SIZE/2, vx: 0, vy: 0 };
         let walls = [];
-        const targetCenter = { x: SIZE/2, y: SIZE/2 };
+        let target = { x: SIZE/2, y: SIZE/2 };
+        let game = {
+            started: false,
+            victory: false,
+            startTime: 0,
+            bestTime: localStorage.getItem('dedaloBestTime') ? parseFloat(localStorage.getItem('dedaloBestTime')) : null,
+            casualMode: false
+        };
         
-        let bestTime = null;
-        const bestDisplay = document.getElementById('bestDisplay');
-        const timerDisplay = document.getElementById('timerDisplay');
+        // Dados do labirinto (aberturas e grid)
+        let openings = { top: 0, bottom: 0, left: 0, right: 0 };
+        let OFFSET_X = 0, OFFSET_Y = 0, GRID_W = 0, GRID_H = 0, CELL_SIZE = 46, WALL_THICK = 10;
         
-        let casualMode = false;
+        // Controles de teclado
+        let keys = {};
+        
+        // Arrasto (modo casual)
+        let dragActive = false;
+        let dragX = 0, dragY = 0;
+        
+        // Elementos DOM
+        const timerEl = document.getElementById('timer');
+        const bestEl = document.getElementById('best');
         const modeToggle = document.getElementById('modeToggle');
-        const dpadWrapper = document.getElementById('dpadWrapper');
+        const resetBtn = document.getElementById('resetBtn');
+        const dpadDiv = document.getElementById('dpad');
         
-        function formatTime(seconds) {
-            if (seconds === null) return "---";
-            const mins = Math.floor(seconds / 60);
-            const secs = Math.floor(seconds % 60);
-            return `${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
-        }
-        
-        function loadBestTime() {
-            const stored = localStorage.getItem('dedaloBestTime');
-            if (stored !== null) {
-                bestTime = parseFloat(stored);
-                bestDisplay.innerText = formatTime(bestTime);
+        // Atualiza exibição do melhor tempo
+        function updateBestDisplay() {
+            if (game.bestTime !== null) {
+                const mins = Math.floor(game.bestTime / 60);
+                const secs = Math.floor(game.bestTime % 60);
+                bestEl.innerText = `${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
             } else {
-                bestTime = null;
-                bestDisplay.innerText = "---";
+                bestEl.innerText = "---";
             }
         }
-        function saveBestTime(timeSec) {
-            if (bestTime === null || timeSec < bestTime) {
-                bestTime = timeSec;
-                localStorage.setItem('dedaloBestTime', bestTime);
-                bestDisplay.innerText = formatTime(bestTime);
-            }
-        }
+        updateBestDisplay();
         
-        // ---------- GERADOR DFS (labirinto) - IDÊNTICO AO ANTERIOR ----------
-        const CELL_SIZE = 46;
-        const WALL_THICK = 10;
-        const GRID_W = Math.floor(SIZE / CELL_SIZE);
-        const GRID_H = GRID_W;
-        const OFFSET_X = (SIZE - GRID_W * CELL_SIZE) / 2;
-        const OFFSET_Y = (SIZE - GRID_H * CELL_SIZE) / 2;
-        
-        let cells = [];
-        let wallsGrid = [];
-        
-        function initDFS() {
-            cells = Array(GRID_H).fill().map(() => Array(GRID_W).fill(false));
-            wallsGrid = Array(GRID_H).fill().map(() => Array(GRID_W).fill().map(() => ({ right: true, bottom: true })));
-            const startX = Math.floor(GRID_W/2);
-            const startY = Math.floor(GRID_H/2);
-            dfsCarve(startX, startY);
-        }
-        
-        function dfsCarve(x, y) {
-            cells[y][x] = true;
-            const dirs = [[0,-1],[1,0],[0,1],[-1,0]];
-            for (let i = dirs.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [dirs[i], dirs[j]] = [dirs[j], dirs[i]];
-            }
-            for (let [dx, dy] of dirs) {
-                const nx = x + dx;
-                const ny = y + dy;
-                if (nx >= 0 && nx < GRID_W && ny >= 0 && ny < GRID_H && !cells[ny][nx]) {
-                    if (dx === 1) wallsGrid[y][x].right = false;
-                    else if (dx === -1) wallsGrid[y][nx].right = false;
-                    else if (dy === 1) wallsGrid[y][x].bottom = false;
-                    else if (dy === -1) wallsGrid[ny][x].bottom = false;
-                    dfsCarve(nx, ny);
+        // ---------- GERADOR DE LABIRINTO (DFS com aberturas) ----------
+        function generateMaze() {
+            const GRID_W = Math.floor(SIZE / CELL_SIZE);
+            const GRID_H = GRID_W;
+            OFFSET_X = (SIZE - GRID_W * CELL_SIZE) / 2;
+            OFFSET_Y = (SIZE - GRID_H * CELL_SIZE) / 2;
+            
+            // Inicializa células e paredes internas
+            let cells = Array(GRID_H).fill().map(() => Array(GRID_W).fill(false));
+            let wallsGrid = Array(GRID_H).fill().map(() => Array(GRID_W).fill().map(() => ({ right: true, bottom: true })));
+            
+            function carve(x, y) {
+                cells[y][x] = true;
+                const dirs = [[0,-1],[1,0],[0,1],[-1,0]];
+                for (let i = dirs.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [dirs[i], dirs[j]] = [dirs[j], dirs[i]];
+                }
+                for (let [dx, dy] of dirs) {
+                    const nx = x + dx, ny = y + dy;
+                    if (nx >= 0 && nx < GRID_W && ny >= 0 && ny < GRID_H && !cells[ny][nx]) {
+                        if (dx === 1) wallsGrid[y][x].right = false;
+                        else if (dx === -1) wallsGrid[y][nx].right = false;
+                        else if (dy === 1) wallsGrid[y][x].bottom = false;
+                        else if (dy === -1) wallsGrid[ny][x].bottom = false;
+                        carve(nx, ny);
+                    }
                 }
             }
-        }
-        
-        let openings = { top: 0, bottom: 0, left: 0, right: 0 };
-        
-        function generateRandomOpenings() {
+            carve(Math.floor(GRID_W/2), Math.floor(GRID_H/2));
+            
+            // Gera aberturas aleatórias em cada borda
             openings = {
                 top: Math.floor(Math.random() * GRID_W),
                 bottom: Math.floor(Math.random() * GRID_W),
                 left: Math.floor(Math.random() * GRID_H),
                 right: Math.floor(Math.random() * GRID_H)
             };
-        }
-        
-        function buildWallsFromDFS() {
-            walls = [];
+            
+            // Converte para lista de paredes
+            let newWalls = [];
             const addWall = (x, y, w, h, type) => {
                 if (w <= 0 || h <= 0) return;
-                walls.push({ x, y, w, h, type });
+                newWalls.push({ x, y, w, h, type });
             };
+            
+            // Paredes internas
             for (let row = 0; row < GRID_H; row++) {
                 for (let col = 0; col < GRID_W; col++) {
                     const cx = OFFSET_X + col * CELL_SIZE;
                     const cy = OFFSET_Y + row * CELL_SIZE;
                     if (wallsGrid[row][col].right) {
-                        let type = Math.random() < 0.3 ? 'light' : 'dark';
+                        let type = Math.random() < 0.3 ? 1 : 0; // 1 = repulsiva (verde claro)
                         addWall(cx + CELL_SIZE, cy, WALL_THICK, CELL_SIZE, type);
                     }
                     if (wallsGrid[row][col].bottom) {
-                        let type = Math.random() < 0.3 ? 'light' : 'dark';
+                        let type = Math.random() < 0.3 ? 1 : 0;
                         addWall(cx, cy + CELL_SIZE, CELL_SIZE, WALL_THICK, type);
                     }
                 }
             }
+            
+            // Bordas (apenas onde não há abertura)
+            // Topo
             for (let col = 0; col < GRID_W; col++) {
-                if (col !== openings.top) addWall(OFFSET_X + col*CELL_SIZE, OFFSET_Y, CELL_SIZE, WALL_THICK, 'dark');
-                if (col !== openings.bottom) addWall(OFFSET_X + col*CELL_SIZE, OFFSET_Y + GRID_H*CELL_SIZE - WALL_THICK, CELL_SIZE, WALL_THICK, 'dark');
+                if (col !== openings.top) {
+                    addWall(OFFSET_X + col*CELL_SIZE, OFFSET_Y, CELL_SIZE, WALL_THICK, 0);
+                }
             }
+            // Base
+            for (let col = 0; col < GRID_W; col++) {
+                if (col !== openings.bottom) {
+                    addWall(OFFSET_X + col*CELL_SIZE, OFFSET_Y + GRID_H*CELL_SIZE - WALL_THICK, CELL_SIZE, WALL_THICK, 0);
+                }
+            }
+            // Esquerda
             for (let row = 0; row < GRID_H; row++) {
-                if (row !== openings.left) addWall(OFFSET_X, OFFSET_Y + row*CELL_SIZE, WALL_THICK, CELL_SIZE, 'dark');
-                if (row !== openings.right) addWall(OFFSET_X + GRID_W*CELL_SIZE - WALL_THICK, OFFSET_Y + row*CELL_SIZE, WALL_THICK, CELL_SIZE, 'dark');
+                if (row !== openings.left) {
+                    addWall(OFFSET_X, OFFSET_Y + row*CELL_SIZE, WALL_THICK, CELL_SIZE, 0);
+                }
             }
-            walls = walls.filter(w => Math.hypot(w.x + w.w/2 - targetCenter.x, w.y + w.h/2 - targetCenter.y) > TARGET_RADIUS + 12);
+            // Direita
+            for (let row = 0; row < GRID_H; row++) {
+                if (row !== openings.right) {
+                    addWall(OFFSET_X + GRID_W*CELL_SIZE - WALL_THICK, OFFSET_Y + row*CELL_SIZE, WALL_THICK, CELL_SIZE, 0);
+                }
+            }
+            
+            // Remove paredes próximas ao alvo central
+            newWalls = newWalls.filter(w => {
+                const centerX = w.x + w.w/2;
+                const centerY = w.y + w.h/2;
+                return Math.hypot(centerX - SIZE/2, centerY - SIZE/2) > TARGET_RADIUS + 12;
+            });
+            
+            walls = newWalls;
         }
         
-        function generateNewMaze() {
-            initDFS();
-            generateRandomOpenings();
-            buildWallsFromDFS();
-        }
-        
+        // Posição das aberturas (centro da lacuna)
         function getOpeningPosition(side) {
+            const GRID_W = Math.floor(SIZE / CELL_SIZE);
+            const GRID_H = GRID_W;
             switch(side) {
-                case 'top': return { x: OFFSET_X + openings.top * CELL_SIZE + CELL_SIZE/2, y: OFFSET_Y + 5 };
-                case 'bottom': return { x: OFFSET_X + openings.bottom * CELL_SIZE + CELL_SIZE/2, y: OFFSET_Y + GRID_H*CELL_SIZE - 5 };
-                case 'left': return { x: OFFSET_X + 5, y: OFFSET_Y + openings.left * CELL_SIZE + CELL_SIZE/2 };
-                case 'right': return { x: OFFSET_X + GRID_W*CELL_SIZE - 5, y: OFFSET_Y + openings.right * CELL_SIZE + CELL_SIZE/2 };
+                case 'top': return { x: OFFSET_X + openings.top * CELL_SIZE + CELL_SIZE/2, y: OFFSET_Y + 3 };
+                case 'bottom': return { x: OFFSET_X + openings.bottom * CELL_SIZE + CELL_SIZE/2, y: OFFSET_Y + GRID_H*CELL_SIZE - 3 };
+                case 'left': return { x: OFFSET_X + 3, y: OFFSET_Y + openings.left * CELL_SIZE + CELL_SIZE/2 };
+                case 'right': return { x: OFFSET_X + GRID_W*CELL_SIZE - 3, y: OFFSET_Y + openings.right * CELL_SIZE + CELL_SIZE/2 };
+                default: return { x: 0, y: 0 };
             }
         }
         
+        // Spawn inicial: escolhe uma abertura aleatória
         function randomSpawn() {
             const sides = ['top', 'bottom', 'left', 'right'];
-            const chosen = sides[Math.floor(Math.random() * 4)];
-            const pos = getOpeningPosition(chosen);
-            ballX = pos.x;
-            ballY = pos.y;
-            for (let attempt = 0; attempt < 5; attempt++) {
-                let collides = false;
-                for (let w of walls) {
-                    if (ballX + BALL_RADIUS > w.x && ballX - BALL_RADIUS < w.x + w.w &&
-                        ballY + BALL_RADIUS > w.y && ballY - BALL_RADIUS < w.y + w.h) {
-                        collides = true;
-                        break;
-                    }
-                }
-                if (!collides) break;
-                ballX += (Math.random() - 0.5) * 15;
-                ballY += (Math.random() - 0.5) * 15;
-            }
+            const side = sides[Math.floor(Math.random() * 4)];
+            const pos = getOpeningPosition(side);
+            ball.x = pos.x;
+            ball.y = pos.y;
+            ball.vx = 0;
+            ball.vy = 0;
         }
         
-        // ---------- TELEPORTE ----------
-        function handleTeleport() {
-            if (victory) return;
-            const tolerance = BALL_RADIUS * 1.5;
-            if (ballX + BALL_RADIUS < 0) {
-                const openingY = OFFSET_Y + openings.left * CELL_SIZE + CELL_SIZE/2;
-                if (Math.abs(ballY - openingY) < CELL_SIZE/2 + tolerance) {
-                    const target = getOpeningPosition('right');
-                    ballX = target.x;
-                    ballY = target.y;
-                } else {
-                    ballX = BALL_RADIUS;
-                }
-                velocityX = 0; velocityY = 0;
-            }
-            if (ballX - BALL_RADIUS > SIZE) {
-                const openingY = OFFSET_Y + openings.right * CELL_SIZE + CELL_SIZE/2;
-                if (Math.abs(ballY - openingY) < CELL_SIZE/2 + tolerance) {
-                    const target = getOpeningPosition('left');
-                    ballX = target.x;
-                    ballY = target.y;
-                } else {
-                    ballX = SIZE - BALL_RADIUS;
-                }
-                velocityX = 0; velocityY = 0;
-            }
-            if (ballY + BALL_RADIUS < 0) {
-                const openingX = OFFSET_X + openings.top * CELL_SIZE + CELL_SIZE/2;
-                if (Math.abs(ballX - openingX) < CELL_SIZE/2 + tolerance) {
-                    const target = getOpeningPosition('bottom');
-                    ballX = target.x;
-                    ballY = target.y;
-                } else {
-                    ballY = BALL_RADIUS;
-                }
-                velocityX = 0; velocityY = 0;
-            }
-            if (ballY - BALL_RADIUS > SIZE) {
-                const openingX = OFFSET_X + openings.bottom * CELL_SIZE + CELL_SIZE/2;
-                if (Math.abs(ballX - openingX) < CELL_SIZE/2 + tolerance) {
-                    const target = getOpeningPosition('top');
-                    ballX = target.x;
-                    ballY = target.y;
-                } else {
-                    ballY = SIZE - BALL_RADIUS;
-                }
-                velocityX = 0; velocityY = 0;
-            }
-        }
-        
-        // ---------- MODO CLÁSSICO ----------
-        let leftPressed = false, rightPressed = false, upPressed = false, downPressed = false;
-        const ACC = 400;
-        const MAX_SPEED = 500;
-        const DRAG = 0.98;
-        
-        function circleRectCollision(cx, cy, r, rect) {
-            let closestX = Math.max(rect.x, Math.min(cx, rect.x + rect.w));
-            let closestY = Math.max(rect.y, Math.min(cy, rect.y + rect.h));
-            let dx = cx - closestX, dy = cy - closestY;
-            return dx*dx + dy*dy < r*r;
-        }
-        
-        function handleCollisionsClassic() {
+        // ---------- COLISÃO COM PAREDES (genérica) ----------
+        function resolveCollision(circle, r) {
             for (let w of walls) {
-                if (circleRectCollision(ballX, ballY, BALL_RADIUS, w)) {
-                    let closestX = Math.max(w.x, Math.min(ballX, w.x + w.w));
-                    let closestY = Math.max(w.y, Math.min(ballY, w.y + w.h));
-                    let dx = ballX - closestX, dy = ballY - closestY;
-                    let dist = Math.hypot(dx, dy);
-                    if (dist < BALL_RADIUS) {
-                        let angle = Math.atan2(dy, dx);
-                        let correction = BALL_RADIUS - dist;
-                        ballX += Math.cos(angle) * correction;
-                        ballY += Math.sin(angle) * correction;
-                        if (w.type === 'light') {
-                            velocityX = -velocityX * 1.3;
-                            velocityY = -velocityY * 1.3;
+                let cx = Math.max(w.x, Math.min(circle.x, w.x + w.w));
+                let cy = Math.max(w.y, Math.min(circle.y, w.y + w.h));
+                let dx = circle.x - cx, dy = circle.y - cy;
+                let dist = Math.hypot(dx, dy);
+                if (dist < r) {
+                    let overlap = r - dist;
+                    if (dist === 0) {
+                        circle.x -= 1;
+                        dx = -1;
+                        dist = 1;
+                    }
+                    circle.x += (dx / dist) * overlap;
+                    circle.y += (dy / dist) * overlap;
+                    // Aplica repulsão (modo clássico) ou apenas bloqueio (casual)
+                    if (!game.casualMode) {
+                        if (w.type === 1) {
+                            ball.vx *= -1.2;
+                            ball.vy *= -1.2;
                         } else {
-                            if (Math.abs(dx) > Math.abs(dy)) velocityX *= -0.5;
-                            else velocityY *= -0.5;
+                            if (Math.abs(dx) > Math.abs(dy)) ball.vx *= -0.5;
+                            else ball.vy *= -0.5;
                         }
+                    } else {
+                        // No modo casual, apenas reposiciona sem impulso
+                        ball.vx = 0;
+                        ball.vy = 0;
                     }
                 }
             }
         }
         
-        function updatePhysicsClassic(delta) {
-            if (victory) {
-                velocityX = 0; velocityY = 0;
-                return;
-            }
-            let ax = 0, ay = 0;
-            if (leftPressed) ax = -ACC;
-            if (rightPressed) ax = ACC;
-            if (upPressed) ay = -ACC;
-            if (downPressed) ay = ACC;
-            let moving = (ax !== 0 || ay !== 0);
-            if (moving && !gameStarted && !victory) {
-                gameStarted = true;
-                startTime = performance.now() / 1000;
-            }
-            velocityX += ax * delta;
-            velocityY += ay * delta;
-            let spd = Math.hypot(velocityX, velocityY);
-            if (spd > MAX_SPEED) {
-                velocityX = velocityX / spd * MAX_SPEED;
-                velocityY = velocityY / spd * MAX_SPEED;
-            }
-            velocityX *= DRAG;
-            velocityY *= DRAG;
-            if (Math.abs(velocityX) < 0.2) velocityX = 0;
-            if (Math.abs(velocityY) < 0.2) velocityY = 0;
-            ballX += velocityX * delta;
-            ballY += velocityY * delta;
-            handleCollisionsClassic();
-            handleTeleport();
-            checkWin();
-        }
-        
-        // ---------- MODO CASUAL - COLISÃO CONTÍNUA PERFEITA ----------
-        // Retorna a distância do ponto mais próximo do retângulo a um círculo
-        function closestPointOnRect(cx, cy, rect) {
-            let closestX = Math.max(rect.x, Math.min(cx, rect.x + rect.w));
-            let closestY = Math.max(rect.y, Math.min(cy, rect.y + rect.h));
-            return { x: closestX, y: closestY };
-        }
-        
-        // Teste de colisão entre um círculo e um retângulo (parede)
-        function collidesWithWall(x, y, r, wall) {
-            let closest = closestPointOnRect(x, y, wall);
-            let dx = x - closest.x;
-            let dy = y - closest.y;
-            return (dx*dx + dy*dy) < r*r;
-        }
-        
-        // Verifica se a posição (x,y) colide com alguma parede
-        function isColliding(x, y) {
-            for (let w of walls) {
-                if (collidesWithWall(x, y, BALL_RADIUS, w)) return true;
-            }
-            return false;
-        }
-        
-        // Move a bola de (oldX, oldY) para (newX, newY) com colisão contínua (sweep)
-        // Retorna a posição final válida (onde para ao colidir).
-        function moveWithSweep(oldX, oldY, newX, newY) {
-            if (victory) return { x: oldX, y: oldY };
-            let steps = Math.ceil(Math.hypot(newX - oldX, newY - oldY) / 2); // passo de no máximo 2px
-            steps = Math.max(steps, 1);
-            let stepX = (newX - oldX) / steps;
-            let stepY = (newY - oldY) / steps;
-            let curX = oldX, curY = oldY;
-            for (let i = 1; i <= steps; i++) {
-                let nextX = oldX + stepX * i;
-                let nextY = oldY + stepY * i;
-                if (!isColliding(nextX, nextY)) {
-                    curX = nextX;
-                    curY = nextY;
+        // ---------- TELEPORTE NAS ABERTURAS ----------
+        function handleTeleport() {
+            if (game.victory) return;
+            const tolerance = BALL_RADIUS * 1.2;
+            const GRID_W = Math.floor(SIZE / CELL_SIZE);
+            const GRID_H = GRID_W;
+            
+            // Sair pela esquerda
+            if (ball.x + BALL_RADIUS < 0) {
+                const openingY = OFFSET_Y + openings.left * CELL_SIZE + CELL_SIZE/2;
+                if (Math.abs(ball.y - openingY) < CELL_SIZE/2 + tolerance) {
+                    const target = getOpeningPosition('right');
+                    ball.x = target.x;
+                    ball.y = target.y;
+                    ball.vx = Math.abs(ball.vx);
                 } else {
-                    // Colidiu: tenta deslizar na parede (movimento tangencial)
-                    // Simplificamos: recua um pouco e tenta em outra direção
-                    let angle = Math.atan2(nextY - curY, nextX - curX);
-                    let tryX = curX + Math.cos(angle) * 1;
-                    let tryY = curY + Math.sin(angle) * 1;
-                    if (!isColliding(tryX, tryY)) {
-                        curX = tryX;
-                        curY = tryY;
-                    }
-                    break;
+                    ball.x = BALL_RADIUS;
+                    ball.vx = 0;
                 }
             }
-            return { x: curX, y: curY };
+            // Sair pela direita
+            if (ball.x - BALL_RADIUS > SIZE) {
+                const openingY = OFFSET_Y + openings.right * CELL_SIZE + CELL_SIZE/2;
+                if (Math.abs(ball.y - openingY) < CELL_SIZE/2 + tolerance) {
+                    const target = getOpeningPosition('left');
+                    ball.x = target.x;
+                    ball.y = target.y;
+                    ball.vx = -Math.abs(ball.vx);
+                } else {
+                    ball.x = SIZE - BALL_RADIUS;
+                    ball.vx = 0;
+                }
+            }
+            // Sair pelo topo
+            if (ball.y + BALL_RADIUS < 0) {
+                const openingX = OFFSET_X + openings.top * CELL_SIZE + CELL_SIZE/2;
+                if (Math.abs(ball.x - openingX) < CELL_SIZE/2 + tolerance) {
+                    const target = getOpeningPosition('bottom');
+                    ball.x = target.x;
+                    ball.y = target.y;
+                    ball.vy = Math.abs(ball.vy);
+                } else {
+                    ball.y = BALL_RADIUS;
+                    ball.vy = 0;
+                }
+            }
+            // Sair pela base
+            if (ball.y - BALL_RADIUS > SIZE) {
+                const openingX = OFFSET_X + openings.bottom * CELL_SIZE + CELL_SIZE/2;
+                if (Math.abs(ball.x - openingX) < CELL_SIZE/2 + tolerance) {
+                    const target = getOpeningPosition('top');
+                    ball.x = target.x;
+                    ball.y = target.y;
+                    ball.vy = -Math.abs(ball.vy);
+                } else {
+                    ball.y = SIZE - BALL_RADIUS;
+                    ball.vy = 0;
+                }
+            }
         }
         
-        let dragActive = false;
+        // ---------- MODO CLÁSSICO (física) ----------
+        function updateClassic(dt) {
+            let ax = (keys.ArrowRight || keys.d ? 1 : 0) - (keys.ArrowLeft || keys.a ? 1 : 0);
+            let ay = (keys.ArrowDown || keys.s ? 1 : 0) - (keys.ArrowUp || keys.w ? 1 : 0);
+            let moving = (ax !== 0 || ay !== 0);
+            if (moving && !game.started && !game.victory) {
+                game.started = true;
+                game.startTime = performance.now();
+            }
+            const ACC = 1200;
+            ball.vx += ax * ACC * dt;
+            ball.vy += ay * ACC * dt;
+            ball.vx *= 0.95;
+            ball.vy *= 0.95;
+            ball.x += ball.vx * dt;
+            ball.y += ball.vy * dt;
+            
+            resolveCollision(ball, BALL_RADIUS);
+            handleTeleport();
+        }
         
+        // ---------- MODO CASUAL (arrasto contínuo) ----------
+        function updateCasual(dt) {
+            if (dragActive) {
+                if (!game.started && !game.victory) {
+                    game.started = true;
+                    game.startTime = performance.now();
+                }
+                // Movimento passo a passo para evitar atravessar paredes
+                let dx = dragX - ball.x;
+                let dy = dragY - ball.y;
+                let dist = Math.hypot(dx, dy);
+                if (dist > 1) {
+                    let steps = Math.ceil(dist / 2);
+                    for (let i = 0; i < steps; i++) {
+                        let moveX = (dx / dist) * Math.min(2, dist/steps);
+                        let moveY = (dy / dist) * Math.min(2, dist/steps);
+                        ball.x += moveX;
+                        ball.y += moveY;
+                        resolveCollision(ball, BALL_RADIUS);
+                    }
+                }
+            }
+            handleTeleport();
+        }
+        
+        // ---------- LÓGICA DE VITÓRIA ----------
+        function checkVictory() {
+            if (game.victory) return;
+            const dist = Math.hypot(ball.x - target.x, ball.y - target.y);
+            if (dist < BALL_RADIUS + 5) {
+                game.victory = true;
+                const elapsed = (performance.now() - game.startTime) / 1000;
+                if (game.bestTime === null || elapsed < game.bestTime) {
+                    game.bestTime = elapsed;
+                    localStorage.setItem('dedaloBestTime', elapsed);
+                    updateBestDisplay();
+                }
+                timerEl.innerText = elapsed.toFixed(1) + " s";
+                // Efeito de queda e fogos (simples)
+                setTimeout(() => {
+                    resetGame(true);
+                }, 2000);
+            }
+        }
+        
+        // ---------- RESET DO JOGO ----------
+        function resetGame(newMaze = true) {
+            game.victory = false;
+            game.started = false;
+            game.startTime = 0;
+            timerEl.innerText = "0.0 s";
+            if (newMaze) {
+                generateMaze();
+            }
+            randomSpawn();
+            ball.vx = 0;
+            ball.vy = 0;
+            dragActive = false;
+        }
+        
+        // ---------- RENDERIZAÇÃO ----------
+        function draw() {
+            ctx.clearRect(0, 0, SIZE, SIZE);
+            ctx.fillStyle = "#1e2a32";
+            ctx.fillRect(0, 0, SIZE, SIZE);
+            
+            // Paredes
+            for (let w of walls) {
+                ctx.fillStyle = w.type === 1 ? "#8bc34a" : "#2d5a3b";
+                ctx.fillRect(w.x, w.y, w.w, w.h);
+                ctx.fillStyle = w.type === 1 ? "#6a9e3a" : "#1f3e2a";
+                ctx.fillRect(w.x+2, w.y+2, w.w-4, w.h-4);
+                ctx.strokeStyle = "#1e2a1a";
+                ctx.strokeRect(w.x, w.y, w.w, w.h);
+            }
+            
+            // Alvo central
+            ctx.beginPath();
+            ctx.arc(target.x, target.y, TARGET_RADIUS, 0, Math.PI*2);
+            ctx.fillStyle = "#8B0000";
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(target.x, target.y, TARGET_RADIUS-5, 0, Math.PI*2);
+            ctx.fillStyle = "#FF4500";
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(target.x, target.y, TARGET_RADIUS-10, 0, Math.PI*2);
+            ctx.fillStyle = "#FFD700";
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(target.x, target.y, 5, 0, Math.PI*2);
+            ctx.fillStyle = "#FFF8DC";
+            ctx.fill();
+            
+            // Bola
+            ctx.shadowColor = "rgba(0,0,0,0.4)";
+            ctx.shadowBlur = 8;
+            const grad = ctx.createRadialGradient(ball.x-4, ball.y-4, 4, ball.x, ball.y, BALL_RADIUS);
+            grad.addColorStop(0, "#f4f8ff");
+            grad.addColorStop(0.5, "#b5c4d4");
+            grad.addColorStop(1, "#7a8a9a");
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, BALL_RADIUS, 0, Math.PI*2);
+            ctx.fillStyle = grad;
+            ctx.fill();
+            ctx.shadowBlur = 0;
+            ctx.beginPath();
+            ctx.arc(ball.x-3, ball.y-4, 4, 0, Math.PI*2);
+            ctx.fillStyle = "rgba(255,255,255,0.7)";
+            ctx.fill();
+        }
+        
+        // ---------- LOOP PRINCIPAL ----------
+        let lastTimestamp = 0;
+        function gameLoop(now) {
+            if (!lastTimestamp) lastTimestamp = now;
+            let dt = Math.min(0.033, (now - lastTimestamp) / 1000);
+            if (dt > 0.01) {
+                if (!game.victory) {
+                    if (game.casualMode) {
+                        updateCasual(dt);
+                    } else {
+                        updateClassic(dt);
+                    }
+                    checkVictory();
+                    if (game.started && !game.victory) {
+                        const elapsed = (performance.now() - game.startTime) / 1000;
+                        timerEl.innerText = elapsed.toFixed(1) + " s";
+                    }
+                }
+                draw();
+            }
+            lastTimestamp = now;
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // ---------- EVENTOS DE ENTRADA ----------
+        window.addEventListener('keydown', (e) => {
+            if (game.casualMode) return;
+            const k = e.key;
+            if (k === 'ArrowLeft' || k === 'a' || k === 'ArrowRight' || k === 'd' || k === 'ArrowUp' || k === 'w' || k === 'ArrowDown' || k === 's') {
+                keys[k] = true;
+                e.preventDefault();
+            } else if (k === 'r') {
+                resetGame(true);
+                e.preventDefault();
+            }
+        });
+        window.addEventListener('keyup', (e) => {
+            const k = e.key;
+            delete keys[k];
+        });
+        
+        // Botões D-pad
+        const btnUp = document.getElementById('btnUp');
+        const btnDown = document.getElementById('btnDown');
+        const btnLeft = document.getElementById('btnLeft');
+        const btnRight = document.getElementById('btnRight');
+        
+        function attachButton(btn, key) {
+            if (!btn) return;
+            btn.addEventListener('mousedown', (e) => { e.preventDefault(); keys[key] = true; });
+            btn.addEventListener('mouseup', () => { delete keys[key]; });
+            btn.addEventListener('mouseleave', () => { delete keys[key]; });
+            btn.addEventListener('touchstart', (e) => { e.preventDefault(); keys[key] = true; });
+            btn.addEventListener('touchend', () => { delete keys[key]; });
+            btn.addEventListener('touchcancel', () => { delete keys[key]; });
+        }
+        attachButton(btnUp, 'ArrowUp');
+        attachButton(btnDown, 'ArrowDown');
+        attachButton(btnLeft, 'ArrowLeft');
+        attachButton(btnRight, 'ArrowRight');
+        
+        // Arrasto no canvas (modo casual)
         function getCanvasCoords(e) {
             const rect = canvas.getBoundingClientRect();
             const scaleX = canvas.width / rect.width;
@@ -633,313 +529,37 @@
                 clientX = e.clientX;
                 clientY = e.clientY;
             }
-            let canvasX = (clientX - rect.left) * scaleX;
-            let canvasY = (clientY - rect.top) * scaleY;
-            canvasX = Math.min(Math.max(canvasX, BALL_RADIUS), SIZE - BALL_RADIUS);
-            canvasY = Math.min(Math.max(canvasY, BALL_RADIUS), SIZE - BALL_RADIUS);
-            return { x: canvasX, y: canvasY };
+            let x = (clientX - rect.left) * scaleX;
+            let y = (clientY - rect.top) * scaleY;
+            x = Math.min(Math.max(x, BALL_RADIUS), SIZE - BALL_RADIUS);
+            y = Math.min(Math.max(y, BALL_RADIUS), SIZE - BALL_RADIUS);
+            return { x, y };
         }
         
-        function onDragStart(e) {
-            if (!casualMode || victory) return;
-            e.preventDefault();
-            dragActive = true;
-            const { x, y } = getCanvasCoords(e);
-            // Aplica movimento contínuo da posição atual para o ponto clicado
-            let newPos = moveWithSweep(ballX, ballY, x, y);
-            ballX = newPos.x;
-            ballY = newPos.y;
-            if (!gameStarted && !victory) {
-                gameStarted = true;
-                startTime = performance.now() / 1000;
-            }
-        }
+        canvas.addEventListener('touchstart', (e) => { if (game.casualMode) { e.preventDefault(); const p = getCanvasCoords(e); dragActive = true; dragX = p.x; dragY = p.y; } });
+        canvas.addEventListener('touchmove', (e) => { if (game.casualMode) { e.preventDefault(); const p = getCanvasCoords(e); dragX = p.x; dragY = p.y; } });
+        canvas.addEventListener('touchend', () => { dragActive = false; });
+        canvas.addEventListener('mousedown', (e) => { if (game.casualMode) { e.preventDefault(); const p = getCanvasCoords(e); dragActive = true; dragX = p.x; dragY = p.y; } });
+        window.addEventListener('mousemove', (e) => { if (game.casualMode && dragActive) { const p = getCanvasCoords(e); dragX = p.x; dragY = p.y; } });
+        window.addEventListener('mouseup', () => { dragActive = false; });
         
-        function onDragMove(e) {
-            if (!casualMode || victory || !dragActive) return;
-            e.preventDefault();
-            const { x, y } = getCanvasCoords(e);
-            let newPos = moveWithSweep(ballX, ballY, x, y);
-            ballX = newPos.x;
-            ballY = newPos.y;
-        }
-        
-        function onDragEnd(e) {
-            if (!casualMode) return;
-            e.preventDefault();
-            dragActive = false;
-        }
-        
-        // ---------- EFEITOS DE VITÓRIA ----------
-        function startFallingEffect(callback) {
-            if (isFalling) return;
-            isFalling = true;
-            let step = 0;
-            const origR = BALL_RADIUS;
-            function anim() {
-                if (step < 10) {
-                    const scale = 1 - (step/10)*0.8;
-                    const r = origR * scale;
-                    ctx.save();
-                    ctx.shadowBlur = 0;
-                    ctx.beginPath();
-                    ctx.arc(ballX, ballY, r, 0, Math.PI*2);
-                    ctx.fillStyle = "#7a8a9a";
-                    ctx.fill();
-                    ctx.restore();
-                    step++;
-                    requestAnimationFrame(anim);
-                } else {
-                    isFalling = false;
-                    if (callback) callback();
-                }
-            }
-            anim();
-        }
-        
-        function startFireworks() {
-            const particles = [];
-            const cx = targetCenter.x, cy = targetCenter.y;
-            for (let i=0;i<6;i++) {
-                const a = Math.random() * Math.PI*2;
-                const r = 40 + Math.random()*60;
-                const x = cx + Math.cos(a)*r;
-                const y = cy + Math.sin(a)*r - 40;
-                particles.push({ x, y, vx: (Math.random()-0.5)*2, vy: -7, life:1, exploded:false });
-            }
-            function update() {
-                for(let i=particles.length-1;i>=0;i--) {
-                    const p = particles[i];
-                    if(!p.exploded) {
-                        p.x += p.vx; p.y += p.vy; p.vy += 0.2;
-                        if(p.vy >=0 || p.y<50) {
-                            p.exploded = true;
-                            for(let s=0;s<22;s++) {
-                                const a2 = Math.random()*Math.PI*2;
-                                const sp = Math.random()*5+2;
-                                particles.push({
-                                    x: p.x, y: p.y, vx: Math.cos(a2)*sp, vy: Math.sin(a2)*sp,
-                                    life:1, exploded:true, color: `hsl(${Math.random()*360},100%,60%)`
-                                });
-                            }
-                            particles.splice(i,1);
-                        }
-                    } else {
-                        p.x += p.vx; p.y += p.vy; p.vy += 0.2;
-                        p.life -= 0.02;
-                        if(p.life<=0 || p.y>SIZE+50) particles.splice(i,1);
-                    }
-                }
-                for(let p of particles) {
-                    ctx.beginPath();
-                    ctx.arc(p.x, p.y, p.exploded?3*p.life:4, 0, Math.PI*2);
-                    ctx.fillStyle = p.color || "#ffaa66";
-                    ctx.fill();
-                }
-                if(particles.length>0) requestAnimationFrame(update);
-            }
-            update();
-        }
-        
-        function checkWin() {
-            if (victory) return;
-            const dist = Math.hypot(ballX - targetCenter.x, ballY - targetCenter.y);
-            if (dist < BALL_RADIUS + 5) {
-                victory = true;
-                const elapsed = currentTime;
-                saveBestTime(elapsed);
-                startFallingEffect(() => startFireworks());
-                if (victoryTimer) clearTimeout(victoryTimer);
-                victoryTimer = setTimeout(() => {
-                    resetGame(true);
-                    victory = false;
-                    gameStarted = false;
-                    startTime = null;
-                    currentTime = 0;
-                    timerDisplay.innerText = "0.0 s";
-                }, 3500);
-            }
-        }
-        
-        function resetGame(newMaze=true) {
-            if(victoryTimer) clearTimeout(victoryTimer);
-            victory = false;
-            gameStarted = false;
-            startTime = null;
-            currentTime = 0;
-            timerDisplay.innerText = "0.0 s";
-            if(newMaze) generateNewMaze();
-            randomSpawn();
-            velocityX = 0; velocityY = 0;
-            leftPressed = rightPressed = upPressed = downPressed = false;
-            dragActive = false;
-        }
-        
-        function updateTimerDisplay() {
-            if (!victory && gameStarted && startTime) {
-                currentTime = (performance.now() / 1000) - startTime;
-                timerDisplay.innerText = currentTime.toFixed(1) + " s";
-            } else if (!gameStarted) {
-                timerDisplay.innerText = "0.0 s";
-            }
-            requestAnimationFrame(updateTimerDisplay);
-        }
-        
-        // ---------- LOOP PRINCIPAL ----------
-        let lastFrame = 0;
-        function gameLoop(now) {
-            if(!lastFrame) lastFrame = now;
-            let delta = Math.min(0.033, (now-lastFrame)/1000);
-            if(delta>0.01) {
-                if (!casualMode) {
-                    updatePhysicsClassic(delta);
-                } else {
-                    // No modo casual, apenas teleporte e verificação de vitória (movimento já resolvido no arrasto)
-                    handleTeleport();
-                    checkWin();
-                    // Atualiza tempo se necessário (já tratado no timer display)
-                }
-                draw();
-                if (gameStarted && !victory && startTime) {
-                    currentTime = (performance.now()/1000) - startTime;
-                    timerDisplay.innerText = currentTime.toFixed(1) + " s";
-                }
-            }
-            lastFrame = now;
-            requestAnimationFrame(gameLoop);
-        }
-        
-        function draw() {
-            ctx.clearRect(0,0,SIZE,SIZE);
-            ctx.fillStyle = "#1e2a32";
-            ctx.fillRect(0,0,SIZE,SIZE);
-            for(let w of walls) {
-                if(w.type === 'dark') {
-                    ctx.fillStyle = "#2d5a3b";
-                    ctx.fillRect(w.x, w.y, w.w, w.h);
-                    ctx.fillStyle = "#1f3e2a";
-                    ctx.fillRect(w.x+2, w.y+2, w.w-4, w.h-4);
-                } else {
-                    ctx.fillStyle = "#8bc34a";
-                    ctx.fillRect(w.x, w.y, w.w, w.h);
-                    ctx.fillStyle = "#6a9e3a";
-                    ctx.fillRect(w.x+2, w.y+2, w.w-4, w.h-4);
-                }
-                ctx.strokeStyle = "#1e2a1a";
-                ctx.strokeRect(w.x, w.y, w.w, w.h);
-            }
-            ctx.shadowBlur = 0;
-            ctx.beginPath();
-            ctx.arc(targetCenter.x, targetCenter.y, TARGET_RADIUS, 0, Math.PI*2);
-            ctx.fillStyle = "#8B0000";
-            ctx.fill();
-            ctx.beginPath();
-            ctx.arc(targetCenter.x, targetCenter.y, TARGET_RADIUS-5, 0, Math.PI*2);
-            ctx.fillStyle = "#FF4500";
-            ctx.fill();
-            ctx.beginPath();
-            ctx.arc(targetCenter.x, targetCenter.y, TARGET_RADIUS-10, 0, Math.PI*2);
-            ctx.fillStyle = "#FFD700";
-            ctx.fill();
-            ctx.beginPath();
-            ctx.arc(targetCenter.x, targetCenter.y, 5, 0, Math.PI*2);
-            ctx.fillStyle = "#FFF8DC";
-            ctx.fill();
-            ctx.shadowColor = "rgba(0,0,0,0.4)";
-            ctx.shadowBlur = 8;
-            const grad = ctx.createRadialGradient(ballX-4, ballY-4, 4, ballX, ballY, BALL_RADIUS);
-            grad.addColorStop(0, "#f4f8ff");
-            grad.addColorStop(0.5, "#b5c4d4");
-            grad.addColorStop(1, "#7a8a9a");
-            ctx.beginPath();
-            ctx.arc(ballX, ballY, BALL_RADIUS, 0, Math.PI*2);
-            ctx.fillStyle = grad;
-            ctx.fill();
-            ctx.shadowBlur = 0;
-            ctx.beginPath();
-            ctx.arc(ballX-3, ballY-4, 4, 0, Math.PI*2);
-            ctx.fillStyle = "rgba(255,255,255,0.7)";
-            ctx.fill();
-        }
-        
-        // ---------- INICIALIZAÇÃO ----------
-        loadBestTime();
-        generateNewMaze();
-        randomSpawn();
-        updateTimerDisplay();
-        
-        function setMode(isCasual) {
-            casualMode = isCasual;
-            dpadWrapper.style.display = casualMode ? 'none' : 'flex';
-            if (casualMode) {
-                leftPressed = rightPressed = upPressed = downPressed = false;
-            }
-        }
-        
+        // Alternância de modo
         modeToggle.addEventListener('change', (e) => {
-            setMode(e.target.checked);
+            game.casualMode = e.target.checked;
+            dpadDiv.style.display = game.casualMode ? 'none' : 'grid';
             resetGame(false);
         });
         
-        setMode(false);
+        // Botão reset
+        resetBtn.addEventListener('click', () => resetGame(true));
+        resetBtn.addEventListener('touchstart', (e) => { e.preventDefault(); resetGame(true); });
+        
+        // Inicialização
+        generateMaze();
+        randomSpawn();
+        game.casualMode = false;
         modeToggle.checked = false;
-        
-        // Eventos de teclado para modo clássico
-        window.addEventListener('keydown', (e) => {
-            if (casualMode) return;
-            const k = e.key;
-            if(k === 'ArrowLeft' || k === 'a') { leftPressed=true; e.preventDefault(); }
-            else if(k === 'ArrowRight' || k === 'd') { rightPressed=true; e.preventDefault(); }
-            else if(k === 'ArrowUp' || k === 'w') { upPressed=true; e.preventDefault(); }
-            else if(k === 'ArrowDown' || k === 's') { downPressed=true; e.preventDefault(); }
-            else if(k === 'r') { resetGame(true); e.preventDefault(); }
-        });
-        window.addEventListener('keyup', (e) => {
-            if (casualMode) return;
-            const k = e.key;
-            if(k === 'ArrowLeft' || k === 'a') leftPressed=false;
-            else if(k === 'ArrowRight' || k === 'd') rightPressed=false;
-            else if(k === 'ArrowUp' || k === 'w') upPressed=false;
-            else if(k === 'ArrowDown' || k === 's') downPressed=false;
-        });
-        
-        const attach = (btn, dir) => {
-            if(!btn) return;
-            const set = (active) => {
-                if (casualMode) return;
-                if(dir==='up') upPressed=active;
-                if(dir==='down') downPressed=active;
-                if(dir==='left') leftPressed=active;
-                if(dir==='right') rightPressed=active;
-            };
-            btn.addEventListener('mousedown', (e)=>{e.preventDefault(); set(true);});
-            btn.addEventListener('mouseup', ()=>set(false));
-            btn.addEventListener('mouseleave', ()=>set(false));
-            btn.addEventListener('touchstart', (e)=>{e.preventDefault(); set(true);});
-            btn.addEventListener('touchend', ()=>set(false));
-            btn.addEventListener('touchcancel', ()=>set(false));
-        };
-        attach(document.getElementById('btnUp'), 'up');
-        attach(document.getElementById('btnDown'), 'down');
-        attach(document.getElementById('btnLeft'), 'left');
-        attach(document.getElementById('btnRight'), 'right');
-        
-        const resetBtn = document.getElementById('btnReset');
-        if(resetBtn) {
-            resetBtn.addEventListener('click', ()=>resetGame(true));
-            resetBtn.addEventListener('touchstart', (e)=>{e.preventDefault(); resetGame(true);});
-        }
-        
-        canvas.addEventListener('touchstart', onDragStart, { passive: false });
-        canvas.addEventListener('touchmove', onDragMove, { passive: false });
-        canvas.addEventListener('touchend', onDragEnd);
-        canvas.addEventListener('mousedown', onDragStart);
-        window.addEventListener('mousemove', (e) => {
-            if (casualMode && dragActive) onDragMove(e);
-        });
-        window.addEventListener('mouseup', onDragEnd);
-        
-        document.body.addEventListener('touchmove', e=>{ if(e.target===canvas) e.preventDefault(); }, {passive:false});
+        dpadDiv.style.display = 'grid';
         
         requestAnimationFrame(gameLoop);
     })();
