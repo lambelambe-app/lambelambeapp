@@ -2,334 +2,221 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>Vaaamos! | Eventos Ao Vivo</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, 'Segoe UI', Roboto, sans-serif; }
-        body { background: linear-gradient(135deg, #f5f7fa 0%, #e9edf2 100%); color: #1a2c3e; padding: 1rem; min-height: 100vh; }
-        .container { max-width: 1400px; margin: 0 auto; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, 'Segoe UI', sans-serif; }
+        body { background: #f5f7fa; padding: 1rem; }
+        .container { max-width: 1200px; margin: 0 auto; }
         .geo-header {
-            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            background: linear-gradient(135deg, #0f2027, #203a43);
             color: white;
             border-radius: 1.5rem;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
-        }
-        .geo-header h1 { font-size: 1.6rem; display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
-        .geo-header h1 i { font-size: 2rem; color: #ffd966; animation: pulse 2s infinite; }
-        @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.05); } }
-        .location-box {
-            background: rgba(255,255,255,0.2);
-            backdrop-filter: blur(10px);
-            border-radius: 2rem;
-            padding: 0.5rem 1.2rem;
-            margin-top: 1rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.8rem;
-            font-weight: 500;
-            border: 1px solid rgba(255,255,255,0.3);
-        }
-        .badge-city { background: #ffb347; color: #2d2f36; border-radius: 2rem; padding: 0.2rem 1rem; font-weight: bold; }
-        .section-title {
-            font-size: 1.5rem;
-            margin: 1.5rem 0 1rem;
-            padding-left: 0.8rem;
-            border-left: 6px solid #e63946;
-            font-weight: 700;
+            padding: 1rem 1.5rem;
+            margin-bottom: 1.5rem;
             display: flex;
-            align-items: center;
             justify-content: space-between;
+            align-items: center;
             flex-wrap: wrap;
-            gap: 0.5rem;
         }
-        .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; margin-top: 0.5rem; }
+        .geo-header h1 { font-size: 1.4rem; display: flex; align-items: center; gap: 0.5rem; }
+        .location-box { background: rgba(255,255,255,0.2); padding: 0.3rem 1rem; border-radius: 2rem; font-size: 0.85rem; }
+        .section-title {
+            font-size: 1.3rem;
+            margin: 1.5rem 0 1rem;
+            border-left: 5px solid #e63946;
+            padding-left: 0.8rem;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+        }
+        .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.2rem; }
         .event-card {
             background: white;
-            border-radius: 1.2rem;
+            border-radius: 1rem;
             overflow: hidden;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-            transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
-            border: 1px solid rgba(0,0,0,0.05);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: 0.2s;
         }
-        .event-card:hover { transform: translateY(-5px); box-shadow: 0 20px 35px rgba(0,0,0,0.15); }
-        .card-banner {
-            width: 100%;
-            height: 160px;
-            object-fit: cover;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            transition: transform 0.3s ease;
-        }
-        .event-card:hover .card-banner { transform: scale(1.02); }
-        .card-content { padding: 1rem; }
-        .card-title {
-            font-size: 1.1rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 0.5rem;
-        }
-        .desc { color: #4a5568; font-size: 0.85rem; margin: 0.5rem 0; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .event-card:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.15); }
+        .card-banner { width: 100%; height: 140px; object-fit: cover; background: #667eea; }
+        .card-content { padding: 0.8rem; }
+        .card-title { font-weight: bold; display: flex; justify-content: space-between; margin-bottom: 0.3rem; }
         .datetime-highlight {
-            background: linear-gradient(135deg, #fff5e6, #ffe8d6);
-            border-left: 4px solid #f97316;
-            padding: 0.5rem;
-            border-radius: 0.6rem;
-            margin: 0.6rem 0;
-            font-weight: 600;
-            font-size: 0.8rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex-wrap: wrap;
+            background: #fff5e6;
+            border-left: 3px solid #f97316;
+            padding: 0.3rem;
+            font-size: 0.7rem;
+            margin: 0.5rem 0;
+            border-radius: 0.4rem;
         }
         .local-badge {
             background: #2c7da0;
             color: white;
             font-size: 0.7rem;
-            border-radius: 2rem;
-            padding: 0.2rem 0.7rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            width: fit-content;
+            border-radius: 1rem;
+            padding: 0.1rem 0.5rem;
+            display: inline-block;
+            margin: 0.2rem 0;
             cursor: pointer;
         }
-        .local-badge i { pointer-events: none; }
         .event-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: linear-gradient(135deg, #e63946, #c1121f);
+            display: inline-block;
+            background: #e63946;
             color: white;
             text-decoration: none;
-            padding: 0.5rem 1rem;
+            padding: 0.3rem 0.8rem;
             border-radius: 2rem;
-            font-weight: 500;
-            font-size: 0.8rem;
-            transition: all 0.2s;
+            font-size: 0.7rem;
             margin-top: 0.5rem;
         }
-        .event-link:hover { transform: scale(0.98); box-shadow: 0 4px 12px rgba(230,57,70,0.4); }
-        .admin-buttons { display: flex; gap: 8px; align-items: center; }
-        .btn-icon {
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 1rem;
-            padding: 5px;
-            border-radius: 50%;
-            transition: 0.2s;
-            width: 30px;
-            height: 30px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
+        .admin-buttons { display: flex; gap: 6px; }
+        .btn-icon { background: none; border: none; cursor: pointer; font-size: 1rem; padding: 4px; }
         .btn-delete { color: #e63946; }
-        .btn-delete:hover { background: #ffe5e5; transform: scale(1.1); }
         .btn-pin { color: #f4a261; }
-        .btn-pin:hover { background: #fff0e6; transform: scale(1.1); }
         .btn-pin.active { color: #27ae60; }
-        .badge-fixed { background: #27ae60; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; display: inline-flex; align-items: center; gap: 4px; }
-        .empty-state { text-align: center; padding: 3rem; background: white; border-radius: 1.5rem; color: #6c757d; }
+        .badge-fixed { background: #27ae60; color: white; padding: 2px 6px; border-radius: 12px; font-size: 0.65rem; }
+        .empty-state { text-align: center; padding: 2rem; background: white; border-radius: 1rem; color: #666; }
         .toast {
             position: fixed;
             bottom: 20px;
             right: 20px;
             background: #2c3e50;
             color: white;
-            padding: 12px 20px;
-            border-radius: 12px;
-            z-index: 10000;
-            animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-            max-width: 300px;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            z-index: 1000;
+            animation: fadeInOut 3s;
         }
-        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        @keyframes fadeOut { to { opacity: 0; visibility: hidden; } }
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateX(100%); }
+            15% { opacity: 1; transform: translateX(0); }
+            85% { opacity: 1; transform: translateX(0); }
+            100% { opacity: 0; transform: translateX(100%); }
+        }
         .form-card {
             background: white;
-            border-radius: 1.5rem;
-            padding: 1.5rem;
+            border-radius: 1.2rem;
+            padding: 1.2rem;
             margin-bottom: 2rem;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-            border: 1px solid #e2edf2;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
-        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
-        .form-group { margin-bottom: 1rem; }
-        label { font-weight: 600; margin-bottom: 0.3rem; display: block; font-size: 0.85rem; }
-        input, textarea { width: 100%; padding: 0.7rem; border: 2px solid #e2e8f0; border-radius: 1rem; font-size: 0.9rem; transition: 0.2s; }
-        input:focus, textarea:focus { outline: none; border-color: #e63946; box-shadow: 0 0 0 3px rgba(230,57,70,0.1); }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 0.8rem; }
+        input, textarea { width: 100%; padding: 0.6rem; border: 1px solid #ccc; border-radius: 0.8rem; }
         .btn-primary {
-            background: linear-gradient(135deg, #1e2f3e, #2c3e50);
+            background: #1e2f3e;
             color: white;
-            border: none;
-            padding: 0.8rem 1.8rem;
+            width: 100%;
+            padding: 0.7rem;
             border-radius: 2rem;
+            border: none;
             font-weight: bold;
             cursor: pointer;
-            transition: 0.2s;
-            width: 100%;
-            font-size: 1rem;
         }
-        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
-        footer { text-align: center; margin-top: 2rem; padding: 1rem; font-size: 0.75rem; color: #6c757d; }
-        @media (max-width: 640px) { body { padding: 0.8rem; } .form-row { grid-template-columns: 1fr; } .section-title { font-size: 1.3rem; } }
+        footer { text-align: center; margin-top: 2rem; font-size: 0.7rem; color: #777; }
+        @media (max-width: 640px) { .form-row { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
 <div class="container">
     <div class="geo-header">
-        <h1><i class="fas fa-map-marker-alt"></i> Vaaamos! Lambe Lambe App</h1>
-        <div class="location-box">
-            <i class="fas fa-globe-americas"></i>
-            <span id="locationText">Detectando localização...</span>
-        </div>
+        <h1><i class="fas fa-map-marker-alt"></i> Vaaamos! Lambe Lambe</h1>
+        <div class="location-box"><i class="fas fa-globe"></i> <span id="locationText">Detectando...</span></div>
     </div>
 
-    <!-- 1. Eventos cadastrados -->
+    <!-- Eventos cadastrados -->
     <div class="section-title">
-        <span><i class="fas fa-calendar-check"></i> Eventos Cadastrados</span>
-        <span id="eventCountBadge" style="background:#e9ecef; padding:0.2rem 0.8rem; border-radius:2rem;">0</span>
+        <span>📅 Eventos Cadastrados</span>
+        <span id="eventCountBadge" style="background:#e9ecef; padding:0.1rem 0.6rem; border-radius:1rem;">0</span>
     </div>
     <div id="manualEventsContainer" class="cards-grid"></div>
 
-    <!-- 2. YouTube ao vivo -->
-    <div id="youtubeSection" style="display: none;">
-        <div class="section-title">
-            <span><i class="fab fa-youtube"></i> Ao Vivo no YouTube</span>
-        </div>
-        <div id="youtubeEventsContainer" class="cards-grid"></div>
+    <!-- YouTube ao vivo -->
+    <div class="section-title">
+        <span>🎬 Ao Vivo no YouTube</span>
+    </div>
+    <div id="youtubeContainer" class="cards-grid">
+        <div class="empty-state">Carregando lives...</div>
     </div>
 
-    <!-- 3. Formulário de cadastro -->
+    <!-- Formulário -->
     <div class="form-card">
-        <h3 style="margin-bottom: 1rem;"><i class="fas fa-plus-circle"></i> Cadastrar Novo Evento</h3>
+        <h3>➕ Cadastrar Evento</h3>
         <form id="eventForm">
             <div class="form-row">
-                <div class="form-group">
-                    <label>Título *</label>
-                    <input type="text" id="eventTitle" required>
-                </div>
-                <div class="form-group">
-                    <label>Banner (URL da imagem - opcional)</label>
-                    <input type="url" id="eventBanner" placeholder="https://exemplo.com/banner.jpg">
-                </div>
+                <div class="form-group"><label>Título *</label><input type="text" id="eventTitle" required></div>
+                <div class="form-group"><label>Banner (URL)</label><input type="url" id="eventBanner" placeholder="opcional"></div>
             </div>
             <div class="form-row">
-                <div class="form-group">
-                    <label>Data/Hora *</label>
-                    <input type="datetime-local" id="eventDatetime" required>
-                </div>
-                <div class="form-group">
-                    <label>Cidade * (para geolocalização)</label>
-                    <input type="text" id="eventCity" placeholder="Ex: São Paulo" required>
-                </div>
+                <div class="form-group"><label>Data/Hora *</label><input type="datetime-local" id="eventDatetime" required></div>
+                <div class="form-group"><label>Cidade *</label><input type="text" id="eventCity" required></div>
             </div>
-            <div class="form-group">
-                <label>Endereço completo (opcional - para abrir o mapa)</label>
-                <input type="text" id="eventAddress" placeholder="Rua, número, bairro - usado para navegação">
-            </div>
-            <div class="form-group">
-                <label>Descrição *</label>
-                <textarea rows="2" id="eventDesc" required></textarea>
-            </div>
-            <div class="form-group">
-                <label>Link da Live *</label>
-                <input type="url" id="eventLink" required>
-            </div>
+            <div class="form-group"><label>Endereço (opcional)</label><input type="text" id="eventAddress" placeholder="Rua, número"></div>
+            <div class="form-group"><label>Descrição *</label><textarea rows="2" id="eventDesc" required></textarea></div>
+            <div class="form-group"><label>Link da Live *</label><input type="url" id="eventLink" required></div>
             <button type="submit" class="btn-primary">Publicar Evento</button>
         </form>
     </div>
-
-    <footer>
-        <i class="fas fa-map-pin"></i> Eventos próximos a você são destacados · Exclusão 1h após início
-    </footer>
+    <footer>Limite de 5 eventos por dispositivo · Exclusão 1h após início · Conteúdo impróprio é bloqueado</footer>
 </div>
 
 <script>
     // ==================== CONFIGURAÇÕES ====================
-    const YOUTUBE_API_KEY = "AIzaSyAq1vULczFTYA_kM1cZ2XYjxSNjC-P7jCo"; // Preencha com sua chave
-    const MAX_YOUTUBE_RESULTS = 6;
+    const YOUTUBE_API_KEY = "AIzaSyCrIJtzHeEeAPGxHI2ZNQlHdNyBd4mkmGQ"; // Sua chave
     const LIMITE_EVENTOS = 5;
     const ALERTA_EMAIL = "lambelambeapp@gmail.com";
 
-    // Filtro de conteúdo impróprio
-    const PALAVRAS_BLOQUEADAS = [
-        "sexo", "porn", "nudez", "violência", "droga", "tráfico", "arma", "facção",
-        "ódio", "racismo", "homofobia", "xenofobia", "nazi", "pedofilia", "suicídio",
-        "morte", "sangue", "sequestro", "assalto", "estupro", "incesto", "bomba",
-        "terrorismo", "cocaína", "maconha", "crack", "heroína", "prostituição"
-    ];
+    // Palavras bloqueadas (conteúdo impróprio)
+    const BLOQUEADAS = ["sexo","porn","nudez","violência","droga","tráfico","arma","facção","ódio","racismo","homofobia","nazi","pedofilia","suicídio","morte","sangue","sequestro","assalto","estupro","incesto","bomba","terrorismo","cocaína","maconha","crack","heroína","prostituição"];
 
-    function containsInappropriateContent(texto) {
-        if (!texto) return false;
-        const lower = texto.toLowerCase();
-        return PALAVRAS_BLOQUEADAS.some(termo => lower.includes(termo));
+    function hasBadWords(text) {
+        if (!text) return false;
+        const lower = text.toLowerCase();
+        return BLOQUEADAS.some(pal => lower.includes(pal));
     }
 
-    function isValidYouTubeUrl(url) {
-        const patterns = [
-            /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+$/,
-            /^https?:\/\/(www\.)?youtube\.com\/watch\?v=[\w-]+/,
-            /^https?:\/\/youtu\.be\/[\w-]+/
-        ];
-        return patterns.some(p => p.test(url));
+    function isValidYoutubeUrl(url) {
+        return /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\//.test(url);
     }
 
     let userCity = null;
     let manualEvents = [];
 
     // ==================== GEOLOCALIZAÇÃO ====================
-    async function detectUserLocation() {
-        if (!navigator.geolocation) {
-            document.getElementById("locationText").innerHTML = "<i class='fas fa-exclamation-triangle'></i> Geolocalização não suportada";
-            return;
-        }
+    async function getLocation() {
+        if (!navigator.geolocation) return;
         try {
-            const position = await new Promise((resolve, reject) => navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 10000 }));
-            const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.coords.latitude}&lon=${position.coords.longitude}&zoom=10&addressdetails=1&accept-language=pt-BR`);
-            const data = await response.json();
-            let city = data.address?.city || data.address?.town || data.address?.municipality || "";
-            if (city) {
-                userCity = city.trim();
-                document.getElementById("locationText").innerHTML = `<i class="fas fa-map-pin"></i> Você está em: <span class="badge-city">${userCity}</span>`;
-            } else {
-                userCity = null;
-                document.getElementById("locationText").innerHTML = `<i class="fas fa-globe"></i> Localização aproximada`;
-            }
+            const pos = await new Promise((res,rej)=> navigator.geolocation.getCurrentPosition(res,rej));
+            const resp = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&accept-language=pt-BR`);
+            const data = await resp.json();
+            userCity = data.address?.city || data.address?.town || data.address?.municipality;
+            document.getElementById("locationText").innerHTML = userCity ? `📍 ${userCity}` : "📍 Local aprox.";
             renderManualEvents();
-        } catch (error) {
-            document.getElementById("locationText").innerHTML = "<i class='fas fa-map-marker-alt'></i> Localização não disponível";
-            userCity = null;
-            renderManualEvents();
-        }
+        } catch(e) { document.getElementById("locationText").innerHTML = "📍 Não disponível"; }
     }
-    setInterval(detectUserLocation, 30000);
-    detectUserLocation();
+    getLocation();
+    setInterval(getLocation, 30000);
 
     // ==================== CRUD EVENTOS ====================
-    function loadManualEvents() {
+    function loadEvents() {
         const stored = localStorage.getItem("vaaamos_events");
         manualEvents = stored ? JSON.parse(stored) : [];
         manualEvents.forEach(ev => { if (ev.keepByAdmin === undefined) ev.keepByAdmin = false; });
         renderManualEvents();
     }
 
-    function saveManualEvents() {
+    function saveEvents() {
         localStorage.setItem("vaaamos_events", JSON.stringify(manualEvents));
         renderManualEvents();
+        document.getElementById("eventCountBadge").innerText = manualEvents.length;
     }
 
     function getDeviceId() {
         let id = localStorage.getItem("deviceId");
         if (!id) {
-            id = 'device_' + Math.random().toString(36).substr(2, 16) + Date.now();
+            id = 'dev_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
             localStorage.setItem("deviceId", id);
         }
         return id;
@@ -340,43 +227,37 @@
         return manualEvents.filter(ev => ev.createdBy === deviceId).length;
     }
 
-    function addManualEvent(eventData) {
-        // Validação de conteúdo impróprio
-        const camposParaValidar = [eventData.title, eventData.description, eventData.city, eventData.address];
-        for (let campo of camposParaValidar) {
-            if (campo && containsInappropriateContent(campo)) {
-                showToast("❌ Conteúdo impróprio detectado. Seu evento não foi publicado.", "#e63946");
-                return false;
-            }
+    function addEvent(eventData) {
+        // Validação de conteúdo
+        if (hasBadWords(eventData.title) || hasBadWords(eventData.description) || hasBadWords(eventData.city) || hasBadWords(eventData.address)) {
+            showToast("❌ Conteúdo impróprio detectado! Evento não publicado.", "red");
+            return false;
         }
-
-        if (!isValidYouTubeUrl(eventData.link)) {
-            showToast("❌ Link inválido. Use um link válido do YouTube.", "#e63946");
+        if (!isValidYoutubeUrl(eventData.link)) {
+            showToast("❌ Link inválido. Use um link do YouTube.", "red");
+            return false;
+        }
+        const eventDate = new Date(eventData.datetime);
+        if (eventDate <= new Date()) {
+            showToast("❌ Data/hora deve ser no futuro.", "red");
             return false;
         }
 
-        const horarioEvento = new Date(eventData.datetime);
-        const agora = new Date();
-        if (horarioEvento <= agora) {
-            showToast("❌ A data/hora deve ser no futuro.", "#e63946");
+        const userCount = countUserEvents();
+        if (userCount >= LIMITE_EVENTOS) {
+            showToast(`❌ Limite de ${LIMITE_EVENTOS} eventos atingido. Contato: ${ALERTA_EMAIL}`, "orange");
             return false;
         }
-
-        const userEventCount = countUserEvents();
-        if (userEventCount >= LIMITE_EVENTOS) {
-            showToast(`❌ Limite de ${LIMITE_EVENTOS} eventos atingido. Contato: ${ALERTA_EMAIL}`, "#e67e22");
-            return false;
-        }
-        if (userEventCount >= 3) {
-            showToast(`⚠️ Você já tem ${userEventCount} eventos. Considere contato: ${ALERTA_EMAIL}`, "#f4a261");
+        // Crítica a partir do terceiro evento (quando já tem 3 e tenta o 4º)
+        if (userCount >= 3) {
+            showToast(`⚠️ Você já tem ${userCount} eventos. Para mais, entre em contato: ${ALERTA_EMAIL}`, "#f4a261");
         }
 
-        let bannerUrl = eventData.bannerUrl && eventData.bannerUrl.trim() !== "" ? eventData.bannerUrl : "subvam.png";
-
-        const newEvent = {
+        let banner = eventData.bannerUrl && eventData.bannerUrl.trim() !== "" ? eventData.bannerUrl : "subvam.png";
+        manualEvents.push({
             id: Date.now(),
             title: eventData.title,
-            bannerUrl: bannerUrl,
+            bannerUrl: banner,
             datetime: eventData.datetime,
             city: eventData.city,
             address: eventData.address || "",
@@ -384,210 +265,170 @@
             link: eventData.link,
             createdBy: getDeviceId(),
             keepByAdmin: false
-        };
-        manualEvents.push(newEvent);
+        });
         manualEvents.sort((a,b) => new Date(a.datetime) - new Date(b.datetime));
-        saveManualEvents();
+        saveEvents();
+        showToast("✅ Evento adicionado!", "green");
         return true;
     }
 
-    function deleteManualEvent(id) {
+    function deleteEvent(id) {
         manualEvents = manualEvents.filter(ev => ev.id !== id);
-        saveManualEvents();
-        showToast("🗑️ Evento removido!", "#e63946");
+        saveEvents();
+        showToast("🗑️ Evento removido", "red");
     }
 
-    function fixarEventoParaAdmin(id) {
-        const evento = manualEvents.find(ev => ev.id === id);
-        if (evento) {
-            evento.keepByAdmin = !evento.keepByAdmin;
-            saveManualEvents();
-            showToast(evento.keepByAdmin ? "📌 Fixado! Não será removido." : "🔓 Liberado para remoção.", evento.keepByAdmin ? "#27ae60" : "#f4a261");
+    function togglePin(id) {
+        const ev = manualEvents.find(ev => ev.id === id);
+        if (ev) {
+            ev.keepByAdmin = !ev.keepByAdmin;
+            saveEvents();
+            showToast(ev.keepByAdmin ? "📌 Fixado! Não será removido." : "🔓 Remoção automática liberada.", "#f4a261");
         }
     }
 
-    // Exclusão automática 1 hora após o início
-    function removerEventosExpirados() {
-        const agora = new Date();
-        let removidos = 0;
-        const novosEventos = manualEvents.filter(ev => {
-            const diffHoras = (agora - new Date(ev.datetime)) / (1000 * 60 * 60);
-            if (diffHoras >= 1 && !ev.keepByAdmin) {
-                removidos++;
+    // Exclusão automática 1h após início
+    function cleanExpired() {
+        const now = new Date();
+        let removed = 0;
+        const filtered = manualEvents.filter(ev => {
+            const diff = (now - new Date(ev.datetime)) / (1000*3600);
+            if (diff >= 1 && !ev.keepByAdmin) {
+                removed++;
                 return false;
             }
             return true;
         });
-        if (removidos > 0) {
-            manualEvents = novosEventos;
-            saveManualEvents();
-            showToast(`⏰ ${removidos} evento(s) expirado(s) (1h após início) removido(s)`, "#2c3e50");
+        if (removed) {
+            manualEvents = filtered;
+            saveEvents();
+            showToast(`⏰ ${removed} evento(s) expirado(s) (1h após início) removido(s)`, "#2c3e50");
         }
     }
-    setInterval(removerEventosExpirados, 60 * 1000);
-    removerEventosExpirados();
+    setInterval(cleanExpired, 60000);
+    cleanExpired();
 
-    function showToast(message, bgColor = "#2c3e50") {
+    function showToast(msg, color="#2c3e50") {
         const toast = document.createElement('div');
         toast.className = 'toast';
-        toast.style.background = bgColor;
-        toast.innerHTML = `<i class="fas fa-info-circle"></i> ${message}`;
+        toast.style.background = color;
+        toast.innerText = msg;
         document.body.appendChild(toast);
         setTimeout(() => toast.remove(), 3000);
     }
 
-    function formatDateTime(dateISO) {
-        try { return new Date(dateISO).toLocaleString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute:'2-digit' }); } 
-        catch { return dateISO; }
+    function formatDate(iso) {
+        try {
+            return new Date(iso).toLocaleString('pt-BR', {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'});
+        } catch(e) { return iso; }
     }
 
-    function abrirMapa(endereco, cidade) {
-        let query = endereco ? endereco : cidade;
-        if (!query) return;
-        window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`, '_blank');
+    function openMap(endereco, cidade) {
+        let query = endereco || cidade;
+        if (query) window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`, '_blank');
     }
 
     function renderManualEvents() {
         const container = document.getElementById("manualEventsContainer");
-        const countBadge = document.getElementById("eventCountBadge");
-        countBadge.innerText = manualEvents.length;
-
-        if (manualEvents.length === 0) {
-            container.innerHTML = `<div class="empty-state"><i class="fas fa-calendar-alt" style="font-size: 3rem; opacity: 0.5;"></i><p>Nenhum evento cadastrado. Use o formulário abaixo!</p></div>`;
+        if (!manualEvents.length) {
+            container.innerHTML = `<div class="empty-state">Nenhum evento cadastrado. Use o formulário acima.</div>`;
+            document.getElementById("eventCountBadge").innerText = "0";
             return;
         }
-
         const deviceId = getDeviceId();
         container.innerHTML = manualEvents.map(ev => {
             const isLocal = userCity && ev.city && (ev.city.toLowerCase().includes(userCity.toLowerCase()) || userCity.toLowerCase().includes(ev.city.toLowerCase()));
             const isOwner = ev.createdBy === deviceId;
-            const localParaMapa = ev.address || ev.city;
             return `
-                <div class="event-card" style="${isLocal ? 'border-left: 4px solid #f4a261;' : ''}">
-                    <img class="card-banner" src="${ev.bannerUrl}" alt="${escapeHtml(ev.title)}" onerror="this.onerror=null; this.src='https://placehold.co/600x400/667eea/white?text=Vaaamos%21'">
+                <div class="event-card">
+                    <img class="card-banner" src="${ev.bannerUrl}" onerror="this.onerror=null; this.src='https://placehold.co/600x400/667eea/white?text=Vaaamos'">
                     <div class="card-content">
                         <div class="card-title">
                             <span>${escapeHtml(ev.title)}</span>
                             <div class="admin-buttons">
                                 ${ev.keepByAdmin ? '<span class="badge-fixed"><i class="fas fa-thumbtack"></i> Fixado</span>' : ''}
                                 ${isOwner ? `
-                                    <button class="btn-icon btn-delete" onclick="window.deleteManualEvent(${ev.id})"><i class="fas fa-trash-alt"></i></button>
-                                    <button class="btn-icon btn-pin ${ev.keepByAdmin ? 'active' : ''}" onclick="window.fixarEventoParaAdmin(${ev.id})"><i class="fas fa-thumbtack"></i></button>
+                                    <button class="btn-icon btn-delete" onclick="window.deleteEvent(${ev.id})"><i class="fas fa-trash-alt"></i></button>
+                                    <button class="btn-icon btn-pin ${ev.keepByAdmin ? 'active' : ''}" onclick="window.togglePin(${ev.id})"><i class="fas fa-thumbtack"></i></button>
                                 ` : ''}
                             </div>
                         </div>
-                        <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-                            ${ev.city ? `<div class="local-badge" onclick="abrirMapa('${escapeHtml(localParaMapa)}', '${escapeHtml(ev.city)}')"><i class="fas fa-map-marker-alt"></i> ${escapeHtml(ev.city)} ${ev.address ? '📍' : ''}</div>` : ''}
-                        </div>
-                        <div class="datetime-highlight">
-                            <i class="far fa-clock"></i> <strong>${formatDateTime(ev.datetime)}</strong>
-                            ${isLocal ? '<span style="background:#f4a261; color:#1e2f3e; padding:2px 8px; border-radius:30px; margin-left:8px;"><i class="fas fa-location-dot"></i> Perto de você</span>' : ''}
-                        </div>
+                        <div class="local-badge" onclick="openMap('${escapeHtml(ev.address)}','${escapeHtml(ev.city)}')"><i class="fas fa-map-marker-alt"></i> ${escapeHtml(ev.city)}</div>
+                        <div class="datetime-highlight">⏰ ${formatDate(ev.datetime)} ${isLocal ? '📍 Perto de você' : ''}</div>
                         <div class="desc">${escapeHtml(ev.description)}</div>
                         <a href="${ev.link}" target="_blank" class="event-link"><i class="fab fa-youtube"></i> Assistir live</a>
                     </div>
                 </div>
             `;
         }).join('');
+        document.getElementById("eventCountBadge").innerText = manualEvents.length;
     }
 
-    // ==================== YOUTUBE LIVE (HÍBRIDO: KEYWORDS + CATEGORIAS) ====================
-    async function fetchYouTubeLiveEvents() {
-        const section = document.getElementById("youtubeSection");
-        const container = document.getElementById("youtubeEventsContainer");
-        if (!YOUTUBE_API_KEY || YOUTUBE_API_KEY === "AIzaSyAq1vULczFTYA_kM1cZ2XYjxSNjC-P7jCo") {
-            section.style.display = "none";
+    function escapeHtml(str) { return str?.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])) || ''; }
+
+    // ==================== YOUTUBE LIVE (HÍBRIDO) ====================
+    async function fetchYouTube() {
+        const container = document.getElementById("youtubeContainer");
+        if (!YOUTUBE_API_KEY) {
+            container.innerHTML = `<div class="empty-state">🔑 Chave de API não configurada.</div>`;
             return;
         }
-        section.style.display = "block";
-        container.innerHTML = `<div class="empty-state"><i class="fas fa-spinner fa-pulse"></i><p>Buscando transmissões ao vivo...</p></div>`;
-        
-        let itemsSet = new Map(); // para evitar duplicatas por videoId
+        container.innerHTML = `<div class="empty-state"><i class="fas fa-spinner fa-pulse"></i> Buscando lives...</div>`;
+        let videosMap = new Map();
 
-        // 1. Busca por palavras-chave (música ao vivo)
+        // Palavras-chave de música
         const keywords = ["música ao vivo", "show ao vivo", "live music", "live session", "apresentação ao vivo"];
         for (const kw of keywords) {
             try {
                 const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&eventType=live&type=video&maxResults=5&q=${encodeURIComponent(kw)}&key=${YOUTUBE_API_KEY}`;
                 const res = await fetch(url);
                 const data = await res.json();
-                if (data.items) {
-                    data.items.forEach(item => {
-                        if (!itemsSet.has(item.id.videoId)) itemsSet.set(item.id.videoId, item);
-                    });
-                }
+                if (data.items) data.items.forEach(item => { if (!videosMap.has(item.id.videoId)) videosMap.set(item.id.videoId, item); });
                 await new Promise(r => setTimeout(r, 100));
-            } catch(e) { console.warn("Keyword error:", kw, e); }
+            } catch(e) { console.warn(kw, e); }
         }
 
-        // 2. Busca por categoria 10 (Música)
+        // Categoria 10 (Música)
         try {
             const urlCat = `https://www.googleapis.com/youtube/v3/search?part=snippet&eventType=live&type=video&maxResults=8&videoCategoryId=10&key=${YOUTUBE_API_KEY}`;
             const res = await fetch(urlCat);
             const data = await res.json();
-            if (data.items) {
-                data.items.forEach(item => {
-                    if (!itemsSet.has(item.id.videoId)) itemsSet.set(item.id.videoId, item);
-                });
-            }
-        } catch(e) { console.warn("Category 10 error:", e); }
+            if (data.items) data.items.forEach(item => { if (!videosMap.has(item.id.videoId)) videosMap.set(item.id.videoId, item); });
+        } catch(e) { console.warn("Categoria 10 erro", e); }
 
-        // 3. Fallback: categoria 24 (Entretenimento) se não houver nenhum resultado
-        if (itemsSet.size === 0) {
-            try {
-                const urlFallback = `https://www.googleapis.com/youtube/v3/search?part=snippet&eventType=live&type=video&maxResults=8&videoCategoryId=24&key=${YOUTUBE_API_KEY}`;
-                const res = await fetch(urlFallback);
-                const data = await res.json();
-                if (data.items) {
-                    data.items.forEach(item => {
-                        if (!itemsSet.has(item.id.videoId)) itemsSet.set(item.id.videoId, item);
-                    });
-                }
-            } catch(e) { console.warn("Fallback category error:", e); }
-        }
-
-        const uniqueItems = Array.from(itemsSet.values());
-        if (uniqueItems.length === 0) {
-            container.innerHTML = `<div class="empty-state"><i class="fas fa-video-slash"></i><p>Nenhuma live de música no momento.</p></div>`;
+        if (videosMap.size === 0) {
+            container.innerHTML = `<div class="empty-state">🎵 Nenhuma live de música no momento.</div>`;
             return;
         }
 
-        // Buscar detalhes (thumbnails, agendamento)
-        const videoIds = uniqueItems.map(i => i.id.videoId).join(',');
+        const videoIds = Array.from(videosMap.keys()).join(',');
         try {
-            const detailsRes = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet,liveStreamingDetails&id=${videoIds}&key=${YOUTUBE_API_KEY}`);
-            const detailsData = await detailsRes.json();
-            if (detailsData.error) throw new Error(detailsData.error.message);
-            container.innerHTML = detailsData.items.map(video => {
-                const thumb = video.snippet.thumbnails?.maxres?.url || video.snippet.thumbnails?.high?.url || video.snippet.thumbnails?.medium?.url;
-                const liveDetails = video.liveStreamingDetails || {};
-                const scheduledTime = liveDetails.scheduledStartTime || liveDetails.actualStartTime;
-                const displayTime = scheduledTime ? `📅 ${new Date(scheduledTime).toLocaleString('pt-BR')}` : "🔴 AO VIVO AGORA";
+            const detUrl = `https://www.googleapis.com/youtube/v3/videos?part=snippet,liveStreamingDetails&id=${videoIds}&key=${YOUTUBE_API_KEY}`;
+            const detRes = await fetch(detUrl);
+            const detData = await detRes.json();
+            if (detData.error) throw new Error(detData.error.message);
+            container.innerHTML = detData.items.map(video => {
+                const thumb = video.snippet.thumbnails?.high?.url || video.snippet.thumbnails?.medium?.url;
+                const live = video.liveStreamingDetails || {};
+                const time = live.scheduledStartTime ? `📅 ${new Date(live.scheduledStartTime).toLocaleString('pt-BR')}` : "🔴 AO VIVO";
                 return `
                     <div class="event-card">
                         <img class="card-banner" src="${thumb}" onerror="this.src='https://placehold.co/600x400/e63946/white?text=Vaaamos'">
                         <div class="card-content">
-                            <div class="card-title"><span>${escapeHtml(video.snippet.title)}</span></div>
-                            <div style="font-size:0.7rem; color:#2c7da0;"><i class="fab fa-youtube"></i> ${escapeHtml(video.snippet.channelTitle)}</div>
-                            <div class="datetime-highlight"><i class="fas fa-calendar-alt"></i> ${displayTime}</div>
-                            <div class="desc">${escapeHtml(video.snippet.description?.substring(0, 100) || '')}</div>
-                            <a href="https://www.youtube.com/watch?v=${video.id}" target="_blank" class="event-link"><i class="fab fa-youtube"></i> Assistir</a>
+                            <div class="card-title">${escapeHtml(video.snippet.title)}</div>
+                            <div style="font-size:0.7rem; color:#2c7da0;">${escapeHtml(video.snippet.channelTitle)}</div>
+                            <div class="datetime-highlight">${time}</div>
+                            <a href="https://www.youtube.com/watch?v=${video.id}" target="_blank" class="event-link">Assistir</a>
                         </div>
                     </div>
                 `;
             }).join('');
-        } catch (err) {
-            console.error(err);
-            container.innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Erro ao carregar detalhes das lives.</p></div>`;
+        } catch(err) {
+            container.innerHTML = `<div class="empty-state">Erro ao carregar detalhes: ${err.message}</div>`;
         }
     }
 
-    function escapeHtml(str) {
-        if (!str) return "";
-        return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m] || m));
-    }
-
-    // ==================== EVENTOS DO FORMULÁRIO ====================
+    // ==================== FORMULÁRIO ====================
     document.getElementById("eventForm").addEventListener("submit", (e) => {
         e.preventDefault();
         const title = document.getElementById("eventTitle").value.trim();
@@ -597,27 +438,21 @@
         const address = document.getElementById("eventAddress").value.trim();
         const description = document.getElementById("eventDesc").value.trim();
         const link = document.getElementById("eventLink").value.trim();
-
         if (!title || !datetime || !city || !description || !link) {
-            showToast("Preencha todos os campos obrigatórios!", "#e67e22");
+            showToast("Preencha todos os campos obrigatórios!", "orange");
             return;
         }
-        if (new Date(datetime) <= new Date()) {
-            showToast("A data/hora deve ser no futuro!", "#e67e22");
-            return;
-        }
-        addManualEvent({ title, bannerUrl, datetime, city, address, description, link });
+        addEvent({ title, bannerUrl, datetime, city, address, description, link });
         e.target.reset();
-        document.querySelector(".form-card").scrollIntoView({ behavior: "smooth" });
     });
 
-    window.deleteManualEvent = deleteManualEvent;
-    window.fixarEventoParaAdmin = fixarEventoParaAdmin;
-    window.abrirMapa = abrirMapa;
+    window.deleteEvent = deleteEvent;
+    window.togglePin = togglePin;
+    window.openMap = openMap;
 
-    loadManualEvents();
-    fetchYouTubeLiveEvents();
-    setInterval(fetchYouTubeLiveEvents, 120000);
+    loadEvents();
+    fetchYouTube();
+    setInterval(fetchYouTube, 120000);
 </script>
 </body>
 </html>
