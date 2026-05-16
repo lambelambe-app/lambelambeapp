@@ -249,92 +249,46 @@
     </div>
 
     <footer>
-        <i class="fas fa-map-pin"></i> Eventos próximos a você são destacados · Limite de 5 eventos por dispositivo
+        <i class="fas fa-map-pin"></i> Eventos próximos a você são destacados · Limite de 5 eventos · Exclusão 1h após início
     </footer>
 </div>
 
 <script>
     // ==================== CONFIGURAÇÕES ====================
-    // Para usar YouTube, preencha sua chave aqui (deixe vazio para não exibir)
-   async function fetchYouTubeLiveEvents() {
-    const section = document.getElementById("youtubeSection");
-    const container = document.getElementById("youtubeEventsContainer");
-    if (!YOUTUBE_API_KEY || YOUTUBE_API_KEY === "") {
-        section.style.display = "none";
-        return;
+    const YOUTUBE_API_KEY = ""; // Preencha com sua chave do YouTube para ativar lives
+    const MAX_YOUTUBE_RESULTS = 6;
+    const LIMITE_EVENTOS = 5;
+    const ALERTA_EMAIL = "lambelambeapp@gmail.com";
+
+    // Lista de palavras e termos proibidos (conteúdo impróprio)
+    const PALAVRAS_BLOQUEADAS = [
+        "sexo", "porn", "nudez", "violência", "droga", "tráfico", "arma", "facção",
+        "ódio", "racismo", "homofobia", "xenofobia", "nazi", "pedofilia", "suicídio",
+        "morte", "sangue", "sequestro", "assalto", "estupro", "incesto", "bomba",
+        "terrorismo", "cocaína", "maconha", "crack", "heroína", "prostituição"
+    ];
+
+    // Função para verificar conteúdo impróprio
+    function containsInappropriateContent(texto) {
+        if (!texto) return false;
+        const lower = texto.toLowerCase();
+        return PALAVRAS_BLOQUEADAS.some(termo => lower.includes(termo));
     }
-    section.style.display = "block";
-    container.innerHTML = `<div class="empty-state"><i class="fas fa-spinner fa-pulse"></i><p>Buscando transmissões ao vivo...</p></div>`;
-    
-    // Função auxiliar para buscar em uma categoria específica
-    async function buscaPorCategoria(categoryId) {
-        const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&eventType=live&type=video&maxResults=${MAX_YOUTUBE_RESULTS}&videoCategoryId=${categoryId}&key=${YOUTUBE_API_KEY}`;
-        const res = await fetch(url);
-        const data = await res.json();
-        if (data.error) throw new Error(data.error.message);
-        return data.items || [];
+
+    function isValidYouTubeUrl(url) {
+        // Verifica se é um link válido do YouTube (simplificado)
+        const patterns = [
+            /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+$/,
+            /^https?:\/\/(www\.)?youtube\.com\/watch\?v=[\w-]+/,
+            /^https?:\/\/youtu\.be\/[\w-]+/
+        ];
+        return patterns.some(p => p.test(url));
     }
 
-    try {
-        let items = [];
-        // Tenta primeiro a categoria Entretenimento (24)
-        try {
-            items = await buscaPorCategoria("24");
-        } catch(e) {
-            console.warn("Erro na categoria 24:", e);
-        }
-        // Se não encontrar nada, tenta Música (10)
-        if (!items.length) {
-            try {
-                items = await buscaPorCategoria("10");
-            } catch(e) {
-                console.warn("Erro na categoria 10:", e);
-            }
-        }
-        // Se ainda não encontrar, testa Gaming (20) - quase sempre tem lives
-        if (!items.length) {
-            try {
-                items = await buscaPorCategoria("20");
-            } catch(e) {
-                console.warn("Erro na categoria 20:", e);
-            }
-        }
-        
-        if (!items.length) {
-            container.innerHTML = `<div class="empty-state"><i class="fas fa-video-slash"></i><p>Nenhuma live no momento</p></div>`;
-            return;
-        }
+    let userCity = null;
+    let manualEvents = [];
 
-        const videoIds = items.map(item => item.id.videoId).join(',');
-        const detailsRes = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet,liveStreamingDetails&id=${videoIds}&key=${YOUTUBE_API_KEY}`);
-        const detailsData = await detailsRes.json();
-        if (detailsData.error) throw new Error(detailsData.error.message);
-
-        container.innerHTML = detailsData.items.map(video => {
-            const thumb = video.snippet.thumbnails?.maxres?.url || video.snippet.thumbnails?.high?.url || video.snippet.thumbnails?.medium?.url;
-            const liveDetails = video.liveStreamingDetails || {};
-            const scheduledTime = liveDetails.scheduledStartTime || liveDetails.actualStartTime;
-            const displayTime = scheduledTime ? `📅 ${new Date(scheduledTime).toLocaleString('pt-BR')}` : "🔴 AO VIVO AGORA";
-            return `
-                <div class="event-card">
-                    <img class="card-banner" src="${thumb}" onerror="this.src='https://placehold.co/600x400/e63946/white?text=YouTube+Live'">
-                    <div class="card-content">
-                        <div class="card-title"><span>${escapeHtml(video.snippet.title)}</span></div>
-                        <div style="font-size:0.7rem; color:#2c7da0;"><i class="fab fa-youtube"></i> ${escapeHtml(video.snippet.channelTitle)}</div>
-                        <div class="datetime-highlight"><i class="fas fa-calendar-alt"></i> ${displayTime}</div>
-                        <div class="desc">${escapeHtml(video.snippet.description?.substring(0, 100) || '')}</div>
-                        <a href="https://www.youtube.com/watch?v=${video.id}" target="_blank" class="event-link"><i class="fab fa-youtube"></i> Assistir</a>
-                    </div>
-                </div>
-            `;
-        }).join('');
-    } catch (err) {
-        console.error("Erro na API do YouTube:", err);
-        container.innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Erro ao carregar transmissões: ${err.message}</p></div>`;
-    }
-}
-
-    // ==================== GEOLOCALIZAÇÃO AUTOMÁTICA ====================
+    // ==================== GEOLOCALIZAÇÃO ====================
     async function detectUserLocation() {
         if (!navigator.geolocation) {
             document.getElementById("locationText").innerHTML = "<i class='fas fa-exclamation-triangle'></i> Geolocalização não suportada";
@@ -362,16 +316,16 @@
     setInterval(detectUserLocation, 30000);
     detectUserLocation();
 
-    // ==================== CRUD EVENTOS (localStorage) ====================
+    // ==================== CRUD EVENTOS ====================
     function loadManualEvents() {
-        const stored = localStorage.getItem("geolive_manual_events");
+        const stored = localStorage.getItem("vaaamos_events");
         manualEvents = stored ? JSON.parse(stored) : [];
         manualEvents.forEach(ev => { if (ev.keepByAdmin === undefined) ev.keepByAdmin = false; });
         renderManualEvents();
     }
 
     function saveManualEvents() {
-        localStorage.setItem("geolive_manual_events", JSON.stringify(manualEvents));
+        localStorage.setItem("vaaamos_events", JSON.stringify(manualEvents));
         renderManualEvents();
     }
 
@@ -390,10 +344,30 @@
     }
 
     function addManualEvent(eventData) {
+        // Validação de conteúdo impróprio
+        const camposParaValidar = [
+            eventData.title,
+            eventData.description,
+            eventData.city,
+            eventData.address
+        ];
+        for (let campo of camposParaValidar) {
+            if (campo && containsInappropriateContent(campo)) {
+                showToast("❌ Conteúdo impróprio detectado. Seu evento não foi publicado.", "#e63946");
+                return false;
+            }
+        }
+
+        // Validação de link do YouTube
+        if (!isValidYouTubeUrl(eventData.link)) {
+            showToast("❌ Link inválido. Use um link válido do YouTube.", "#e63946");
+            return false;
+        }
+
         const horarioEvento = new Date(eventData.datetime);
         const agora = new Date();
-        if ((agora - horarioEvento) / (1000 * 60 * 60) > 3) {
-            showToast("❌ Não é possível adicionar evento com mais de 3h de atraso!", "#e63946");
+        if (horarioEvento <= agora) {
+            showToast("❌ A data/hora deve ser no futuro.", "#e63946");
             return false;
         }
 
@@ -403,22 +377,26 @@
             return false;
         }
 
-        // Aviso ao tentar adicionar o 4º evento (já tem 3)
         if (userEventCount >= 3) {
             showToast(`⚠️ Você já possui ${userEventCount} eventos. Considere entrar em contato para mais oportunidades: ${ALERTA_EMAIL}`, "#f4a261");
         }
 
+        let bannerUrl = eventData.bannerUrl && eventData.bannerUrl.trim() !== "" 
+            ? eventData.bannerUrl 
+            : "subvam.png";  // imagem local padrão
+
         const newEvent = {
             id: Date.now(),
             title: eventData.title,
-            bannerUrl: eventData.bannerUrl || "https://placehold.co/600x400/667eea/white?text=GeoLive",
+            bannerUrl: bannerUrl,
             datetime: eventData.datetime,
             city: eventData.city,
             address: eventData.address || "",
             description: eventData.description,
             link: eventData.link,
             createdBy: getDeviceId(),
-            keepByAdmin: false
+            keepByAdmin: false,
+            createdAt: new Date().toISOString()
         };
         manualEvents.push(newEvent);
         manualEvents.sort((a,b) => new Date(a.datetime) - new Date(b.datetime));
@@ -441,26 +419,29 @@
         }
     }
 
-    // Exclusão automática (3h)
+    // Exclusão automática: 1 hora APÓS O INÍCIO do evento
     function removerEventosExpirados() {
         const agora = new Date();
         let removidos = 0;
         const novosEventos = manualEvents.filter(ev => {
-            const diffHoras = (agora - new Date(ev.datetime)) / (1000 * 60 * 60);
-            if (diffHoras <= 3 || ev.keepByAdmin) return true;
-            removidos++;
-            return false;
+            const horarioInicio = new Date(ev.datetime);
+            const diffHoras = (agora - horarioInicio) / (1000 * 60 * 60);
+            // Remove se já passou 1 hora do início E não estiver fixado
+            if (diffHoras >= 1 && !ev.keepByAdmin) {
+                removidos++;
+                return false;
+            }
+            return true;
         });
         if (removidos > 0) {
             manualEvents = novosEventos;
             saveManualEvents();
-            showToast(`⏰ ${removidos} evento(s) expirado(s) removido(s) automaticamente`, "#2c3e50");
+            showToast(`⏰ ${removidos} evento(s) expirado(s) (1h após início) removido(s) automaticamente`, "#2c3e50");
         }
     }
     setInterval(removerEventosExpirados, 60 * 1000);
     removerEventosExpirados();
 
-    // ==================== NOTIFICAÇÕES ====================
     function showToast(message, bgColor = "#2c3e50") {
         const toast = document.createElement('div');
         toast.className = 'toast';
@@ -470,7 +451,6 @@
         setTimeout(() => toast.remove(), 3000);
     }
 
-    // ==================== RENDERIZAÇÃO ====================
     function formatDateTime(dateISO) {
         try { return new Date(dateISO).toLocaleString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute:'2-digit' }); } 
         catch { return dateISO; }
@@ -479,7 +459,6 @@
     function abrirMapa(endereco, cidade) {
         let query = endereco ? endereco : cidade;
         if (!query) return;
-        // Tenta abrir no app de mapas nativo (geo: ou intent)
         const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
         window.open(mapsUrl, '_blank');
     }
@@ -501,7 +480,10 @@
             const localParaMapa = ev.address || ev.city;
             return `
                 <div class="event-card" style="${isLocal ? 'border-left: 4px solid #f4a261;' : ''}">
-                    <img class="card-banner" src="${ev.bannerUrl}" alt="banner" onerror="this.src='https://placehold.co/600x400/667eea/white?text=GeoLive'">
+                    <img class="card-banner" 
+                         src="${ev.bannerUrl}" 
+                         alt="${escapeHtml(ev.title)}" 
+                         onerror="this.onerror=null; this.src='https://placehold.co/600x400/667eea/white?text=Vaaamos%21'">
                     <div class="card-content">
                         <div class="card-title">
                             <span>${escapeHtml(ev.title)}</span>
@@ -538,27 +520,39 @@
         }
         section.style.display = "block";
         container.innerHTML = `<div class="empty-state"><i class="fas fa-spinner fa-pulse"></i><p>Buscando transmissões ao vivo...</p></div>`;
-        try {
-            const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&eventType=live&type=video&maxResults=${MAX_YOUTUBE_RESULTS}&videoCategoryId=${YOUTUBE_CATEGORIES}&key=${YOUTUBE_API_KEY}`;
+        
+        async function buscaPorCategoria(categoryId) {
+            const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&eventType=live&type=video&maxResults=${MAX_YOUTUBE_RESULTS}&videoCategoryId=${categoryId}&key=${YOUTUBE_API_KEY}`;
             const res = await fetch(url);
             const data = await res.json();
-            if (data.error) {
-                container.innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Erro: ${data.error.message}</p></div>`;
-                return;
-            }
-            if (!data.items || data.items.length === 0) {
+            if (data.error) throw new Error(data.error.message);
+            return data.items || [];
+        }
+
+        try {
+            let items = [];
+            try { items = await buscaPorCategoria("24"); } catch(e) { console.warn(e); }
+            if (!items.length) { try { items = await buscaPorCategoria("10"); } catch(e) { console.warn(e); } }
+            if (!items.length) { try { items = await buscaPorCategoria("20"); } catch(e) { console.warn(e); } }
+            
+            if (!items.length) {
                 container.innerHTML = `<div class="empty-state"><i class="fas fa-video-slash"></i><p>Nenhuma live no momento</p></div>`;
                 return;
             }
-            const videoIds = data.items.map(i => i.id.videoId).join(',');
-            const detRes = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet,liveStreamingDetails&id=${videoIds}&key=${YOUTUBE_API_KEY}`);
-            const detData = await detRes.json();
-            container.innerHTML = detData.items.map(video => {
+
+            const videoIds = items.map(item => item.id.videoId).join(',');
+            const detailsRes = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet,liveStreamingDetails&id=${videoIds}&key=${YOUTUBE_API_KEY}`);
+            const detailsData = await detailsRes.json();
+            if (detailsData.error) throw new Error(detailsData.error.message);
+
+            container.innerHTML = detailsData.items.map(video => {
                 const thumb = video.snippet.thumbnails?.maxres?.url || video.snippet.thumbnails?.high?.url || video.snippet.thumbnails?.medium?.url;
-                const displayTime = video.liveStreamingDetails?.scheduledStartTime ? `📅 ${new Date(video.liveStreamingDetails.scheduledStartTime).toLocaleString('pt-BR')}` : "🔴 AO VIVO AGORA";
+                const liveDetails = video.liveStreamingDetails || {};
+                const scheduledTime = liveDetails.scheduledStartTime || liveDetails.actualStartTime;
+                const displayTime = scheduledTime ? `📅 ${new Date(scheduledTime).toLocaleString('pt-BR')}` : "🔴 AO VIVO AGORA";
                 return `
                     <div class="event-card">
-                        <img class="card-banner" src="${thumb}" onerror="this.src='https://placehold.co/600x400/e63946/white?text=YouTube+Live'">
+                        <img class="card-banner" src="${thumb}" onerror="this.src='https://placehold.co/600x400/e63946/white?text=Vaaamos'">
                         <div class="card-content">
                             <div class="card-title"><span>${escapeHtml(video.snippet.title)}</span></div>
                             <div style="font-size:0.7rem; color:#2c7da0;"><i class="fab fa-youtube"></i> ${escapeHtml(video.snippet.channelTitle)}</div>
@@ -570,11 +564,10 @@
                 `;
             }).join('');
         } catch (err) {
-            container.innerHTML = `<div class="empty-state"><i class="fas fa-plug"></i><p>Erro ao carregar transmissões</p></div>`;
+            container.innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Erro ao carregar transmissões</p></div>`;
         }
     }
 
-    // ==================== HELPERS ====================
     function escapeHtml(str) {
         if (!str) return "";
         return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m] || m));
@@ -595,26 +588,20 @@
             showToast("Preencha todos os campos obrigatórios (título, data, cidade, descrição, link)!", "#e67e22");
             return;
         }
-        if (new Date(datetime) < new Date()) {
-            showToast("A data/hora não pode ser no passado!", "#e67e22");
+        if (new Date(datetime) <= new Date()) {
+            showToast("A data/hora deve ser no futuro!", "#e67e22");
             return;
         }
-        if (!bannerUrl) {
-            bannerUrl = "https://placehold.co/600x400/667eea/white?text=GeoLive";
-        }
-        if (addManualEvent({ title, bannerUrl, datetime, city, address, description, link })) {
-            e.target.reset();
-            showToast("✅ Evento adicionado com sucesso!", "#27ae60");
-            document.querySelector(".form-card").scrollIntoView({ behavior: "smooth" });
-        }
+        // Se banner vazio, será tratado dentro de addManualEvent (substituído por subvam.png)
+        addManualEvent({ title, bannerUrl, datetime, city, address, description, link });
+        e.target.reset();
+        document.querySelector(".form-card").scrollIntoView({ behavior: "smooth" });
     });
 
-    // Expor funções globais
     window.deleteManualEvent = deleteManualEvent;
     window.fixarEventoParaAdmin = fixarEventoParaAdmin;
     window.abrirMapa = abrirMapa;
 
-    // Inicialização
     loadManualEvents();
     fetchYouTubeLiveEvents();
     setInterval(fetchYouTubeLiveEvents, 120000);
