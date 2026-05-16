@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <meta name="theme-color" content="#0f2027">
     <title>Vaaamos! | Eventos Ao Vivo</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
@@ -249,18 +248,18 @@
     </div>
 
     <footer>
-        <i class="fas fa-map-pin"></i> Eventos próximos a você são destacados · Exclusão 1h após início
+        <i class="fas fa-map-pin"></i> Eventos próximos a você são destacados · Limite de 5 eventos · Exclusão 1h após início
     </footer>
 </div>
 
 <script>
     // ==================== CONFIGURAÇÕES ====================
-    const YOUTUBE_API_KEY = "AIzaSyAq1vULczFTYA_kM1cZ2XYjxSNjC-P7jCo"; // Preencha com sua chave do YouTube para ativar lives
+    const YOUTUBE_API_KEY = "AIzaSyCrIJtzHeEeAPGxHI2ZNQlHdNyBd4mkmGQ"; // Preencha com sua chave
     const MAX_YOUTUBE_RESULTS = 6;
     const LIMITE_EVENTOS = 5;
     const ALERTA_EMAIL = "lambelambeapp@gmail.com";
 
-    // Lista de palavras e termos proibidos (conteúdo impróprio)
+    // Filtro de conteúdo impróprio
     const PALAVRAS_BLOQUEADAS = [
         "sexo", "porn", "nudez", "violência", "droga", "tráfico", "arma", "facção",
         "ódio", "racismo", "homofobia", "xenofobia", "nazi", "pedofilia", "suicídio",
@@ -268,7 +267,6 @@
         "terrorismo", "cocaína", "maconha", "crack", "heroína", "prostituição"
     ];
 
-    // Função para verificar conteúdo impróprio
     function containsInappropriateContent(texto) {
         if (!texto) return false;
         const lower = texto.toLowerCase();
@@ -276,7 +274,6 @@
     }
 
     function isValidYouTubeUrl(url) {
-        // Verifica se é um link válido do YouTube (simplificado)
         const patterns = [
             /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+$/,
             /^https?:\/\/(www\.)?youtube\.com\/watch\?v=[\w-]+/,
@@ -345,12 +342,7 @@
 
     function addManualEvent(eventData) {
         // Validação de conteúdo impróprio
-        const camposParaValidar = [
-            eventData.title,
-            eventData.description,
-            eventData.city,
-            eventData.address
-        ];
+        const camposParaValidar = [eventData.title, eventData.description, eventData.city, eventData.address];
         for (let campo of camposParaValidar) {
             if (campo && containsInappropriateContent(campo)) {
                 showToast("❌ Conteúdo impróprio detectado. Seu evento não foi publicado.", "#e63946");
@@ -358,7 +350,6 @@
             }
         }
 
-        // Validação de link do YouTube
         if (!isValidYouTubeUrl(eventData.link)) {
             showToast("❌ Link inválido. Use um link válido do YouTube.", "#e63946");
             return false;
@@ -373,17 +364,14 @@
 
         const userEventCount = countUserEvents();
         if (userEventCount >= LIMITE_EVENTOS) {
-            showToast(`❌ Você atingiu o limite de ${LIMITE_EVENTOS} eventos. Entre em contato: ${ALERTA_EMAIL}`, "#e67e22");
+            showToast(`❌ Limite de ${LIMITE_EVENTOS} eventos atingido. Contato: ${ALERTA_EMAIL}`, "#e67e22");
             return false;
         }
-
         if (userEventCount >= 3) {
-            showToast(`⚠️ Você já possui ${userEventCount} eventos. Considere entrar em contato para mais oportunidades: ${ALERTA_EMAIL}`, "#f4a261");
+            showToast(`⚠️ Você já tem ${userEventCount} eventos. Considere contato: ${ALERTA_EMAIL}`, "#f4a261");
         }
 
-        let bannerUrl = eventData.bannerUrl && eventData.bannerUrl.trim() !== "" 
-            ? eventData.bannerUrl 
-            : "subvam.png";  // imagem local padrão
+        let bannerUrl = eventData.bannerUrl && eventData.bannerUrl.trim() !== "" ? eventData.bannerUrl : "subvam.png";
 
         const newEvent = {
             id: Date.now(),
@@ -395,8 +383,7 @@
             description: eventData.description,
             link: eventData.link,
             createdBy: getDeviceId(),
-            keepByAdmin: false,
-            createdAt: new Date().toISOString()
+            keepByAdmin: false
         };
         manualEvents.push(newEvent);
         manualEvents.sort((a,b) => new Date(a.datetime) - new Date(b.datetime));
@@ -407,7 +394,7 @@
     function deleteManualEvent(id) {
         manualEvents = manualEvents.filter(ev => ev.id !== id);
         saveManualEvents();
-        showToast("🗑️ Evento removido com sucesso!", "#e63946");
+        showToast("🗑️ Evento removido!", "#e63946");
     }
 
     function fixarEventoParaAdmin(id) {
@@ -415,18 +402,16 @@
         if (evento) {
             evento.keepByAdmin = !evento.keepByAdmin;
             saveManualEvents();
-            showToast(evento.keepByAdmin ? "📌 Evento fixado! Não será removido automaticamente." : "🔓 Evento liberado para remoção automática.", evento.keepByAdmin ? "#27ae60" : "#f4a261");
+            showToast(evento.keepByAdmin ? "📌 Fixado! Não será removido." : "🔓 Liberado para remoção.", evento.keepByAdmin ? "#27ae60" : "#f4a261");
         }
     }
 
-    // Exclusão automática: 1 hora APÓS O INÍCIO do evento
+    // Exclusão automática 1 hora após o início
     function removerEventosExpirados() {
         const agora = new Date();
         let removidos = 0;
         const novosEventos = manualEvents.filter(ev => {
-            const horarioInicio = new Date(ev.datetime);
-            const diffHoras = (agora - horarioInicio) / (1000 * 60 * 60);
-            // Remove se já passou 1 hora do início E não estiver fixado
+            const diffHoras = (agora - new Date(ev.datetime)) / (1000 * 60 * 60);
             if (diffHoras >= 1 && !ev.keepByAdmin) {
                 removidos++;
                 return false;
@@ -436,7 +421,7 @@
         if (removidos > 0) {
             manualEvents = novosEventos;
             saveManualEvents();
-            showToast(`⏰ ${removidos} evento(s) expirado(s) (1h após início) removido(s) automaticamente`, "#2c3e50");
+            showToast(`⏰ ${removidos} evento(s) expirado(s) (1h após início) removido(s)`, "#2c3e50");
         }
     }
     setInterval(removerEventosExpirados, 60 * 1000);
@@ -459,8 +444,7 @@
     function abrirMapa(endereco, cidade) {
         let query = endereco ? endereco : cidade;
         if (!query) return;
-        const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
-        window.open(mapsUrl, '_blank');
+        window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`, '_blank');
     }
 
     function renderManualEvents() {
@@ -469,7 +453,7 @@
         countBadge.innerText = manualEvents.length;
 
         if (manualEvents.length === 0) {
-            container.innerHTML = `<div class="empty-state"><i class="fas fa-calendar-alt" style="font-size: 3rem; opacity: 0.5;"></i><p style="margin-top: 1rem;">Nenhum evento cadastrado. Use o formulário abaixo!</p></div>`;
+            container.innerHTML = `<div class="empty-state"><i class="fas fa-calendar-alt" style="font-size: 3rem; opacity: 0.5;"></i><p>Nenhum evento cadastrado. Use o formulário abaixo!</p></div>`;
             return;
         }
 
@@ -480,18 +464,15 @@
             const localParaMapa = ev.address || ev.city;
             return `
                 <div class="event-card" style="${isLocal ? 'border-left: 4px solid #f4a261;' : ''}">
-                    <img class="card-banner" 
-                         src="${ev.bannerUrl}" 
-                         alt="${escapeHtml(ev.title)}" 
-                         onerror="this.onerror=null; this.src='https://placehold.co/600x400/667eea/white?text=Vaaamos%21'">
+                    <img class="card-banner" src="${ev.bannerUrl}" alt="${escapeHtml(ev.title)}" onerror="this.onerror=null; this.src='https://placehold.co/600x400/667eea/white?text=Vaaamos%21'">
                     <div class="card-content">
                         <div class="card-title">
                             <span>${escapeHtml(ev.title)}</span>
                             <div class="admin-buttons">
                                 ${ev.keepByAdmin ? '<span class="badge-fixed"><i class="fas fa-thumbtack"></i> Fixado</span>' : ''}
                                 ${isOwner ? `
-                                    <button class="btn-icon btn-delete" onclick="window.deleteManualEvent(${ev.id})" title="Excluir evento"><i class="fas fa-trash-alt"></i></button>
-                                    <button class="btn-icon btn-pin ${ev.keepByAdmin ? 'active' : ''}" onclick="window.fixarEventoParaAdmin(${ev.id})" title="${ev.keepByAdmin ? 'Liberar exclusão automática' : 'Fixar evento'}"><i class="fas fa-thumbtack"></i></button>
+                                    <button class="btn-icon btn-delete" onclick="window.deleteManualEvent(${ev.id})"><i class="fas fa-trash-alt"></i></button>
+                                    <button class="btn-icon btn-pin ${ev.keepByAdmin ? 'active' : ''}" onclick="window.fixarEventoParaAdmin(${ev.id})"><i class="fas fa-thumbtack"></i></button>
                                 ` : ''}
                             </div>
                         </div>
@@ -503,63 +484,110 @@
                             ${isLocal ? '<span style="background:#f4a261; color:#1e2f3e; padding:2px 8px; border-radius:30px; margin-left:8px;"><i class="fas fa-location-dot"></i> Perto de você</span>' : ''}
                         </div>
                         <div class="desc">${escapeHtml(ev.description)}</div>
-                        <a href="${ev.link}" target="_blank" rel="noopener" class="event-link"><i class="fab fa-youtube"></i> Assistir live</a>
+                        <a href="${ev.link}" target="_blank" class="event-link"><i class="fab fa-youtube"></i> Assistir live</a>
                     </div>
                 </div>
             `;
         }).join('');
     }
 
-    // ==================== YOUTUBE LIVE ====================
-    // Dentro da sua função fetchYouTubeLiveEvents, substitua a lógica atual de categorias por este fluxo híbrido.
-
-async function fetchYouTubeLiveEvents() {
-    // ... (código de verificação da API key e container)
-
-    let allItems = [];
-
-    // 1. Busca por palavras-chave (mais abrangente)
-    const keywords = ['música ao vivo', 'show ao vivo', 'live music', 'live session', 'apresentação ao vivo'];
-    for (const keyword of keywords) {
-        const keywordUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&eventType=live&type=video&maxResults=5&q=${encodeURIComponent(keyword)}&key=${YOUTUBE_API_KEY}`;
-        const response = await fetch(keywordUrl);
-        const data = await response.json();
-        if (data.items) {
-            allItems = [...allItems, ...data.items];
+    // ==================== YOUTUBE LIVE (HÍBRIDO: KEYWORDS + CATEGORIAS) ====================
+    async function fetchYouTubeLiveEvents() {
+        const section = document.getElementById("youtubeSection");
+        const container = document.getElementById("youtubeEventsContainer");
+        if (!YOUTUBE_API_KEY || YOUTUBE_API_KEY === "") {
+            section.style.display = "none";
+            return;
         }
-        // Aguarda um pouco para não sobrecarregar a API (opcional, mas respeitoso)
-        await new Promise(resolve => setTimeout(resolve, 100));
-    }
+        section.style.display = "block";
+        container.innerHTML = `<div class="empty-state"><i class="fas fa-spinner fa-pulse"></i><p>Buscando transmissões ao vivo...</p></div>`;
+        
+        let itemsSet = new Map(); // para evitar duplicatas por videoId
 
-    // 2. Busca por Categoria (Música - 10)
-    const categoryUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&eventType=live&type=video&maxResults=10&videoCategoryId=10&key=${YOUTUBE_API_KEY}`;
-    const categoryResponse = await fetch(categoryUrl);
-    const categoryData = await categoryResponse.json();
-    if (categoryData.items) {
-        allItems = [...allItems, ...categoryData.items];
-    }
+        // 1. Busca por palavras-chave (música ao vivo)
+        const keywords = ["música ao vivo", "show ao vivo", "live music", "live session", "apresentação ao vivo"];
+        for (const kw of keywords) {
+            try {
+                const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&eventType=live&type=video&maxResults=5&q=${encodeURIComponent(kw)}&key=${YOUTUBE_API_KEY}`;
+                const res = await fetch(url);
+                const data = await res.json();
+                if (data.items) {
+                    data.items.forEach(item => {
+                        if (!itemsSet.has(item.id.videoId)) itemsSet.set(item.id.videoId, item);
+                    });
+                }
+                await new Promise(r => setTimeout(r, 100));
+            } catch(e) { console.warn("Keyword error:", kw, e); }
+        }
 
-    // Remove duplicatas usando o videoId
-    const uniqueItems = [];
-    const ids = new Set();
-    for (const item of allItems) {
-        if (!ids.has(item.id.videoId)) {
-            ids.add(item.id.videoId);
-            uniqueItems.push(item);
+        // 2. Busca por categoria 10 (Música)
+        try {
+            const urlCat = `https://www.googleapis.com/youtube/v3/search?part=snippet&eventType=live&type=video&maxResults=8&videoCategoryId=10&key=${YOUTUBE_API_KEY}`;
+            const res = await fetch(urlCat);
+            const data = await res.json();
+            if (data.items) {
+                data.items.forEach(item => {
+                    if (!itemsSet.has(item.id.videoId)) itemsSet.set(item.id.videoId, item);
+                });
+            }
+        } catch(e) { console.warn("Category 10 error:", e); }
+
+        // 3. Fallback: categoria 24 (Entretenimento) se não houver nenhum resultado
+        if (itemsSet.size === 0) {
+            try {
+                const urlFallback = `https://www.googleapis.com/youtube/v3/search?part=snippet&eventType=live&type=video&maxResults=8&videoCategoryId=24&key=${YOUTUBE_API_KEY}`;
+                const res = await fetch(urlFallback);
+                const data = await res.json();
+                if (data.items) {
+                    data.items.forEach(item => {
+                        if (!itemsSet.has(item.id.videoId)) itemsSet.set(item.id.videoId, item);
+                    });
+                }
+            } catch(e) { console.warn("Fallback category error:", e); }
+        }
+
+        const uniqueItems = Array.from(itemsSet.values());
+        if (uniqueItems.length === 0) {
+            container.innerHTML = `<div class="empty-state"><i class="fas fa-video-slash"></i><p>Nenhuma live de música no momento.</p></div>`;
+            return;
+        }
+
+        // Buscar detalhes (thumbnails, agendamento)
+        const videoIds = uniqueItems.map(i => i.id.videoId).join(',');
+        try {
+            const detailsRes = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet,liveStreamingDetails&id=${videoIds}&key=${YOUTUBE_API_KEY}`);
+            const detailsData = await detailsRes.json();
+            if (detailsData.error) throw new Error(detailsData.error.message);
+            container.innerHTML = detailsData.items.map(video => {
+                const thumb = video.snippet.thumbnails?.maxres?.url || video.snippet.thumbnails?.high?.url || video.snippet.thumbnails?.medium?.url;
+                const liveDetails = video.liveStreamingDetails || {};
+                const scheduledTime = liveDetails.scheduledStartTime || liveDetails.actualStartTime;
+                const displayTime = scheduledTime ? `📅 ${new Date(scheduledTime).toLocaleString('pt-BR')}` : "🔴 AO VIVO AGORA";
+                return `
+                    <div class="event-card">
+                        <img class="card-banner" src="${thumb}" onerror="this.src='https://placehold.co/600x400/e63946/white?text=Vaaamos'">
+                        <div class="card-content">
+                            <div class="card-title"><span>${escapeHtml(video.snippet.title)}</span></div>
+                            <div style="font-size:0.7rem; color:#2c7da0;"><i class="fab fa-youtube"></i> ${escapeHtml(video.snippet.channelTitle)}</div>
+                            <div class="datetime-highlight"><i class="fas fa-calendar-alt"></i> ${displayTime}</div>
+                            <div class="desc">${escapeHtml(video.snippet.description?.substring(0, 100) || '')}</div>
+                            <a href="https://www.youtube.com/watch?v=${video.id}" target="_blank" class="event-link"><i class="fab fa-youtube"></i> Assistir</a>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        } catch (err) {
+            console.error(err);
+            container.innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Erro ao carregar detalhes das lives.</p></div>`;
         }
     }
 
-    // Se não encontrou nenhum resultado
-    if (uniqueItems.length === 0) {
-        container.innerHTML = `<div class="empty-state">Nenhuma live de música encontrada no momento.</div>`;
-        return;
+    function escapeHtml(str) {
+        if (!str) return "";
+        return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m] || m));
     }
 
-    // Agora, com a lista de vídeos únicos (uniqueItems), faça a busca pelos detalhes como você já faz.
-    // ...
-}
-
-    // ==================== FORMULÁRIO ====================
+    // ==================== EVENTOS DO FORMULÁRIO ====================
     document.getElementById("eventForm").addEventListener("submit", (e) => {
         e.preventDefault();
         const title = document.getElementById("eventTitle").value.trim();
@@ -571,14 +599,13 @@ async function fetchYouTubeLiveEvents() {
         const link = document.getElementById("eventLink").value.trim();
 
         if (!title || !datetime || !city || !description || !link) {
-            showToast("Preencha todos os campos obrigatórios (título, data, cidade, descrição, link)!", "#e67e22");
+            showToast("Preencha todos os campos obrigatórios!", "#e67e22");
             return;
         }
         if (new Date(datetime) <= new Date()) {
             showToast("A data/hora deve ser no futuro!", "#e67e22");
             return;
         }
-        // Se banner vazio, será tratado dentro de addManualEvent (substituído por subvam.png)
         addManualEvent({ title, bannerUrl, datetime, city, address, description, link });
         e.target.reset();
         document.querySelector(".form-card").scrollIntoView({ behavior: "smooth" });
