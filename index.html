@@ -511,67 +511,53 @@
     }
 
     // ==================== YOUTUBE LIVE ====================
-    async function fetchYouTubeLiveEvents() {
-        const section = document.getElementById("youtubeSection");
-        const container = document.getElementById("youtubeEventsContainer");
-        if (!YOUTUBE_API_KEY || YOUTUBE_API_KEY === "") {
-            section.style.display = "none";
-            return;
+    // Dentro da sua função fetchYouTubeLiveEvents, substitua a lógica atual de categorias por este fluxo híbrido.
+
+async function fetchYouTubeLiveEvents() {
+    // ... (código de verificação da API key e container)
+
+    let allItems = [];
+
+    // 1. Busca por palavras-chave (mais abrangente)
+    const keywords = ['música ao vivo', 'show ao vivo', 'live music', 'live session', 'apresentação ao vivo'];
+    for (const keyword of keywords) {
+        const keywordUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&eventType=live&type=video&maxResults=5&q=${encodeURIComponent(keyword)}&key=${YOUTUBE_API_KEY}`;
+        const response = await fetch(keywordUrl);
+        const data = await response.json();
+        if (data.items) {
+            allItems = [...allItems, ...data.items];
         }
-        section.style.display = "block";
-        container.innerHTML = `<div class="empty-state"><i class="fas fa-spinner fa-pulse"></i><p>Buscando transmissões ao vivo...</p></div>`;
-        
-        async function buscaPorCategoria(categoryId) {
-            const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&eventType=live&type=video&maxResults=${MAX_YOUTUBE_RESULTS}&videoCategoryId=${categoryId}&key=${YOUTUBE_API_KEY}`;
-            const res = await fetch(url);
-            const data = await res.json();
-            if (data.error) throw new Error(data.error.message);
-            return data.items || [];
-        }
+        // Aguarda um pouco para não sobrecarregar a API (opcional, mas respeitoso)
+        await new Promise(resolve => setTimeout(resolve, 100));
+    }
 
-        try {
-            let items = [];
-            try { items = await buscaPorCategoria("24"); } catch(e) { console.warn(e); }
-            if (!items.length) { try { items = await buscaPorCategoria("10"); } catch(e) { console.warn(e); } }
-            if (!items.length) { try { items = await buscaPorCategoria("20"); } catch(e) { console.warn(e); } }
-            
-            if (!items.length) {
-                container.innerHTML = `<div class="empty-state"><i class="fas fa-video-slash"></i><p>Nenhuma live no momento</p></div>`;
-                return;
-            }
+    // 2. Busca por Categoria (Música - 10)
+    const categoryUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&eventType=live&type=video&maxResults=10&videoCategoryId=10&key=${YOUTUBE_API_KEY}`;
+    const categoryResponse = await fetch(categoryUrl);
+    const categoryData = await categoryResponse.json();
+    if (categoryData.items) {
+        allItems = [...allItems, ...categoryData.items];
+    }
 
-            const videoIds = items.map(item => item.id.videoId).join(',');
-            const detailsRes = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet,liveStreamingDetails&id=${videoIds}&key=${YOUTUBE_API_KEY}`);
-            const detailsData = await detailsRes.json();
-            if (detailsData.error) throw new Error(detailsData.error.message);
-
-            container.innerHTML = detailsData.items.map(video => {
-                const thumb = video.snippet.thumbnails?.maxres?.url || video.snippet.thumbnails?.high?.url || video.snippet.thumbnails?.medium?.url;
-                const liveDetails = video.liveStreamingDetails || {};
-                const scheduledTime = liveDetails.scheduledStartTime || liveDetails.actualStartTime;
-                const displayTime = scheduledTime ? `📅 ${new Date(scheduledTime).toLocaleString('pt-BR')}` : "🔴 AO VIVO AGORA";
-                return `
-                    <div class="event-card">
-                        <img class="card-banner" src="${thumb}" onerror="this.src='https://placehold.co/600x400/e63946/white?text=Vaaamos'">
-                        <div class="card-content">
-                            <div class="card-title"><span>${escapeHtml(video.snippet.title)}</span></div>
-                            <div style="font-size:0.7rem; color:#2c7da0;"><i class="fab fa-youtube"></i> ${escapeHtml(video.snippet.channelTitle)}</div>
-                            <div class="datetime-highlight"><i class="fas fa-calendar-alt"></i> ${displayTime}</div>
-                            <div class="desc">${escapeHtml(video.snippet.description?.substring(0, 100) || '')}</div>
-                            <a href="https://www.youtube.com/watch?v=${video.id}" target="_blank" class="event-link"><i class="fab fa-youtube"></i> Assistir</a>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        } catch (err) {
-            container.innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Erro ao carregar transmissões</p></div>`;
+    // Remove duplicatas usando o videoId
+    const uniqueItems = [];
+    const ids = new Set();
+    for (const item of allItems) {
+        if (!ids.has(item.id.videoId)) {
+            ids.add(item.id.videoId);
+            uniqueItems.push(item);
         }
     }
 
-    function escapeHtml(str) {
-        if (!str) return "";
-        return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m] || m));
+    // Se não encontrou nenhum resultado
+    if (uniqueItems.length === 0) {
+        container.innerHTML = `<div class="empty-state">Nenhuma live de música encontrada no momento.</div>`;
+        return;
     }
+
+    // Agora, com a lista de vídeos únicos (uniqueItems), faça a busca pelos detalhes como você já faz.
+    // ...
+}
 
     // ==================== FORMULÁRIO ====================
     document.getElementById("eventForm").addEventListener("submit", (e) => {
