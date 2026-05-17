@@ -150,10 +150,12 @@
         { id: "UCWh6Rqp-mO38iPJbAVNflvQ", name: "Sua Música" }
     ];
 
-    // Palavras-chave que indicam que o vídeo é uma live
+    // Palavras-chave que indicam live (expansível)
     const LIVE_KEYWORDS = [
-        "ao vivo", "AoVivo", "Transmissão iniciada", "Chat ao vivo", "live", "24h", "música", "radio", "rádio", 
-        "24 horas", "direto", "transmissão", "streaming"
+        "ao vivo", "AoVivo", "Transmissão iniciada", "Chat ao vivo", 
+        "live", "24h", "24 horas", "direto", "transmissão", "streaming",
+        "musica ao vivo", "show ao vivo", "concerto ao vivo", "performance ao vivo",
+        "lives", "ao-vivo", "live music", "live performance", "live session"
     ];
 
     // ==================== GEOLOCALIZAÇÃO ====================
@@ -201,14 +203,14 @@
             const now = new Date();
             const minutesDiff = (now - publishedDate) / (1000 * 60);
             
-            // Critério 1: Publicado nos últimos 15 minutos
-            const isRecent = minutesDiff <= 15;
+            // Critério 1: Publicado nas últimas 2 horas (120 min) – lives longas
+            const isRecent = minutesDiff <= 120;
             
             // Critério 2: Título contém palavras-chave de live
             const titleLower = title.toLowerCase();
             const hasLiveKeyword = LIVE_KEYWORDS.some(kw => titleLower.includes(kw));
             
-            // Considera live se: (recente E menos de 15 min) OU tem palavra-chave de live
+            // Considera live se: (recente, menos de 2h) OU contém palavra-chave
             if (isRecent || hasLiveKeyword) {
                 const thumbnail = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
                 return {
@@ -234,7 +236,7 @@
         for (let ch of CHANNELS) {
             const live = await getLiveFromRSS(ch.id, ch.name);
             if (live) lives.push(live);
-            await new Promise(r => setTimeout(r, 200)); // pequena pausa
+            await new Promise(r => setTimeout(r, 200));
         }
         
         if (lives.length === 0) {
@@ -436,7 +438,7 @@
     
     loadEvents();
     loadAllLives();
-    setInterval(loadAllLives, 90000); // atualiza a cada 90 segundos
+    setInterval(loadAllLives, 90000);
 </script>
 </body>
 </html>
