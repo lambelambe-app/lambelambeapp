@@ -230,7 +230,7 @@
     // ==================== CARREGAR TODAS AS LIVES ====================
     async function loadAllLives() {
         const container = document.getElementById('liveContainer');
-        container.innerHTML = `<div class="empty-state"><i class="fas fa-spinner fa-pulse"></i> Buscando lives via RSS...</div>`;
+        container.innerHTML = `<div class="empty-state"><i class="fas fa-spinner fa-pulse"></i> Buscando por lives fixas...</div>`;
         
         let lives = [];
         for (let ch of CHANNELS) {
