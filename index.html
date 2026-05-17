@@ -29,15 +29,50 @@
             padding-left: 0.8rem;
             font-weight: bold;
         }
-        .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.2rem; }
-        .card {
+        .slider-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .slider-wrapper {
+            overflow-x: auto;
+            scroll-behavior: smooth;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+            flex: 1;
+        }
+        .slider-cards {
+            display: flex;
+            gap: 1.2rem;
+            padding: 0.5rem 0.2rem;
+        }
+        .slider-cards .card {
+            flex: 0 0 280px;
+            scroll-snap-align: start;
             background: white;
             border-radius: 1rem;
             overflow: hidden;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
             transition: 0.2s;
         }
-        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
+        .slider-cards .card:hover { transform: translateY(-4px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
+        .slider-btn {
+            background: rgba(0,0,0,0.3);
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+        }
+        .slider-btn:hover { background: #e63946; }
+        @media (max-width: 640px) { .slider-btn { display: none; } }
         .card-banner { width: 100%; height: 150px; object-fit: cover; background: #667eea; }
         .card-content { padding: 0.8rem; }
         .card-title { font-weight: bold; font-size: 1rem; margin-bottom: 0.3rem; display: flex; justify-content: space-between; }
@@ -71,15 +106,20 @@
 <body>
 <div class="container">
     <div class="header">
-        <button id="btnTestarAPI" style="background:#e63946; color:white; border:none; padding:0.5rem 1rem; border-radius:2rem; margin-bottom:1rem; width:100%;">
-    🔍 TESTAR API DO YOUTUBE
-        </button>
         <h1><i class="fas fa-map-marker-alt"></i> Vaaamos! Lambe Lambe</h1>
         <div class="location-box"><i class="fas fa-globe"></i> <span id="locationText">Detectando...</span></div>
     </div>
 
     <div class="section-title"><i class="fab fa-youtube"></i> AO VIVO AGORA</div>
-    <div id="liveContainer" class="cards-grid"><div class="empty-state">Carregando lives...</div></div>
+    <div class="slider-container">
+        <button class="slider-btn" id="slidePrev"><i class="fas fa-chevron-left"></i></button>
+        <div class="slider-wrapper" id="sliderWrapper">
+            <div class="slider-cards" id="liveContainer">
+                <div class="empty-state">Carregando lives...</div>
+            </div>
+        </div>
+        <button class="slider-btn" id="slideNext"><i class="fas fa-chevron-right"></i></button>
+    </div>
 
     <div class="section-title">📅 EVENTOS LOCAIS</div>
     <div id="eventsContainer" class="cards-grid"></div>
@@ -101,22 +141,28 @@
             <button type="submit" class="btn-primary">PUBLICAR EVENTO</button>
         </form>
     </div>
-    <footer>Limite de 3 eventos por dispositivo · Exclusão após 1h do início · Conteúdo impróprio bloqueado</footer>
+    <footer>Limite de 3 eventos por dispositivo · Exclusão após 1h do início</footer>
 </div>
 
 <script>
-    // ==================== CONFIGURAÇÕES ====================
-    const YOUTUBE_API_KEY = "AIzaSyAq1vULczFTYA_kM1cZ2XYjxSNjC-P7jCo"; // SUBSTITUA PELA SUA CHAVE
+    // ==================== CONFIGURAÇÃO ÚNICA ====================
+    // ⚠️ SUBSTITUA PELA SUA CHAVE DE API DO YOUTUBE ⚠️
+    // Para obter uma chave: https://console.cloud.google.com/ → APIs & Services → Credentials → + CREATE CREDENTIALS → API Key
+    // Depois ative a "YouTube Data API v3" em Library
+    const YOUTUBE_API_KEY = "AIzaSyAq1vULczFTYA_kM1cZ2XYjxSNjC-P7jCo";
+
+    // Lista de canais (pode usar URLs com @, handles ou IDs diretos)
     const CHANNELS = [
-        { id: "UCAPanW5j0VXfFcAbxLX47FQ", name: "MPB Melhores Músicas" },  // @MPBMelhoresMúsicas-y3z
-        { id: "UCXuqSBlHAE6Xw-yeJA4TpLg", name: "Música Brasil" },
-        { id: "UC4R8DWoNaI9iRrARsZ-Ow8A", name: "Festivais Ao Vivo" }
+        { url: "https://www.youtube.com/@novalounge99", name: "Nova Lounge" },
+        { url: "https://www.youtube.com/@bgmchannelbgm", name: "BGM channel" },
+        { url: "UCXuqSBlHAE6Xw-yeJA4TpLg", name: "Música Brasil" },
+        { url: "UC4R8DWoNaI9iRrARsZ-Ow8A", name: "Festivais Ao Vivo" }
     ];
+
     const LIMITE_EVENTOS = 3;
     const CONTATO_EMAIL = "lambelambeapp@gmail.com";
-    const PROXY = "https://corsproxy.io/?url=";
 
-    // Palavras bloqueadas (conteúdo impróprio)
+    // Palavras bloqueadas
     const BLOQUEADAS = ["sexo","porn","nudez","violência","droga","tráfico","arma","ódio","racismo","homofobia","nazi","pedofilia","suicídio","morte","sangue","sequestro","assalto","estupro","bomba","terrorismo","cocaína","maconha"];
 
     function hasBadWords(text) {
@@ -128,7 +174,7 @@
     let userCity = null;
     let localEvents = [];
 
-    // ==================== 1. GEOLOCALIZAÇÃO (IP, SEM CORS) ====================
+    // ==================== GEOLOCALIZAÇÃO ====================
     async function detectLocation() {
         try {
             const res = await fetch('https://ipapi.co/json/');
@@ -146,11 +192,55 @@
     }
     detectLocation();
 
-    // ==================== 2. YOUTUBE LIVES (COM PROXY FUNCIONAL) ====================
+    // ==================== FUNÇÃO PARA OBTER ID DO CANAL PELO LINK ====================
+    async function getChannelIdFromUrl(channelUrl) {
+        // Se já for ID direto (ex: UC...)
+        if (/^UC[-_0-9A-Za-z]{21,}$/.test(channelUrl)) {
+            return channelUrl;
+        }
+        
+        // Extrai o handle (@usuario)
+        let handle = '';
+        const handleMatch = channelUrl.match(/@([a-zA-Z0-9_]+)/);
+        if (handleMatch) handle = handleMatch[1];
+        
+        // Método 1: Scraping da página (mais leve, sem API)
+        if (handle) {
+            try {
+                const proxy = "https://api.allorigins.win/raw?url=";
+                const pageUrl = `https://www.youtube.com/@${handle}`;
+                const response = await fetch(proxy + encodeURIComponent(pageUrl));
+                const html = await response.text();
+                let match = html.match(/itemprop="identifier"\s+content="([^"]+)"/i);
+                if (match && match[1]) return match[1];
+                match = html.match(/"externalId"\s*:\s*"([^"]+)"/);
+                if (match && match[1]) return match[1];
+            } catch(e) { console.warn("Scraping falhou:", e); }
+        }
+        
+        // Método 2: API de busca (fallback)
+        if (YOUTUBE_API_KEY && handle) {
+            try {
+                const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(handle)}&type=channel&maxResults=1&key=${YOUTUBE_API_KEY}`;
+                const response = await fetch(searchUrl);
+                const data = await response.json();
+                if (data.items && data.items[0] && data.items[0].snippet.channelId) {
+                    return data.items[0].snippet.channelId;
+                }
+            } catch(e) { console.warn("API search falhou:", e); }
+        }
+        
+        throw new Error(`Não foi possível identificar o canal: ${channelUrl}`);
+    }
+
+    // ==================== VERIFICAÇÃO DE LIVE ====================
     async function fetchLiveStatus(channelId) {
+        if (!YOUTUBE_API_KEY) return null;
+        // Usando proxy para contornar bloqueios de CORS (funciona em qualquer domínio)
+        const proxy = "https://api.allorigins.win/raw?url=";
         const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${channelId}&eventType=live&type=video&maxResults=1&key=${YOUTUBE_API_KEY}`;
         try {
-            const response = await fetch(PROXY + encodeURIComponent(url));
+            const response = await fetch(proxy + encodeURIComponent(url));
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
             const data = await response.json();
             if (data.error) throw new Error(data.error.message);
@@ -170,23 +260,32 @@
         }
     }
 
+    // ==================== CARREGAR LIVES (CARROSSEL) ====================
     async function loadAllLives() {
         const container = document.getElementById('liveContainer');
         if (!YOUTUBE_API_KEY || YOUTUBE_API_KEY === "AIzaSyAq1vULczFTYA_kM1cZ2XYjxSNjC-P7jCo") {
-            container.innerHTML = `<div class="empty-state">🔑 Configure sua chave de API do YouTube no código.</div>`;
+            container.innerHTML = `<div class="empty-state">🔑 Configure sua chave de API do YouTube no código (linha 179).</div>`;
             return;
         }
         container.innerHTML = `<div class="empty-state"><i class="fas fa-spinner fa-pulse"></i> Buscando lives...</div>`;
+        
         let lives = [];
         for (let ch of CHANNELS) {
-            const live = await fetchLiveStatus(ch.id);
-            if (live) lives.push(live);
+            try {
+                const channelId = await getChannelIdFromUrl(ch.url);
+                const live = await fetchLiveStatus(channelId);
+                if (live) lives.push(live);
+            } catch (err) {
+                console.warn(`Erro ao processar ${ch.url}:`, err);
+            }
             await new Promise(r => setTimeout(r, 200));
         }
+        
         if (lives.length === 0) {
             container.innerHTML = `<div class="empty-state">🎵 Nenhuma live no momento. Volte mais tarde!</div>`;
             return;
         }
+        
         container.innerHTML = lives.map(v => `
             <div class="card">
                 <img class="card-banner" src="${v.thumbnail}" onerror="this.src='https://placehold.co/600x400/e63946/white?text=Live'">
@@ -199,19 +298,19 @@
             </div>
         `).join('');
     }
-    loadAllLives();
-    setInterval(loadAllLives, 120000);
 
-    // ==================== 3. EVENTOS LOCAIS ====================
+    // ==================== EVENTOS LOCAIS ====================
     function loadEvents() {
         const stored = localStorage.getItem("vaaamos_events");
         localEvents = stored ? JSON.parse(stored) : [];
         renderEvents();
     }
+    
     function saveEvents() {
         localStorage.setItem("vaaamos_events", JSON.stringify(localEvents));
         renderEvents();
     }
+    
     function getDeviceId() {
         let id = localStorage.getItem("deviceId");
         if (!id) {
@@ -220,10 +319,12 @@
         }
         return id;
     }
+    
     function userEventCount() {
         const did = getDeviceId();
         return localEvents.filter(ev => ev.createdBy === did).length;
     }
+    
     function addEvent(eventData) {
         if (hasBadWords(eventData.title) || hasBadWords(eventData.desc) || hasBadWords(eventData.city)) {
             showToast("❌ Conteúdo impróprio! Evento bloqueado.", "red");
@@ -234,7 +335,9 @@
             showToast(`❌ Limite de ${LIMITE_EVENTOS} eventos atingido. Contato: ${CONTATO_EMAIL}`, "orange");
             return false;
         }
-        if (count >= 2) showToast(`⚠️ Você já tem ${count} eventos. Para mais, contate: ${CONTATO_EMAIL}`, "#f4a261");
+        if (count >= 2) {
+            showToast(`⚠️ Você já tem ${count} eventos. Para mais, contate: ${CONTATO_EMAIL}`, "#f4a261");
+        }
         const banner = eventData.banner?.trim() || "subvam.png";
         localEvents.push({
             id: Date.now(),
@@ -252,16 +355,18 @@
         showToast("✅ Evento adicionado!", "green");
         return true;
     }
+    
     function deleteEvent(id) {
         localEvents = localEvents.filter(ev => ev.id !== id);
         saveEvents();
         showToast("🗑️ Evento removido", "red");
     }
+    
     function cleanExpired() {
         const now = new Date();
         const filtered = localEvents.filter(ev => {
             const diff = (now - new Date(ev.datetime)) / (1000*3600);
-            return diff < 1; // remove após 1 hora do início
+            return diff < 1;
         });
         if (filtered.length !== localEvents.length) {
             localEvents = filtered;
@@ -269,17 +374,21 @@
             showToast("⏰ Eventos expirados removidos", "#2c3e50");
         }
     }
+    
     setInterval(cleanExpired, 60000);
     cleanExpired();
-
+    
     function formatDate(iso) {
-        try { return new Date(iso).toLocaleString('pt-BR', {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'}); }
-        catch(e) { return iso; }
+        try {
+            return new Date(iso).toLocaleString('pt-BR', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' });
+        } catch(e) { return iso; }
     }
+    
     function openMap(address, city) {
-        let q = address || city;
+        const q = address || city;
         if (q) window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`, '_blank');
     }
+    
     function renderEvents() {
         const container = document.getElementById('eventsContainer');
         if (!localEvents.length) {
@@ -309,7 +418,7 @@
             `;
         }).join('');
     }
-
+    
     // ==================== FORMULÁRIO ====================
     document.getElementById('eventForm').addEventListener('submit', (e) => {
         e.preventDefault();
@@ -331,7 +440,7 @@
         addEvent({ title, banner, datetime, city, address, desc, link });
         e.target.reset();
     });
-
+    
     function showToast(msg, bg = "#2c3e50") {
         const toast = document.createElement('div');
         toast.className = 'toast';
@@ -340,56 +449,24 @@
         document.body.appendChild(toast);
         setTimeout(() => toast.remove(), 3000);
     }
+    
     function escapeHtml(str) {
         if (!str) return '';
         return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
     }
-
+    
+    // ==================== CONTROLES DO CARROSSEL ====================
+    const wrapper = document.getElementById('sliderWrapper');
+    document.getElementById('slidePrev')?.addEventListener('click', () => { wrapper.scrollBy({ left: -300, behavior: 'smooth' }); });
+    document.getElementById('slideNext')?.addEventListener('click', () => { wrapper.scrollBy({ left: 300, behavior: 'smooth' }); });
+    
+    // ==================== INICIALIZAÇÃO ====================
     window.deleteEvent = deleteEvent;
     window.openMap = openMap;
+    
     loadEvents();
-    document.getElementById('btnTestarAPI').addEventListener('click', async () => {
-    const ch = "UCXuqSBlHAE6Xw-yeJA4TpLg"; // ID de teste
-    const key = YOUTUBE_API_KEY;
-    const msgDiv = document.createElement('div');
-    msgDiv.style.cssText = 'position:fixed; bottom:80px; left:10px; right:10px; background:black; color:lime; padding:15px; border-radius:10px; z-index:9999; font-size:12px; text-align:left;';
-    document.body.appendChild(msgDiv);
-    
-    msgDiv.innerHTML = "🔍 Testando API do YouTube...<br>";
-    
-    try {
-        const proxy = "https://corsproxy.io/?url=";
-        const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${ch}&eventType=live&type=video&maxResults=1&key=${key}`;
-        const response = await fetch(proxy + encodeURIComponent(url));
-        const data = await response.json();
-        
-        if (data.error) {
-            msgDiv.innerHTML += `❌ ERRO ${data.error.code}: ${data.error.message}<br>`;
-            if (data.error.code === 403 && data.error.message.includes('quota')) {
-                msgDiv.innerHTML += `🔴 COTA ESGOTADA! Volta amanhã.<br>`;
-            } else if (data.error.code === 400 && data.error.message.includes('key')) {
-                msgDiv.innerHTML += `🔴 CHAVE INVÁLIDA! Gere uma nova no Google Cloud.<br>`;
-            } else if (data.error.code === 403 && data.error.message.includes('accessNotConfigured')) {
-                msgDiv.innerHTML += `🔴 API NÃO ATIVADA! Ative a YouTube Data API v3.<br>`;
-            }
-        } else {
-            const lives = data.items?.length || 0;
-            msgDiv.innerHTML += `✅ API OK! Lives encontradas: ${lives}<br>`;
-            if (lives === 0) {
-                msgDiv.innerHTML += `📢 Nenhum canal está ao vivo agora.<br>`;
-            } else {
-                msgDiv.innerHTML += `🎬 Live: ${data.items[0].snippet.title}<br>`;
-            }
-        }
-    } catch(err) {
-        msgDiv.innerHTML += `❌ ERRO DE REDE: ${err.message}<br>`;
-    }
-    
-    msgDiv.innerHTML += `<br><button id="fecharMsg" style="background:#e63946; color:white; border:none; padding:5px; border-radius:5px;">Fechar</button>`;
-    document.getElementById('fecharMsg').onclick = () => msgDiv.remove();
-    setTimeout(() => msgDiv.remove(), 15000);
-});
+    loadAllLives();
+    setInterval(loadAllLives, 120000);
 </script>
 </body>
 </html>
-
