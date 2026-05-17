@@ -73,7 +73,7 @@
             transition: 0.2s;
         }
         .slider-btn:hover { background: #e63946; }
-        @media (max-width: 640px) { .slider-btn { display: none; } } /* esconde setas em mobile, usa scroll natural */
+        @media (max-width: 640px) { .slider-btn { display: none; } }
         .card-banner { width: 100%; height: 150px; object-fit: cover; background: #667eea; }
         .card-content { padding: 0.8rem; }
         .card-title { font-weight: bold; font-size: 1rem; margin-bottom: 0.3rem; display: flex; justify-content: space-between; }
@@ -143,54 +143,74 @@
             <button type="submit" class="btn-primary">PUBLICAR EVENTO</button>
         </form>
     </div>
-    <footer>Não nos responsabilizamos por eventos registrados pelos usuários · Exclusão de evntos após 1h do início</footer>
+    <footer>Limite de 3 eventos por dispositivo · Exclusão após 1h do início</footer>
 </div>
 
 <script>
     // ==================== CONFIGURAÇÕES ====================
     const YOUTUBE_API_KEY = "AIzaSyAq1vULczFTYA_kM1cZ2XYjxSNjC-P7jCo"; // SUBSTITUA PELA SUA CHAVE
+
+    // CANAIS: AGORA VOCÊ PODE USAR URLS (com @) ou IDs diretos
     const CHANNELS = [
-        { id: "UCQINXHZqCU5i06HzxRkujfg", name: "BGM channel" },  // @bgmchannelbgm
-        { id: "UCXuqSBlHAE6Xw-yeJA4TpLg", name: "Música Brasil" },
-        { id: "UC4R8DWoNaI9iRrARsZ-Ow8A", name: "Festivais Ao Vivo" }
+        { url: "https://www.youtube.com/@novalounge99", name: "Nova Lounge" },        // URL com @ (funciona!)
+        { url: "https://www.youtube.com/@bgmchannelbgm", name: "BGM channel" },      // Outro exemplo
+        { url: "UCXuqSBlHAE6Xw-yeJA4TpLg", name: "Música Brasil" },                  // ID direto também funciona
+        { url: "UC4R8DWoNaI9iRrARsZ-Ow8A", name: "Festivais Ao Vivo" }
     ];
+
     const LIMITE_EVENTOS = 3;
     const CONTATO_EMAIL = "lambelambeapp@gmail.com";
-    const PROXY = "https://corsproxy.io/?url=";
+    const PROXY = "https://corsproxy.io/?url=";  // Proxy público (troque pelo do Cloudflare se preferir)
 
-    // Palavras bloqueadas
-    const BLOQUEADAS = ["sexo","porn","nudez","violência","droga","tráfico","arma","ódio","racismo","homofobia","nazi","pedofilia","suicídio","morte","sangue","sequestro","assalto","estupro","bomba","terrorismo","cocaína","maconha"];
-
-    function hasBadWords(text) {
-        if (!text) return false;
-        const lower = text.toLowerCase();
-        return BLOQUEADAS.some(pal => lower.includes(pal));
-    }
-
-    let userCity = null;
-    let localEvents = [];
-
-    // ==================== GEOLOCALIZAÇÃO ====================
-    async function detectLocation() {
-        try {
-            const res = await fetch('https://ipapi.co/json/');
-            const data = await res.json();
-            if (data.city) {
-                userCity = data.city;
-                document.getElementById('locationText').innerHTML = `${data.city}, ${data.region_code}`;
-            } else {
-                document.getElementById('locationText').innerHTML = '📍 Localização não detectada';
-            }
-        } catch (e) {
-            document.getElementById('locationText').innerHTML = '📍 Serviço indisponível';
+    // ==================== FUNÇÃO QUE EXTRAI O CHANNEL ID A PARTIR DO LINK ====================
+    async function getChannelIdFromUrl(channelUrl, apiKey) {
+        // Se já for um ID válido (começa com UC e tem 22+ caracteres)
+        if (/^UC[-_0-9A-Za-z]{21,}$/.test(channelUrl)) {
+            return channelUrl;
         }
-        renderEvents();
-    }
-    detectLocation();
 
-    // ==================== YOUTUBE LIVES (CARROSSEL) ====================
-    async function fetchLiveStatus(channelId) {
-        const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${channelId}&eventType=live&type=video&maxResults=1&key=${YOUTUBE_API_KEY}`;
+        // Extrai o handle @username da URL
+        let handle = '';
+        const handleMatch = channelUrl.match(/@([a-zA-Z0-9_]+)/);
+        if (handleMatch) handle = handleMatch[1];
+
+        // MÉTODO 1: Scraping da página (sem usar cota da API) - funciona para URLs com @
+        if (handle) {
+            try {
+                const pageUrl = `https://www.youtube.com/@${handle}`;
+                const response = await fetch(PROXY + encodeURIComponent(pageUrl));
+                const html = await response.text();
+                // Busca no HTML: <meta itemprop="identifier" content="UC...">
+                let match = html.match(/itemprop="identifier"\s+content="([^"]+)"/i);
+                if (match && match[1]) return match[1];
+                // Busca alternativa: externalId": "UC..."
+                match = html.match(/"externalId"\s*:\s*"([^"]+)"/);
+                if (match && match[1]) return match[1];
+                // Busca channel_id na URL de alguma imagem do canal
+                match = html.match(/https:\/\/yt3\.ggpht\.com\/([^"?]+)/);
+                if (match) return match[1];
+            } catch(e) { console.warn("Scraping falhou:", e); }
+        }
+
+        // MÉTODO 2: API de busca do YouTube (gasta cota mas é mais confiável)
+        if (apiKey && handle) {
+            try {
+                const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(handle)}&type=channel&maxResults=1&key=${apiKey}`;
+                const response = await fetch(searchUrl);
+                const data = await response.json();
+                if (data.items && data.items[0] && data.items[0].snippet.channelId) {
+                    return data.items[0].snippet.channelId;
+                }
+            } catch(e) { console.warn("API search falhou:", e); }
+        }
+
+        throw new Error(`Não foi possível identificar o ID do canal: ${channelUrl}`);
+    }
+
+    // ==================== FUNÇÃO QUE VERIFICA SE O CANAL ESTÁ AO VIVO ====================
+    async function fetchLiveStatus(channelId, apiKey) {
+        if (!apiKey) return null;
+        const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${channelId}&eventType=live&type=video&maxResults=1&key=${apiKey}`;
         try {
             const response = await fetch(PROXY + encodeURIComponent(url));
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -212,6 +232,7 @@
         }
     }
 
+    // ==================== ATUALIZA AS LIVES (COM CARROSSEL) ====================
     async function loadAllLives() {
         const container = document.getElementById('liveContainer');
         if (!YOUTUBE_API_KEY || YOUTUBE_API_KEY === "AIzaSyAq1vULczFTYA_kM1cZ2XYjxSNjC-P7jCo") {
@@ -220,11 +241,24 @@
         }
         container.innerHTML = `<div class="empty-state"><i class="fas fa-spinner fa-pulse"></i> Buscando lives...</div>`;
         let lives = [];
+
         for (let ch of CHANNELS) {
-            const live = await fetchLiveStatus(ch.id);
-            if (live) lives.push(live);
+            try {
+                // Converte URL ou handle em channelId
+                const channelId = await getChannelIdFromUrl(ch.url, YOUTUBE_API_KEY);
+                const live = await fetchLiveStatus(channelId, YOUTUBE_API_KEY);
+                if (live) lives.push(live);
+            } catch (err) {
+                console.warn(`Erro ao processar ${ch.url}:`, err);
+                // Se falhar, tenta usar o próprio URL como ID (caso seja um ID direto)
+                if (ch.url.match(/^UC[-_0-9A-Za-z]{21,}$/)) {
+                    const live = await fetchLiveStatus(ch.url, YOUTUBE_API_KEY);
+                    if (live) lives.push(live);
+                }
+            }
             await new Promise(r => setTimeout(r, 200));
         }
+
         if (lives.length === 0) {
             container.innerHTML = `<div class="empty-state">🎵 Nenhuma live no momento. Volte mais tarde!</div>`;
             return;
@@ -242,19 +276,30 @@
         `).join('');
     }
 
-    loadAllLives();
-    setInterval(loadAllLives, 120000);
-
-    // Controles do carrossel horizontal
+    // Controles do carrossel
     const wrapper = document.getElementById('sliderWrapper');
-    document.getElementById('slidePrev').addEventListener('click', () => {
-        wrapper.scrollBy({ left: -300, behavior: 'smooth' });
-    });
-    document.getElementById('slideNext').addEventListener('click', () => {
-        wrapper.scrollBy({ left: 300, behavior: 'smooth' });
-    });
+    document.getElementById('slidePrev')?.addEventListener('click', () => { wrapper.scrollBy({ left: -300, behavior: 'smooth' }); });
+    document.getElementById('slideNext')?.addEventListener('click', () => { wrapper.scrollBy({ left: 300, behavior: 'smooth' }); });
 
-    // ==================== EVENTOS LOCAIS ====================
+    // ==================== GEOLOCALIZAÇÃO E DEMAIS FUNCIONALIDADES ====================
+    let userCity = null;
+    let localEvents = [];
+    const BLOQUEADAS = ["sexo","porn","nudez","violência","droga","tráfico","arma","ódio","racismo","homofobia","nazi","pedofilia","suicídio","morte","sangue","sequestro","assalto","estupro","bomba","terrorismo","cocaína","maconha"];
+    function hasBadWords(text) { if (!text) return false; const lower = text.toLowerCase(); return BLOQUEADAS.some(pal => lower.includes(pal)); }
+
+    async function detectLocation() {
+        try {
+            const res = await fetch('https://ipapi.co/json/');
+            const data = await res.json();
+            if (data.city) {
+                userCity = data.city;
+                document.getElementById('locationText').innerHTML = `${data.city}, ${data.region_code}`;
+            } else { document.getElementById('locationText').innerHTML = '📍 Localização não detectada'; }
+        } catch (e) { document.getElementById('locationText').innerHTML = '📍 Serviço indisponível'; }
+        renderEvents();
+    }
+    detectLocation();
+
     function loadEvents() {
         const stored = localStorage.getItem("vaaamos_events");
         localEvents = stored ? JSON.parse(stored) : [];
@@ -266,10 +311,7 @@
     }
     function getDeviceId() {
         let id = localStorage.getItem("deviceId");
-        if (!id) {
-            id = "dev_" + Date.now() + "_" + Math.random().toString(36).substr(2, 6);
-            localStorage.setItem("deviceId", id);
-        }
+        if (!id) { id = "dev_" + Date.now() + "_" + Math.random().toString(36).substr(2, 6); localStorage.setItem("deviceId", id); }
         return id;
     }
     function userEventCount() {
@@ -311,21 +353,14 @@
     }
     function cleanExpired() {
         const now = new Date();
-        const filtered = localEvents.filter(ev => {
-            const diff = (now - new Date(ev.datetime)) / (1000*3600);
-            return diff < 1;
-        });
-        if (filtered.length !== localEvents.length) {
-            localEvents = filtered;
-            saveEvents();
-            showToast("⏰ Eventos expirados removidos", "#2c3e50");
-        }
+        const filtered = localEvents.filter(ev => { const diff = (now - new Date(ev.datetime)) / (1000*3600); return diff < 1; });
+        if (filtered.length !== localEvents.length) { localEvents = filtered; saveEvents(); showToast("⏰ Eventos expirados removidos", "#2c3e50"); }
     }
     setInterval(cleanExpired, 60000);
     cleanExpired();
 
     function formatDate(iso) {
-        try { return new Date(iso).toLocaleString('pt-BR', {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'}); }
+        try { return new Date(iso).toLocaleString('pt-BR', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' }); }
         catch(e) { return iso; }
     }
     function openMap(address, city) {
@@ -334,10 +369,7 @@
     }
     function renderEvents() {
         const container = document.getElementById('eventsContainer');
-        if (!localEvents.length) {
-            container.innerHTML = `<div class="empty-state">Nenhum evento local. Use o formulário acima.</div>`;
-            return;
-        }
+        if (!localEvents.length) { container.innerHTML = `<div class="empty-state">Nenhum evento local. Use o formulário acima.</div>`; return; }
         const did = getDeviceId();
         container.innerHTML = localEvents.map(ev => {
             const isOwner = ev.createdBy === did;
@@ -362,7 +394,6 @@
         }).join('');
     }
 
-    // ==================== FORMULÁRIO ====================
     document.getElementById('eventForm').addEventListener('submit', (e) => {
         e.preventDefault();
         const title = document.getElementById('eventTitle').value.trim();
@@ -372,34 +403,20 @@
         const address = document.getElementById('eventAddress').value.trim();
         const desc = document.getElementById('eventDesc').value.trim();
         const link = document.getElementById('eventLink').value.trim();
-        if (!title || !datetime || !city || !desc || !link) {
-            showToast("Preencha todos os campos obrigatórios!", "orange");
-            return;
-        }
-        if (new Date(datetime) <= new Date()) {
-            showToast("A data/hora deve ser no futuro!", "red");
-            return;
-        }
+        if (!title || !datetime || !city || !desc || !link) { showToast("Preencha todos os campos obrigatórios!", "orange"); return; }
+        if (new Date(datetime) <= new Date()) { showToast("A data/hora deve ser no futuro!", "red"); return; }
         addEvent({ title, banner, datetime, city, address, desc, link });
         e.target.reset();
     });
 
-    function showToast(msg, bg = "#2c3e50") {
-        const toast = document.createElement('div');
-        toast.className = 'toast';
-        toast.style.background = bg;
-        toast.innerText = msg;
-        document.body.appendChild(toast);
-        setTimeout(() => toast.remove(), 3000);
-    }
-    function escapeHtml(str) {
-        if (!str) return '';
-        return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
-    }
+    function showToast(msg, bg = "#2c3e50") { const toast = document.createElement('div'); toast.className = 'toast'; toast.style.background = bg; toast.innerText = msg; document.body.appendChild(toast); setTimeout(() => toast.remove(), 3000); }
+    function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m])); }
 
     window.deleteEvent = deleteEvent;
     window.openMap = openMap;
     loadEvents();
+    loadAllLives();
+    setInterval(loadAllLives, 120000);
 </script>
 </body>
 </html>
