@@ -71,6 +71,9 @@
 <body>
 <div class="container">
     <div class="header">
+        <button id="btnTestarAPI" style="background:#e63946; color:white; border:none; padding:0.5rem 1rem; border-radius:2rem; margin-bottom:1rem; width:100%;">
+    🔍 TESTAR API DO YOUTUBE
+        </button>
         <h1><i class="fas fa-map-marker-alt"></i> Vaaamos! Lambe Lambe</h1>
         <div class="location-box"><i class="fas fa-globe"></i> <span id="locationText">Detectando...</span></div>
     </div>
@@ -345,6 +348,47 @@
     window.deleteEvent = deleteEvent;
     window.openMap = openMap;
     loadEvents();
+    document.getElementById('btnTestarAPI').addEventListener('click', async () => {
+    const ch = "UCXuqSBlHAE6Xw-yeJA4TpLg"; // ID de teste
+    const key = YOUTUBE_API_KEY;
+    const msgDiv = document.createElement('div');
+    msgDiv.style.cssText = 'position:fixed; bottom:80px; left:10px; right:10px; background:black; color:lime; padding:15px; border-radius:10px; z-index:9999; font-size:12px; text-align:left;';
+    document.body.appendChild(msgDiv);
+    
+    msgDiv.innerHTML = "🔍 Testando API do YouTube...<br>";
+    
+    try {
+        const proxy = "https://corsproxy.io/?url=";
+        const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${ch}&eventType=live&type=video&maxResults=1&key=${key}`;
+        const response = await fetch(proxy + encodeURIComponent(url));
+        const data = await response.json();
+        
+        if (data.error) {
+            msgDiv.innerHTML += `❌ ERRO ${data.error.code}: ${data.error.message}<br>`;
+            if (data.error.code === 403 && data.error.message.includes('quota')) {
+                msgDiv.innerHTML += `🔴 COTA ESGOTADA! Volta amanhã.<br>`;
+            } else if (data.error.code === 400 && data.error.message.includes('key')) {
+                msgDiv.innerHTML += `🔴 CHAVE INVÁLIDA! Gere uma nova no Google Cloud.<br>`;
+            } else if (data.error.code === 403 && data.error.message.includes('accessNotConfigured')) {
+                msgDiv.innerHTML += `🔴 API NÃO ATIVADA! Ative a YouTube Data API v3.<br>`;
+            }
+        } else {
+            const lives = data.items?.length || 0;
+            msgDiv.innerHTML += `✅ API OK! Lives encontradas: ${lives}<br>`;
+            if (lives === 0) {
+                msgDiv.innerHTML += `📢 Nenhum canal está ao vivo agora.<br>`;
+            } else {
+                msgDiv.innerHTML += `🎬 Live: ${data.items[0].snippet.title}<br>`;
+            }
+        }
+    } catch(err) {
+        msgDiv.innerHTML += `❌ ERRO DE REDE: ${err.message}<br>`;
+    }
+    
+    msgDiv.innerHTML += `<br><button id="fecharMsg" style="background:#e63946; color:white; border:none; padding:5px; border-radius:5px;">Fechar</button>`;
+    document.getElementById('fecharMsg').onclick = () => msgDiv.remove();
+    setTimeout(() => msgDiv.remove(), 15000);
+});
 </script>
 </body>
 </html>
