@@ -3,80 +3,142 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Vaaamos! | Eventos Ao Vivo + Twitch</title>
+    <title>Vaaamos! · Lives com RSS do YouTube</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, 'Segoe UI', sans-serif; }
-        body { background: #0a0f1e; padding: 1rem; color: #eee; }
-        .container { max-width: 1400px; margin: 0 auto; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, 'Segoe UI', sans-serif;
+        }
 
-        /* Cabeçalho estilo neon */
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e9edf2 100%);
+            color: #1a2c3e;
+            padding: 1rem;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Cabeçalho */
         .geo-header {
             background: linear-gradient(135deg, #0f2027, #203a43);
+            color: white;
             border-radius: 1.5rem;
             padding: 1rem 1.5rem;
-            margin-bottom: 1.5rem;
+            margin-bottom: 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            box-shadow: 0 0 15px rgba(0,255,255,0.2);
         }
-        .geo-header h1 { font-size: 1.4rem; display: flex; align-items: center; gap: 0.5rem; }
-        .location-box { background: rgba(255,255,255,0.15); padding: 0.3rem 1rem; border-radius: 2rem; font-size: 0.85rem; backdrop-filter: blur(5px); }
+
+        .geo-header h1 {
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .location-box {
+            background: rgba(255,255,255,0.2);
+            padding: 0.3rem 1rem;
+            border-radius: 2rem;
+            font-size: 0.85rem;
+            backdrop-filter: blur(5px);
+        }
 
         /* Seções */
         .section-title {
             font-size: 1.3rem;
             margin: 1.5rem 0 1rem;
-            border-left: 4px solid #9146ff;
+            border-left: 6px solid #e63946;
             padding-left: 0.8rem;
             font-weight: bold;
-            text-shadow: 0 0 3px #9146ff;
         }
+
         .cards-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 1.5rem;
         }
-        /* Cards estilo arcade */
-        .event-card, .twitch-card {
-            background: rgba(20, 30, 45, 0.9);
-            backdrop-filter: blur(4px);
+
+        /* Cards */
+        .event-card {
+            background: white;
             border-radius: 1rem;
             overflow: hidden;
-            border: 1px solid rgba(145, 70, 255, 0.4);
-            box-shadow: 0 0 10px rgba(145, 70, 255, 0.2);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
             transition: 0.2s;
+            border: 1px solid rgba(0,0,0,0.05);
         }
-        .event-card:hover, .twitch-card:hover {
+
+        .event-card:hover {
             transform: translateY(-5px);
-            border-color: #9146ff;
-            box-shadow: 0 0 20px #9146ff;
+            box-shadow: 0 20px 35px rgba(0,0,0,0.15);
         }
+
         .card-banner {
             width: 100%;
-            height: 150px;
+            height: 160px;
             object-fit: cover;
-            background: #1e2a3a;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
-        .card-content { padding: 0.8rem; }
-        .card-title { font-weight: bold; display: flex; justify-content: space-between; }
-        .datetime-highlight { background: #0f1a24; padding: 0.3rem; border-radius: 0.5rem; font-size: 0.7rem; margin: 0.5rem 0; }
-        .local-badge { background: #2c7da0; display: inline-block; padding: 0.2rem 0.6rem; border-radius: 1rem; font-size: 0.7rem; cursor: pointer; margin: 0.2rem 0; }
-        .event-link { display: inline-block; background: #9146ff; color: white; text-decoration: none; padding: 0.3rem 0.8rem; border-radius: 2rem; font-size: 0.7rem; margin-top: 0.5rem; }
-        .admin-buttons { display: flex; gap: 0.5rem; }
-        .btn-icon { background: none; border: none; cursor: pointer; color: #ccc; font-size: 1rem; }
-        .btn-delete { color: #e63946; }
-        .btn-pin { color: #f4a261; }
-        .btn-pin.active { color: #27ae60; }
-        .badge-fixed { background: #27ae60; padding: 0.1rem 0.4rem; border-radius: 1rem; font-size: 0.6rem; }
-        .empty-state { text-align: center; padding: 2rem; background: rgba(0,0,0,0.5); border-radius: 1rem; color: #aaa; }
+
+        .card-content {
+            padding: 1rem;
+        }
+
+        .card-title {
+            font-weight: bold;
+            margin-bottom: 0.3rem;
+            font-size: 1rem;
+        }
+
+        .channel-name {
+            font-size: 0.75rem;
+            color: #e63946;
+            margin-bottom: 0.5rem;
+        }
+
+        .datetime-highlight {
+            background: linear-gradient(135deg, #fff5e6, #ffe8d6);
+            border-left: 4px solid #f97316;
+            padding: 0.3rem;
+            border-radius: 0.5rem;
+            font-size: 0.7rem;
+            margin: 0.5rem 0;
+        }
+
+        .event-link {
+            display: inline-block;
+            background: linear-gradient(135deg, #e63946, #c1121f);
+            color: white;
+            text-decoration: none;
+            padding: 0.3rem 0.8rem;
+            border-radius: 2rem;
+            font-size: 0.7rem;
+            margin-top: 0.5rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            background: white;
+            border-radius: 1rem;
+            color: #666;
+        }
+
         .toast {
             position: fixed;
             bottom: 20px;
             right: 20px;
-            background: #1e2f3e;
+            background: #2c3e50;
             color: white;
             padding: 8px 16px;
             border-radius: 20px;
@@ -84,25 +146,59 @@
             z-index: 1000;
             animation: fadeOut 3s;
         }
+
         @keyframes fadeOut {
             0% { opacity: 0; transform: translateX(100%); }
             15% { opacity: 1; transform: translateX(0); }
             85% { opacity: 1; transform: translateX(0); }
             100% { opacity: 0; transform: translateX(100%); }
         }
+
         .form-card {
-            background: rgba(10, 20, 30, 0.9);
-            backdrop-filter: blur(8px);
+            background: white;
             border-radius: 1.2rem;
             padding: 1.2rem;
             margin-bottom: 2rem;
-            border: 1px solid #9146ff;
+            border: 1px solid #e2edf2;
         }
-        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 0.8rem; }
-        input, textarea { width: 100%; padding: 0.6rem; background: #1e2a36; border: 1px solid #2c7da0; color: white; border-radius: 0.8rem; }
-        .btn-primary { background: #9146ff; width: 100%; padding: 0.7rem; border: none; border-radius: 2rem; font-weight: bold; cursor: pointer; color: white; }
-        footer { text-align: center; margin-top: 2rem; font-size: 0.7rem; color: #6c8aa0; }
-        @media (max-width: 640px) { .form-row { grid-template-columns: 1fr; } }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 0.8rem;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 0.6rem;
+            border: 1px solid #ccc;
+            border-radius: 0.8rem;
+        }
+
+        .btn-primary {
+            background: #1e2f3e;
+            color: white;
+            width: 100%;
+            padding: 0.7rem;
+            border-radius: 2rem;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 2rem;
+            font-size: 0.7rem;
+            color: #777;
+        }
+
+        @media (max-width: 640px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
@@ -112,100 +208,196 @@
         <div class="location-box"><i class="fas fa-globe"></i> <span id="locationText">Detectando...</span></div>
     </div>
 
-    <!-- SEÇÃO TWITCH (Música + Arte) -->
+    <!-- SEÇÃO DE LIVES COM RSS DO YOUTUBE (SEM API KEY) -->
     <div class="section-title">
-        <span><i class="fab fa-twitch"></i> TWITCH · MÚSICA E ARTE AO VIVO</span>
+        <span><i class="fab fa-youtube"></i> AO VIVO AGORA · RSS FEED</span>
     </div>
-    <div id="twitchContainer" class="cards-grid">
-        <div class="empty-state">Carregando streams...</div>
+    <div id="liveContainer" class="cards-grid">
+        <div class="empty-state">Carregando lives via RSS...</div>
     </div>
 
-    <!-- EVENTOS CADASTRADOS PELOS USUÁRIOS -->
-    <div class="section-title">
-        <span>📅 EVENTOS CADASTRADOS</span>
-        <span id="eventCountBadge" style="background:#0a1a2a; padding:0.1rem 0.6rem; border-radius:1rem;">0</span>
-    </div>
-    <div id="manualEventsContainer" class="cards-grid"></div>
-
-    <!-- FORMULÁRIO DE CADASTRO -->
+    <!-- CADASTRO DE EVENTOS LOCAIS -->
     <div class="form-card">
-        <h3>➕ CADASTRAR EVENTO</h3>
+        <h3>➕ CADASTRAR EVENTO LOCAL</h3>
         <form id="eventForm">
             <div class="form-row">
-                <div class="form-group"><label>Título *</label><input type="text" id="eventTitle" required></div>
-                <div class="form-group"><label>Banner (URL)</label><input type="url" id="eventBanner" placeholder="opcional"></div>
+                <div class="form-group">
+                    <label>Título *</label>
+                    <input type="text" id="eventTitle" required>
+                </div>
+                <div class="form-group">
+                    <label>Banner (URL)</label>
+                    <input type="url" id="eventBanner" placeholder="opcional">
+                </div>
             </div>
             <div class="form-row">
-                <div class="form-group"><label>Data/Hora *</label><input type="datetime-local" id="eventDatetime" required></div>
-                <div class="form-group"><label>Cidade *</label><input type="text" id="eventCity" required></div>
+                <div class="form-group">
+                    <label>Data/Hora *</label>
+                    <input type="datetime-local" id="eventDatetime" required>
+                </div>
+                <div class="form-group">
+                    <label>Cidade *</label>
+                    <input type="text" id="eventCity" required>
+                </div>
             </div>
-            <div class="form-group"><label>Endereço completo (opcional)</label><input type="text" id="eventAddress" placeholder="Rua, número"></div>
-            <div class="form-group"><label>Descrição *</label><textarea rows="2" id="eventDesc" required></textarea></div>
-            <div class="form-group"><label>Link da Live *</label><input type="url" id="eventLink" placeholder="https://youtube.com/... ou https://twitch.tv/..." required></div>
+            <div class="form-group">
+                <label>Endereço completo (opcional)</label>
+                <input type="text" id="eventAddress" placeholder="Rua, número">
+            </div>
+            <div class="form-group">
+                <label>Descrição *</label>
+                <textarea rows="2" id="eventDesc" required></textarea>
+            </div>
+            <div class="form-group">
+                <label>Link da Live *</label>
+                <input type="url" id="eventLink" placeholder="https://youtube.com/..." required>
+            </div>
             <button type="submit" class="btn-primary">PUBLICAR EVENTO</button>
         </form>
     </div>
-    <footer>Limite de 5 eventos por dispositivo · Exclusão automática 1h após início · Conteúdo impróprio é bloqueado</footer>
+
+    <div id="manualEventsContainer" class="cards-grid"></div>
+    <footer>Limite de 3 eventos gratuitos · Suas lives são atualizadas automaticamente</footer>
 </div>
 
 <script>
-    // ==================== CONFIGURAÇÕES DA TWITCH ====================
-    // ⚠️ SUBSTITUA PELOS SEUS DADOS OBTIDOS NO DEV.TWITCH.TV
-    const TWITCH_CLIENT_ID = "SEU_CLIENT_ID_AQUI";
-    const TWITCH_ACCESS_TOKEN = "SEU_APP_ACCESS_TOKEN_AQUI"; // gerado via cURL (válido por ~60 dias)
-    const CATEGORY_MUSIC_ID = "ID_DA_MUSICA";   // ex: 332976 (descubra via search/categories)
-    const CATEGORY_ART_ID = "ID_DA_ARTE";       // ex: 509666
-
-    // Imagens de fallback (devem estar na mesma pasta do index.html)
-    const FALLBACK_IMAGES = ["img1.png", "img2.png", "img3.png"];
-
-    // Configurações dos eventos manuais
-    const LIMITE_EVENTOS = 5;
-    const ALERTA_EMAIL = "lambelambeapp@gmail.com";
-
-    // Palavras bloqueadas (conteúdo impróprio)
-    const BLOQUEADAS = ["sexo","porn","nudez","violência","droga","tráfico","arma","facção","ódio","racismo","homofobia","nazi","pedofilia","suicídio","morte","sangue","sequestro","assalto","estupro","incesto","bomba","terrorismo","cocaína","maconha","crack","heroína","prostituição"];
-
-    function hasBadWords(text) {
-        if (!text) return false;
-        const lower = text.toLowerCase();
-        return BLOQUEADAS.some(pal => lower.includes(pal));
-    }
-
-    function isValidUrl(url) {
-        return /^(https?:\/\/)/.test(url);
-    }
-
+    // ==================== 1. GEOLOCALIZAÇÃO ====================
     let userCity = null;
-    let manualEvents = [];
-
-    // ==================== GEOLOCALIZAÇÃO ====================
     async function getLocation() {
         if (!navigator.geolocation) return;
         try {
-            const pos = await new Promise((res,rej)=> navigator.geolocation.getCurrentPosition(res,rej));
+            const pos = await new Promise((res, rej) => navigator.geolocation.getCurrentPosition(res, rej));
             const resp = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&accept-language=pt-BR`);
             const data = await resp.json();
             userCity = data.address?.city || data.address?.town || data.address?.municipality;
             document.getElementById("locationText").innerHTML = userCity ? `📍 ${userCity}` : "📍 Local aprox.";
             renderManualEvents();
-        } catch(e) { document.getElementById("locationText").innerHTML = "📍 Não disponível"; }
+        } catch (e) {
+            document.getElementById("locationText").innerHTML = "📍 Não disponível";
+        }
     }
     getLocation();
     setInterval(getLocation, 30000);
 
-    // ==================== CRUD EVENTOS MANUAIS ====================
+    // ==================== 2. LIVES VIA RSS FEED (SEM API KEY) ====================
+    // LISTA DE CANAIS PARA MONITORAR (SUBSTITUA PELOS IDS DOS CANAIS QUE VOCÊ QUER)
+    // 🔧 COMO OBTER O CHANNEL ID:
+    // 1. Acesse o canal pelo navegador
+    // 2. Clique com botão direito -> "Exibir código fonte da página"
+    // 3. Procure por "channel_id": o valor será algo como "UCXuqSBlHAE6Xw-yeJA4TpLg"
+    const CHANNELS = [
+        { id: "UCXuqSBlHAE6Xw-yeJA4TpLg", name: "Música Brasil" },
+        { id: "UC-9-kyTW8ZkZNDHQJ6FgpwQ", name: "Arte Ao Vivo" },
+        { id: "UCVHFbqXqoYvEWM1Ddxl0QDg", name: "Cultura Agora" }
+    ];
+
+    async function checkLiveStatus(channelId) {
+        const rssUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`;
+        try {
+            const response = await fetch(rssUrl);
+            const text = await response.text();
+            const parser = new DOMParser();
+            const xml = parser.parseFromString(text, "text/xml");
+            
+            // O primeiro <entry> é o vídeo mais recente
+            const entry = xml.querySelector("entry");
+            if (!entry) return null;
+
+            const videoId = entry.querySelector("yt\\:videoId")?.textContent || entry.querySelector("videoId")?.textContent;
+            const title = entry.querySelector("title")?.textContent;
+            const published = entry.querySelector("published")?.textContent;
+            const channelName = xml.querySelector("title")?.textContent;
+            const thumbnail = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+            
+            // Verifica se o vídeo está AO VIVO e foi publicado há menos de 2 horas
+            if (videoId && published) {
+                const publishedDate = new Date(published);
+                const now = new Date();
+                const diffMinutes = (now - publishedDate) / (1000 * 60);
+                // Considera AO VIVO se foi publicado nos últimos 120 minutos (2 horas)
+                if (diffMinutes <= 120) {
+                    return {
+                        isLive: true,
+                        videoId: videoId,
+                        title: title,
+                        channelName: channelName,
+                        thumbnail: thumbnail,
+                        publishedAt: publishedDate
+                    };
+                }
+            }
+            return null;
+        } catch (error) {
+            console.warn(`Erro no canal ${channelId}:`, error);
+            return null;
+        }
+    }
+
+    async function fetchAllLives() {
+        const container = document.getElementById("liveContainer");
+        container.innerHTML = `<div class="empty-state"><i class="fas fa-spinner fa-pulse"></i> Verificando lives via RSS...</div>`;
+        
+        let liveResults = [];
+        for (const channel of CHANNELS) {
+            const liveData = await checkLiveStatus(channel.id);
+            if (liveData && liveData.isLive) {
+                liveResults.push({
+                    ...liveData,
+                    customName: channel.name
+                });
+            }
+            // Pequena pausa para evitar bloqueios
+            await new Promise(r => setTimeout(r, 100));
+        }
+
+        if (liveResults.length === 0) {
+            // Fallback: imagens locais (coloque img1.png, img2.png, img3.png na mesma pasta)
+            const fallbackImages = ["img1.png", "img2.png", "img3.png"];
+            let fallbackHtml = fallbackImages.map(img => `
+                <div class="event-card">
+                    <img class="card-banner" src="${img}" onerror="this.src='https://placehold.co/600x400/667eea/white?text=Vaaamos'">
+                    <div class="card-content">
+                        <div class="card-title">Evento em breve</div>
+                        <div class="datetime-highlight">📅 Programação cultural</div>
+                    </div>
+                </div>
+            `).join('');
+            container.innerHTML = fallbackHtml;
+            return;
+        }
+
+        // Exibe as lives encontradas
+        container.innerHTML = liveResults.map(live => `
+            <div class="event-card">
+                <img class="card-banner" src="${live.thumbnail}" onerror="this.src='https://placehold.co/600x400/667eea/white?text=Vaaamos'">
+                <div class="card-content">
+                    <div class="card-title">${escapeHtml(live.title)}</div>
+                    <div class="channel-name"><i class="fab fa-youtube"></i> ${escapeHtml(live.customName)}</div>
+                    <div class="datetime-highlight">🔴 AO VIVO AGORA</div>
+                    <a href="https://www.youtube.com/watch?v=${live.videoId}" target="_blank" class="event-link">Assistir ao vivo</a>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // Atualiza lives a cada 2 minutos
+    fetchAllLives();
+    setInterval(fetchAllLives, 120000);
+
+    // ==================== 3. EVENTOS LOCAIS (LIMITE DE 3) ====================
+    let manualEvents = [];
+    const LIMITE_EVENTOS = 3;
+    const ALERTA_EMAIL = "lambelambeapp@gmail.com";
+
     function loadEvents() {
         const stored = localStorage.getItem("vaaamos_events");
         manualEvents = stored ? JSON.parse(stored) : [];
-        manualEvents.forEach(ev => { if (ev.keepByAdmin === undefined) ev.keepByAdmin = false; });
         renderManualEvents();
     }
 
     function saveEvents() {
         localStorage.setItem("vaaamos_events", JSON.stringify(manualEvents));
         renderManualEvents();
-        document.getElementById("eventCountBadge").innerText = manualEvents.length;
     }
 
     function getDeviceId() {
@@ -222,27 +414,16 @@
         return manualEvents.filter(ev => ev.createdBy === deviceId).length;
     }
 
-    function addEvent(eventData) {
-        if (hasBadWords(eventData.title) || hasBadWords(eventData.description) || hasBadWords(eventData.city) || hasBadWords(eventData.address)) {
-            showToast("❌ Conteúdo impróprio! Evento bloqueado.", "red");
-            return false;
-        }
-        if (!isValidUrl(eventData.link)) {
-            showToast("❌ Link inválido. Use http:// ou https://", "red");
-            return false;
-        }
-        if (new Date(eventData.datetime) <= new Date()) {
-            showToast("❌ Data/hora futura obrigatória.", "red");
-            return false;
-        }
-        let userCount = countUserEvents();
+    function addManualEvent(eventData) {
+        const userCount = countUserEvents();
         if (userCount >= LIMITE_EVENTOS) {
-            showToast(`❌ Limite de ${LIMITE_EVENTOS} eventos. Contato: ${ALERTA_EMAIL}`, "orange");
+            showToast(`❌ Limite de ${LIMITE_EVENTOS} eventos atingido. Contato: ${ALERTA_EMAIL}`, "orange");
             return false;
         }
-        if (userCount >= 3) {
+        if (userCount >= 2) { // Aviso a partir do 3º evento
             showToast(`⚠️ Você já tem ${userCount} eventos. Para mais, contate: ${ALERTA_EMAIL}`, "#f4a261");
         }
+
         let banner = eventData.bannerUrl && eventData.bannerUrl.trim() !== "" ? eventData.bannerUrl : "subvam.png";
         manualEvents.push({
             id: Date.now(),
@@ -256,48 +437,58 @@
             createdBy: getDeviceId(),
             keepByAdmin: false
         });
-        manualEvents.sort((a,b)=>new Date(a.datetime)-new Date(b.datetime));
+        manualEvents.sort((a, b) => new Date(a.datetime) - new Date(b.datetime));
         saveEvents();
         showToast("✅ Evento adicionado!", "green");
         return true;
     }
 
-    function deleteEvent(id) {
+    function deleteManualEvent(id) {
         manualEvents = manualEvents.filter(ev => ev.id !== id);
         saveEvents();
-        showToast("🗑️ Removido", "red");
+        showToast("🗑️ Evento removido", "red");
     }
 
-    function togglePin(id) {
-        let ev = manualEvents.find(ev => ev.id === id);
-        if (ev) {
-            ev.keepByAdmin = !ev.keepByAdmin;
-            saveEvents();
-            showToast(ev.keepByAdmin ? "📌 Fixado" : "🔓 Remoção liberada", "#f4a261");
+    function formatDate(iso) {
+        try {
+            return new Date(iso).toLocaleString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+        } catch (e) { return iso; }
+    }
+
+    function openMap(endereco, cidade) {
+        let q = endereco || cidade;
+        if (q) window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`, '_blank');
+    }
+
+    function renderManualEvents() {
+        const container = document.getElementById("manualEventsContainer");
+        if (!manualEvents.length) {
+            container.innerHTML = `<div class="empty-state">Nenhum evento local cadastrado.</div>`;
+            return;
         }
+
+        const deviceId = getDeviceId();
+        container.innerHTML = manualEvents.map(ev => {
+            const isOwner = ev.createdBy === deviceId;
+            return `
+                <div class="event-card">
+                    <img class="card-banner" src="${ev.bannerUrl}" onerror="this.onerror=null; this.src='https://placehold.co/600x400/667eea/white?text=Vaaamos'">
+                    <div class="card-content">
+                        <div class="card-title">
+                            ${escapeHtml(ev.title)}
+                            ${isOwner ? `<button class="btn-icon btn-delete" onclick="deleteManualEvent(${ev.id})" style="background:none; border:none; color:#e63946; cursor:pointer;"><i class="fas fa-trash-alt"></i></button>` : ''}
+                        </div>
+                        <div style="font-size:0.7rem; cursor:pointer; color:#2c7da0;" onclick="openMap('${escapeHtml(ev.address)}','${escapeHtml(ev.city)}')"><i class="fas fa-map-marker-alt"></i> ${escapeHtml(ev.city)}</div>
+                        <div class="datetime-highlight">⏰ ${formatDate(ev.datetime)}</div>
+                        <div class="desc">${escapeHtml(ev.description)}</div>
+                        <a href="${ev.link}" target="_blank" class="event-link">Assistir</a>
+                    </div>
+                </div>
+            `;
+        }).join('');
     }
 
-    function cleanExpired() {
-        const now = new Date();
-        let removed = 0;
-        const filtered = manualEvents.filter(ev => {
-            const diff = (now - new Date(ev.datetime)) / (1000*3600);
-            if (diff >= 1 && !ev.keepByAdmin) {
-                removed++;
-                return false;
-            }
-            return true;
-        });
-        if (removed) {
-            manualEvents = filtered;
-            saveEvents();
-            showToast(`⏰ ${removed} evento(s) expirado(s) removido(s)`, "#2c3e50");
-        }
-    }
-    setInterval(cleanExpired, 60000);
-    cleanExpired();
-
-    function showToast(msg, color="#2c3e50") {
+    function showToast(msg, color = "#2c3e50") {
         let toast = document.createElement('div');
         toast.className = 'toast';
         toast.style.background = color;
@@ -306,141 +497,9 @@
         setTimeout(() => toast.remove(), 3000);
     }
 
-    function formatDate(iso) {
-        try { return new Date(iso).toLocaleString('pt-BR', {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'}); }
-        catch(e) { return iso; }
-    }
+    function escapeHtml(str) { return str?.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m])) || ''; }
 
-    function openMap(endereco, cidade) {
-        let q = endereco || cidade;
-        if (q) window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`, '_blank');
-    }
-
-    function escapeHtml(str) { return str?.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])) || ''; }
-
-    function renderManualEvents() {
-        const container = document.getElementById("manualEventsContainer");
-        if (!manualEvents.length) {
-            container.innerHTML = `<div class="empty-state">Nenhum evento cadastrado.</div>`;
-            document.getElementById("eventCountBadge").innerText = "0";
-            return;
-        }
-        const deviceId = getDeviceId();
-        container.innerHTML = manualEvents.map(ev => {
-            const isLocal = userCity && ev.city && ev.city.toLowerCase().includes(userCity.toLowerCase());
-            const isOwner = ev.createdBy === deviceId;
-            return `
-                <div class="event-card">
-                    <img class="card-banner" src="${ev.bannerUrl}" onerror="this.onerror=null; this.src='https://placehold.co/600x400/667eea/white?text=Vaaamos'">
-                    <div class="card-content">
-                        <div class="card-title">
-                            <span>${escapeHtml(ev.title)}</span>
-                            <div class="admin-buttons">
-                                ${ev.keepByAdmin ? '<span class="badge-fixed"><i class="fas fa-thumbtack"></i></span>' : ''}
-                                ${isOwner ? `
-                                    <button class="btn-icon btn-delete" onclick="deleteEvent(${ev.id})"><i class="fas fa-trash-alt"></i></button>
-                                    <button class="btn-icon btn-pin ${ev.keepByAdmin ? 'active' : ''}" onclick="togglePin(${ev.id})"><i class="fas fa-thumbtack"></i></button>
-                                ` : ''}
-                            </div>
-                        </div>
-                        <div class="local-badge" onclick="openMap('${escapeHtml(ev.address)}','${escapeHtml(ev.city)}')"><i class="fas fa-map-marker-alt"></i> ${escapeHtml(ev.city)}</div>
-                        <div class="datetime-highlight">⏰ ${formatDate(ev.datetime)} ${isLocal ? '📍 Perto' : ''}</div>
-                        <div class="desc">${escapeHtml(ev.description)}</div>
-                        <a href="${ev.link}" target="_blank" class="event-link">Assistir</a>
-                    </div>
-                </div>
-            `;
-        }).join('');
-        document.getElementById("eventCountBadge").innerText = manualEvents.length;
-    }
-
-    // ==================== TWITCH API ====================
-    async function fetchTwitchStreams() {
-        const container = document.getElementById("twitchContainer");
-        if (!TWITCH_CLIENT_ID || TWITCH_CLIENT_ID === "SEU_CLIENT_ID_AQUI") {
-            container.innerHTML = `<div class="empty-state">🔑 Configure as credenciais da Twitch no código (Client ID e Token).</div>`;
-            return;
-        }
-        if (!TWITCH_ACCESS_TOKEN || TWITCH_ACCESS_TOKEN === "SEU_APP_ACCESS_TOKEN_AQUI") {
-            container.innerHTML = `<div class="empty-state">🔑 Token da Twitch não configurado. Gere via cURL.</div>`;
-            return;
-        }
-
-        container.innerHTML = `<div class="empty-state"><i class="fas fa-spinner fa-pulse"></i> Buscando streams na Twitch...</div>`;
-
-        const categoryIds = [CATEGORY_MUSIC_ID, CATEGORY_ART_ID].filter(id => id && id !== "ID_DA_MUSICA" && id !== "ID_DA_ARTE");
-        if (categoryIds.length === 0) {
-            container.innerHTML = `<div class="empty-state">🎵 IDs das categorias não configurados. Descubra via API e preencha.</div>`;
-            return;
-        }
-
-        let allStreams = [];
-        for (let catId of categoryIds) {
-            try {
-                const url = `https://api.twitch.tv/helix/streams?game_id=${catId}&first=8`;
-                const response = await fetch(url, {
-                    headers: {
-                        'Client-ID': TWITCH_CLIENT_ID,
-                        'Authorization': `Bearer ${TWITCH_ACCESS_TOKEN}`
-                    }
-                });
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    console.warn(`Erro na categoria ${catId}:`, errorText);
-                    continue;
-                }
-                const data = await response.json();
-                if (data.data && data.data.length) {
-                    allStreams = [...allStreams, ...data.data];
-                }
-            } catch (err) {
-                console.warn(`Falha ao buscar categoria ${catId}:`, err);
-            }
-        }
-
-        if (allStreams.length === 0) {
-            // Fallback: exibe 3 imagens fixas locais
-            let fallbackHtml = FALLBACK_IMAGES.map(img => `
-                <div class="twitch-card">
-                    <img class="card-banner" src="${img}" onerror="this.src='https://placehold.co/600x400/9146ff/white?text=Vaaamos'">
-                    <div class="card-content">
-                        <div class="card-title">Em breve</div>
-                        <div class="datetime-highlight">🎤 Programação cultural</div>
-                    </div>
-                </div>
-            `).join('');
-            container.innerHTML = fallbackHtml;
-            return;
-        }
-
-        // Remove streams duplicadas (caso alguma esteja nas duas categorias)
-        const unique = [];
-        const ids = new Set();
-        for (let s of allStreams) {
-            if (!ids.has(s.id)) {
-                ids.add(s.id);
-                unique.push(s);
-            }
-        }
-
-        container.innerHTML = unique.map(stream => {
-            // thumbnail padrão: https://static-cdn.jtvnw.net/previews-ttv/live_user_...-{width}x{height}.jpg
-            let thumb = stream.thumbnail_url.replace("{width}", "320").replace("{height}", "180");
-            return `
-                <div class="twitch-card">
-                    <img class="card-banner" src="${thumb}" onerror="this.src='https://placehold.co/600x400/9146ff/white?text=Twitch'">
-                    <div class="card-content">
-                        <div class="card-title">${escapeHtml(stream.title)}</div>
-                        <div style="font-size:0.7rem; color:#b19cd9;">${escapeHtml(stream.user_name)}</div>
-                        <div class="datetime-highlight">🔴 AO VIVO · ${stream.viewer_count} espectadores</div>
-                        <a href="https://twitch.tv/${stream.user_login}" target="_blank" class="event-link">Assistir na Twitch</a>
-                    </div>
-                </div>
-            `;
-        }).join('');
-    }
-
-    // ==================== INICIALIZAÇÃO ====================
+    // ==================== 4. FORMULÁRIO ====================
     document.getElementById("eventForm").addEventListener("submit", (e) => {
         e.preventDefault();
         const title = document.getElementById("eventTitle").value.trim();
@@ -450,21 +509,22 @@
         const address = document.getElementById("eventAddress").value.trim();
         const description = document.getElementById("eventDesc").value.trim();
         const link = document.getElementById("eventLink").value.trim();
+
         if (!title || !datetime || !city || !description || !link) {
-            showToast("Preencha todos os obrigatórios!", "orange");
+            showToast("Preencha todos os campos obrigatórios!", "orange");
             return;
         }
-        addEvent({ title, bannerUrl, datetime, city, address, description, link });
+        if (new Date(datetime) <= new Date()) {
+            showToast("❌ Data/hora futura obrigatória.", "red");
+            return;
+        }
+
+        addManualEvent({ title, bannerUrl, datetime, city, address, description, link });
         e.target.reset();
     });
 
-    window.deleteEvent = deleteEvent;
-    window.togglePin = togglePin;
-    window.openMap = openMap;
-
+    window.deleteManualEvent = deleteManualEvent;
     loadEvents();
-    fetchTwitchStreams();
-    setInterval(fetchTwitchStreams, 120000); // atualiza a cada 2 minutos
 </script>
 </body>
 </html>
