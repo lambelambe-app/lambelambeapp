@@ -6,7 +6,7 @@
     <title>Vaaamos! · Ao Vivo + Eventos</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        /* (mesmo CSS anterior, mantido por questões de espaço) */
+        /* Seus estilos permanecem os mesmos */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, 'Segoe UI', sans-serif; }
         body { background: linear-gradient(135deg, #f5f7fa 0%, #e9edf2 100%); padding: 1rem; }
         .container { max-width: 1200px; margin: 0 auto; }
@@ -153,30 +153,167 @@
 </div>
 
 <script>
-    // Carrega a chave salva no localStorage
+    // ==================== CONFIGURAÇÕES ====================
     let YOUTUBE_API_KEY = localStorage.getItem('youtube_api_key') || "";
 
+    // Lista de canais que serão monitorados
     const CHANNELS = [
-        { url: "https://www.youtube.com/@novalounge99", name: "Nova Lounge" },
+        { url: "https://www.youtube.com/@novalounge99", name: "Nova Lounge", id: "UCCkniCDFfS4PfVdq2mPkaGQ" },
         { url: "https://www.youtube.com/@bgmchannelbgm", name: "BGM channel" },
-        { url: "UCCkniCDFfS4PfVdq2mPkaGQ", name: "Música Brasil" },
+        { url: "UCXuqSBlHAE6Xw-yeJA4TpLg", name: "Música Brasil" },
         { url: "UC4R8DWoNaI9iRrARsZ-Ow8A", name: "Festivais Ao Vivo" }
     ];
 
+    // ==================== FUNÇÃO DE SCRAPING (FALLBACK) ====================
+    async function scrapeLiveStatus(handle) {
+        // Usa um proxy para evitar CORS
+        const proxy = "https://corsproxy.io/?url=";
+        const streamUrl = `https://www.youtube.com/@${handle}/streams`;
+        try {
+            const response = await fetch(proxy + encodeURIComponent(streamUrl));
+            const html = await response.text();
+
+            // Busca o JSON com os dados iniciais da página
+            const match = html.match(/var ytInitialData = ({.*?});/);
+            if (match && match[1]) {
+                const data = JSON.parse(match[1]);
+                // Navega pela estrutura JSON para encontrar lives ativas
+                const tabs = data?.contents?.twoColumnBrowseResultsRenderer?.tabs;
+                if (tabs) {
+                    for (const tab of tabs) {
+                        const tabRenderer = tab.tabRenderer;
+                        if (tabRenderer && tabRenderer.title === 'Ao vivo') {
+                            const contents = tabRenderer.content?.sectionListRenderer?.contents;
+                            if (contents) {
+                                for (const section of contents) {
+                                    const items = section?.itemSectionRenderer?.contents;
+                                    if (items) {
+                                        for (const item of items) {
+                                            const videoRenderer = item.videoRenderer;
+                                            if (videoRenderer && videoRenderer.badges) {
+                                                for (const badge of videoRenderer.badges) {
+                                                    if (badge.metadataBadgeRenderer?.label === 'AO VIVO') {
+                                                        return {
+                                                            videoId: videoRenderer.videoId,
+                                                            title: videoRenderer.title?.runs?.[0]?.text || 'Live',
+                                                            channelName: videoRenderer.ownerText?.runs?.[0]?.text || '',
+                                                            thumbnail: videoRenderer.thumbnail?.thumbnails?.[0]?.url || ''
+                                                        };
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return null;
+        } catch (error) {
+            console.warn(`Erro no scraping do canal ${handle}:`, error);
+            return null;
+        }
+    }
+
+    // ==================== FUNÇÃO PARA OBTER HANDLE DO CANAL ====================
+    function getHandleFromUrl(url) {
+        const match = url.match(/@([a-zA-Z0-9_]+)/);
+        return match ? match[1] : null;
+    }
+
+    // ==================== FUNÇÃO PRINCIPAL ====================
+    async function fetchLiveStatus(channelInfo) {
+        // Tenta primeiro o Scraping (fallback)
+        const handle = getHandleFromUrl(channelInfo.url);
+        if (handle) {
+            const liveData = await scrapeLiveStatus(handle);
+            if (liveData) return liveData;
+        }
+
+        // Se não conseguiu via scraping, tenta a API (caso a chave esteja configurada)
+        if (!YOUTUBE_API_KEY) return null;
+
+        let channelId = channelInfo.id;
+        if (!channelId) {
+            const handleMatch = channelInfo.url.match(/@([a-zA-Z0-9_]+)/);
+            if (handleMatch) {
+                const handle = handleMatch[1];
+                const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(handle)}&type=channel&maxResults=1&key=${YOUTUBE_API_KEY}`;
+                const response = await fetch(searchUrl);
+                const data = await response.json();
+                if (data.items && data.items[0]) {
+                    channelId = data.items[0].snippet.channelId;
+                }
+            }
+        }
+
+        if (!channelId) return null;
+
+        const proxy = "https://corsproxy.io/?url=";
+        const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${channelId}&eventType=live&type=video&maxResults=1&key=${YOUTUBE_API_KEY}`;
+        try {
+            const response = await fetch(proxy + encodeURIComponent(url));
+            const data = await response.json();
+            if (data.items && data.items.length) {
+                const v = data.items[0];
+                return {
+                    videoId: v.id.videoId,
+                    title: v.snippet.title,
+                    channelName: v.snippet.channelTitle,
+                    thumbnail: v.snippet.thumbnails.high?.url || v.snippet.thumbnails.medium?.url
+                };
+            }
+            return null;
+        } catch (err) {
+            console.warn(`Erro na API para ${channelInfo.url}:`, err);
+            return null;
+        }
+    }
+
+    // ==================== CARREGAR LIVES ====================
+    async function loadAllLives() {
+        const container = document.getElementById('liveContainer');
+        container.innerHTML = `<div class="empty-state"><i class="fas fa-spinner fa-pulse"></i> Buscando lives...</div>`;
+        
+        let lives = [];
+        for (let channel of CHANNELS) {
+            const live = await fetchLiveStatus(channel);
+            if (live) lives.push(live);
+            await new Promise(r => setTimeout(r, 500));
+        }
+        
+        if (lives.length === 0) {
+            container.innerHTML = `<div class="empty-state">🎵 Nenhuma live no momento. Volte mais tarde!</div>`;
+            return;
+        }
+        
+        container.innerHTML = lives.map(v => `
+            <div class="card">
+                <img class="card-banner" src="${v.thumbnail}" onerror="this.src='https://placehold.co/600x400/e63946/white?text=Live'">
+                <div class="card-content">
+                    <div class="card-title">${escapeHtml(v.title)}</div>
+                    <div class="channel"><i class="fab fa-youtube"></i> ${escapeHtml(v.channelName)}</div>
+                    <div class="live-badge">🔴 AO VIVO AGORA</div>
+                    <a href="https://www.youtube.com/watch?v=${v.videoId}" target="_blank" class="btn-link">Assistir</a>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // ==================== (A PARTE DE EVENTOS LOCAIS CONTINUA IGUAL) ====================
+
+    let userCity = null;
+    let localEvents = [];
     const LIMITE_EVENTOS = 3;
     const CONTATO_EMAIL = "lambelambeapp@gmail.com";
     const BLOQUEADAS = ["sexo","porn","nudez","violência","droga","tráfico","arma","ódio","racismo","homofobia","nazi","pedofilia","suicídio","morte","sangue","sequestro","assalto","estupro","bomba","terrorismo","cocaína","maconha"];
-
     function hasBadWords(text) {
         if (!text) return false;
         const lower = text.toLowerCase();
         return BLOQUEADAS.some(pal => lower.includes(pal));
     }
-
-    let userCity = null;
-    let localEvents = [];
-
-    // Geolocalização
     async function detectLocation() {
         try {
             const res = await fetch('https://ipapi.co/json/');
@@ -194,95 +331,6 @@
     }
     detectLocation();
 
-    // Obter ID do canal a partir do link
-    async function getChannelIdFromUrl(channelUrl) {
-        if (/^UC[-_0-9A-Za-z]{21,}$/.test(channelUrl)) return channelUrl;
-        const handleMatch = channelUrl.match(/@([a-zA-Z0-9_]+)/);
-        const handle = handleMatch ? handleMatch[1] : '';
-        if (handle) {
-            try {
-                const proxy = "https://api.allorigins.win/raw?url=";
-                const pageUrl = `https://www.youtube.com/@${handle}`;
-                const response = await fetch(proxy + encodeURIComponent(pageUrl));
-                const html = await response.text();
-                let match = html.match(/itemprop="identifier"\s+content="([^"]+)"/i);
-                if (match && match[1]) return match[1];
-                match = html.match(/"externalId"\s*:\s*"([^"]+)"/);
-                if (match && match[1]) return match[1];
-            } catch(e) { console.warn(e); }
-        }
-        if (YOUTUBE_API_KEY && handle) {
-            try {
-                const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(handle)}&type=channel&maxResults=1&key=${YOUTUBE_API_KEY}`;
-                const response = await fetch(url);
-                const data = await response.json();
-                if (data.items && data.items[0] && data.items[0].snippet.channelId) return data.items[0].snippet.channelId;
-            } catch(e) { console.warn(e); }
-        }
-        throw new Error(`Não foi possível identificar o canal: ${channelUrl}`);
-    }
-
-    // Verificar live
-    async function fetchLiveStatus(channelId) {
-        if (!YOUTUBE_API_KEY) return null;
-        const proxy = "https://api.allorigins.win/raw?url=";
-        const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${channelId}&eventType=live&type=video&maxResults=1&key=${YOUTUBE_API_KEY}`;
-        try {
-            const response = await fetch(proxy + encodeURIComponent(url));
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
-            const data = await response.json();
-            if (data.error) throw new Error(data.error.message);
-            if (data.items && data.items.length) {
-                const v = data.items[0];
-                return {
-                    videoId: v.id.videoId,
-                    title: v.snippet.title,
-                    channelName: v.snippet.channelTitle,
-                    thumbnail: v.snippet.thumbnails.high?.url || v.snippet.thumbnails.medium?.url
-                };
-            }
-            return null;
-        } catch (err) {
-            console.warn(`Erro no canal ${channelId}:`, err);
-            return null;
-        }
-    }
-
-    // Carregar lives
-    async function loadAllLives() {
-        const container = document.getElementById('liveContainer');
-        if (!YOUTUBE_API_KEY) {
-            container.innerHTML = `<div class="empty-state">🔑 Clique no botão "Configurar API Key" acima e insira sua chave do YouTube.</div>`;
-            return;
-        }
-        container.innerHTML = `<div class="empty-state"><i class="fas fa-spinner fa-pulse"></i> Buscando lives...</div>`;
-        let lives = [];
-        for (let ch of CHANNELS) {
-            try {
-                const channelId = await getChannelIdFromUrl(ch.url);
-                const live = await fetchLiveStatus(channelId);
-                if (live) lives.push(live);
-            } catch (err) { console.warn(err); }
-            await new Promise(r => setTimeout(r, 200));
-        }
-        if (lives.length === 0) {
-            container.innerHTML = `<div class="empty-state">🎵 Nenhuma live no momento. Volte mais tarde!</div>`;
-            return;
-        }
-        container.innerHTML = lives.map(v => `
-            <div class="card">
-                <img class="card-banner" src="${v.thumbnail}" onerror="this.src='https://placehold.co/600x400/e63946/white?text=Live'">
-                <div class="card-content">
-                    <div class="card-title">${escapeHtml(v.title)}</div>
-                    <div class="channel"><i class="fab fa-youtube"></i> ${escapeHtml(v.channelName)}</div>
-                    <div class="live-badge">🔴 AO VIVO AGORA</div>
-                    <a href="https://www.youtube.com/watch?v=${v.videoId}" target="_blank" class="btn-link">Assistir</a>
-                </div>
-            </div>
-        `).join('');
-    }
-
-    // Eventos locais (mantido igual)
     function loadEvents() {
         const stored = localStorage.getItem("vaaamos_events");
         localEvents = stored ? JSON.parse(stored) : [];
@@ -385,6 +433,28 @@
             `;
         }).join('');
     }
+
+    // ==================== FORMULÁRIO ====================
+    document.getElementById('eventForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const title = document.getElementById('eventTitle').value.trim();
+        const banner = document.getElementById('eventBanner').value.trim();
+        const datetime = document.getElementById('eventDatetime').value;
+        const city = document.getElementById('eventCity').value.trim();
+        const address = document.getElementById('eventAddress').value.trim();
+        const desc = document.getElementById('eventDesc').value.trim();
+        const link = document.getElementById('eventLink').value.trim();
+        if (!title || !datetime || !city || !desc || !link) {
+            showToast("Preencha todos os campos obrigatórios!", "orange");
+            return;
+        }
+        if (new Date(datetime) <= new Date()) {
+            showToast("A data/hora deve ser no futuro!", "red");
+            return;
+        }
+        addEvent({ title, banner, datetime, city, address, desc, link });
+        e.target.reset();
+    });
     function showToast(msg, bg = "#2c3e50") {
         const toast = document.createElement('div');
         toast.className = 'toast';
@@ -397,9 +467,7 @@
         if (!str) return '';
         return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
     }
-
-    // Configurar chave da API
-    document.getElementById('configKeyBtn').addEventListener('click', () => {
+    function handleApiKey() {
         const newKey = prompt("Digite sua chave de API do YouTube:", YOUTUBE_API_KEY);
         if (newKey && newKey.trim()) {
             YOUTUBE_API_KEY = newKey.trim();
@@ -409,19 +477,20 @@
         } else if (newKey === "") {
             YOUTUBE_API_KEY = "";
             localStorage.removeItem('youtube_api_key');
-            showToast("⚠️ Chave removida. As lives não serão exibidas.", "orange");
+            showToast("⚠️ Chave removida. Usando apenas scraping.", "orange");
             loadAllLives();
         }
-    });
+    }
 
     // Controles do carrossel
     const wrapper = document.getElementById('sliderWrapper');
     document.getElementById('slidePrev')?.addEventListener('click', () => { wrapper.scrollBy({ left: -300, behavior: 'smooth' }); });
     document.getElementById('slideNext')?.addEventListener('click', () => { wrapper.scrollBy({ left: 300, behavior: 'smooth' }); });
+    document.getElementById('configKeyBtn').addEventListener('click', handleApiKey);
 
-    // Inicialização
     window.deleteEvent = deleteEvent;
     window.openMap = openMap;
+    
     loadEvents();
     loadAllLives();
     setInterval(loadAllLives, 120000);
