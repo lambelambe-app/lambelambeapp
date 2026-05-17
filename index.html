@@ -153,7 +153,14 @@
         { handle: "SmallsLIVE", name: "SmallsLIVE", id: "UCjWjwD6aDJ-s8p-k-gy-vGA" },
         { handle: "SuaMúsica", name: "Sua Música", id: "UCWh6Rqp-mO38iPJbAVNflvQ" }
     ];
-
+    
+  // Palavras-chave que indicam live (expansível)
+    const LIVE_KEYWORDS = [
+        "ao vivo", "AoVivo", "Transmissão iniciada", "Chat ao vivo", 
+        "live", "24h", "24 horas", "direto", "transmissão", "streaming",
+        "musica ao vivo", "show ao vivo", "concerto ao vivo", "performance ao vivo",
+        "lives", "ao-vivo", "live music", "live performance", "live session"
+    ];
     // Cache simples (guardar resultados por 5 minutos)
     let cachedLives = null;
     let lastFetchTime = 0;
