@@ -28,17 +28,15 @@
             border-left: 6px solid #e63946;
             padding-left: 0.8rem;
             font-weight: bold;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
         }
-        .loading-spinner { font-size: 0.9rem; color: #e63946; }
+        /* Slider só aparece se houver lives */
         .slider-container {
             position: relative;
-            display: flex;
+            display: none;
             align-items: center;
             gap: 0.5rem;
         }
+        .slider-container.active { display: flex; }
         .slider-wrapper {
             overflow-x: auto;
             scroll-behavior: smooth;
@@ -58,34 +56,12 @@
             border-radius: 1rem;
             overflow: hidden;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            transition: 0.2s;
         }
-        .slider-cards .card:hover { transform: translateY(-4px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
         .card-banner { width: 100%; height: 150px; object-fit: cover; background: #667eea; }
         .card-content { padding: 0.8rem; }
-        .card-title { font-weight: bold; font-size: 1rem; margin-bottom: 0.3rem; display: flex; justify-content: space-between; }
+        .card-title { font-weight: bold; font-size: 1rem; margin-bottom: 0.3rem; }
         .channel { font-size: 0.75rem; color: #e63946; margin-bottom: 0.5rem; }
         .live-badge { background: #e63946; color: white; padding: 0.2rem 0.5rem; border-radius: 2rem; font-size: 0.7rem; display: inline-block; }
-        .empty-state { text-align: center; padding: 2rem; background: white; border-radius: 1rem; color: #666; }
-        .toast {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: #2c3e50;
-            color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            z-index: 1000;
-            animation: fadeOut 3s forwards;
-        }
-        @keyframes fadeOut { 0% { opacity: 0; transform: translateX(100%); } 15% { opacity: 1; transform: translateX(0); } 85% { opacity: 1; } 100% { opacity: 0; visibility: hidden; } }
-        .form-card { background: white; border-radius: 1.2rem; padding: 1.2rem; margin: 1.5rem 0; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
-        input, textarea { width: 100%; padding: 0.6rem; border: 1px solid #ccc; border-radius: 0.8rem; }
-        .btn-primary { background: #1e2f3e; color: white; width: 100%; padding: 0.7rem; border-radius: 2rem; border: none; font-weight: bold; cursor: pointer; }
-        .btn-icon { background: none; border: none; cursor: pointer; font-size: 1rem; color: #e63946; }
-        /* Botão verde */
         .btn-live {
             display: inline-block;
             background: #2ecc71;
@@ -95,9 +71,36 @@
             border-radius: 2rem;
             font-size: 0.75rem;
             margin-top: 0.5rem;
-            transition: 0.2s;
         }
-        .btn-live:hover { background: #27ae60; transform: scale(0.98); }
+        .btn-live:hover { background: #27ae60; }
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            background: white;
+            border-radius: 1rem;
+            color: #666;
+            margin: 1rem 0;
+        }
+        .slider-btn {
+            background: rgba(0,0,0,0.3);
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .slider-btn:hover { background: #e63946; }
+        @media (max-width: 640px) { .slider-btn { display: none; } }
+        .form-card { background: white; border-radius: 1.2rem; padding: 1.2rem; margin: 1.5rem 0; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+        input, textarea { width: 100%; padding: 0.6rem; border: 1px solid #ccc; border-radius: 0.8rem; }
+        .btn-primary { background: #1e2f3e; color: white; width: 100%; padding: 0.7rem; border-radius: 2rem; border: none; font-weight: bold; cursor: pointer; }
+        .btn-icon { background: none; border: none; cursor: pointer; font-size: 1rem; color: #e63946; }
         footer { text-align: center; margin-top: 2rem; font-size: 0.7rem; color: #777; }
         @media (max-width: 640px) { .form-row { grid-template-columns: 1fr; } }
     </style>
@@ -105,29 +108,30 @@
 <body>
 <div class="container">
     <div class="header">
-        <h1><i class="fas fa-map-marker-alt"></i> Vaaamos! Lambe Lambe App</h1>
+        <h1><i class="fas fa-map-marker-alt"></i> Vaaamos! Lambe Lambe</h1>
         <div class="location-box"><i class="fas fa-globe"></i> <span id="locationText">Detectando...</span></div>
     </div>
 
-    <div class="section-title">
-        <span><i class="fab fa-youtube"></i> AO VIVO AGORA</span>
-        <span id="liveRefreshSpinner" class="loading-spinner" style="display: none;"><i class="fas fa-spinner fa-pulse"></i> atualizando...</span>
-    </div>
-    <div class="slider-container">
+    <div class="section-title"><i class="fab fa-youtube"></i> AO VIVO AGORA</div>
+    <div id="liveSection" class="slider-container">
         <button class="slider-btn" id="slidePrev"><i class="fas fa-chevron-left"></i></button>
         <div class="slider-wrapper" id="sliderWrapper">
-            <div class="slider-cards" id="liveContainer">
-                <div class="empty-state">Carregando lives...</div>
-            </div>
+            <div class="slider-cards" id="liveContainer"></div>
         </div>
         <button class="slider-btn" id="slideNext"><i class="fas fa-chevron-right"></i></button>
     </div>
 
-    <div class="section-title">EVENTOS LOCAIS</div>
+    <div id="noLiveMessage" class="empty-state" style="display: none;">
+        🎵 Nenhuma live no momento.<br>
+        Que tal <strong>cadastrar um evento</strong> abaixo?<br>
+        <small>As lives aparecerão automaticamente quando houver transmissões.</small>
+    </div>
+
+    <div class="section-title">📅 EVENTOS LOCAIS</div>
     <div id="eventsContainer" class="cards-grid"></div>
 
     <div class="form-card">
-        <h3>+ CADASTRAR EVENTO</h3>
+        <h3>➕ CADASTRAR EVENTO</h3>
         <form id="eventForm">
             <div class="form-row">
                 <input type="text" id="eventTitle" placeholder="Título *" required>
@@ -143,28 +147,16 @@
             <button type="submit" class="btn-primary">PUBLICAR EVENTO</button>
         </form>
     </div>
-    <footer>não somos responsáveis por eventos inseridos por usuários · exclusão automática após 1h do início</footer>
+    <footer>Limite de 3 eventos por dispositivo · Exclusão após 1h do início</footer>
 </div>
 
 <script>
-    // ==================== LISTA DE CANAIS (HANDLES e IDs) ====================
+    // ==================== LISTA DE CANAIS ====================
     const CHANNELS = [
         { handle: "novalounge99", name: "Nova Lounge", id: "UCCkniCDFfS4PfVdq2mPkaGQ" },
         { handle: "SmallsLIVE", name: "SmallsLIVE", id: "UCjWjwD6aDJ-s8p-k-gy-vGA" },
         { handle: "SuaMúsica", name: "Sua Música", id: "UCWh6Rqp-mO38iPJbAVNflvQ" }
     ];
-    
-  // Palavras-chave que indicam live (expansível)
-    const LIVE_KEYWORDS = [
-        "ao vivo", "AoVivo", "Transmissão iniciada", "Chat ao vivo", 
-        "live", "24h", "24 horas", "direto", "transmissão", "streaming",
-        "musica ao vivo", "show ao vivo", "concerto ao vivo", "performance ao vivo",
-        "lives", "ao-vivo", "live music", "live performance", "live session"
-    ];
-    // Cache simples (guardar resultados por 5 minutos)
-    let cachedLives = null;
-    let lastFetchTime = 0;
-    const CACHE_DURATION = 5 * 60 * 1000; // 5 minutos
 
     // ==================== GEOLOCALIZAÇÃO ====================
     let userCity = null;
@@ -185,114 +177,86 @@
     }
     detectLocation();
 
-    // ==================== DETECÇÃO DE LIVE (SCRAPING + FALLBACK RSS) ====================
+    // ==================== DETECÇÃO DE LIVE (SCRAPING + RSS) ====================
     async function isChannelLive(channelId, channelHandle) {
-        const url = `https://www.youtube.com/@${channelHandle}`;
         const proxy = "https://api.allorigins.win/raw?url=";
+        const url = `https://www.youtube.com/@${channelHandle}`;
         try {
             const response = await fetch(proxy + encodeURIComponent(url));
             const html = await response.text();
-            // Procura por indicadores de live
-            const hasLiveBadge = html.includes('badge-style-type-live-now') || 
-                                 html.includes('"label":"AO VIVO"') ||
-                                 (html.includes('LIVE') && html.includes('badge'));
-            if (hasLiveBadge) {
-                // Tenta extrair videoId
-                let videoId = null;
-                const match = html.match(/"videoId":"([^"]+)"/);
-                if (match) videoId = match[1];
-                if (!videoId) {
-                    // Fallback: RSS
-                    const rssUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`;
-                    const rssRes = await fetch(proxy + encodeURIComponent(rssUrl));
-                    const rssText = await rssRes.text();
-                    const parser = new DOMParser();
-                    const xml = parser.parseFromString(rssText, "text/xml");
-                    const entry = xml.querySelector("entry");
-                    if (entry) {
-                        const idElem = entry.querySelector("yt\\:videoId, videoId");
-                        if (idElem) videoId = idElem.textContent;
-                    }
+            const hasLive = html.includes('badge-style-type-live-now') || html.includes('"label":"AO VIVO"');
+            if (!hasLive) return null;
+            let videoId = null;
+            const match = html.match(/"videoId":"([^"]+)"/);
+            if (match) videoId = match[1];
+            if (!videoId) {
+                const rssUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`;
+                const rssRes = await fetch(proxy + encodeURIComponent(rssUrl));
+                const rssText = await rssRes.text();
+                const parser = new DOMParser();
+                const xml = parser.parseFromString(rssText, "text/xml");
+                const entry = xml.querySelector("entry");
+                if (entry) {
+                    const idElem = entry.querySelector("yt\\:videoId, videoId");
+                    if (idElem) videoId = idElem.textContent;
                 }
-                if (!videoId) return null;
-                // Busca título e thumbnail via oembed
-                const oembedUrl = `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`;
-                const oembedRes = await fetch(oembedUrl);
-                const oembedData = await oembedRes.json();
-                return {
-                    videoId: videoId,
-                    title: oembedData.title || "Live",
-                    channelName: oembedData.author_name || channelHandle,
-                    thumbnail: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`
-                };
             }
-            return null;
+            if (!videoId) return null;
+            const oembedUrl = `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`;
+            const oembedRes = await fetch(oembedUrl);
+            const oembedData = await oembedRes.json();
+            return {
+                videoId: videoId,
+                title: oembedData.title || "Live",
+                channelName: oembedData.author_name || channelHandle,
+                thumbnail: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`
+            };
         } catch (err) {
-            console.warn(`Erro ao verificar live de ${channelHandle}:`, err);
+            console.warn(`Erro no canal ${channelHandle}:`, err);
             return null;
         }
     }
 
-    async function loadAllLives() {
+    async function loadLives() {
+        const section = document.getElementById('liveSection');
         const container = document.getElementById('liveContainer');
-        const spinner = document.getElementById('liveRefreshSpinner');
+        const noLiveDiv = document.getElementById('noLiveMessage');
         
-        // Se há cache válido, usa imediatamente
-        if (cachedLives && (Date.now() - lastFetchTime) < CACHE_DURATION) {
-            renderLives(cachedLives);
-            // Mesmo com cache, atualiza em segundo plano (silencioso)
-            fetchFreshLives(container, spinner);
+        // Mostra loading
+        container.innerHTML = `<div class="empty-state">🔍 Verificando lives...</div>`;
+        section.classList.remove('active');
+        noLiveDiv.style.display = 'none';
+        
+        const lives = [];
+        for (let ch of CHANNELS) {
+            const live = await isChannelLive(ch.id, ch.handle);
+            if (live) lives.push(live);
+        }
+        
+        if (lives.length === 0) {
+            container.innerHTML = '';
+            section.classList.remove('active');
+            noLiveDiv.style.display = 'block';
             return;
         }
         
-        // Sem cache ou expirado: mostra loading e busca
-        spinner.style.display = 'inline-block';
-        const fresh = await fetchFreshLives(container, spinner);
-        if (fresh) renderLives(fresh);
-        spinner.style.display = 'none';
-    }
-
-    async function fetchFreshLives(container, spinner) {
-        try {
-            // Busca em paralelo para maior velocidade
-            const results = await Promise.allSettled(
-                CHANNELS.map(ch => isChannelLive(ch.id, ch.handle))
-            );
-            const lives = results
-                .filter(r => r.status === 'fulfilled' && r.value !== null)
-                .map(r => r.value);
-            
-            // Atualiza cache
-            cachedLives = lives;
-            lastFetchTime = Date.now();
-            return lives;
-        } catch (err) {
-            console.error('Erro na busca:', err);
-            return null;
-        }
-    }
-
-    function renderLives(lives) {
-        const container = document.getElementById('liveContainer');
-        if (!lives || lives.length === 0) {
-            container.innerHTML = `<div class="empty-state">🎵 Nenhuma live no momento. Volte mais tarde!</div>`;
-            return;
-        }
-        // Substitui o conteúdo suavemente (sem piscar, pois não há remoção prévia)
+        // Exibe as lives
         container.innerHTML = lives.map(live => `
             <div class="card">
                 <img class="card-banner" src="${live.thumbnail}" onerror="this.src='https://placehold.co/600x400/e63946/white?text=Live'">
                 <div class="card-content">
                     <div class="card-title">${escapeHtml(live.title)}</div>
-                    <div class="channel"><i class="fab fa-youtube"></i> ${escapeHtml(live.channelName)}</div>
+                    <div class="channel">${escapeHtml(live.channelName)}</div>
                     <div class="live-badge">🔴 AO VIVO AGORA</div>
                     <a href="https://www.youtube.com/watch?v=${live.videoId}" target="_blank" class="btn-live">Assistir</a>
                 </div>
             </div>
         `).join('');
+        section.classList.add('active');
+        noLiveDiv.style.display = 'none';
     }
 
-    // ==================== EVENTOS LOCAIS (mantido igual) ====================
+    // ==================== EVENTOS LOCAIS (SIMPLES) ====================
     let localEvents = [];
     const LIMITE_EVENTOS = 3;
     const CONTATO_EMAIL = "lambelambeapp@gmail.com";
@@ -362,7 +326,7 @@
         e.target.reset();
     });
 
-    // ==================== CONTROLES DO CARROSSEL ====================
+    // ==================== CARROSSEL ====================
     const wrapper = document.getElementById('sliderWrapper');
     document.getElementById('slidePrev')?.addEventListener('click', () => { wrapper.scrollBy({ left: -300, behavior: 'smooth' }); });
     document.getElementById('slideNext')?.addEventListener('click', () => { wrapper.scrollBy({ left: 300, behavior: 'smooth' }); });
@@ -370,11 +334,8 @@
     window.deleteEvent = deleteEvent;
     window.openMap = openMap;
     loadEvents();
-    
-    // Inicializa com cache vazio (busca imediata)
-    loadAllLives();
-    // Atualiza a cada 2 minutos, mas com cache de 5 min, então não vai bater na rede toda vez
-    setInterval(loadAllLives, 120000);
+    loadLives();
+    setInterval(loadLives, 120000); // atualiza a cada 2 minutos
 </script>
 </body>
 </html>
