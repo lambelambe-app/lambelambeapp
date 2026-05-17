@@ -110,7 +110,7 @@
             const data = await response.json();
             if (data.city) {
                 userCity = data.city;
-                document.getElementById('locationText').innerHTML = `📍 ${data.city}, ${data.region_code}`;
+                document.getElementById('locationText').innerHTML = `${data.city}, ${data.region_code}`;
             } else {
                 document.getElementById('locationText').innerHTML = '📍 Localização não detectada';
             }
