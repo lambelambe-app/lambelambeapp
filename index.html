@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Vaaamos! · Ao Vivo</title>
+    <title>Vaaamos! · Ao Vivo (Rápido)</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, 'Segoe UI', sans-serif; }
-        body { background: linear-gradient(135deg, #f5f7fa 0%, #e9edf2 100%); padding: 1rem; }
+        body { background: linear-gradient(135deg, #f5f7fa 0%, #e9edf2 100%); padding: 1rem; min-height: 100vh; }
         .container { max-width: 1200px; margin: 0 auto; }
         .header {
             background: linear-gradient(135deg, #0f2027, #203a43);
@@ -29,14 +29,12 @@
             padding-left: 0.8rem;
             font-weight: bold;
         }
-        /* Slider só aparece se houver lives */
         .slider-container {
             position: relative;
-            display: none;
+            display: flex;
             align-items: center;
             gap: 0.5rem;
         }
-        .slider-container.active { display: flex; }
         .slider-wrapper {
             overflow-x: auto;
             scroll-behavior: smooth;
@@ -101,6 +99,7 @@
         input, textarea { width: 100%; padding: 0.6rem; border: 1px solid #ccc; border-radius: 0.8rem; }
         .btn-primary { background: #1e2f3e; color: white; width: 100%; padding: 0.7rem; border-radius: 2rem; border: none; font-weight: bold; cursor: pointer; }
         .btn-icon { background: none; border: none; cursor: pointer; font-size: 1rem; color: #e63946; }
+        .datetime { background: #fff5e6; border-left: 3px solid #f97316; padding: 0.3rem; font-size: 0.7rem; margin: 0.5rem 0; border-radius: 0.4rem; }
         footer { text-align: center; margin-top: 2rem; font-size: 0.7rem; color: #777; }
         @media (max-width: 640px) { .form-row { grid-template-columns: 1fr; } }
     </style>
@@ -120,7 +119,6 @@
         </div>
         <button class="slider-btn" id="slideNext"><i class="fas fa-chevron-right"></i></button>
     </div>
-
     <div id="noLiveMessage" class="empty-state" style="display: none;">
         🎵 Nenhuma live no momento.<br>
         Que tal <strong>cadastrar um evento</strong> abaixo?<br>
@@ -147,14 +145,25 @@
             <button type="submit" class="btn-primary">PUBLICAR EVENTO</button>
         </form>
     </div>
-    <footer>Limite de 3 eventos por dispositivo · Exclusão após 1h do início</footer>
+    <footer>Vaaamos! não se responsabiliza pelos eventos inseridos por usuários · Exclusão automática após 1h do início</footer>
 </div>
 
 <script>
-    // ==================== LISTA DE CANAIS ====================
+    // ==================== LISTA DE CANAIS (14 canais) ====================
     const CHANNELS = [
         { handle: "novalounge99", name: "Nova Lounge", id: "UCCkniCDFfS4PfVdq2mPkaGQ" },
         { handle: "SmallsLIVE", name: "SmallsLIVE", id: "UCjWjwD6aDJ-s8p-k-gy-vGA" },
+        { handle: "ARTE Concert", name: "ARTE Concert", id: "UC-smeLB9AnOTeypr1YyjJ3A" },
+        { handle: "Santo Rock Bar Tv", name: "Santo Rock Bar Tv", id: "UCF8huKdpMkJcDf6pZk9_KvA" },
+        { handle: "Canto da Ema", name: "Canto da Ema", id: "UCJMkxXGgVrrJAxvzbJraJng" },
+        { handle: "Constellation Chicago", name: "Constellation Chicago", id: "UCyVnF1fqQZJ8CY3tzrgElHg" },
+        { handle: "Mary e Túlio", name: "Mary e Túlio", id: "UCLUe13Uy7-QD_rtYqGWTwSw" },
+        { handle: "Mercado da Arte", name: "Mercado da Arte", id: "UCVe1kxK10G1aHGepFnrGbhg" },
+        { handle: "Estúdio IMAGINAR", name: "Estúdio IMAGINAR", id: "UC4KNxcKmxgVPTIrNmuwYLtw" },
+        { handle: "Cultura Livre", name: "Cultura Livre", id: "UCBuFf6FSDclfDvRGJY1Q5Uw" },
+        { handle: "Festival Vibes Only", name: "Festival Vibes Only", id: "UCuTqkhXjGmwQUKipIQQ8RNg" },
+        { handle: "Ediuny Oliveira", name: "Ediuny Oliveira", id: "UCL1u7qw8YiZWUdMHz_VWGhQ" },
+        { handle: "Wilton Pinheiro", name: "Wilton Pinheiro", id: "UC5nntGS7vVo3xo0eN1V9k9A" },
         { handle: "SuaMúsica", name: "Sua Música", id: "UCWh6Rqp-mO38iPJbAVNflvQ" }
     ];
 
@@ -177,61 +186,54 @@
     }
     detectLocation();
 
-    // ==================== DETECÇÃO DE LIVE (SCRAPING + RSS) ====================
-    async function isChannelLive(channelId, channelHandle) {
+    // ==================== DETECÇÃO DE LIVE (COM TIMEOUT) ====================
+    async function checkLive(channelId, channelName) {
         const proxy = "https://api.allorigins.win/raw?url=";
-        const url = `https://www.youtube.com/@${channelHandle}`;
+        const rssUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`;
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 5000); // 5 segundos máximo
         try {
-            const response = await fetch(proxy + encodeURIComponent(url));
-            const html = await response.text();
-            const hasLive = html.includes('badge-style-type-live-now') || html.includes('"label":"AO VIVO"');
-            if (!hasLive) return null;
-            let videoId = null;
-            const match = html.match(/"videoId":"([^"]+)"/);
-            if (match) videoId = match[1];
-            if (!videoId) {
-                const rssUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`;
-                const rssRes = await fetch(proxy + encodeURIComponent(rssUrl));
-                const rssText = await rssRes.text();
-                const parser = new DOMParser();
-                const xml = parser.parseFromString(rssText, "text/xml");
-                const entry = xml.querySelector("entry");
-                if (entry) {
-                    const idElem = entry.querySelector("yt\\:videoId, videoId");
-                    if (idElem) videoId = idElem.textContent;
-                }
-            }
-            if (!videoId) return null;
-            const oembedUrl = `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`;
-            const oembedRes = await fetch(oembedUrl);
-            const oembedData = await oembedRes.json();
-            return {
-                videoId: videoId,
-                title: oembedData.title || "Live",
-                channelName: oembedData.author_name || channelHandle,
-                thumbnail: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`
-            };
+            const response = await fetch(proxy + encodeURIComponent(rssUrl), { signal: controller.signal });
+            clearTimeout(timeout);
+            if (!response.ok) return null;
+            const text = await response.text();
+            const parser = new DOMParser();
+            const xml = parser.parseFromString(text, "text/xml");
+            const entry = xml.querySelector("entry");
+            if (!entry) return null;
+            const title = entry.querySelector("title")?.textContent || "";
+            const videoId = entry.querySelector("yt\\:videoId, videoId")?.textContent;
+            const publishedStr = entry.querySelector("published")?.textContent;
+            if (!videoId || !publishedStr) return null;
+            const publishedDate = new Date(publishedStr);
+            const minutesDiff = (new Date() - publishedDate) / (1000 * 60);
+            const isLive = minutesDiff <= 120 || title.toLowerCase().includes("ao vivo") || title.toLowerCase().includes("live");
+            if (!isLive) return null;
+            const thumbnail = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+            return { videoId, title, channelName, thumbnail };
         } catch (err) {
-            console.warn(`Erro no canal ${channelHandle}:`, err);
+            clearTimeout(timeout);
             return null;
         }
     }
 
+    // ==================== CARREGAR LIVES (PARALELO) ====================
     async function loadLives() {
         const section = document.getElementById('liveSection');
         const container = document.getElementById('liveContainer');
         const noLiveDiv = document.getElementById('noLiveMessage');
         
-        // Mostra loading
-        container.innerHTML = `<div class="empty-state">🔍 Verificando lives...</div>`;
+        container.innerHTML = `<div class="empty-state">🔍 Verificando ${CHANNELS.length} canais...</div>`;
         section.classList.remove('active');
         noLiveDiv.style.display = 'none';
         
-        const lives = [];
-        for (let ch of CHANNELS) {
-            const live = await isChannelLive(ch.id, ch.handle);
-            if (live) lives.push(live);
-        }
+        const results = await Promise.allSettled(
+            CHANNELS.map(ch => checkLive(ch.id, ch.name))
+        );
+        
+        const lives = results
+            .filter(r => r.status === 'fulfilled' && r.value !== null)
+            .map(r => r.value);
         
         if (lives.length === 0) {
             container.innerHTML = '';
@@ -240,7 +242,6 @@
             return;
         }
         
-        // Exibe as lives
         container.innerHTML = lives.map(live => `
             <div class="card">
                 <img class="card-banner" src="${live.thumbnail}" onerror="this.src='https://placehold.co/600x400/e63946/white?text=Live'">
@@ -256,7 +257,7 @@
         noLiveDiv.style.display = 'none';
     }
 
-    // ==================== EVENTOS LOCAIS (SIMPLES) ====================
+    // ==================== EVENTOS LOCAIS ====================
     let localEvents = [];
     const LIMITE_EVENTOS = 3;
     const CONTATO_EMAIL = "lambelambeapp@gmail.com";
@@ -326,7 +327,7 @@
         e.target.reset();
     });
 
-    // ==================== CARROSSEL ====================
+    // ==================== CONTROLES DO CARROSSEL ====================
     const wrapper = document.getElementById('sliderWrapper');
     document.getElementById('slidePrev')?.addEventListener('click', () => { wrapper.scrollBy({ left: -300, behavior: 'smooth' }); });
     document.getElementById('slideNext')?.addEventListener('click', () => { wrapper.scrollBy({ left: 300, behavior: 'smooth' }); });
@@ -335,7 +336,7 @@
     window.openMap = openMap;
     loadEvents();
     loadLives();
-    setInterval(loadLives, 120000); // atualiza a cada 2 minutos
+    setInterval(loadLives, 120000);
 </script>
 </body>
 </html>
