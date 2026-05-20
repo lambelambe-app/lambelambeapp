@@ -88,87 +88,78 @@
             transition: all 0.05s ease;
             position: relative;
         }
-        /* Para células com cor, aplicamos fundo colorido e um pequeno ícone/textura para daltonismo */
-        .cell.color-filled {
-            background-size: 12px 12px;
-            background-repeat: repeat;
+        /* Círculo colorido dentro da célula */
+        .color-dot {
+            width: 70%;
+            height: 70%;
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.2);
         }
-        /* Textura padrão para cada cor (fallback para daltonismo e impressão) */
-        .cell.color-filled::after {
-            content: attr(data-texture);
-            position: absolute;
-            font-size: 0.7rem;
-            font-weight: bold;
-            opacity: 0.7;
-            color: #1e1e1e;
-            text-shadow: 0 0 1px white;
-        }
-        /* Quando vazia, mostra um pontinho */
+        /* Célula vazia mostra pontinho */
         .cell.empty {
-            background-color: white;
             color: #8b7a5b;
-            font-size: 0.7rem;
+            font-size: 1rem;
             font-family: monospace;
+            font-weight: bold;
         }
-        .cell.empty::after {
+        .cell.empty::before {
             content: "·";
-            position: static;
-            opacity: 1;
         }
         .cell.preset {
             background-color: #f1f0e8;
-            filter: brightness(0.96);
         }
         .cell.selected {
             box-shadow: inset 0 0 0 3px #f39c12;
-            background-color: #ffe0a3 !important;
+            background-color: #ffe0a3;
         }
         .cell.soft-error {
-            background-color: #fff0db !important;
-            filter: brightness(0.98);
+            background-color: #fff0db;
         }
 
-        /* Paleta de cores - botões coloridos */
+        /* Paleta de cores - botões com círculos */
         .color-palette {
             display: flex;
             flex-direction: row;
             justify-content: center;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
             margin: 12px 0 18px;
             flex-wrap: nowrap;
             overflow-x: auto;
             padding-bottom: 4px;
         }
         .color-btn {
-            width: 44px;
-            height: 44px;
+            width: 48px;
+            height: 48px;
             border-radius: 30px;
             cursor: pointer;
             border: 2px solid #ddd;
+            background: white;
             box-shadow: 0 2px 0 #bbb;
             transition: 0.05s linear;
             flex-shrink: 0;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.8rem;
-            font-weight: bold;
-            color: #2c3e2f;
-            background-size: 12px 12px;
-            background-repeat: repeat;
-            position: relative;
+        }
+        .color-btn .dot {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: inline-block;
         }
         .color-btn.active-tool {
             border: 3px solid #f39c12;
             transform: scale(0.96);
             box-shadow: 0 1px 0 #bbb;
         }
-        .color-btn span {
-            background: rgba(255,255,200,0.8);
-            padding: 2px 4px;
-            border-radius: 12px;
-            font-size: 0.7rem;
+        /* Botão apagar */
+        .color-btn.erase {
+            background: #f0f0f0;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #5a3a1a;
         }
 
         .controls {
@@ -210,9 +201,14 @@
             pointer-events: none;
             z-index: 1000;
         }
+        @keyframes fall {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+        }
 
         @media (max-width: 520px) {
-            .color-btn { width: 38px; height: 38px; }
+            .color-btn { width: 42px; height: 42px; }
+            .color-btn .dot { width: 28px; height: 28px; }
             button.action { padding: 6px 10px; font-size: 0.7rem; }
             h1 { font-size: 1.7rem; }
         }
@@ -237,35 +233,32 @@
 
 <script>
     (function() {
-        // ===== DEFINIÇÃO DAS 9 CORES + TEXTURAS (para daltonismo/impressão) =====
+        // ===== 9 CORES (nome, código, emoji para textura) =====
         const COLORS = [
-            { name: "Vermelho", code: "#e74c3c", texture: "▰▰", emoji: "🔴" },
-            { name: "Laranja",  code: "#f39c12", texture: "◍◍", emoji: "🟠" },
-            { name: "Amarelo",  code: "#f1c40f", texture: "●●", emoji: "🟡" },
-            { name: "Verde",    code: "#2ecc71", texture: "▬▬", emoji: "🟢" },
-            { name: "Azul",     code: "#3498db", texture: "❌❌", emoji: "🔵" },
-            { name: "Roxo",     code: "#9b59b6", texture: "▲▲", emoji: "🟣" },
-            { name: "Marrom",   code: "#8e44ad", texture: "▓▓", emoji: "🟤" }, // na verdade marrom: #a0522d
-            { name: "Cinza",    code: "#7f8c8d", texture: "▄▄", emoji: "⚫" },
-            { name: "Rosa",     code: "#e84393", texture: "◊◊", emoji: "🌸" }
+            { name: "Vermelho", code: "#e74c3c", emoji: "🔴" },
+            { name: "Laranja",  code: "#f39c12", emoji: "🟠" },
+            { name: "Amarelo",  code: "#f1c40f", emoji: "🟡" },
+            { name: "Verde",    code: "#2ecc71", emoji: "🟢" },
+            { name: "Azul",     code: "#3498db", emoji: "🔵" },
+            { name: "Roxo",     code: "#9b59b6", emoji: "🟣" },
+            { name: "Marrom",   code: "#a0522d", emoji: "🟤" },
+            { name: "Cinza",    code: "#7f8c8d", emoji: "⚫" },
+            { name: "Rosa",     code: "#e84393", emoji: "🌸" }
         ];
-        // Ajuste do marrom
-        COLORS[6].code = "#a0522d";
-        
         const SIZE = 9;
         const BOX_SIZE = 3;
 
-        let board = Array(SIZE).fill().map(() => Array(SIZE).fill(null)); // null = vazio, ou índice 0-8
+        let board = Array(SIZE).fill().map(() => Array(SIZE).fill(null));
         let fixed = Array(SIZE).fill().map(() => Array(SIZE).fill(false));
         let selectedRow = -1, selectedCol = -1;
         let gameOver = false;
-        let firstGameMode = true; // modo ensino: só 9 células vazias
+        let teachingMode = true; // primeira partida modo ensino
 
         const gridEl = document.getElementById("sudokuGrid");
         const statusEl = document.getElementById("statusMsg");
         const paletteEl = document.getElementById("colorPalette");
 
-        // ===== Lógica de validação (compara índices de cor) =====
+        // ----- Validação Sudoku (índices de cor) -----
         function isValidPlacement(boardIdx, row, col, colorIdx) {
             if (colorIdx === null) return true;
             for (let c = 0; c < SIZE; c++) if (c !== col && boardIdx[row][c] === colorIdx) return false;
@@ -285,14 +278,14 @@
             return true;
         }
 
-        // ===== Gerador de puzzle completo (preenchimento aleatório com cores) =====
+        // ----- Gerador de grade completa (backtracking) -----
         function solveFull(boardIdx) {
             for (let i = 0; i < SIZE; i++) {
                 for (let j = 0; j < SIZE; j++) {
                     if (boardIdx[i][j] === null) {
                         const shuffled = [...Array(COLORS.length).keys()];
-                        for (let k = shuffled.length - 1; k > 0; k--) {
-                            const l = Math.floor(Math.random() * (k + 1));
+                        for (let k = shuffled.length-1; k>0; k--) {
+                            const l = Math.floor(Math.random()*(k+1));
                             [shuffled[k], shuffled[l]] = [shuffled[l], shuffled[k]];
                         }
                         for (let colIdx of shuffled) {
@@ -310,41 +303,38 @@
         }
 
         function generateFullGrid() {
-            let grid = Array(SIZE).fill().map(() => Array(SIZE).fill(null));
+            let grid = Array(SIZE).fill().map(()=>Array(SIZE).fill(null));
             solveFull(grid);
             return grid;
         }
 
-        // Gera puzzle: modo ensino (apenas 9 células vazias, uma de cada cor) ou modo normal
-        function generatePuzzle(teaching = true) {
+        // Gera puzzle: modo ensino (remove exatamente 9 células, uma de cada cor) ou modo normal (48-60 removidas)
+        function generatePuzzle(teaching) {
             const full = generateFullGrid();
             let puzzle = full.map(row => [...row]);
             if (teaching) {
-                // Remove exatamente uma ocorrência de cada cor (9 células vazias)
-                for (let colIdx = 0; colIdx < COLORS.length; colIdx++) {
+                // Remove uma ocorrência de cada cor
+                for (let cIdx = 0; cIdx < COLORS.length; cIdx++) {
                     let positions = [];
-                    for (let i = 0; i < SIZE; i++)
-                        for (let j = 0; j < SIZE; j++)
-                            if (puzzle[i][j] === colIdx) positions.push([i, j]);
-                    if (positions.length > 0) {
+                    for (let i=0;i<SIZE;i++)
+                        for (let j=0;j<SIZE;j++)
+                            if (puzzle[i][j] === cIdx) positions.push([i,j]);
+                    if (positions.length) {
                         const rand = Math.floor(Math.random() * positions.length);
-                        const [r, c] = positions[rand];
+                        const [r,c] = positions[rand];
                         puzzle[r][c] = null;
                     }
                 }
             } else {
-                // Modo normal: remove entre 48 e 60 células
                 const toRemove = 48 + Math.floor(Math.random() * 12);
                 let removed = 0;
                 let positions = [];
-                for (let i = 0; i < SIZE; i++)
-                    for (let j = 0; j < SIZE; j++)
-                        positions.push([i, j]);
-                for (let i = positions.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
+                for (let i=0;i<SIZE;i++) for(let j=0;j<SIZE;j++) positions.push([i,j]);
+                for (let i=positions.length-1;i>0;i--) {
+                    const j = Math.floor(Math.random()*(i+1));
                     [positions[i], positions[j]] = [positions[j], positions[i]];
                 }
-                for (let [r, c] of positions) {
+                for (let [r,c] of positions) {
                     if (removed >= toRemove) break;
                     if (puzzle[r][c] !== null) {
                         puzzle[r][c] = null;
@@ -356,8 +346,8 @@
         }
 
         function loadPuzzle(puzzleData) {
-            for (let i = 0; i < SIZE; i++) {
-                for (let j = 0; j < SIZE; j++) {
+            for (let i=0;i<SIZE;i++) {
+                for (let j=0;j<SIZE;j++) {
                     board[i][j] = puzzleData[i][j];
                     fixed[i][j] = (puzzleData[i][j] !== null);
                 }
@@ -369,11 +359,11 @@
         }
 
         function newGame() {
-            const puzzle = generatePuzzle(firstGameMode);
+            const puzzle = generatePuzzle(teachingMode);
             loadPuzzle(puzzle);
-            if (firstGameMode) {
+            if (teachingMode) {
                 updateStatus("🎓 Modo Ensino: complete uma de cada cor! Divirta-se.");
-                firstGameMode = false;
+                teachingMode = false;
             } else {
                 updateStatus("🔓 Modo Desafio: muitas células vazias! Bom jogo.");
             }
@@ -386,17 +376,16 @@
         }
 
         function placeColor(colorIdx) {
-            if (gameOver) { updateStatus("Jogo finalizado! Clique em NOVO."); return; }
-            if (selectedRow === -1 || selectedCol === -1) { updateStatus("🔍 Primeiro, toque numa célula."); return; }
+            if (gameOver) { updateStatus("Jogo finalizado! NOVO jogo."); return; }
+            if (selectedRow === -1 || selectedCol === -1) { updateStatus("🔍 Toque numa célula primeiro."); return; }
             const row = selectedRow, col = selectedCol;
             if (fixed[row][col]) { updateStatus("🔒 Célula fixa!"); return; }
             if (!isValidPlacement(board, row, col, colorIdx)) {
-                updateStatus(`⚠️ A cor ${COLORS[colorIdx].name} já aparece na mesma linha/coluna/bloco!`, true);
-                // feedback visual suave
-                const cell = document.querySelector(`.cell.selected`);
-                if (cell) {
-                    cell.classList.add("soft-error");
-                    setTimeout(() => cell.classList.remove("soft-error"), 500);
+                updateStatus(`⚠️ Cor ${COLORS[colorIdx].name} já aparece nesta linha/coluna/bloco!`, true);
+                const cellDiv = document.querySelector(`.cell.selected`);
+                if (cellDiv) {
+                    cellDiv.classList.add("soft-error");
+                    setTimeout(()=>cellDiv.classList.remove("soft-error"), 500);
                 }
                 return;
             }
@@ -405,7 +394,7 @@
             renderGrid();
             if (isBoardComplete()) {
                 gameOver = true;
-                statusEl.innerHTML = "🎉✨ VITÓRIA! Parabéns! ✨🎉";
+                statusEl.innerHTML = "🎉✨ VITÓRIA! ✨🎉";
                 launchConfetti();
                 renderGrid();
             }
@@ -431,8 +420,8 @@
         function checkBoard() {
             if (gameOver) { updateStatus("Já venceu! Comece um novo."); return; }
             let empty = false, conflicts = 0;
-            for (let i = 0; i < SIZE; i++) {
-                for (let j = 0; j < SIZE; j++) {
+            for (let i=0;i<SIZE;i++) {
+                for (let j=0;j<SIZE;j++) {
                     const colIdx = board[i][j];
                     if (colIdx === null) empty = true;
                     else if (!isValidPlacement(board, i, j, colIdx)) conflicts++;
@@ -460,44 +449,54 @@
                     const isSelected = (selectedRow === i && selectedCol === j);
                     let hasError = false;
                     if (colIdx !== null && !isValidPlacement(board, i, j, colIdx)) hasError = true;
-                    
+
                     const cell = document.createElement("div");
                     cell.className = "cell";
-                    if (colIdx !== null) {
-                        const color = COLORS[colIdx];
-                        cell.style.backgroundColor = color.code;
-                        cell.setAttribute("data-texture", color.texture);
-                        cell.classList.add("color-filled");
-                        // texto pequeno para reforço
-                        cell.style.fontSize = "0";
-                        // mas também pode mostrar um emoji pequeno? Opcional
-                    } else {
-                        cell.classList.add("empty");
-                        cell.textContent = "·";
-                        cell.style.backgroundColor = "white";
-                    }
                     if (isFixedCell) cell.classList.add("preset");
                     if (isSelected) cell.classList.add("selected");
                     if (hasError && !isFixedCell) cell.classList.add("soft-error");
                     
-                    // destaque linha/coluna/bloco
+                    if (colIdx !== null) {
+                        // Círculo colorido
+                        const dot = document.createElement("div");
+                        dot.className = "color-dot";
+                        dot.style.backgroundColor = COLORS[colIdx].code;
+                        // textura sutil (emoji) para daltônicos? adicionar título
+                        dot.title = COLORS[colIdx].name;
+                        cell.appendChild(dot);
+                    } else {
+                        cell.classList.add("empty");
+                        cell.style.color = "#8b7a5b";
+                        cell.style.fontSize = "1rem";
+                        cell.style.fontWeight = "bold";
+                        cell.style.fontFamily = "monospace";
+                        cell.textContent = "·";
+                    }
+
+                    // Destaque de linha/coluna/bloco
                     if (selectedRow !== -1 && selectedCol !== -1 && !isSelected) {
-                        if (i === selectedRow || j === selectedCol) cell.style.backgroundColor = "#fef9e6";
+                        if (i === selectedRow || j === selectedCol) {
+                            cell.style.backgroundColor = "#fef9e6";
+                            if (colIdx !== null && !hasError) {
+                                // mantém o círculo, apenas fundo da célula alterado
+                                const dot = cell.querySelector(".color-dot");
+                                if (dot) dot.style.opacity = "0.9";
+                            }
+                        }
                         const br = Math.floor(selectedRow / 3) * 3;
                         const bc = Math.floor(selectedCol / 3) * 3;
-                        if (i >= br && i < br+3 && j >= bc && j < bc+3) cell.style.backgroundColor = "#faf5e0";
-                        if (colIdx !== null && !isFixedCell) {
-                            // restaura a cor original se não for conflito
-                            if (!hasError) cell.style.backgroundColor = COLORS[colIdx].code;
+                        if (i >= br && i < br+3 && j >= bc && j < bc+3) {
+                            cell.style.backgroundColor = "#faf5e0";
                         }
+                        if (isSelected) cell.style.backgroundColor = "#ffe0a3";
                     }
-                    
+
                     cell.addEventListener("click", (function(r,c){
                         return () => {
                             if (gameOver) { updateStatus("Jogo encerrado. NOVO jogo."); return; }
                             if (fixed[r][c]) {
                                 selectedRow = r; selectedCol = c;
-                                updateStatus(`🔷 Célula fixa: cor ${COLORS[board[r][c]].name}`);
+                                updateStatus(`🔷 Célula fixa: ${COLORS[board[r][c]].name}`);
                             } else {
                                 selectedRow = r; selectedCol = c;
                                 updateStatus("🎯 Célula selecionada. Toque numa cor.");
@@ -516,12 +515,11 @@
             COLORS.forEach((color, idx) => {
                 const btn = document.createElement("button");
                 btn.className = "color-btn";
-                btn.style.backgroundColor = color.code;
-                btn.style.backgroundImage = `repeating-linear-gradient(45deg, rgba(0,0,0,0.1) 0px, rgba(0,0,0,0.1) 2px, transparent 2px, transparent 8px)`;
-                // texto com emoji/textura para identificação
-                const span = document.createElement("span");
-                span.textContent = color.emoji;
-                btn.appendChild(span);
+                const dot = document.createElement("div");
+                dot.className = "dot";
+                dot.style.backgroundColor = color.code;
+                dot.title = color.name;
+                btn.appendChild(dot);
                 btn.addEventListener("click", () => {
                     if (gameOver) { updateStatus("Partida encerrada. NOVO jogo."); return; }
                     placeColor(idx);
@@ -530,11 +528,13 @@
                 });
                 paletteEl.appendChild(btn);
             });
+            // Botão apagar
             const eraseBtn = document.createElement("button");
-            eraseBtn.className = "color-btn";
-            eraseBtn.style.backgroundColor = "#e0e0e0";
-            eraseBtn.style.border = "2px solid #999";
-            eraseBtn.innerHTML = "<span>🗑️</span>";
+            eraseBtn.className = "color-btn erase";
+            eraseBtn.innerHTML = "⌫";
+            eraseBtn.style.fontSize = "1.3rem";
+            eraseBtn.style.fontWeight = "bold";
+            eraseBtn.style.backgroundColor = "#f0f0f0";
             eraseBtn.addEventListener("click", () => clearCell());
             paletteEl.appendChild(eraseBtn);
         }
@@ -565,7 +565,7 @@
 
         // Inicialização
         buildPalette();
-        firstGameMode = true;
+        teachingMode = true;
         newGame();
         renderGrid();
 
@@ -573,10 +573,10 @@
         document.getElementById("clearBtn").addEventListener("click", () => clearCell());
         document.getElementById("checkBtn").addEventListener("click", () => checkBoard());
 
-        // Adiciona animação keyframes se não existir
-        if (!document.querySelector('#fallKeyframe')) {
+        // Adiciona keyframe se não existir
+        if (!document.querySelector('#fallStyle')) {
             const style = document.createElement('style');
-            style.id = 'fallKeyframe';
+            style.id = 'fallStyle';
             style.textContent = `@keyframes fall { 0% { transform: translateY(0) rotate(0deg); opacity: 1; } 100% { transform: translateY(100vh) rotate(360deg); opacity: 0; } }`;
             document.head.appendChild(style);
         }
