@@ -67,7 +67,7 @@
         .sudoku-grid {
             display: grid;
             grid-template-columns: repeat(9, 1fr);
-            background-color: #dee2e6;
+            background-color: navy; /* Azul navy no fundo do grid */
             gap: 1px;
             width: 100%;
             aspect-ratio: 1 / 1;
@@ -86,6 +86,7 @@
             background: #ffffff;
             color: #2c3e2f;
             cursor: pointer;
+            transition: background 0.05s ease;
         }
 
         .cell.preset {
@@ -103,6 +104,12 @@
             color: #c0392b;
             text-decoration: line-through;
         }
+
+        /* Destaque do bloco 3x3 em preto (opacidade) */
+        .cell.block-highlight {
+            background: rgba(0, 0, 0, 0.15);
+        }
+        /* Se a célula já tiver outra classe de fundo, o block-highlight pode se sobrepor? Vamos tratar no JS para não conflitar */
 
         .symbol-palette {
             display: flex;
@@ -144,14 +151,13 @@
             color: white;
         }
 
-        /* Botões de operação - estilo original retangular, com maior espaçamento */
         .controls {
             display: flex;
             justify-content: center;
             gap: 12px;
             flex-wrap: nowrap;
-            margin-top: 20px;    /* mais espaço acima (distância dos símbolos) */
-            margin-bottom: 8px;   /* espaço inferior para afastar de anúncios */
+            margin-top: 28px;
+            margin-bottom: 8px;
         }
 
         button.action {
@@ -159,7 +165,7 @@
             border: none;
             font-size: 0.75rem;
             font-weight: 600;
-            padding: 8px 14px;
+            padding: 10px 14px;
             border-radius: 36px;
             color: white;
             cursor: pointer;
@@ -170,6 +176,10 @@
             flex: 1;
             text-align: center;
             white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
         }
 
         button.action:active {
@@ -213,10 +223,10 @@
             }
             .controls {
                 gap: 8px;
-                margin-top: 16px;
+                margin-top: 24px;
             }
             button.action {
-                padding: 6px 10px;
+                padding: 8px 10px;
                 font-size: 0.7rem;
             }
             h1 {
@@ -417,6 +427,13 @@
 
     function renderGrid() {
         gridEl.innerHTML = "";
+        // Calcular bloco selecionado se houver célula selecionada
+        let blockStartRow = -1, blockStartCol = -1;
+        if (selectedRow !== -1 && selectedCol !== -1) {
+            blockStartRow = Math.floor(selectedRow / 3) * 3;
+            blockStartCol = Math.floor(selectedCol / 3) * 3;
+        }
+
         for (let i = 0; i < SIZE; i++) {
             for (let j = 0; j < SIZE; j++) {
                 const val = board[i][j];
@@ -424,19 +441,33 @@
                 const isSelected = (selectedRow === i && selectedCol === j);
                 let hasError = false;
                 if (val !== "" && !isValidPlacement(board, i, j, val)) hasError = true;
+                
                 const cell = document.createElement("div");
                 cell.className = "cell";
                 if (isFixed) cell.classList.add("preset");
                 if (isSelected) cell.classList.add("selected");
                 if (hasError && !isFixed) cell.classList.add("error");
-                if (selectedRow !== -1 && selectedCol !== -1) {
-                    if (i === selectedRow || j === selectedCol) cell.style.backgroundColor = "#fef9e6";
-                    const br = Math.floor(selectedRow / 3) * 3, bc = Math.floor(selectedCol / 3) * 3;
-                    if (i >= br && i < br+3 && j >= bc && j < bc+3) cell.style.backgroundColor = "#faf5e0";
-                    if (isSelected) cell.style.backgroundColor = "#ffe0a3";
+                
+                // Aplicar destaque de bloco 3x3 em preto (se célula estiver no mesmo bloco da célula selecionada e não for a própria selecionada)
+                if (selectedRow !== -1 && !isSelected && i >= blockStartRow && i < blockStartRow+3 && j >= blockStartCol && j < blockStartCol+3) {
+                    cell.classList.add("block-highlight");
                 }
+                
+                // Destaque de linha/coluna (opcional, manter em azul navy? Vamos apenas manter leve alteração de cor de fundo, sem conflitar)
+                if (selectedRow !== -1 && selectedCol !== -1 && !isSelected) {
+                    if (i === selectedRow || j === selectedCol) {
+                        // Para linha/coluna, usar um tom azul muito claro (para não competir com o preto do bloco)
+                        if (!cell.classList.contains("block-highlight")) {
+                            cell.style.backgroundColor = "#f0f8ff"; // azul bem claro
+                        } else {
+                            cell.style.backgroundColor = "rgba(0,0,0,0.15)";
+                        }
+                    }
+                }
+                
                 cell.textContent = val === "" ? "·" : val;
                 if (val === "") cell.style.color = "#8b7a5b";
+                
                 cell.addEventListener("click", (() => {
                     if (currentGameOver) { updateStatus("Jogo encerrado. NOVO jogo."); return; }
                     if (fixedCells[i][j]) {
