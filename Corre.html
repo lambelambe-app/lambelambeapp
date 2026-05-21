@@ -144,20 +144,22 @@
             color: white;
         }
 
-        /* Botões de operação em linha reta, quadrados (largura = altura) */
+        /* Botões de operação - estilo original retangular, com maior espaçamento */
         .controls {
             display: flex;
             justify-content: center;
             gap: 12px;
             flex-wrap: nowrap;
-            margin-top: 4px;
+            margin-top: 20px;    /* mais espaço acima (distância dos símbolos) */
+            margin-bottom: 8px;   /* espaço inferior para afastar de anúncios */
         }
 
         button.action {
             background: #4a6741;
             border: none;
-            font-size: 0.7rem;
+            font-size: 0.75rem;
             font-weight: 600;
+            padding: 8px 14px;
             border-radius: 36px;
             color: white;
             cursor: pointer;
@@ -165,14 +167,9 @@
             letter-spacing: 0.3px;
             transition: 0.1s;
             box-shadow: 0 2px 0 #2c3e2f;
-            /* Tornar o botão quadrado (largura = altura) */
-            aspect-ratio: 1 / 1;
-            padding: 0 8px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
+            flex: 1;
+            text-align: center;
             white-space: nowrap;
-            min-width: 70px;
         }
 
         button.action:active {
@@ -208,7 +205,6 @@
             100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
         }
 
-        /* Telas muito pequenas: reduz ainda mais os botões de símbolos e ajusta botões de ação */
         @media (max-width: 520px) {
             .symbol-btn {
                 width: 34px;
@@ -217,10 +213,11 @@
             }
             .controls {
                 gap: 8px;
+                margin-top: 16px;
             }
             button.action {
-                font-size: 0.6rem;
-                min-width: 55px;
+                padding: 6px 10px;
+                font-size: 0.7rem;
             }
             h1 {
                 font-size: 1.7rem;
@@ -235,10 +232,6 @@
             }
             .symbol-palette {
                 gap: 3px;
-            }
-            button.action {
-                min-width: 48px;
-                font-size: 0.55rem;
             }
         }
     </style>
