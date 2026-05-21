@@ -67,13 +67,14 @@
         .sudoku-grid {
             display: grid;
             grid-template-columns: repeat(9, 1fr);
-            background-color: navy; /* Azul navy no fundo do grid */
-            gap: 1px;
+            background-color: #ffffff; /* fundo branco, sem gap visível */
+            gap: 0px;
             width: 100%;
             aspect-ratio: 1 / 1;
             margin: 0 auto 16px auto;
-            border-radius: 16px;
+            border-radius: 12px;
             overflow: hidden;
+            border: 1px solid navy; /* borda externa do grid */
         }
 
         .cell {
@@ -86,9 +87,13 @@
             background: #ffffff;
             color: #2c3e2f;
             cursor: pointer;
-            transition: background 0.05s ease;
+            transition: all 0.05s ease;
+            /* Borda padrão: azul navy, 1px */
+            border: 1px solid navy;
+            /* Para evitar bordas duplicadas, usamos margin negativa? Não, deixamos assim */
         }
 
+        /* Remover bordas duplicadas entre células adjacentes (opcional: usar outline? mas assim fica ok) */
         .cell.preset {
             background: #f1f0e8;
             color: #5a3e1b;
@@ -97,6 +102,7 @@
         .cell.selected {
             background: #ffe0a3;
             box-shadow: inset 0 0 0 2px #f39c12;
+            /* manter borda original, mas pode ficar por cima */
         }
 
         .cell.error {
@@ -105,11 +111,10 @@
             text-decoration: line-through;
         }
 
-        /* Destaque do bloco 3x3 em preto (opacidade) */
-        .cell.block-highlight {
-            background: rgba(0, 0, 0, 0.15);
+        /* Destaque de linha/coluna (manter fundo claro, sem interferir nas bordas) */
+        .cell.highlight-line {
+            background-color: #f0f8ff;
         }
-        /* Se a célula já tiver outra classe de fundo, o block-highlight pode se sobrepor? Vamos tratar no JS para não conflitar */
 
         .symbol-palette {
             display: flex;
@@ -427,7 +432,7 @@
 
     function renderGrid() {
         gridEl.innerHTML = "";
-        // Calcular bloco selecionado se houver célula selecionada
+        // Determinar o bloco da célula selecionada
         let blockStartRow = -1, blockStartCol = -1;
         if (selectedRow !== -1 && selectedCol !== -1) {
             blockStartRow = Math.floor(selectedRow / 3) * 3;
@@ -448,20 +453,17 @@
                 if (isSelected) cell.classList.add("selected");
                 if (hasError && !isFixed) cell.classList.add("error");
                 
-                // Aplicar destaque de bloco 3x3 em preto (se célula estiver no mesmo bloco da célula selecionada e não for a própria selecionada)
-                if (selectedRow !== -1 && !isSelected && i >= blockStartRow && i < blockStartRow+3 && j >= blockStartCol && j < blockStartCol+3) {
-                    cell.classList.add("block-highlight");
+                // Aplicar bordas: padrão navy, se estiver no bloco selecionado, borda preta 2px
+                let borderStyle = "1px solid navy";
+                if (selectedRow !== -1 && i >= blockStartRow && i < blockStartRow+3 && j >= blockStartCol && j < blockStartCol+3) {
+                    borderStyle = "2px solid black";
                 }
+                cell.style.border = borderStyle;
                 
-                // Destaque de linha/coluna (opcional, manter em azul navy? Vamos apenas manter leve alteração de cor de fundo, sem conflitar)
+                // Destacar linha/coluna (apenas fundo claro) - opcional
                 if (selectedRow !== -1 && selectedCol !== -1 && !isSelected) {
                     if (i === selectedRow || j === selectedCol) {
-                        // Para linha/coluna, usar um tom azul muito claro (para não competir com o preto do bloco)
-                        if (!cell.classList.contains("block-highlight")) {
-                            cell.style.backgroundColor = "#f0f8ff"; // azul bem claro
-                        } else {
-                            cell.style.backgroundColor = "rgba(0,0,0,0.15)";
-                        }
+                        cell.style.backgroundColor = "#f0f8ff";
                     }
                 }
                 
