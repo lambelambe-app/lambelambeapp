@@ -96,9 +96,11 @@
     <div id="wind-label">🌬️ Vento: --</div>
     <div id="info-overlay">Toque nos cubos para remover • Não derrube o palito!</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/phaser-ce@2.15.1/build/phaser.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/phaser-ce@2.15.1/build/phaser.min.js">
+    </script>
     <script>
         (function() {
+            // Configurações do jogo
             const GRID_SIZE = 7;
             const NUM_LAYERS = 4;
             const TILE_W = 34;
@@ -135,94 +137,103 @@
                 pageAlignVertically: true,
             });
 
-            // Armazenar texturas geradas para uso direto
-            game.cubeTex = null;
-            game.cubeTexHover = null;
+            // Função para criar texturas de cubo a partir de BitmapData
+            function createCubeTextures(gameInstance) {
+                // Textura base do cubo
+                const bmd = gameInstance.make.bitmapData(TILE_W + SIDE_H + 4, TILE_H + SIDE_H + 8);
+                const ctx = bmd.ctx;
+                const hw = TILE_W / 2, hh = TILE_H / 2, sh = SIDE_H;
+                const cx = hw, cy = hh;
+                const topPt = { x: cx, y: 0 };
+                const rightPt = { x: TILE_W, y: hh };
+                const bottomPt = { x: cx, y: TILE_H };
+                const leftPt = { x: 0, y: hh };
+
+                // Face superior
+                ctx.fillStyle = '#f0dca8';
+                ctx.strokeStyle = '#c4a96a';
+                ctx.lineWidth = 1.2;
+                ctx.beginPath();
+                ctx.moveTo(topPt.x, topPt.y);
+                ctx.lineTo(rightPt.x, rightPt.y);
+                ctx.lineTo(bottomPt.x, bottomPt.y);
+                ctx.lineTo(leftPt.x, leftPt.y);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+
+                // Face esquerda
+                ctx.fillStyle = '#c9a96e';
+                ctx.strokeStyle = '#a0844c';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(leftPt.x, leftPt.y);
+                ctx.lineTo(bottomPt.x, bottomPt.y);
+                ctx.lineTo(bottomPt.x, bottomPt.y + sh);
+                ctx.lineTo(leftPt.x, leftPt.y + sh);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+
+                // Face direita
+                ctx.fillStyle = '#a6844a';
+                ctx.strokeStyle = '#7d6338';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(bottomPt.x, bottomPt.y);
+                ctx.lineTo(rightPt.x, rightPt.y);
+                ctx.lineTo(rightPt.x, rightPt.y + sh);
+                ctx.lineTo(bottomPt.x, bottomPt.y + sh);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+
+                // Brilho
+                ctx.fillStyle = 'rgba(255,255,255,0.18)';
+                ctx.beginPath();
+                ctx.moveTo(cx, 0);
+                ctx.lineTo(cx + hw * 0.5, hh * 0.5);
+                ctx.lineTo(cx, hh * 0.7);
+                ctx.lineTo(cx - hw * 0.5, hh * 0.5);
+                ctx.closePath();
+                ctx.fill();
+
+                bmd.dirty = true;
+                gameInstance.cache.addBitmapData('cubeTex', bmd);
+                // Armazenar também no objeto game para referência
+                gameInstance.cubeTex = bmd;
+
+                // Textura hover (com brilho extra)
+                const bmdH = gameInstance.make.bitmapData(TILE_W + SIDE_H + 4, TILE_H + SIDE_H + 8);
+                const ctxH = bmdH.ctx;
+                ctxH.drawImage(bmd.canvas, 0, 0);
+                ctxH.fillStyle = 'rgba(255,255,200,0.35)';
+                ctxH.beginPath();
+                ctxH.moveTo(cx, 0);
+                ctxH.lineTo(TILE_W, hh);
+                ctxH.lineTo(cx, TILE_H);
+                ctxH.lineTo(0, hh);
+                ctxH.closePath();
+                ctxH.fill();
+                bmdH.dirty = true;
+                gameInstance.cache.addBitmapData('cubeTexHover', bmdH);
+                gameInstance.cubeTexHover = bmdH;
+            }
 
             const BootState = {
                 preload: function() {
-                    // Criar textura do cubo base
-                    const bmd = this.game.make.bitmapData(TILE_W + SIDE_H + 4, TILE_H + SIDE_H + 8);
-                    const ctx = bmd.ctx;
-                    const hw = TILE_W / 2, hh = TILE_H / 2, sh = SIDE_H;
-                    const cx = hw, cy = hh;
-                    const topPt = { x: cx, y: 0 };
-                    const rightPt = { x: TILE_W, y: hh };
-                    const bottomPt = { x: cx, y: TILE_H };
-                    const leftPt = { x: 0, y: hh };
-
-                    ctx.fillStyle = '#f0dca8';
-                    ctx.strokeStyle = '#c4a96a';
-                    ctx.lineWidth = 1.2;
-                    ctx.beginPath();
-                    ctx.moveTo(topPt.x, topPt.y);
-                    ctx.lineTo(rightPt.x, rightPt.y);
-                    ctx.lineTo(bottomPt.x, bottomPt.y);
-                    ctx.lineTo(leftPt.x, leftPt.y);
-                    ctx.closePath();
-                    ctx.fill();
-                    ctx.stroke();
-
-                    ctx.fillStyle = '#c9a96e';
-                    ctx.strokeStyle = '#a0844c';
-                    ctx.lineWidth = 1;
-                    ctx.beginPath();
-                    ctx.moveTo(leftPt.x, leftPt.y);
-                    ctx.lineTo(bottomPt.x, bottomPt.y);
-                    ctx.lineTo(bottomPt.x, bottomPt.y + sh);
-                    ctx.lineTo(leftPt.x, leftPt.y + sh);
-                    ctx.closePath();
-                    ctx.fill();
-                    ctx.stroke();
-
-                    ctx.fillStyle = '#a6844a';
-                    ctx.strokeStyle = '#7d6338';
-                    ctx.lineWidth = 1;
-                    ctx.beginPath();
-                    ctx.moveTo(bottomPt.x, bottomPt.y);
-                    ctx.lineTo(rightPt.x, rightPt.y);
-                    ctx.lineTo(rightPt.x, rightPt.y + sh);
-                    ctx.lineTo(bottomPt.x, bottomPt.y + sh);
-                    ctx.closePath();
-                    ctx.fill();
-                    ctx.stroke();
-
-                    ctx.fillStyle = 'rgba(255,255,255,0.18)';
-                    ctx.beginPath();
-                    ctx.moveTo(cx, 0);
-                    ctx.lineTo(cx + hw * 0.5, hh * 0.5);
-                    ctx.lineTo(cx, hh * 0.7);
-                    ctx.lineTo(cx - hw * 0.5, hh * 0.5);
-                    ctx.closePath();
-                    ctx.fill();
-
-                    bmd.dirty = true;
-                    this.game.cubeTex = bmd;
-                    this.game.cache.addBitmapData('cubeTex', bmd);
-
-                    // Textura hover
-                    const bmdH = this.game.make.bitmapData(TILE_W + SIDE_H + 4, TILE_H + SIDE_H + 8);
-                    const ctxH = bmdH.ctx;
-                    ctxH.drawImage(bmd.canvas, 0, 0);
-                    ctxH.fillStyle = 'rgba(255,255,200,0.35)';
-                    ctxH.beginPath();
-                    ctxH.moveTo(cx, 0);
-                    ctxH.lineTo(TILE_W, hh);
-                    ctxH.lineTo(cx, TILE_H);
-                    ctxH.lineTo(0, hh);
-                    ctxH.closePath();
-                    ctxH.fill();
-                    bmdH.dirty = true;
-                    this.game.cubeTexHover = bmdH;
-                    this.game.cache.addBitmapData('cubeTexHover', bmdH);
+                    // Criar as texturas antes de iniciar o jogo
+                    createCubeTextures(this.game);
                 },
                 create: function() {
+                    console.log('Boot finalizado, iniciando Game...');
                     this.game.state.start('Game');
                 }
             };
 
             const GameState = {
                 create: function() {
+                    console.log('GameState create iniciado');
                     this.game.stage.backgroundColor = '#2d3436';
                     this.cubeGroup = this.game.add.group();
                     this.stickGraphics = this.game.add.graphics();
@@ -240,6 +251,8 @@
                     gameState.totalCubes = 0;
                     gameState.windAngle = Math.random() * Math.PI * 2;
                     gameState.windStrength = 0.6 + Math.random() * 0.4;
+                    gameState.centerGx = Math.floor(GRID_SIZE / 2);
+                    gameState.centerGy = Math.floor(GRID_SIZE / 2);
 
                     this.buildPyramid();
                     this.drawStick();
@@ -284,9 +297,11 @@
                     this.restartText.visible = false;
                     this.restartText.inputEnabled = true;
                     this.restartText.events.onInputDown.add(this.restartGame, this);
+                    console.log('GameState create concluído');
                 },
 
                 buildPyramid: function() {
+                    console.log('Construindo pirâmide...');
                     this.cubeGroup.removeAll(true);
                     for (let gz = 0; gz < NUM_LAYERS; gz++) {
                         const minCoord = gz;
@@ -294,8 +309,9 @@
                         for (let gx = minCoord; gx <= maxCoord; gx++) {
                             for (let gy = minCoord; gy <= maxCoord; gy++) {
                                 const pos = this.gridToScreen(gx, gy, gz);
-                                // Utiliza diretamente o objeto BitmapData como textura
-                                const sprite = this.game.add.sprite(pos.x, pos.y, this.game.cubeTex);
+                                // Usar a textura do cache (BitmapData) diretamente
+                                const tex = this.game.cache.getBitmapData('cubeTex');
+                                const sprite = this.game.add.sprite(pos.x, pos.y, tex);
                                 sprite.anchor.setTo(0.5);
                                 sprite.scale.setTo(0.95);
                                 sprite.data = { gx, gy, gz, originalX: pos.x, originalY: pos.y };
@@ -310,6 +326,7 @@
                         }
                     }
                     this.sortCubeGroup();
+                    console.log(`Pirâmide construída: ${Object.keys(gameState.cubes).length} cubos`);
                 },
 
                 sortCubeGroup: function() {
@@ -337,13 +354,13 @@
                     if (gameState.gameOver || !sprite.data) return;
                     const key = `${sprite.data.gx},${sprite.data.gy},${sprite.data.gz}`;
                     if (!gameState.cubes[key]?.exists) return;
-                    sprite.loadTexture(this.game.cubeTexHover);
+                    sprite.loadTexture(this.game.cache.getBitmapData('cubeTexHover'));
                     sprite.scale.setTo(1.02);
                 },
 
                 onCubeOut: function(sprite) {
                     if (!sprite.data) return;
-                    sprite.loadTexture(this.game.cubeTex);
+                    sprite.loadTexture(this.game.cache.getBitmapData('cubeTex'));
                     sprite.scale.setTo(0.95);
                 },
 
@@ -693,6 +710,7 @@
                 }
             };
 
+            // Adicionar estados e iniciar
             game.state.add('Boot', BootState);
             game.state.add('Game', GameState);
             game.state.start('Boot');
