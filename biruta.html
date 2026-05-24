@@ -2,19 +2,16 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0, viewport-fit=cover">
     <title>Pirâmide de Areia - Biruta 3D</title>
     <style>
-        :root {
-            --bg: #1a1a2e;
-        }
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
         body {
-            background: var(--bg);
+            background: #1a1a2e;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -29,77 +26,76 @@
             -webkit-tap-highlight-color: transparent;
         }
         #game-container {
-            position: relative;
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 0 2px rgba(255, 255, 255, 0.08);
-            max-width: 98vw;
-            max-height: 98vh;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #2d3436;
         }
         canvas {
             display: block;
+            max-width: 100%;
+            max-height: 100%;
         }
         #info-overlay {
-            position: absolute;
-            bottom: 12px;
+            position: fixed;
+            bottom: 15px;
             left: 50%;
             transform: translateX(-50%);
             pointer-events: none;
             color: #fff;
-            font-size: 13px;
+            font-size: 14px;
             text-align: center;
-            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
-            opacity: 0.85;
-            letter-spacing: 0.3px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+            opacity: 0.9;
+            letter-spacing: 0.4px;
+            background: rgba(0,0,0,0.4);
+            padding: 6px 16px;
+            border-radius: 20px;
+            z-index: 10;
         }
         #wind-label {
-            position: absolute;
-            top: 12px;
-            right: 16px;
+            position: fixed;
+            top: 15px;
+            right: 20px;
             pointer-events: none;
             color: #ffeaa7;
-            font-size: 12px;
+            font-size: 14px;
             font-weight: 600;
-            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
-            letter-spacing: 0.4px;
-            background: rgba(0, 0, 0, 0.45);
-            padding: 5px 10px;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.8);
+            letter-spacing: 0.5px;
+            background: rgba(0,0,0,0.5);
+            padding: 6px 14px;
             border-radius: 20px;
+            z-index: 10;
+        }
+        @media (max-width: 600px) {
+            #info-overlay { font-size: 12px; padding: 5px 12px; }
+            #wind-label { font-size: 12px; padding: 5px 12px; }
         }
     </style>
 </head>
 <body>
-    <div id="game-container">
-        <div id="wind-label">🌬️ Vento: --</div>
-        <div id="info-overlay">Toque nos cubos para remover • Não derrube o palito!</div>
-    </div>
+    <div id="game-container"></div>
+    <div id="wind-label">🌬️ Vento: --</div>
+    <div id="info-overlay">Toque nos cubos para remover • Não derrube o palito!</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/phaser-ce@2.15.1/build/phaser.min.js">
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/phaser-ce@2.15.1/build/phaser.min.js"></script>
     <script>
         (function() {
-            // ─────────────────────────────────────
-            // CONFIGURAÇÕES
-            // ─────────────────────────────────────
-            const GRID_SIZE = 7; // base 7x7
-            const NUM_LAYERS = 4; // camadas da pirâmide
-            const TILE_W = 34; // largura do diamante isométrico
-            const TILE_H = 17; // altura do diamante isométrico
-            const SIDE_H = 15; // altura das faces laterais do cubo
-            const LAYER_H = 22; // deslocamento vertical entre camadas
-            const CENTER_X = 300; // centro da pirâmide no canvas
-            const CENTER_Y = 210; // centro da pirâmide no canvas
-            const STICK_HEIGHT_ABOVE = 70; // altura do palito acima do ápice
-            const STICK_MAX_LEAN = 28; // inclinação máxima antes de cair
-            const WIND_CHANGE_INTERVAL = 7000; // ms entre mudanças de vento
-            const WIND_GUST_VARIANCE = 0.35; // variação de rajada
+            const GRID_SIZE = 7;
+            const NUM_LAYERS = 4;
+            const TILE_W = 34;
+            const TILE_H = 17;
+            const SIDE_H = 15;
+            const LAYER_H = 22;
+            const STICK_HEIGHT_ABOVE = 70;
+            const STICK_MAX_LEAN = 28;
 
-            // ─────────────────────────────────────
-            // GAME STATE
-            // ─────────────────────────────────────
             const gameState = {
-                cubes: {}, // chave: "gx,gy,gz" → { sprite, exists:bool }
-                windAngle: Math.random() * Math.PI * 2, // radianos, direção de onde o vento VEM
+                cubes: {},
+                windAngle: Math.random() * Math.PI * 2,
                 windStrength: 0.6 + Math.random() * 0.4,
                 stickLeanX: 0,
                 stickLeanY: 0,
@@ -111,9 +107,6 @@
                 centerGy: Math.floor(GRID_SIZE / 2),
             };
 
-            // ─────────────────────────────────────
-            // GAME
-            // ─────────────────────────────────────
             const game = new Phaser.Game({
                 width: 600,
                 height: 460,
@@ -122,33 +115,22 @@
                 transparent: false,
                 backgroundColor: '#2d3436',
                 antialias: true,
-                enableDebug: false,
+                scaleMode: Phaser.ScaleManager.SHOW_ALL,
+                pageAlignHorizontally: true,
+                pageAlignVertically: true,
             });
 
-            // ─────────────────────────────────────
-            // ESTADOS DO PHASER
-            // ─────────────────────────────────────
             const BootState = {
                 preload: function() {
-                    // Criar textura do cubo isométrico via BitmapData
                     const bmd = this.game.make.bitmapData(TILE_W + SIDE_H + 4, TILE_H + SIDE_H + 8);
                     const ctx = bmd.ctx;
-
-                    const hw = TILE_W / 2;
-                    const hh = TILE_H / 2;
-                    const sh = SIDE_H;
-
-                    // Centro do diamante superior
-                    const cx = hw;
-                    const cy = hh;
-
-                    // Pontos do diamante (topo)
+                    const hw = TILE_W / 2, hh = TILE_H / 2, sh = SIDE_H;
+                    const cx = hw, cy = hh;
                     const topPt = { x: cx, y: 0 };
                     const rightPt = { x: TILE_W, y: hh };
                     const bottomPt = { x: cx, y: TILE_H };
                     const leftPt = { x: 0, y: hh };
 
-                    // Face superior (diamante) - cor areia clara
                     ctx.fillStyle = '#f0dca8';
                     ctx.strokeStyle = '#c4a96a';
                     ctx.lineWidth = 1.2;
@@ -161,7 +143,6 @@
                     ctx.fill();
                     ctx.stroke();
 
-                    // Face esquerda - cor areia média
                     ctx.fillStyle = '#c9a96e';
                     ctx.strokeStyle = '#a0844c';
                     ctx.lineWidth = 1;
@@ -174,7 +155,6 @@
                     ctx.fill();
                     ctx.stroke();
 
-                    // Face direita - cor areia escura
                     ctx.fillStyle = '#a6844a';
                     ctx.strokeStyle = '#7d6338';
                     ctx.lineWidth = 1;
@@ -187,7 +167,6 @@
                     ctx.fill();
                     ctx.stroke();
 
-                    // Brilho no topo
                     ctx.fillStyle = 'rgba(255,255,255,0.18)';
                     ctx.beginPath();
                     ctx.moveTo(cx, 0);
@@ -200,7 +179,6 @@
                     bmd.dirty = true;
                     this.game.cache.addBitmapData('cubeTex', bmd);
 
-                    // Textura do cubo "brilhante" (highlight para hover)
                     const bmdH = this.game.make.bitmapData(TILE_W + SIDE_H + 4, TILE_H + SIDE_H + 8);
                     const ctxH = bmdH.ctx;
                     ctxH.drawImage(bmd.canvas, 0, 0);
@@ -217,23 +195,19 @@
                 },
                 create: function() {
                     this.game.state.start('Game');
-                },
+                }
             };
 
-            // ─────────────────────────────────────
-            // ESTADO PRINCIPAL DO JOGO
-            // ─────────────────────────────────────
             const GameState = {
                 create: function() {
-                    const g = this.game;
-                    this.cubeGroup = g.add.group();
-                    this.stickGraphics = g.add.graphics();
-                    this.windsockGroup = g.add.group();
-                    this.particleGroup = g.add.group();
-                    this.uiGraphics = g.add.graphics();
+                    this.game.stage.backgroundColor = '#2d3436';
+                    this.cubeGroup = this.game.add.group();
+                    this.stickGraphics = this.game.add.graphics();
+                    this.windsockGroup = this.game.add.group();
+                    this.particleGroup = this.game.add.group();
+                    this.uiGraphics = this.game.add.graphics();
                     this.fallingCubes = [];
 
-                    // Inicializar estado
                     gameState.cubes = {};
                     gameState.stickLeanX = 0;
                     gameState.stickLeanY = 0;
@@ -243,109 +217,82 @@
                     gameState.totalCubes = 0;
                     gameState.windAngle = Math.random() * Math.PI * 2;
                     gameState.windStrength = 0.6 + Math.random() * 0.4;
-                    gameState.centerGx = Math.floor(GRID_SIZE / 2);
-                    gameState.centerGy = Math.floor(GRID_SIZE / 2);
 
-                    // Construir pirâmide
                     this.buildPyramid();
-
-                    // Desenhar palito e biruta iniciais
                     this.drawStick();
                     this.drawWindsock();
-
-                    // UI
                     this.drawUI();
                     this.updateWindLabel();
 
-                    // Timer de vento
-                    this.windTimer = g.time.events.loop(WIND_CHANGE_INTERVAL, this.changeWind, this);
-                    this.gustTimer = g.time.events.loop(1800 + Math.random() * 3000, this.gustWind, this);
+                    this.windTimer = this.game.time.events.loop(7000, this.changeWind, this);
+                    this.gustTimer = this.game.time.events.loop(2200, this.gustWind, this);
 
-                    // Partículas de areia ao fundo
                     this.sandParticles = [];
                     this.spawnAmbientParticles();
 
-                    // Texto de score
-                    this.scoreText = g.add.text(16, 14, '🏆 0', {
+                    this.scoreText = this.game.add.text(16, 14, '🏆 0', {
                         font: 'bold 16px "Segoe UI", system-ui, sans-serif',
                         fill: '#ffeaa7',
                         stroke: '#000',
-                        strokeThickness: 3,
+                        strokeThickness: 3
                     });
                     this.scoreText.fixedToCamera = true;
 
-                    // Texto de game over (invisível inicialmente)
-                    this.gameOverText = g.add.text(g.width / 2, g.height / 2 - 30, '', {
+                    this.gameOverText = this.game.add.text(this.game.width/2, this.game.height/2 - 30, '', {
                         font: 'bold 28px "Segoe UI", system-ui, sans-serif',
                         fill: '#ff6b6b',
                         stroke: '#000',
                         strokeThickness: 4,
-                        align: 'center',
+                        align: 'center'
                     });
                     this.gameOverText.anchor.setTo(0.5);
                     this.gameOverText.fixedToCamera = true;
                     this.gameOverText.visible = false;
 
-                    this.restartText = g.add.text(g.width / 2, g.height / 2 + 30, '', {
+                    this.restartText = this.game.add.text(this.game.width/2, this.game.height/2 + 30, '', {
                         font: 'bold 18px "Segoe UI", system-ui, sans-serif',
                         fill: '#ffffff',
                         stroke: '#000',
                         strokeThickness: 3,
-                        align: 'center',
+                        align: 'center'
                     });
                     this.restartText.anchor.setTo(0.5);
                     this.restartText.fixedToCamera = true;
                     this.restartText.visible = false;
                     this.restartText.inputEnabled = true;
                     this.restartText.events.onInputDown.add(this.restartGame, this);
-
-                    // Efeito de câmera sutil
-                    g.camera.bounds = null;
                 },
 
                 buildPyramid: function() {
-                    const g = this.game;
                     this.cubeGroup.removeAll(true);
-
                     for (let gz = 0; gz < NUM_LAYERS; gz++) {
                         const minCoord = gz;
                         const maxCoord = GRID_SIZE - 1 - gz;
                         for (let gx = minCoord; gx <= maxCoord; gx++) {
                             for (let gy = minCoord; gy <= maxCoord; gy++) {
-                                const screenPos = this.gridToScreen(gx, gy, gz);
-                                const sprite = g.add.sprite(screenPos.x, screenPos.y, this.game.cache
-                                    .getBitmapData('cubeTex'));
+                                const pos = this.gridToScreen(gx, gy, gz);
+                                const sprite = this.game.add.sprite(pos.x, pos.y, 'cubeTex');
                                 sprite.anchor.setTo(0.5);
                                 sprite.scale.setTo(0.95);
-                                sprite.data = { gx, gy, gz, originalX: screenPos.x, originalY: screenPos.y };
+                                sprite.data = { gx, gy, gz, originalX: pos.x, originalY: pos.y };
                                 sprite.inputEnabled = true;
-                                sprite.input.priorityID = gz * 1000 + (gx + gy) * 10;
                                 sprite.events.onInputDown.add(this.onCubeTap, this);
                                 sprite.events.onInputOver.add(this.onCubeHover, this);
                                 sprite.events.onInputOut.add(this.onCubeOut, this);
-
                                 this.cubeGroup.add(sprite);
-                                const key = `${gx},${gy},${gz}`;
-                                gameState.cubes[key] = { sprite, exists: true, gx, gy, gz };
+                                gameState.cubes[`${gx},${gy},${gz}`] = { sprite, exists: true, gx, gy, gz };
                                 gameState.totalCubes++;
                             }
                         }
                     }
-
-                    // Ordenar por profundidade
                     this.sortCubeGroup();
                 },
 
                 sortCubeGroup: function() {
-                    this.cubeGroup.sort('data.gz', Phaser.Group.SORT_ASCENDING);
-                    // Ajuste adicional por posição
                     const children = this.cubeGroup.children.slice();
                     children.sort((a, b) => {
-                        const da = a.data;
-                        const db = b.data;
-                        const depthA = da.gz * 1000 + (da.gx + da.gy);
-                        const depthB = db.gz * 1000 + (db.gx + db.gy);
-                        return depthA - depthB;
+                        const da = a.data, db = b.data;
+                        return (da.gz * 1000 + (da.gx + da.gy)) - (db.gz * 1000 + (db.gx + db.gy));
                     });
                     for (let i = 0; i < children.length; i++) {
                         this.cubeGroup.setChildIndex(children[i], i);
@@ -353,80 +300,45 @@
                 },
 
                 gridToScreen: function(gx, gy, gz) {
-                    const hw = TILE_W / 2;
-                    const hh = TILE_H / 2;
-                    const sx = CENTER_X + (gx - gy) * hw;
-                    const sy = CENTER_Y + (gx + gy) * hh - gz * LAYER_H;
-                    return { x: sx, y: sy };
-                },
-
-                screenToGrid: function(sx, sy) {
-                    // Tentar encontrar o cubo mais próximo nas coordenadas de tela
-                    let bestDist = Infinity;
-                    let bestKey = null;
-                    for (const key in gameState.cubes) {
-                        if (!gameState.cubes[key].exists) continue;
-                        const c = gameState.cubes[key];
-                        const pos = this.gridToScreen(c.gx, c.gy, c.gz);
-                        const dx = sx - pos.x;
-                        const dy = sy - pos.y;
-                        const dist = dx * dx + dy * dy;
-                        if (dist < bestDist && dist < (TILE_W * TILE_W)) {
-                            bestDist = dist;
-                            bestKey = key;
-                        }
-                    }
-                    return bestKey;
+                    const hw = TILE_W / 2, hh = TILE_H / 2;
+                    const cx = this.game.width / 2, cy = this.game.height / 2 - 20;
+                    return {
+                        x: cx + (gx - gy) * hw,
+                        y: cy + (gx + gy) * hh - gz * LAYER_H
+                    };
                 },
 
                 onCubeHover: function(sprite) {
-                    if (gameState.gameOver) return;
-                    if (!sprite.data || !gameState.cubes[`${sprite.data.gx},${sprite.data.gy},${sprite.data.gz}`]
-                        ?.exists) return;
-                    sprite.loadTexture(this.game.cache.getBitmapData('cubeTexHover'));
+                    if (gameState.gameOver || !sprite.data) return;
+                    const key = `${sprite.data.gx},${sprite.data.gy},${sprite.data.gz}`;
+                    if (!gameState.cubes[key]?.exists) return;
+                    sprite.loadTexture('cubeTexHover');
                     sprite.scale.setTo(1.02);
-                    sprite.tint = 0xffffff;
                 },
 
                 onCubeOut: function(sprite) {
                     if (!sprite.data) return;
-                    sprite.loadTexture(this.game.cache.getBitmapData('cubeTex'));
+                    sprite.loadTexture('cubeTex');
                     sprite.scale.setTo(0.95);
-                    sprite.tint = 0xffffff;
                 },
 
                 onCubeTap: function(sprite) {
-                    if (gameState.gameOver) return;
-                    if (!sprite.data) return;
+                    if (gameState.gameOver || !sprite.data) return;
                     const { gx, gy, gz } = sprite.data;
                     const key = `${gx},${gy},${gz}`;
-                    if (!gameState.cubes[key] || !gameState.cubes[key].exists) return;
+                    if (!gameState.cubes[key]?.exists) return;
 
-                    // Remover este cubo
                     this.removeCube(gx, gy, gz, true);
-
-                    // Verificar cascata (cubos acima que perdem suporte)
                     this.checkCascade(gx, gy, gz);
-
-                    // Aplicar efeito do vento nos cubos adjacentes
                     this.applyWindEffect(gx, gy, gz);
-
-                    // Atualizar inclinação do palito
                     this.updateStickLean(gx, gy, gz);
-
-                    // Verificar game over
                     this.checkGameOver();
-
-                    // Atualizar UI
                     this.updateUI();
                     this.drawStick();
                     this.drawWindsock();
 
-                    // Efeito de partículas
                     const pos = this.gridToScreen(gx, gy, gz);
                     this.spawnParticles(pos.x, pos.y, 8);
-
-                    // Pequeno tremor de câmera
                     if (gameState.removedCubes % 5 === 0) {
                         this.game.camera.shake(0.003, 80);
                     }
@@ -435,82 +347,53 @@
                 removeCube: function(gx, gy, gz, animate = true) {
                     const key = `${gx},${gy},${gz}`;
                     const cubeData = gameState.cubes[key];
-                    if (!cubeData || !cubeData.exists) return;
-
+                    if (!cubeData?.exists) return;
                     cubeData.exists = false;
                     gameState.removedCubes++;
                     gameState.score += Math.floor(10 + gz * 5);
-
                     const sprite = cubeData.sprite;
-                    if (sprite && sprite.alive) {
+                    if (sprite?.alive) {
                         if (animate) {
                             const pos = this.gridToScreen(gx, gy, gz);
                             const tween = this.game.add.tween(sprite).to({
                                 alpha: 0,
                                 x: pos.x + (Math.random() - 0.5) * 30,
                                 y: pos.y + 25 + Math.random() * 20,
-                                angle: (Math.random() - 0.5) * 180,
+                                angle: (Math.random() - 0.5) * 180
                             }, 350, Phaser.Easing.Quadratic.In, true);
-                            tween.onComplete.add(() => {
-                                if (sprite && sprite.alive) sprite.destroy();
-                            });
+                            tween.onComplete.add(() => { if (sprite.alive) sprite.destroy(); });
                         } else {
                             sprite.destroy();
                         }
                     }
-
-                    // Remover da referência
-                    if (gameState.cubes[key]) {
-                        gameState.cubes[key].sprite = null;
-                    }
                 },
 
                 checkCascade: function(fromGx, fromGy, fromGz) {
-                    // Verificar cubos na camada acima que eram suportados por este
                     const aboveGz = fromGz + 1;
                     if (aboveGz >= NUM_LAYERS) return;
-
-                    // Cubos na camada acima que podem ser afetados
-                    const affectedPositions = [
+                    const affected = [
                         { gx: fromGx, gy: fromGy },
                         { gx: fromGx - 1, gy: fromGy },
                         { gx: fromGx, gy: fromGy - 1 },
-                        { gx: fromGx - 1, gy: fromGy - 1 },
+                        { gx: fromGx - 1, gy: fromGy - 1 }
                     ];
-
                     const toRemove = [];
-
-                    for (const pos of affectedPositions) {
+                    for (const pos of affected) {
                         const key = `${pos.gx},${pos.gy},${aboveGz}`;
-                        const cubeData = gameState.cubes[key];
-                        if (!cubeData || !cubeData.exists) continue;
-
-                        // Verificar se este cubo ainda tem suporte abaixo
+                        if (!gameState.cubes[key]?.exists) continue;
                         const supports = [
                             `${pos.gx},${pos.gy},${fromGz}`,
                             `${pos.gx + 1},${pos.gy},${fromGz}`,
                             `${pos.gx},${pos.gy + 1},${fromGz}`,
-                            `${pos.gx + 1},${pos.gy + 1},${fromGz}`,
+                            `${pos.gx + 1},${pos.gy + 1},${fromGz}`
                         ];
-
-                        let hasSupport = false;
-                        for (const sk of supports) {
-                            const sd = gameState.cubes[sk];
-                            if (sd && sd.exists) {
-                                hasSupport = true;
-                                break;
-                            }
-                        }
-
-                        if (!hasSupport) {
+                        if (!supports.some(sk => gameState.cubes[sk]?.exists)) {
                             toRemove.push({ gx: pos.gx, gy: pos.gy, gz: aboveGz });
                         }
                     }
-
-                    // Remover cubos sem suporte (recursivamente)
                     for (const r of toRemove) {
-                        const key = `${r.gx},${r.gy},${r.gz}`;
-                        if (gameState.cubes[key] && gameState.cubes[key].exists) {
+                        const rKey = `${r.gx},${r.gy},${r.gz}`;
+                        if (gameState.cubes[rKey]?.exists) {
                             this.removeCube(r.gx, r.gy, r.gz, true);
                             this.checkCascade(r.gx, r.gy, r.gz);
                         }
@@ -518,19 +401,9 @@
                 },
 
                 applyWindEffect: function(fromGx, fromGy, fromGz) {
-                    // O vento sopra DE gameState.windAngle (vem dessa direção)
-                    // No grid isométrico, mapeamos para direções aproximadas
-                    const windDir = gameState.windAngle;
-                    const windStrength = gameState.windStrength;
-
-                    // Vetor do vento (para onde ele sopra)
-                    const windDx = Math.cos(windDir);
-                    const windDy = Math.sin(windDir);
-
-                    // Mapear para direções do grid (aproximação)
-                    // No isométrico: +gx ≈ direita-frente, +gy ≈ esquerda-frente
-                    let gridDx = 0;
-                    let gridDy = 0;
+                    const windDx = Math.cos(gameState.windAngle);
+                    const windDy = Math.sin(gameState.windAngle);
+                    let gridDx = 0, gridDy = 0;
                     if (Math.abs(windDx) > Math.abs(windDy)) {
                         gridDx = windDx > 0 ? 1 : -1;
                         gridDy = (windDy > 0.3) ? 1 : (windDy < -0.3) ? -1 : 0;
@@ -538,31 +411,17 @@
                         gridDy = windDy > 0 ? 1 : -1;
                         gridDx = (windDx > 0.3) ? 1 : (windDx < -0.3) ? -1 : 0;
                     }
-
-                    // Probabilidade de cubos adjacentes caírem devido ao vento
-                    const baseChance = windStrength * 0.45;
-
-                    // Verificar cubos na mesma camada e acima, na direção do vento
-                    const targets = [];
-                    const sameLayerTargets = [
+                    const baseChance = gameState.windStrength * 0.45;
+                    const targets = [
                         { gx: fromGx + gridDx, gy: fromGy + gridDy, gz: fromGz },
                         { gx: fromGx + gridDx * 2, gy: fromGy + gridDy * 2, gz: fromGz },
-                    ];
-                    const aboveTargets = [
                         { gx: fromGx + gridDx, gy: fromGy + gridDy, gz: fromGz + 1 },
-                        { gx: fromGx, gy: fromGy, gz: fromGz + 1 },
+                        { gx: fromGx, gy: fromGy, gz: fromGz + 1 }
                     ];
-
-                    targets.push(...sameLayerTargets, ...aboveTargets);
-
                     for (const t of targets) {
                         const key = `${t.gx},${t.gy},${t.gz}`;
-                        const cubeData = gameState.cubes[key];
-                        if (!cubeData || !cubeData.exists) continue;
-                        if (t.gz >= NUM_LAYERS) continue;
-
-                        const chance = baseChance * (1 + (t.gz - fromGz) * 0.5);
-                        if (Math.random() < chance) {
+                        if (!gameState.cubes[key]?.exists || t.gz >= NUM_LAYERS) continue;
+                        if (Math.random() < baseChance * (1 + (t.gz - fromGz) * 0.5)) {
                             this.removeCube(t.gx, t.gy, t.gz, true);
                             this.checkCascade(t.gx, t.gy, t.gz);
                             this.updateStickLean(t.gx, t.gy, t.gz);
@@ -571,83 +430,51 @@
                 },
 
                 updateStickLean: function(gx, gy, gz) {
-                    // Calcular vetor do cubo removido em relação ao centro
                     const relX = gx - gameState.centerGx;
                     const relY = gy - gameState.centerGy;
-
-                    // No isométrico, o vetor de tela é diferente
                     const screenDx = (relX - relY) * (TILE_W / 2);
                     const screenDy = (relX + relY) * (TILE_H / 2);
-
-                    // O palito inclina-se na direção OPOSTA ao cubo removido
-                    // (perde suporte do lado onde o cubo foi removido)
                     const weight = 0.6 + gz * 0.2;
                     gameState.stickLeanX -= screenDx * weight * 0.04;
                     gameState.stickLeanY -= screenDy * weight * 0.03;
-
-                    // Amortecimento gradual
                     gameState.stickLeanX *= 0.97;
                     gameState.stickLeanY *= 0.97;
-
-                    // Limitar
-                    const mag = Math.sqrt(gameState.stickLeanX ** 2 + gameState.stickLeanY ** 2);
+                    const mag = Math.sqrt(gameState.stickLeanX**2 + gameState.stickLeanY**2);
                     if (mag > STICK_MAX_LEAN) {
-                        const scale = STICK_MAX_LEAN / mag;
-                        gameState.stickLeanX *= scale;
-                        gameState.stickLeanY *= scale;
+                        gameState.stickLeanX *= STICK_MAX_LEAN / mag;
+                        gameState.stickLeanY *= STICK_MAX_LEAN / mag;
                     }
                 },
 
                 checkGameOver: function() {
-                    const leanMag = Math.sqrt(gameState.stickLeanX ** 2 + gameState.stickLeanY ** 2);
-                    if (leanMag >= STICK_MAX_LEAN * 0.95) {
+                    const mag = Math.sqrt(gameState.stickLeanX**2 + gameState.stickLeanY**2);
+                    if (mag >= STICK_MAX_LEAN * 0.95) {
                         this.triggerGameOver();
                         return;
                     }
-
-                    // Verificar se todos os cubos centrais em todas as camadas foram removidos
                     let centralSupport = 0;
                     for (let gz = 0; gz < NUM_LAYERS; gz++) {
-                        const key = `${gameState.centerGx},${gameState.centerGy},${gz}`;
-                        if (gameState.cubes[key] && gameState.cubes[key].exists) {
-                            centralSupport++;
-                        }
+                        if (gameState.cubes[`${gameState.centerGx},${gameState.centerGy},${gz}`]?.exists) centralSupport++;
                     }
-                    if (centralSupport === 0 && gameState.removedCubes > 5) {
-                        this.triggerGameOver();
-                    }
+                    if (centralSupport === 0 && gameState.removedCubes > 5) this.triggerGameOver();
                 },
 
                 triggerGameOver: function() {
                     if (gameState.gameOver) return;
                     gameState.gameOver = true;
-
-                    // Animar o palito caindo
-                    const leanMag = Math.sqrt(gameState.stickLeanX ** 2 + gameState.stickLeanY ** 2);
-                    const fallAngle = Math.atan2(gameState.stickLeanY, gameState.stickLeanX);
-                    gameState.stickLeanX = Math.cos(fallAngle) * STICK_MAX_LEAN * 1.6;
-                    gameState.stickLeanY = Math.sin(fallAngle) * STICK_MAX_LEAN * 1.6;
+                    gameState.stickLeanX *= 1.6;
+                    gameState.stickLeanY *= 1.6;
                     this.drawStick();
-
-                    // Mostrar game over
                     this.gameOverText.text = '💥 O palito caiu!';
                     this.gameOverText.visible = true;
                     this.restartText.text = '🔄 Tocar para jogar novamente';
                     this.restartText.visible = true;
                     this.restartText.inputEnabled = true;
-
-                    // Efeito de câmera
                     this.game.camera.shake(0.015, 500);
-
-                    // Partículas
-                    const apexPos = this.gridToScreen(gameState.centerGx, gameState.centerGy, NUM_LAYERS - 1);
-                    this.spawnParticles(apexPos.x, apexPos.y, 30);
-
-                    // Salvar pontuação
+                    const apex = this.gridToScreen(gameState.centerGx, gameState.centerGy, NUM_LAYERS - 1);
+                    this.spawnParticles(apex.x, apex.y, 30);
                     const best = localStorage.getItem('pyramidSandBest') || 0;
-                    if (gameState.score > best) {
-                        localStorage.setItem('pyramidSandBest', gameState.score);
-                    }
+                    if (gameState.score > best) localStorage.setItem('pyramidSandBest', gameState.score);
                 },
 
                 restartGame: function() {
@@ -658,21 +485,15 @@
                     gameState.gameOver = false;
                     gameState.removedCubes = 0;
                     gameState.totalCubes = 0;
-                    gameState.windAngle = Math.random() * Math.PI * 2;
-                    gameState.windStrength = 0.6 + Math.random() * 0.4;
-
                     this.gameOverText.visible = false;
                     this.restartText.visible = false;
                     this.restartText.inputEnabled = false;
-
                     this.cubeGroup.removeAll(true);
                     this.stickGraphics.clear();
                     this.windsockGroup.removeAll(true);
                     this.particleGroup.removeAll(true);
-                    this.uiGraphics.clear();
                     this.fallingCubes = [];
                     this.sandParticles = [];
-
                     this.buildPyramid();
                     this.drawStick();
                     this.drawWindsock();
@@ -685,89 +506,45 @@
                 changeWind: function() {
                     if (gameState.gameOver) return;
                     const newAngle = Math.random() * Math.PI * 2;
-                    // Transição suave
-                    const tween = { from: gameState.windAngle, to: newAngle, duration: 2000 };
-                    const startTime = this.game.time.now;
                     const startAngle = gameState.windAngle;
+                    const startTime = this.game.time.now;
                     const that = this;
-
-                    const updateTween = () => {
-                        const elapsed = this.game.time.now - startTime;
-                        const progress = Math.min(1, elapsed / tween.duration);
-                        const eased = Phaser.Easing.Sinusoidal.InOut(progress);
-                        gameState.windAngle = startAngle + (newAngle - startAngle) * eased;
+                    const update = () => {
+                        const progress = Math.min(1, (this.game.time.now - startTime) / 2000);
+                        gameState.windAngle = startAngle + (newAngle - startAngle) * Phaser.Easing.Sinusoidal.InOut(progress);
                         gameState.windStrength = 0.5 + Math.random() * 0.5;
                         that.updateWindLabel();
                         that.drawWindsock();
-                        if (progress < 1 && !gameState.gameOver) {
-                            this.game.time.events.add(30, updateTween, this);
-                        }
+                        if (progress < 1 && !gameState.gameOver) this.game.time.events.add(30, update, this);
                     };
-                    updateTween();
+                    update();
                 },
 
                 gustWind: function() {
                     if (gameState.gameOver) return;
-                    const gust = gameState.windStrength + (Math.random() - 0.5) * WIND_GUST_VARIANCE;
-                    gameState.windStrength = Math.max(0.3, Math.min(1.0, gust));
+                    gameState.windStrength = Math.max(0.3, Math.min(1.0, gameState.windStrength + (Math.random() - 0.5) * 0.35));
                     this.updateWindLabel();
                 },
 
                 updateWindLabel: function() {
                     const deg = Math.round(gameState.windAngle * 180 / Math.PI);
-                    const cardinals = ['N', 'NE', 'L', 'SE', 'S', 'SO', 'O', 'NO'];
-                    const idx = Math.round(((deg + 360) % 360) / 45) % 8;
-                    const dirName = cardinals[idx];
-                    const strengthPct = Math.round(gameState.windStrength * 100);
-                    const el = document.getElementById('wind-label');
-                    if (el) {
-                        el.textContent = `🌬️ Vento: ${dirName} (${strengthPct}%)`;
-                    }
+                    const cardinals = ['N','NE','L','SE','S','SO','O','NO'];
+                    const idx = Math.round(((deg+360)%360)/45)%8;
+                    document.getElementById('wind-label').textContent = `🌬️ Vento: ${cardinals[idx]} (${Math.round(gameState.windStrength*100)}%)`;
                 },
 
                 drawStick: function() {
                     this.stickGraphics.clear();
-                    const cx = gameState.centerGx;
-                    const cy = gameState.centerGy;
-
-                    // Base do palito no centro da camada 0
-                    const basePos = this.gridToScreen(cx, cy, 0);
-                    // Topo do palito (acima do ápice)
-                    const apexPos = this.gridToScreen(cx, cy, NUM_LAYERS - 1);
+                    const basePos = this.gridToScreen(gameState.centerGx, gameState.centerGy, 0);
+                    const apexPos = this.gridToScreen(gameState.centerGx, gameState.centerGy, NUM_LAYERS - 1);
                     const topY = apexPos.y - STICK_HEIGHT_ABOVE;
+                    const lean = { x: gameState.stickLeanX, y: gameState.stickLeanY };
+                    const bx = basePos.x + lean.x * 0.1, by = basePos.y + lean.y * 0.1;
+                    const tx = apexPos.x + lean.x * 0.5, ty = topY + lean.y * 0.5;
 
-                    // Aplicar inclinação
-                    const leanX = gameState.stickLeanX;
-                    const leanY = gameState.stickLeanY;
-                    const leanFactor = 0.5;
-
-                    const bx = basePos.x + leanX * leanFactor * 0.3;
-                    const by = basePos.y + leanY * leanFactor * 0.3;
-                    const tx = apexPos.x + leanX * leanFactor;
-                    const ty = topY + leanY * leanFactor;
-
-                    // Sombra
-                    this.stickGraphics.lineStyle(3, 0x000000, 0.3);
-                    this.stickGraphics.moveTo(bx + 2, by + 2);
-                    this.stickGraphics.lineTo(tx + 2, ty + 2);
-
-                    // Palito principal
                     this.stickGraphics.lineStyle(2.5, 0xd4a574, 1);
                     this.stickGraphics.moveTo(bx, by);
                     this.stickGraphics.lineTo(tx, ty);
-
-                    // Faixas decorativas
-                    this.stickGraphics.lineStyle(1.5, 0x8b5e3c, 0.7);
-                    const segments = 8;
-                    for (let i = 0; i < segments; i++) {
-                        const t = i / segments;
-                        const sx = bx + (tx - bx) * t;
-                        const sy = by + (ty - by) * t;
-                        this.stickGraphics.drawCircle(sx, sy, 2);
-                    }
-
-                    // Bolinha no topo
-                    this.stickGraphics.lineStyle(0);
                     this.stickGraphics.beginFill(0xff6b6b, 1);
                     this.stickGraphics.drawCircle(tx, ty, 5);
                     this.stickGraphics.endFill();
@@ -775,214 +552,125 @@
 
                 drawWindsock: function() {
                     this.windsockGroup.removeAll(true);
-                    const g = this.game;
-                    const cx = gameState.centerGx;
-                    const cy = gameState.centerGy;
-                    const apexPos = this.gridToScreen(cx, cy, NUM_LAYERS - 1);
+                    const apexPos = this.gridToScreen(gameState.centerGx, gameState.centerGy, NUM_LAYERS - 1);
                     const topY = apexPos.y - STICK_HEIGHT_ABOVE;
-
-                    const leanX = gameState.stickLeanX;
-                    const leanY = gameState.stickLeanY;
-                    const tx = apexPos.x + leanX;
-                    const ty = topY + leanY;
-
-                    // A biruta aponta na direção PARA ONDE o vento sopra
-                    // O vento vem DE gameState.windAngle, então a biruta aponta para windAngle + PI
+                    const lean = { x: gameState.stickLeanX, y: gameState.stickLeanY };
+                    const tx = apexPos.x + lean.x * 0.5, ty = topY + lean.y * 0.5;
                     const sockAngle = gameState.windAngle + Math.PI;
+                    const length = 28, wBase = 10, wTip = 3;
+                    const endX = tx + Math.cos(sockAngle) * length;
+                    const endY = ty + Math.sin(sockAngle) * length;
+                    const perpX = Math.cos(sockAngle + Math.PI/2), perpY = Math.sin(sockAngle + Math.PI/2);
 
-                    const sockLength = 28;
-                    const sockWidthBase = 10;
-                    const sockWidthTip = 3;
+                    const gfx = this.game.add.graphics();
+                    gfx.lineStyle(1.8, 0xcccccc, 0.9);
+                    gfx.moveTo(tx, ty);
+                    gfx.lineTo(tx, ty - 8);
+                    this.windsockGroup.add(gfx);
 
-                    const endX = tx + Math.cos(sockAngle) * sockLength;
-                    const endY = ty + Math.sin(sockAngle) * sockLength;
-
-                    const perpX = Math.cos(sockAngle + Math.PI / 2);
-                    const perpY = Math.sin(sockAngle + Math.PI / 2);
-
-                    // Grupo da biruta
-                    const sockGroup = g.add.group();
-                    this.windsockGroup.add(sockGroup);
-
-                    // Haste curta acima do palito
-                    const poleGfx = g.add.graphics();
-                    poleGfx.lineStyle(1.8, 0xcccccc, 0.9);
-                    poleGfx.moveTo(tx, ty);
-                    poleGfx.lineTo(tx, ty - 8);
-                    sockGroup.add(poleGfx);
-
-                    // Corpo da biruta (cone listrado)
-                    const sockGfx = g.add.graphics();
-                    const numStripes = 5;
-                    for (let i = 0; i < numStripes; i++) {
-                        const t0 = i / numStripes;
-                        const t1 = (i + 1) / numStripes;
-                        const w0 = sockWidthBase + (sockWidthTip - sockWidthBase) * t0;
-                        const w1 = sockWidthBase + (sockWidthTip - sockWidthBase) * t1;
-                        const x0 = tx + Math.cos(sockAngle) * sockLength * t0;
-                        const y0 = ty + Math.sin(sockAngle) * sockLength * t0;
-                        const x1 = tx + Math.cos(sockAngle) * sockLength * t1;
-                        const y1 = ty + Math.sin(sockAngle) * sockLength * t1;
-
-                        const color = (i % 2 === 0) ? 0xff6b35 : 0xffffff;
-                        sockGfx.beginFill(color, 0.9);
-                        sockGfx.moveTo(x0 + perpX * w0, y0 + perpY * w0);
-                        sockGfx.lineTo(x0 - perpX * w0, y0 - perpY * w0);
-                        sockGfx.lineTo(x1 - perpX * w1, y1 - perpY * w1);
-                        sockGfx.lineTo(x1 + perpX * w1, y1 + perpY * w1);
+                    const sockGfx = this.game.add.graphics();
+                    for (let i = 0; i < 5; i++) {
+                        const t0 = i/5, t1 = (i+1)/5;
+                        const w0 = wBase + (wTip - wBase) * t0;
+                        const w1 = wBase + (wTip - wBase) * t1;
+                        const x0 = tx + Math.cos(sockAngle) * length * t0;
+                        const y0 = ty + Math.sin(sockAngle) * length * t0;
+                        const x1 = tx + Math.cos(sockAngle) * length * t1;
+                        const y1 = ty + Math.sin(sockAngle) * length * t1;
+                        sockGfx.beginFill(i%2===0 ? 0xff6b35 : 0xffffff, 0.9);
+                        sockGfx.moveTo(x0 + perpX*w0, y0 + perpY*w0);
+                        sockGfx.lineTo(x0 - perpX*w0, y0 - perpY*w0);
+                        sockGfx.lineTo(x1 - perpX*w1, y1 - perpY*w1);
+                        sockGfx.lineTo(x1 + perpX*w1, y1 + perpY*w1);
                         sockGfx.closePath();
                         sockGfx.endFill();
                     }
-                    sockGroup.add(sockGfx);
-
-                    // Cordão de sustentação
-                    const cordGfx = g.add.graphics();
-                    cordGfx.lineStyle(0.8, 0xdddddd, 0.7);
-                    cordGfx.moveTo(tx, ty - 6);
-                    cordGfx.lineTo(endX, endY);
-                    sockGroup.add(cordGfx);
+                    this.windsockGroup.add(sockGfx);
                 },
 
                 drawUI: function() {
                     this.uiGraphics.clear();
-                    // Placar de fundo sutil
                     const best = localStorage.getItem('pyramidSandBest') || 0;
                     if (best > 0) {
-                        this.uiGraphics.lineStyle(0);
-                        this.uiGraphics.beginFill(0x000000, 0.3);
-                        this.uiGraphics.drawRoundedRect(460, 10, 125, 30, 10);
-                        this.uiGraphics.endFill();
-                        const bestText = this.game.add.text(468, 16, `⭐ Melhor: ${best}`, {
-                            font: 'bold 12px "Segoe UI", system-ui, sans-serif',
+                        if (this.prevBestText) this.prevBestText.destroy();
+                        this.prevBestText = this.game.add.text(this.game.width - 130, 14, `⭐ Melhor: ${best}`, {
+                            font: 'bold 13px "Segoe UI"',
                             fill: '#ffeaa7',
                             stroke: '#000',
-                            strokeThickness: 2,
+                            strokeThickness: 2
                         });
-                        bestText.fixedToCamera = true;
-                        if (this.prevBestText) this.prevBestText.destroy();
-                        this.prevBestText = bestText;
+                        this.prevBestText.fixedToCamera = true;
                     }
                 },
 
                 updateUI: function() {
-                    if (this.scoreText) {
-                        this.scoreText.text = `🏆 ${gameState.score}`;
-                    }
+                    this.scoreText.text = `🏆 ${gameState.score}`;
                     this.drawUI();
                 },
 
                 spawnParticles: function(x, y, count) {
-                    const g = this.game;
                     const windDx = Math.cos(gameState.windAngle) * 1.5;
                     const windDy = Math.sin(gameState.windAngle) * 1.5;
                     for (let i = 0; i < count; i++) {
-                        const p = g.add.graphics();
-                        const size = 1 + Math.random() * 2.5;
-                        const color = Phaser.Color.getColor(
-                            Math.floor(200 + Math.random() * 55),
-                            Math.floor(160 + Math.random() * 50),
-                            Math.floor(100 + Math.random() * 40)
-                        );
-                        p.beginFill(color, 0.9);
-                        p.drawCircle(0, 0, size);
+                        const p = this.game.add.graphics();
+                        p.beginFill(Phaser.Color.getColor(200+Math.random()*55, 160+Math.random()*50, 100+Math.random()*40), 0.9);
+                        p.drawCircle(0, 0, 1 + Math.random()*2.5);
                         p.endFill();
-                        p.x = x + (Math.random() - 0.5) * 20;
-                        p.y = y + (Math.random() - 0.5) * 10;
+                        p.x = x + (Math.random()-0.5)*20;
+                        p.y = y + (Math.random()-0.5)*10;
                         this.particleGroup.add(p);
-
-                        const tween = g.add.tween(p).to({
-                            x: p.x + windDx * 30 + (Math.random() - 0.5) * 50,
-                            y: p.y + 30 + Math.random() * 40 + windDy * 30,
-                            alpha: 0,
-                        }, 500 + Math.random() * 600, Phaser.Easing.Quadratic.In, true);
-                        tween.onComplete.add(() => {
-                            if (p && p.alive) p.destroy();
-                        });
+                        const tween = this.game.add.tween(p).to({
+                            x: p.x + windDx*30 + (Math.random()-0.5)*50,
+                            y: p.y + 30 + Math.random()*40 + windDy*30,
+                            alpha: 0
+                        }, 500+Math.random()*600, Phaser.Easing.Quadratic.In, true);
+                        tween.onComplete.add(() => { if (p.alive) p.destroy(); });
                     }
                 },
 
                 spawnAmbientParticles: function() {
                     if (gameState.gameOver) return;
-                    // Pequenas partículas de areia ao redor da pirâmide
-                    const g = this.game;
-                    const windDx = Math.cos(gameState.windAngle) * 0.6;
-                    const windDy = Math.sin(gameState.windAngle) * 0.6;
-                    const margin = 80;
-                    const sx = CENTER_X + (Math.random() - 0.5) * margin * 2;
-                    const sy = CENTER_Y + (Math.random() - 0.5) * margin * 2;
-                    const p = g.add.graphics();
-                    const size = 0.6 + Math.random() * 1.2;
+                    const windDx = Math.cos(gameState.windAngle)*0.6;
+                    const windDy = Math.sin(gameState.windAngle)*0.6;
+                    const p = this.game.add.graphics();
                     p.beginFill(0xe8d5a3, 0.5);
-                    p.drawCircle(0, 0, size);
+                    p.drawCircle(0,0, 0.6+Math.random()*1.2);
                     p.endFill();
-                    p.x = sx;
-                    p.y = sy;
+                    p.x = this.game.width/2 + (Math.random()-0.5)*160;
+                    p.y = this.game.height/2 + (Math.random()-0.5)*120;
                     p.alpha = 0;
                     this.sandParticles.push(p);
-
-                    const tween = g.add.tween(p).to({
-                        x: p.x + windDx * 60,
-                        y: p.y + windDy * 60 + 10,
-                        alpha: 0.6,
-                    }, 2000 + Math.random() * 2000, Phaser.Easing.Quadratic.InOut, true);
+                    const tween = this.game.add.tween(p).to({
+                        x: p.x + windDx*60,
+                        y: p.y + windDy*60 + 10,
+                        alpha: 0.6
+                    }, 2000+Math.random()*2000, Phaser.Easing.Quadratic.InOut, true);
                     tween.onComplete.add(() => {
                         const idx = this.sandParticles.indexOf(p);
-                        if (idx > -1) this.sandParticles.splice(idx, 1);
-                        if (p && p.alive) p.destroy();
+                        if (idx > -1) this.sandParticles.splice(idx,1);
+                        if (p.alive) p.destroy();
                     });
-
-                    // Limitar partículas
                     if (this.sandParticles.length > 20) {
                         const old = this.sandParticles.shift();
-                        if (old && old.alive) old.destroy();
+                        if (old?.alive) old.destroy();
                     }
-
-                    g.time.events.add(400 + Math.random() * 800, this.spawnAmbientParticles, this);
+                    this.game.time.events.add(400+Math.random()*800, this.spawnAmbientParticles, this);
                 },
 
                 update: function() {
                     if (gameState.gameOver) return;
-
-                    // Atualizar biruta suavemente
                     this.drawWindsock();
                     this.drawStick();
-
-                    // Pequena oscilação natural do palito
-                    if (Math.abs(gameState.stickLeanX) < STICK_MAX_LEAN * 0.8) {
-                        gameState.stickLeanX += (Math.random() - 0.5) * 0.08;
-                        gameState.stickLeanY += (Math.random() - 0.5) * 0.08;
+                    if (Math.abs(gameState.stickLeanX) < STICK_MAX_LEAN*0.8) {
+                        gameState.stickLeanX += (Math.random()-0.5)*0.08;
+                        gameState.stickLeanY += (Math.random()-0.5)*0.08;
                     }
-
-                    // Atualizar label de vento periodicamente
-                    if (Math.floor(this.game.time.now / 2000) !== Math.floor((this.game.time.now - 30) / 2000)) {
-                        this.updateWindLabel();
-                    }
-                },
-
-                render: function() {
-                    // Renderização adicional se necessário
-                },
+                }
             };
 
-            // ─────────────────────────────────────
-            // REGISTRAR ESTADOS E INICIAR
-            // ─────────────────────────────────────
             game.state.add('Boot', BootState);
             game.state.add('Game', GameState);
             game.state.start('Boot');
-
-            // ─────────────────────────────────────
-            // HANDLER DE REDIMENSIONAMENTO
-            // ─────────────────────────────────────
-            window.addEventListener('resize', () => {
-                game.scale.refresh();
-            });
-
-            console.log('🏜️ Pirâmide de Areia 3D iniciada!');
-            console.log('   Toque nos cubos para remover');
-            console.log('   A biruta no topo indica a direção do vento');
-            console.log('   O vento influencia quais cubos caem');
-            console.log('   Não derrube o palito central!');
         })();
     </script>
 </body>
