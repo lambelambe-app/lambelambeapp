@@ -13,7 +13,8 @@
         body {
             background: #1a1a2e;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
+            justify-content: flex-start;
             align-items: center;
             height: 100vh;
             width: 100vw;
@@ -25,22 +26,37 @@
             user-select: none;
             -webkit-tap-highlight-color: transparent;
         }
-        #game-container {
+        #game-wrapper {
             width: 100vw;
-            height: 100vh;
+            height: calc(100vh - 60px);
             display: flex;
             justify-content: center;
             align-items: center;
             background: #2d3436;
         }
-        canvas {
-            display: block;
-            max-width: 100%;
-            max-height: 100%;
+        #game-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #ad-placeholder {
+            width: 100vw;
+            height: 60px;
+            background: #0f0f1a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #555;
+            font-size: 14px;
+            letter-spacing: 1px;
+            border-top: 1px solid #333;
+            flex-shrink: 0;
         }
         #info-overlay {
             position: fixed;
-            bottom: 15px;
+            bottom: 70px;
             left: 50%;
             transform: translateX(-50%);
             pointer-events: none;
@@ -70,14 +86,13 @@
             border-radius: 20px;
             z-index: 10;
         }
-        @media (max-width: 600px) {
-            #info-overlay { font-size: 12px; padding: 5px 12px; }
-            #wind-label { font-size: 12px; padding: 5px 12px; }
-        }
     </style>
 </head>
 <body>
-    <div id="game-container"></div>
+    <div id="game-wrapper">
+        <div id="game-container"></div>
+    </div>
+    <div id="ad-placeholder">📢 Espaço para anúncios</div>
     <div id="wind-label">🌬️ Vento: --</div>
     <div id="info-overlay">Toque nos cubos para remover • Não derrube o palito!</div>
 
@@ -109,7 +124,7 @@
 
             const game = new Phaser.Game({
                 width: 600,
-                height: 460,
+                height: 400,
                 renderer: Phaser.AUTO,
                 parent: 'game-container',
                 transparent: false,
@@ -120,8 +135,13 @@
                 pageAlignVertically: true,
             });
 
+            // Armazenar texturas geradas para uso direto
+            game.cubeTex = null;
+            game.cubeTexHover = null;
+
             const BootState = {
                 preload: function() {
+                    // Criar textura do cubo base
                     const bmd = this.game.make.bitmapData(TILE_W + SIDE_H + 4, TILE_H + SIDE_H + 8);
                     const ctx = bmd.ctx;
                     const hw = TILE_W / 2, hh = TILE_H / 2, sh = SIDE_H;
@@ -177,8 +197,10 @@
                     ctx.fill();
 
                     bmd.dirty = true;
+                    this.game.cubeTex = bmd;
                     this.game.cache.addBitmapData('cubeTex', bmd);
 
+                    // Textura hover
                     const bmdH = this.game.make.bitmapData(TILE_W + SIDE_H + 4, TILE_H + SIDE_H + 8);
                     const ctxH = bmdH.ctx;
                     ctxH.drawImage(bmd.canvas, 0, 0);
@@ -191,6 +213,7 @@
                     ctxH.closePath();
                     ctxH.fill();
                     bmdH.dirty = true;
+                    this.game.cubeTexHover = bmdH;
                     this.game.cache.addBitmapData('cubeTexHover', bmdH);
                 },
                 create: function() {
@@ -271,7 +294,8 @@
                         for (let gx = minCoord; gx <= maxCoord; gx++) {
                             for (let gy = minCoord; gy <= maxCoord; gy++) {
                                 const pos = this.gridToScreen(gx, gy, gz);
-                                const sprite = this.game.add.sprite(pos.x, pos.y, 'cubeTex');
+                                // Utiliza diretamente o objeto BitmapData como textura
+                                const sprite = this.game.add.sprite(pos.x, pos.y, this.game.cubeTex);
                                 sprite.anchor.setTo(0.5);
                                 sprite.scale.setTo(0.95);
                                 sprite.data = { gx, gy, gz, originalX: pos.x, originalY: pos.y };
@@ -301,7 +325,8 @@
 
                 gridToScreen: function(gx, gy, gz) {
                     const hw = TILE_W / 2, hh = TILE_H / 2;
-                    const cx = this.game.width / 2, cy = this.game.height / 2 - 20;
+                    const cx = this.game.width / 2;
+                    const cy = this.game.height / 2 - 10;
                     return {
                         x: cx + (gx - gy) * hw,
                         y: cy + (gx + gy) * hh - gz * LAYER_H
@@ -312,13 +337,13 @@
                     if (gameState.gameOver || !sprite.data) return;
                     const key = `${sprite.data.gx},${sprite.data.gy},${sprite.data.gz}`;
                     if (!gameState.cubes[key]?.exists) return;
-                    sprite.loadTexture('cubeTexHover');
+                    sprite.loadTexture(this.game.cubeTexHover);
                     sprite.scale.setTo(1.02);
                 },
 
                 onCubeOut: function(sprite) {
                     if (!sprite.data) return;
-                    sprite.loadTexture('cubeTex');
+                    sprite.loadTexture(this.game.cubeTex);
                     sprite.scale.setTo(0.95);
                 },
 
