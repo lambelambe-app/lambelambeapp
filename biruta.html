@@ -29,7 +29,6 @@
             justify-content: center;
             align-items: center;
             background: #2d3436;
-            position: relative;
         }
         #game-container {
             width: 100%;
@@ -80,10 +79,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/phaser-ce@2.15.1/build/phaser.min.js"></script>
     <script>
-    (function() {
-        // Aguarda o carregamento completo da página e do script Phaser
-        window.onload = function() {
-            // Configurações do jogo
+        (function() {
             var GRID_SIZE = 7;
             var NUM_LAYERS = 4;
             var TILE_W = 34;
@@ -93,7 +89,6 @@
             var STICK_HEIGHT_ABOVE = 70;
             var STICK_MAX_LEAN = 28;
 
-            // Estado global do jogo
             var gameState = {
                 cubes: {},
                 windAngle: Math.random() * Math.PI * 2,
@@ -108,7 +103,6 @@
                 centerGy: Math.floor(GRID_SIZE / 2)
             };
 
-            // Inicializa o Phaser em modo Canvas
             var game = new Phaser.Game({
                 width: 600,
                 height: 400,
@@ -121,29 +115,71 @@
                 pageAlignVertically: true
             });
 
-            // Estado de inicialização do jogo
             var BootState = {
+                preload: function() {
+                    // Gera a textura do cubo como uma imagem real para máxima compatibilidade
+                    var canvas = document.createElement('canvas');
+                    canvas.width = TILE_W + SIDE_H + 4;
+                    canvas.height = TILE_H + SIDE_H + 8;
+                    var ctx = canvas.getContext('2d');
+                    var hw = TILE_W / 2, hh = TILE_H / 2, sh = SIDE_H;
+                    var cx = hw, cy = hh;
+
+                    // Face superior
+                    ctx.fillStyle = '#f0dca8';
+                    ctx.strokeStyle = '#c4a96a';
+                    ctx.lineWidth = 1.2;
+                    ctx.beginPath();
+                    ctx.moveTo(cx, 0);
+                    ctx.lineTo(TILE_W, hh);
+                    ctx.lineTo(cx, TILE_H);
+                    ctx.lineTo(0, hh);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.stroke();
+
+                    // Face esquerda
+                    ctx.fillStyle = '#c9a96e';
+                    ctx.strokeStyle = '#a0844c';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(0, hh);
+                    ctx.lineTo(cx, TILE_H);
+                    ctx.lineTo(cx, TILE_H + sh);
+                    ctx.lineTo(0, hh + sh);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.stroke();
+
+                    // Face direita
+                    ctx.fillStyle = '#a6844a';
+                    ctx.strokeStyle = '#7d6338';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(cx, TILE_H);
+                    ctx.lineTo(TILE_W, hh);
+                    ctx.lineTo(TILE_W, hh + sh);
+                    ctx.lineTo(cx, TILE_H + sh);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.stroke();
+
+                    // Converte o canvas para uma URL de dados e carrega como imagem
+                    var dataURL = canvas.toDataURL('image/png');
+                    game.load.image('cubeTex', dataURL);
+                },
                 create: function() {
-                    // Pequeno atraso para garantir que o canvas esteja pronto
-                    game.time.events.add(100, function() {
-                        game.state.start('Game');
-                    }, this);
+                    game.state.start('Game');
                 }
             };
 
-            // Estado principal do jogo
             var GameState = {
                 create: function() {
-                    console.log('GameState iniciado');
                     this.cubeGroup = game.add.group();
                     this.stickGraphics = game.add.graphics();
                     this.windsockGroup = game.add.group();
                     this.particleGroup = game.add.group();
 
-                    // Cria a textura do cubo e armazena no cache
-                    this.cubeTexture = this.createCubeTexture();
-
-                    // Reinicia o estado do jogo
                     gameState.cubes = {};
                     gameState.stickLeanX = 0;
                     gameState.stickLeanY = 0;
@@ -200,74 +236,14 @@
                     this.restartText.events.onInputDown.add(this.restartGame, this);
                 },
 
-                createCubeTexture: function() {
-                    // Cria um BitmapData e o adiciona ao cache
-                    var bmd = game.make.bitmapData(TILE_W + SIDE_H + 4, TILE_H + SIDE_H + 8);
-                    var ctx = bmd.ctx;
-                    var hw = TILE_W / 2, hh = TILE_H / 2, sh = SIDE_H;
-                    var cx = hw, cy = hh;
-
-                    // Face superior
-                    ctx.fillStyle = '#f0dca8';
-                    ctx.strokeStyle = '#c4a96a';
-                    ctx.lineWidth = 1.2;
-                    ctx.beginPath();
-                    ctx.moveTo(cx, 0);
-                    ctx.lineTo(TILE_W, hh);
-                    ctx.lineTo(cx, TILE_H);
-                    ctx.lineTo(0, hh);
-                    ctx.closePath();
-                    ctx.fill();
-                    ctx.stroke();
-
-                    // Face esquerda
-                    ctx.fillStyle = '#c9a96e';
-                    ctx.strokeStyle = '#a0844c';
-                    ctx.lineWidth = 1;
-                    ctx.beginPath();
-                    ctx.moveTo(0, hh);
-                    ctx.lineTo(cx, TILE_H);
-                    ctx.lineTo(cx, TILE_H + sh);
-                    ctx.lineTo(0, hh + sh);
-                    ctx.closePath();
-                    ctx.fill();
-                    ctx.stroke();
-
-                    // Face direita
-                    ctx.fillStyle = '#a6844a';
-                    ctx.strokeStyle = '#7d6338';
-                    ctx.lineWidth = 1;
-                    ctx.beginPath();
-                    ctx.moveTo(cx, TILE_H);
-                    ctx.lineTo(TILE_W, hh);
-                    ctx.lineTo(TILE_W, hh + sh);
-                    ctx.lineTo(cx, TILE_H + sh);
-                    ctx.closePath();
-                    ctx.fill();
-                    ctx.stroke();
-
-                    // Força a atualização do BitmapData
-                    bmd.dirty = true;
-                    
-                    // Adiciona ao cache com uma chave única
-                    game.cache.addBitmapData('cubeTex', bmd);
-                    
-                    console.log('Textura do cubo criada e adicionada ao cache');
-                    return 'cubeTex'; // Retorna a chave, não o objeto
-                },
-
                 buildPyramid: function() {
                     this.cubeGroup.removeAll(true);
-                    console.log('Construindo pirâmide...');
-                    
                     for (var gz = 0; gz < NUM_LAYERS; gz++) {
                         var minCoord = gz;
                         var maxCoord = GRID_SIZE - 1 - gz;
                         for (var gx = minCoord; gx <= maxCoord; gx++) {
                             for (var gy = minCoord; gy <= maxCoord; gy++) {
                                 var pos = this.gridToScreen(gx, gy, gz);
-                                
-                                // Usa a chave do cache para criar o sprite
                                 var sprite = game.add.sprite(pos.x, pos.y, 'cubeTex');
                                 sprite.anchor.setTo(0.5, 0.5);
                                 sprite.data = { gx: gx, gy: gy, gz: gz };
@@ -276,7 +252,6 @@
                                 sprite.events.onInputOver.add(this.onCubeHover, this);
                                 sprite.events.onInputOut.add(this.onCubeOut, this);
                                 this.cubeGroup.add(sprite);
-                                
                                 gameState.cubes[gx + ',' + gy + ',' + gz] = {
                                     sprite: sprite,
                                     exists: true,
@@ -289,7 +264,6 @@
                         }
                     }
                     this.sortCubeGroup();
-                    console.log('Pirâmide construída: ' + Object.keys(gameState.cubes).length + ' cubos');
                 },
 
                 sortCubeGroup: function() {
@@ -696,12 +670,10 @@
                 }
             };
 
-            // Registrar estados e iniciar o jogo
             game.state.add('Boot', BootState);
             game.state.add('Game', GameState);
             game.state.start('Boot');
-        };
-    })();
+        })();
     </script>
 </body>
 </html>
