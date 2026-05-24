@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0, viewport-fit=cover">
-    <title>Pirâmide de Areia - Biruta 3D</title>
+    <title>Pirâmide de Areia</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * { margin:0; padding:0; box-sizing:border-box; }
         body {
             background: #1a1a2e;
             display: flex;
@@ -15,7 +15,7 @@
             height: 100vh;
             width: 100vw;
             overflow: hidden;
-            font-family: 'Segoe UI', system-ui, sans-serif;
+            font-family: sans-serif;
             touch-action: manipulation;
             -webkit-touch-callout: none;
             -webkit-user-select: none;
@@ -29,6 +29,7 @@
             justify-content: center;
             align-items: center;
             background: #2d3436;
+            position: relative;
         }
         #game-container {
             width: 100%;
@@ -50,6 +51,15 @@
             border-top: 1px solid #333;
             flex-shrink: 0;
         }
+        #loading-msg {
+            position: absolute;
+            color: white;
+            font-size: 20px;
+            background: rgba(0,0,0,0.6);
+            padding: 10px 20px;
+            border-radius: 10px;
+            z-index: 20;
+        }
         #info-overlay, #wind-label {
             position: fixed;
             pointer-events: none;
@@ -58,39 +68,35 @@
             color: #fff;
         }
         #info-overlay {
-            bottom: 70px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 14px;
-            background: rgba(0,0,0,0.4);
-            padding: 6px 16px;
-            border-radius: 20px;
-            opacity: 0.9;
+            bottom: 70px; left: 50%; transform: translateX(-50%);
+            font-size: 14px; background: rgba(0,0,0,0.4);
+            padding: 6px 16px; border-radius: 20px; opacity:0.9;
         }
         #wind-label {
-            top: 15px;
-            right: 20px;
-            font-size: 14px;
-            font-weight: 600;
-            color: #ffeaa7;
-            background: rgba(0,0,0,0.5);
-            padding: 6px 14px;
-            border-radius: 20px;
+            top: 15px; right: 20px; font-size: 14px; font-weight: 600;
+            color: #ffeaa7; background: rgba(0,0,0,0.5);
+            padding: 6px 14px; border-radius: 20px;
         }
     </style>
 </head>
 <body>
     <div id="game-wrapper">
         <div id="game-container"></div>
+        <div id="loading-msg">⏳ Carregando jogo...</div>
     </div>
     <div id="ad-placeholder">📢 Espaço para anúncios</div>
     <div id="wind-label">🌬️ Vento: --</div>
-    <div id="info-overlay">Toque nos cubos para remover • Não derrube o palito!</div>
+    <div id="info-overlay">Toque nos cubos • Não derrube o palito!</div>
 
     <script src="https://cdn.jsdelivr.net/npm/phaser-ce@2.15.1/build/phaser.min.js"></script>
     <script>
-        (function() {
-            // Configurações
+        // Aguarda o carregamento do Phaser e inicia
+        window.onload = function() {
+            // Remove mensagem de carregamento
+            var loadingEl = document.getElementById('loading-msg');
+            if (loadingEl) loadingEl.style.display = 'none';
+
+            // Configurações do jogo
             var GRID_SIZE = 7;
             var NUM_LAYERS = 4;
             var TILE_W = 34;
@@ -114,88 +120,92 @@
                 centerGy: Math.floor(GRID_SIZE / 2)
             };
 
-            // Inicia o Phaser
+            // Inicializa o jogo em modo Canvas (mais compatível)
             var game = new Phaser.Game({
                 width: 600,
                 height: 400,
-                renderer: Phaser.AUTO,
+                renderer: Phaser.CANVAS,
                 parent: 'game-container',
-                transparent: false,
                 backgroundColor: '#2d3436',
-                antialias: true,
+                antialias: false,
                 scaleMode: Phaser.ScaleManager.SHOW_ALL,
                 pageAlignHorizontally: true,
                 pageAlignVertically: true
             });
 
-            // Função que cria um cubo usando Graphics (sem depender de BitmapData)
-            function createCubeGraphic(game) {
-                var g = game.add.graphics();
-                var hw = TILE_W / 2;
-                var hh = TILE_H / 2;
-                var sh = SIDE_H;
-                var cx = hw;
-                var cy = hh;
+            // Cria textura do cubo usando BitmapData (método padrão e funcional)
+            function createCubeTexture() {
+                var bmd = game.make.bitmapData(TILE_W + SIDE_H + 4, TILE_H + SIDE_H + 8);
+                var ctx = bmd.ctx;
+                var hw = TILE_W / 2, hh = TILE_H / 2, sh = SIDE_H;
+                var cx = hw, cy = hh;
 
-                // Face superior (diamante)
-                g.beginFill(0xf0dca8);
-                g.lineStyle(1.2, 0xc4a96a);
-                g.moveTo(cx, 0);
-                g.lineTo(TILE_W, hh);
-                g.lineTo(cx, TILE_H);
-                g.lineTo(0, hh);
-                g.closePath();
-                g.endFill();
+                // Face superior
+                ctx.fillStyle = '#f0dca8';
+                ctx.strokeStyle = '#c4a96a';
+                ctx.lineWidth = 1.2;
+                ctx.beginPath();
+                ctx.moveTo(cx, 0);
+                ctx.lineTo(TILE_W, hh);
+                ctx.lineTo(cx, TILE_H);
+                ctx.lineTo(0, hh);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
 
                 // Face esquerda
-                g.beginFill(0xc9a96e);
-                g.lineStyle(1, 0xa0844c);
-                g.moveTo(0, hh);
-                g.lineTo(cx, TILE_H);
-                g.lineTo(cx, TILE_H + sh);
-                g.lineTo(0, hh + sh);
-                g.closePath();
-                g.endFill();
+                ctx.fillStyle = '#c9a96e';
+                ctx.strokeStyle = '#a0844c';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(0, hh);
+                ctx.lineTo(cx, TILE_H);
+                ctx.lineTo(cx, TILE_H + sh);
+                ctx.lineTo(0, hh + sh);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
 
                 // Face direita
-                g.beginFill(0xa6844a);
-                g.lineStyle(1, 0x7d6338);
-                g.moveTo(cx, TILE_H);
-                g.lineTo(TILE_W, hh);
-                g.lineTo(TILE_W, hh + sh);
-                g.lineTo(cx, TILE_H + sh);
-                g.closePath();
-                g.endFill();
+                ctx.fillStyle = '#a6844a';
+                ctx.strokeStyle = '#7d6338';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(cx, TILE_H);
+                ctx.lineTo(TILE_W, hh);
+                ctx.lineTo(TILE_W, hh + sh);
+                ctx.lineTo(cx, TILE_H + sh);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
 
-                // Brilho
-                g.beginFill(0xffffff, 0.15);
-                g.moveTo(cx, 0);
-                g.lineTo(cx + hw * 0.5, hh * 0.5);
-                g.lineTo(cx, hh * 0.7);
-                g.lineTo(cx - hw * 0.5, hh * 0.5);
-                g.closePath();
-                g.endFill();
-
-                return g;
+                bmd.dirty = true;
+                return bmd;
             }
 
-            // Estado Boot (vazio, apenas transição)
+            // Estado de inicialização
             var BootState = {
                 create: function() {
-                    game.state.start('Game');
+                    // Pequeno atraso para garantir que tudo esteja pronto
+                    game.time.events.add(100, function() {
+                        game.state.start('Game');
+                    }, this);
                 }
             };
 
             // Estado principal do jogo
             var GameState = {
                 create: function() {
-                    this.game.stage.backgroundColor = '#2d3436';
-                    this.cubeGroup = this.game.add.group();
-                    this.stickGraphics = this.game.add.graphics();
-                    this.windsockGroup = this.game.add.group();
-                    this.particleGroup = this.game.add.group();
+                    console.log('GameState iniciado');
+                    this.cubeGroup = game.add.group();
+                    this.stickGraphics = game.add.graphics();
+                    this.windsockGroup = game.add.group();
+                    this.particleGroup = game.add.group();
 
-                    // Limpar estado
+                    // Gera a textura do cubo
+                    this.cubeTexture = createCubeTexture();
+
+                    // Reinicia o estado do jogo
                     gameState.cubes = {};
                     gameState.stickLeanX = 0;
                     gameState.stickLeanY = 0;
@@ -213,22 +223,22 @@
                     this.drawWindsock();
                     this.updateWindLabel();
 
-                    this.windTimer = this.game.time.events.loop(7000, this.changeWind, this);
-                    this.gustTimer = this.game.time.events.loop(2200, this.gustWind, this);
+                    this.windTimer = game.time.events.loop(7000, this.changeWind, this);
+                    this.gustTimer = game.time.events.loop(2200, this.gustWind, this);
 
                     this.sandParticles = [];
                     this.spawnAmbientParticles();
 
-                    this.scoreText = this.game.add.text(16, 14, '🏆 0', {
-                        font: 'bold 16px "Segoe UI"',
+                    this.scoreText = game.add.text(16, 14, '🏆 0', {
+                        font: 'bold 16px Arial',
                         fill: '#ffeaa7',
                         stroke: '#000',
                         strokeThickness: 3
                     });
                     this.scoreText.fixedToCamera = true;
 
-                    this.gameOverText = this.game.add.text(this.game.width/2, this.game.height/2 - 30, '', {
-                        font: 'bold 28px "Segoe UI"',
+                    this.gameOverText = game.add.text(game.width/2, game.height/2 - 30, '', {
+                        font: 'bold 28px Arial',
                         fill: '#ff6b6b',
                         stroke: '#000',
                         strokeThickness: 4,
@@ -238,8 +248,8 @@
                     this.gameOverText.fixedToCamera = true;
                     this.gameOverText.visible = false;
 
-                    this.restartText = this.game.add.text(this.game.width/2, this.game.height/2 + 30, '', {
-                        font: 'bold 18px "Segoe UI"',
+                    this.restartText = game.add.text(game.width/2, game.height/2 + 30, '', {
+                        font: 'bold 18px Arial',
                         fill: '#ffffff',
                         stroke: '#000',
                         strokeThickness: 3,
@@ -252,7 +262,6 @@
                     this.restartText.events.onInputDown.add(this.restartGame, this);
                 },
 
-                // Constrói a pirâmide usando Graphics (agrupados)
                 buildPyramid: function() {
                     this.cubeGroup.removeAll(true);
                     for (var gz = 0; gz < NUM_LAYERS; gz++) {
@@ -261,24 +270,16 @@
                         for (var gx = minCoord; gx <= maxCoord; gx++) {
                             for (var gy = minCoord; gy <= maxCoord; gy++) {
                                 var pos = this.gridToScreen(gx, gy, gz);
-                                var cubeGraphic = createCubeGraphic(this.game);
-                                cubeGraphic.x = pos.x;
-                                cubeGraphic.y = pos.y;
-                                cubeGraphic.anchor = { x: 0.5, y: 0.5 }; // não funciona diretamente em graphics, ajustamos via bounds
-                                // Como graphics não tem anchor nativo, centralizamos manualmente
-                                cubeGraphic.data = { gx: gx, gy: gy, gz: gz };
-                                cubeGraphic.inputEnabled = true;
-                                cubeGraphic.input.priorityID = gz * 1000 + (gx + gy);
-                                cubeGraphic.events.onInputDown.add(this.onCubeTap, this);
-                                cubeGraphic.events.onInputOver.add(this.onCubeHover, this);
-                                cubeGraphic.events.onInputOut.add(this.onCubeOut, this);
-                                // Ajustar posição para centralizar (o graphics é desenhado a partir do 0,0)
-                                cubeGraphic.pivot = { x: TILE_W / 2 + SIDE_H / 2, y: TILE_H / 2 + SIDE_H / 2 };
-                                cubeGraphic.x = pos.x;
-                                cubeGraphic.y = pos.y;
-                                this.cubeGroup.add(cubeGraphic);
+                                var sprite = game.add.sprite(pos.x, pos.y, this.cubeTexture);
+                                sprite.anchor.setTo(0.5, 0.5);
+                                sprite.data = { gx: gx, gy: gy, gz: gz };
+                                sprite.inputEnabled = true;
+                                sprite.events.onInputDown.add(this.onCubeTap, this);
+                                sprite.events.onInputOver.add(this.onCubeHover, this);
+                                sprite.events.onInputOut.add(this.onCubeOut, this);
+                                this.cubeGroup.add(sprite);
                                 gameState.cubes[gx + ',' + gy + ',' + gz] = {
-                                    sprite: cubeGraphic,
+                                    sprite: sprite,
                                     exists: true,
                                     gx: gx,
                                     gy: gy,
@@ -306,8 +307,8 @@
                 gridToScreen: function(gx, gy, gz) {
                     var hw = TILE_W / 2;
                     var hh = TILE_H / 2;
-                    var cx = this.game.width / 2;
-                    var cy = this.game.height / 2 - 10;
+                    var cx = game.width / 2;
+                    var cy = game.height / 2 - 10;
                     return {
                         x: cx + (gx - gy) * hw,
                         y: cy + (gx + gy) * hh - gz * LAYER_H
@@ -318,14 +319,12 @@
                     if (gameState.gameOver || !sprite.data) return;
                     var key = sprite.data.gx + ',' + sprite.data.gy + ',' + sprite.data.gz;
                     if (!gameState.cubes[key] || !gameState.cubes[key].exists) return;
-                    sprite.alpha = 0.8;
-                    sprite.scale.setTo(1.05);
+                    sprite.tint = 0xffffaa;
                 },
 
                 onCubeOut: function(sprite) {
                     if (!sprite.data) return;
-                    sprite.alpha = 1;
-                    sprite.scale.setTo(1);
+                    sprite.tint = 0xffffff;
                 },
 
                 onCubeTap: function(sprite) {
@@ -348,7 +347,7 @@
                     var pos = this.gridToScreen(gx, gy, gz);
                     this.spawnParticles(pos.x, pos.y, 8);
                     if (gameState.removedCubes % 5 === 0) {
-                        this.game.camera.shake(0.003, 80);
+                        game.camera.shake(0.003, 80);
                     }
                 },
 
@@ -363,7 +362,7 @@
                     if (sprite && sprite.alive) {
                         if (animate) {
                             var pos = this.gridToScreen(gx, gy, gz);
-                            var tween = this.game.add.tween(sprite).to({
+                            var tween = game.add.tween(sprite).to({
                                 alpha: 0,
                                 x: pos.x + (Math.random() - 0.5) * 30,
                                 y: pos.y + 25 + Math.random() * 20,
@@ -488,10 +487,10 @@
                     this.drawStick();
                     this.gameOverText.text = '💥 O palito caiu!';
                     this.gameOverText.visible = true;
-                    this.restartText.text = '🔄 Tocar para jogar novamente';
+                    this.restartText.text = '🔄 Toque para reiniciar';
                     this.restartText.visible = true;
                     this.restartText.inputEnabled = true;
-                    this.game.camera.shake(0.015, 500);
+                    game.camera.shake(0.015, 500);
                     var apex = this.gridToScreen(gameState.centerGx, gameState.centerGy, NUM_LAYERS - 1);
                     this.spawnParticles(apex.x, apex.y, 30);
                     var best = localStorage.getItem('pyramidSandBest') || 0;
@@ -526,16 +525,16 @@
                     if (gameState.gameOver) return;
                     var newAngle = Math.random() * Math.PI * 2;
                     var startAngle = gameState.windAngle;
-                    var startTime = this.game.time.now;
+                    var startTime = game.time.now;
                     var that = this;
                     var update = function() {
-                        var progress = Math.min(1, (that.game.time.now - startTime) / 2000);
+                        var progress = Math.min(1, (game.time.now - startTime) / 2000);
                         gameState.windAngle = startAngle + (newAngle - startAngle) * Phaser.Easing.Sinusoidal.InOut(progress);
                         gameState.windStrength = 0.5 + Math.random() * 0.5;
                         that.updateWindLabel();
                         that.drawWindsock();
                         if (progress < 1 && !gameState.gameOver) {
-                            that.game.time.events.add(30, update, that);
+                            game.time.events.add(30, update, that);
                         }
                     };
                     update();
@@ -582,22 +581,19 @@
                     var tx = apexPos.x + lean.x * 0.5;
                     var ty = topY + lean.y * 0.5;
                     var sockAngle = gameState.windAngle + Math.PI;
-                    var length = 28;
-                    var wBase = 10;
-                    var wTip = 3;
+                    var length = 28, wBase = 10, wTip = 3;
                     var perpX = Math.cos(sockAngle + Math.PI / 2);
                     var perpY = Math.sin(sockAngle + Math.PI / 2);
 
-                    var pole = this.game.add.graphics();
+                    var pole = game.add.graphics();
                     pole.lineStyle(1.8, 0xcccccc, 0.9);
                     pole.moveTo(tx, ty);
                     pole.lineTo(tx, ty - 8);
                     this.windsockGroup.add(pole);
 
-                    var sock = this.game.add.graphics();
+                    var sock = game.add.graphics();
                     for (var i = 0; i < 5; i++) {
-                        var t0 = i / 5;
-                        var t1 = (i + 1) / 5;
+                        var t0 = i / 5, t1 = (i + 1) / 5;
                         var w0 = wBase + (wTip - wBase) * t0;
                         var w1 = wBase + (wTip - wBase) * t1;
                         var x0 = tx + Math.cos(sockAngle) * length * t0;
@@ -620,8 +616,8 @@
                     var best = localStorage.getItem('pyramidSandBest') || 0;
                     if (best > 0) {
                         if (this.prevBestText) this.prevBestText.destroy();
-                        this.prevBestText = this.game.add.text(this.game.width - 130, 14, '⭐ Melhor: ' + best, {
-                            font: 'bold 13px "Segoe UI"',
+                        this.prevBestText = game.add.text(game.width - 130, 14, '⭐ Melhor: ' + best, {
+                            font: 'bold 13px Arial',
                             fill: '#ffeaa7',
                             stroke: '#000',
                             strokeThickness: 2
@@ -632,7 +628,7 @@
 
                 spawnParticles: function(x, y, count) {
                     for (var i = 0; i < count; i++) {
-                        var p = this.game.add.graphics();
+                        var p = game.add.graphics();
                         p.beginFill(
                             Phaser.Color.getColor(
                                 200 + Math.floor(Math.random() * 55),
@@ -648,7 +644,7 @@
                         this.particleGroup.add(p);
                         var windDx = Math.cos(gameState.windAngle) * 1.5;
                         var windDy = Math.sin(gameState.windAngle) * 1.5;
-                        var tween = this.game.add.tween(p).to({
+                        var tween = game.add.tween(p).to({
                             x: p.x + windDx * 30 + (Math.random() - 0.5) * 50,
                             y: p.y + 30 + Math.random() * 40 + windDy * 30,
                             alpha: 0
@@ -661,17 +657,17 @@
 
                 spawnAmbientParticles: function() {
                     if (gameState.gameOver) return;
-                    var p = this.game.add.graphics();
+                    var p = game.add.graphics();
                     p.beginFill(0xe8d5a3, 0.5);
                     p.drawCircle(0, 0, 0.6 + Math.random() * 1.2);
                     p.endFill();
-                    p.x = this.game.width / 2 + (Math.random() - 0.5) * 160;
-                    p.y = this.game.height / 2 + (Math.random() - 0.5) * 120;
+                    p.x = game.width / 2 + (Math.random() - 0.5) * 160;
+                    p.y = game.height / 2 + (Math.random() - 0.5) * 120;
                     p.alpha = 0;
                     this.sandParticles.push(p);
                     var windDx = Math.cos(gameState.windAngle) * 0.6;
                     var windDy = Math.sin(gameState.windAngle) * 0.6;
-                    var tween = this.game.add.tween(p).to({
+                    var tween = game.add.tween(p).to({
                         x: p.x + windDx * 60,
                         y: p.y + windDy * 60 + 10,
                         alpha: 0.6
@@ -686,7 +682,7 @@
                         var old = this.sandParticles.shift();
                         if (old && old.alive) old.destroy();
                     }
-                    this.game.time.events.add(400 + Math.random() * 800, this.spawnAmbientParticles, this);
+                    game.time.events.add(400 + Math.random() * 800, this.spawnAmbientParticles, this);
                 },
 
                 update: function() {
@@ -700,10 +696,11 @@
                 }
             };
 
+            // Registrar estados e iniciar
             game.state.add('Boot', BootState);
             game.state.add('Game', GameState);
             game.state.start('Boot');
-        })();
+        };
     </script>
 </body>
 </html>
