@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tribunal Zodiacal - O Jogo de Cartas Cósmico</title>
+    <style>
+        :root {
+            --cosmic-bg: #0a0a1a;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: var(--cosmic-bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            font-family: 'Georgia', 'Times New Roman', serif;
+        }
+        #game-container {
+            width: 100%;
+            max-width: 1000px;
+            height: 100vh;
+            max-height: 700px;
+            position: relative;
+            border: 3px solid #c9a84c;
+            border-radius: 16px;
+            box-shadow: 0 0 40px rgba(201, 168, 76, 0.5), inset 0 0 60px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            background: radial-gradient(ellipse at center, #1a1a3e 0%, #0a0a1a 70%);
+        }
+        canvas {
+            display: block;
+        }
+        #ui-overlay {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #c9a84c;
+            font-size: 12px;
+            text-align: center;
+            pointer-events: none;
+            text-shadow: 0 0 10px rgba(201, 168, 76, 0.7);
+            letter-spacing: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div id="ui-overlay">⚖️ TRIBUNAL ZODIACAL ⚖️</div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js">
+    </script>
+    <script>
+        // ==================== CONFIGURAÇÃO DO JOGO ====================
+        const SIGNOS = [
+            { nome: 'Áries', emoji: '♈', poder: 8, resistencia: 5, influencia: 7, elemento: 'Fogo', cor: 0xff4444,
+                desc: 'Impulsivo e corajoso' },
+            { nome: 'Touro', emoji: '♉', poder: 5, resistencia: 9, influencia: 6, elemento: 'Terra', cor: 0x8B4513,
+                desc: 'Persistente e sensual' },
+            { nome: 'Gêmeos', emoji: '♊', poder: 6, resistencia: 4, influencia: 9, elemento: 'Ar', cor: 0xFFD700,
+                desc: 'Dual e comunicativo' },
+            { nome: 'Câncer', emoji: '♋', poder: 4, resistencia: 7, influencia: 8, elemento: 'Água', cor: 0x4682B4,
+                desc: 'Emotivo e protetor' },
+            { nome: 'Leão', emoji: '♌', poder: 9, resistencia: 6, influencia: 8, elemento: 'Fogo', cor: 0xFF8C00,
+                desc: 'Majestoso e generoso' },
+            { nome: 'Virgem', emoji: '♍', poder: 5, resistencia: 6, influencia: 7, elemento: 'Terra', cor: 0x556B2F,
+                desc: 'Analítico e prático' },
+            { nome: 'Libra', emoji: '♎', poder: 4, resistencia: 5, influencia: 10, elemento: 'Ar', cor: 0xDA70D6,
+                desc: 'Diplomata e justo' },
+            { nome: 'Escorpião', emoji: '♏', poder: 8, resistencia: 7, influencia: 9, elemento: 'Água', cor: 0x8B0000,
+                desc: 'Intenso e magnético' },
+            { nome: 'Sagitário', emoji: '♐', poder: 7, resistencia: 4, influencia: 6, elemento: 'Fogo', cor: 0xB22222,
+                desc: 'Aventureiro e filosófico' },
+            { nome: 'Capricórnio', emoji: '♑', poder: 6, resistencia: 9, influencia: 5, elemento: 'Terra', cor: 0x2F4F4F,
+                desc: 'Ambicioso e disciplinado' },
+            { nome: 'Aquário', emoji: '♒', poder: 5, resistencia: 5, influencia: 8, elemento: 'Ar', cor: 0x00CED1,
+                desc: 'Inovador e rebelde' },
+            { nome: 'Peixes', emoji: '♓', poder: 3, resistencia: 6, influencia: 9, elemento: 'Água', cor: 0x6A5ACD,
+                desc: 'Intuitivo e sonhador' }
+        ];
+
+        const ELEMENTOS = ['Fogo', 'Terra', 'Ar', 'Água'];
+        const VANTAGEM_ELEMENTAL = {
+            'Fogo': 'Ar',
+            'Ar': 'Terra',
+            'Terra': 'Água',
+            'Água': 'Fogo'
+        };
+
+        // ==================== CENA DE BOOT ====================
+        class BootScene extends Phaser.Scene {
+            constructor() {
+                super('Boot');
+            }
+            preload() {
+                // Criar texturas proceduralmente
+                this.createProceduralTextures();
+            }
+            createProceduralTextures() {
+                // Textura de estrela
+                const starGfx = this.make.graphics({ x: 0, y: 0, add: false });
+                starGfx.fillStyle(0xffffff, 1);
+                starGfx.fillCircle(4, 4, 4);
+                starGfx.generateTexture('star', 8, 8);
+                starGfx.destroy();
+
+                // Textura de partícula
+                const particleGfx = this.make.graphics({ x: 0, y: 0, add: false });
+                particleGfx.fillStyle(0xc9a84c, 1);
+                particleGfx.fillCircle(3, 3, 3);
+                particleGfx.generateTexture('particle', 6, 6);
+                particleGfx.destroy();
+
+                // Textura de carta (fundo)
+                const cardGfx = this.make.graphics({ x: 0, y: 0, add: false });
+                cardGfx.fillStyle(0x1a1a3e, 1);
+                cardGfx.fillRoundedRect(0, 0, 140, 200, 12);
+                cardGfx.lineStyle(3, 0xc9a84c, 1);
+                cardGfx.strokeRoundedRect(0, 0, 140, 200, 12);
+                cardGfx.generateTexture('card_bg', 140, 200);
+                cardGfx.destroy();
+
+                // Textura de carta brilhante
+                const cardGlowGfx = this.make.graphics({ x: 0, y: 0, add: false });
+                cardGlowGfx.fillStyle(0x2a2a5e, 1);
+                cardGlowGfx.fillRoundedRect(0, 0, 140, 200, 12);
+                cardGlowGfx.lineStyle(4, 0xffd700, 1);
+                cardGlowGfx.strokeRoundedRect(0, 0, 140, 200, 12);
+                cardGlowGfx.generateTexture('card_glow', 140, 200);
+                cardGlowGfx.destroy();
+
+                // Textura de botão
+                const btnGfx = this.make.graphics({ x: 0, y: 0, add: false });
+                btnGfx.fillStyle(0x2a1a4e, 1);
+                btnGfx.fillRoundedRect(0, 0, 200, 50, 25);
+                btnGfx.lineStyle(2, 0xc9a84c, 1);
+                btnGfx.strokeRoundedRect(0, 0, 200, 50, 25);
+                btnGfx.generateTexture('button', 200, 50);
+                btnGfx.destroy();
+
+                // Textura de balança
+                const scaleGfx = this.make.graphics({ x: 0, y: 0, add: false });
+                scaleGfx.lineStyle(3, 0xc9a84c, 1);
+                scaleGfx.lineBetween(0, 0, 0, 60);
+                scaleGfx.lineBetween(-30, 60, 30, 60);
+                scaleGfx.lineBetween(-25, 60, -25, 40);
+                scaleGfx.lineBetween(25, 60, 25, 40);
+                scaleGfx.generateTexture('scale', 60, 70);
+                scaleGfx.destroy();
+
+                // Textura de coroa/estrela de conquista
+                const crownGfx = this.make.graphics({ x: 0, y: 0, add: false });
+                crownGfx.fillStyle(0xffd700, 1);
+                crownGfx.fillTriangle(12, 2, 2, 22, 22, 22);
+                crownGfx.fillCircle(12, 10, 6);
+                crownGfx.generateTexture('crown', 24, 24);
+                crownGfx.destroy();
+
+                // Textura de escudo
+                const shieldGfx = this.make.graphics({ x: 0, y: 0, add: false });
+                shieldGfx.fillStyle(0x4169E1, 1);
+                shieldGfx.fillTriangle(15, 0, 0, 15, 30, 15);
+                shieldGfx.fillRect(5, 15, 20, 10);
+                shieldGfx.generateTexture('shield', 30, 25);
+                shieldGfx.destroy();
+
+                // Textura de espada
+                const swordGfx = this.make.graphics({ x: 0, y: 0, add: false });
+                swordGfx.fillStyle(0xC0C0C0, 1);
+                swordGfx.fillRect(13, 0, 4, 20);
+                swordGfx.fillTriangle(13, 0, 17, 0, 15, -5);
+                swordGfx.fillRect(10, 20, 10, 4);
+                swordGfx.generateTexture('sword', 30, 24);
+                swordGfx.destroy();
+            }
+            create() {
+                this.scene.start('Menu');
+            }
+        }
+
+        // ==================== CENA DE MENU ====================
+        class MenuScene extends Phaser.Scene {
+            constructor() {
+                super('Menu');
+            }
+            create() {
+                const { width, height } = this.scale;
+
+                // Fundo estrelado animado
+                this.stars = [];
+                for (let i = 0; i < 150; i++) {
+                    const star = this.add.image(
+                        Phaser.Math.Between(0, width),
+                        Phaser.Math.Between(0, height),
+                        'star'
+                    ).setAlpha(Phaser.Math.FloatBetween(0.3, 1))
+                        .setScale(Phaser.Math.FloatBetween(0.3, 1.5));
+                    this.stars.push({
+                        obj: star,
+                        speed: Phaser.Math.FloatBetween(0.1, 0.5)
+                    });
+                }
+
+                // Título
+                const titleStyle = {
+                    fontSize: '42px',
+                    fontFamily: 'Georgia, serif',
+                    color: '#ffd700',
+                    stroke: '#8B4513',
+                    strokeThickness: 4,
+                    shadow: { offsetX: 2, offsetY: 2, color: '#000', blur: 8, fill: true }
+                };
+                this.add.text(width / 2, 120, 'TRIBUNAL', titleStyle).setOrigin(0.5);
+                this.add.text(width / 2, 175, 'ZODIACAL', { ...titleStyle, fontSize: '36px', color: '#c9a84c' })
+                    .setOrigin(0.5);
+
+                // Balança animada
+                this.scaleIcon = this.add.image(width / 2, 260, 'scale').setScale(2);
+                this.tweens.add({
+                    targets: this.scaleIcon,
+                    angle: { from: -3, to: 3 },
+                    duration: 2000,
+                    yoyo: true,
+                    repeat: -1,
+                    ease: 'Sine.easeInOut'
+                });
+
+                // Subtítulo
+                this.add.text(width / 2, 340, 'O Duelo Cósmico de Estratégia', {
+                    fontSize: '16px',
+                    fontFamily: 'Georgia, serif',
+                    color: '#aaaacc',
+                    fontStyle: 'italic'
+                }).setOrigin(0.5);
+
+                // Botão Jogar
+                this.createButton(width / 2, 440, '⚔️ INICIAR JULGAMENTO', () => {
+                    this.cameras.main.fadeOut(500, 0, 0, 0);
+                    this.time.delayedCall(500, () => {
+                        this.scene.start('SelectSign');
+                    });
+                });
+
+                // Botão Como Jogar
+                this.createButton(width / 2, 510, '📜 REGRAS CÓSMICAS', () => {
+                    this.showRules();
+                });
+
+                // Informação de versão
+                this.add.text(width / 2, height - 30, 'v1.0 - Phaser 2D Engine', {
+                    fontSize: '11px',
+                    color: '#555577'
+                }).setOrigin(0.5);
+
+                this.cameras.main.fadeIn(800, 0, 0, 0);
+            }
+            createButton(x, y, text, callback) {
+                const btn = this.add.image(x, y, 'button').setInteractive({ useHandCursor: true }).setScale(1.2);
+                const btnText = this.add.text(x, y, text, {
+                    fontSize: '18px',
+                    fontFamily: 'Georgia, serif',
+                    color: '#ffd700'
+                }).setOrigin(0.5);
+
+                btn.on('pointerover', () => {
+                    btn.setTint(0x4444aa);
+                    btn.setScale(1.3);
+                    btnText.setScale(1.05);
+                });
+                btn.on('pointerout', () => {
+                    btn.clearTint();
+                    btn.setScale(1.2);
+                    btnText.setScale(1);
+                });
+                btn.on('pointerdown', callback);
+                return { btn, btnText };
+            }
+            showRules() {
+                const { width, height } = this.scale;
+                const overlay = this.add.rectangle(width / 2, height / 2, width, height, 0x000000, 0.85)
+                    .setInteractive().setDepth(100);
+                const rulesText = [
+                    '📜 REGRAS DO TRIBUNAL ZODIACAL 📜',
+                    '',
+                    '🎯 OBJETIVO: Conquistar todos os 12 níveis do Zodíaco',
+                    '',
+                    '🃏 CARTAS: Cada Signo tem Poder, Resistência e Influência',
+                    '🔥💧🌍💨 Elementos têm vantagem circular (Fogo > Ar > Terra > Água > Fogo)',
+                    '',
+                    '⚖️ TRIBUNAL (Teoria dos Jogos):',
+                    '• Cooperar: Ambos ganham bônus moderado',
+                    '• Acusar: Traidor ganha muito, vítima perde',
+                    '• Ambos acusam: Ambos perdem recursos',
+                    '',
+                    '🏆 CONQUISTAS: Estrelas que podem ser perdidas',
+                    '📉 Derrotas: Retrocesso parcial (1-2 níveis)',
+                    '',
+                    'Clique para fechar'
+                ].join('\n');
+
+                const rulesDisplay = this.add.text(width / 2, height / 2, rulesText, {
+                    fontSize: '13px',
+                    fontFamily: 'Georgia, serif',
+                    color: '#ffd700',
+                    align: 'center',
+                    lineSpacing: 6,
+                    backgroundColor: '#111133cc',
+                    padding: { x: 20, y: 15 },
+                    wordWrap: { width: width - 100 }
+                }).setOrigin(0.5).setDepth(101);
+
+                overlay.on('pointerdown', () => {
+                    overlay.destroy();
+                    rulesDisplay.destroy();
+                });
+            }
+        }
+
+        // ==================== CENA DE SELEÇÃO DE SIGNO ====================
+        class SelectSignScene extends Phaser.Scene {
+            constructor() {
+                super('SelectSign');
+            }
+            create() {
+                const { width, height } = this.scale;
+                this.cameras.main.fadeIn(500, 0, 0, 0);
+
+                // Fundo
+                for (let i = 0; i < 80; i++) {
+                    this.add.image(Phaser.Math.Between(0, width), Phaser.Math.Between(0, height), 'star')
+                        .setAlpha(Phaser.Math.FloatBetween(0.2, 0.7))
+                        .setScale(Phaser.Math.FloatBetween(0.2, 1));
+                }
+
+                this.add.text(width / 2, 40, 'ESCOLHA SEU SIGNO GUARDIÃO', {
+                    fontSize: '24px',
+                    fontFamily: 'Georgia, serif',
+                    color: '#ffd700',
+                    stroke: '#000',
+                    strokeThickness: 3
+                }).setOrigin(0.5);
+
+                this.add.text(width / 2, 75, 'Cada signo possui atributos únicos para o Tribunal', {
+                    fontSize: '13px',
+                    fontFamily: 'Georgia, serif',
+                    color: '#aaaacc',
+                    fontStyle: 'italic'
+                }).setOrigin(0.5);
+
+                // Grid de signos (4x3)
+                this.signCards = [];
+                const cols = 4;
+                const cardWidth = 145;
+                const cardHeight = 200;
+                const startX = (width - cols * cardWidth) / 2 + cardWidth / 2;
+                const startY = 130;
+
+                SIGNOS.forEach((signo, index) => {
+                    const col = index % cols;
+                    const row = Math.floor(index / cols);
+                    const x = startX + col * (cardWidth + 10);
+                    const y = startY + row * (cardHeight + 15);
+
+                    const card = this.createSignCard(x, y, signo, index);
+                    this.signCards.push(card);
+                });
+
+                // IA adversário aleatório
+                this.iaSignIndex = Phaser.Math.Between(0, 11);
+                this.iaSigno = SIGNOS[this.iaSignIndex];
+                this.add.text(width / 2, height - 50,
+                    `Adversário Cósmico: ${this.iaSigno.emoji} ${this.iaSigno.nome} (IA)`, {
+                        fontSize: '14px',
+                        fontFamily: 'Georgia, serif',
+                        color: '#ff6666',
+                        stroke: '#000',
+                        strokeThickness: 2
+                    }).setOrigin(0.5);
+            }
+            createSignCard(x, y, signo, index) {
+                const container = this.add.container(x, y);
+                const bg = this.add.image(0, 0, 'card_bg').setInteractive({ useHandCursor: true });
+                const emoji = this.add.text(0, -55, signo.emoji, {
+                    fontSize: '40px'
+                }).setOrigin(0.5);
+                const nome = this.add.text(0, -15, signo.nome, {
+                    fontSize: '18px',
+                    fontFamily: 'Georgia, serif',
+                    color: '#ffd700',
+                    stroke: '#000',
+                    strokeThickness: 2
+                }).setOrigin(0.5);
+                const elemento = this.add.text(0, 10, `${this.getElementIcon(signo.elemento)} ${signo.elemento}`, {
+                    fontSize: '12px',
+                    fontFamily: 'Georgia, serif',
+                    color: '#aaaaee'
+                }).setOrigin(0.5);
+                const stats = this.add.text(0, 40,
+                    `⚔️${signo.poder} 🛡️${signo.resistencia} 💫${signo.influencia}`, {
+                        fontSize: '11px',
+                        fontFamily: 'Georgia, serif',
+                        color: '#cccccc'
+                    }).setOrigin(0.5);
+                const desc = this.add.text(0, 65, signo.desc, {
+                    fontSize: '10px',
+                    fontFamily: 'Georgia, serif',
+                    color: '#999999',
+                    fontStyle: 'italic',
+                    wordWrap: { width: 120 }
+                }).setOrigin(0.5);
+
+                container.add([bg, emoji, nome, elemento, stats, desc]);
+
+                bg.on('pointerover', () => {
+                    bg.setTexture('card_glow');
+                    container.setScale(1.08);
+                });
+                bg.on('pointerout', () => {
+                    bg.setTexture('card_bg');
+                    container.setScale(1);
+                });
+                bg.on('pointerdown', () => {
+                    this.selectSign(index);
+                });
+
+                return container;
+            }
+            getElementIcon(elemento) {
+                const icons = { 'Fogo': '🔥', 'Terra': '🌍', 'Ar': '💨', 'Água': '💧' };
+                return icons[elemento] || '⭐';
+            }
+            selectSign(index) {
+                this.cameras.main.fadeOut(400, 0, 0, 0);
+                this.time.delayedCall(400, () => {
+                    this.scene.start('Game', {
+                        playerSignIndex: index,
+                        iaSignIndex: this.iaSignIndex,
+                        playerLevel: 1,
+                        playerStars: 0,
+                        consecutiveWins: 0
+                    });
+                });
+            }
+        }
+
+        // ==================== CENA PRINCIPAL DO JOGO ====================
+        class GameScene extends Phaser.Scene {
+            constructor() {
+                super('Game');
+            }
+            init(data) {
+                this.playerSignIndex = data.playerSignIndex || 0;
+                this.iaSignIndex = data.iaSignIndex || 6;
+                this.playerLevel = data.playerLevel || 1;
+                this.playerStars = data.playerStars || 0;
+                this.consecutiveWins = data.consecutiveWins || 0;
+                this.playerSigno = SIGNOS[this.playerSignIndex];
+                this.iaSigno = SIGNOS[this.iaSignIndex];
+                this.phase = 'tribunal'; // tribunal, battle, result
+                this.playerChoice = null;
+                this.iaChoice = null;
+                this.tribunalBonus = 0;
+                this.iaTribunalBonus = 0;
+                this.battlePhase = false;
+                this.battleLog = [];
+            }
+            create() {
+                const { width, height } = this.scale;
+                this.cameras.main.fadeIn(500, 0, 0, 0);
+
+                // Fundo
+                this.add.rectangle(width / 2, height / 2, width, height, 0x0a0a1a);
+                for (let i = 0; i < 100; i++) {
+                    this.add.image(Phaser.Math.Between(0, width), Phaser.Math.Between(0, height), 'star')
+                        .setAlpha(Phaser.Math.FloatBetween(0.1, 0.5))
+                        .setScale(Phaser.Math.FloatBetween(0.1, 0.8));
+                }
+
+                // Cabeçalho com nível e estrelas
+                this.headerText = this.add.text(width / 2, 18, '', {
+                    fontSize: '16px',
+                    fontFamily: 'Georgia, serif',
+                    color: '#ffd700',
+                    stroke: '#000',
+                    strokeThickness: 2
+                }).setOrigin(0.5);
+                this.updateHeader();
+
+                // Área do jogador (esquerda)
+                this.playerArea = this.add.container(130, 280);
+                this.createPlayerArea(this.playerArea, this.playerSigno, true);
+
+                // Área da IA (direita)
+                this.iaArea = this.add.container(width - 130, 280);
+                this.createPlayerArea(this.iaArea, this.iaSigno, false);
+
+                // VS no centro
+                this.vsText = this.add.text(width / 2, 200, '⚡VS⚡', {
+                    fontSize: '28px',
+                    fontFamily: 'Georgia, serif',
+                    color: '#ffd700',
+                    stroke: '#8B0000',
+                    strokeThickness: 3
+                }).setOrigin(0.5);
+                this.tweens.add({
+                    targets: this.vsText,
+                    scale: { from: 1, to: 1.15 },
+                    duration: 800,
+                    yoyo: true,
+                    repeat: -1,
+                    ease: 'Sine.easeInOut'
+                });
+
+                // Área de tribunal (centro inferior)
+                this.tribunalArea = this.add.container(width / 2, 400);
+                this.createTribunalArea();
+
+                // Log de batalha
+                this.logText = this.add.text(width / 2, 530, '', {
+                    fontSize: '12px',
+                    fontFamily: 'Georgia, serif',
+                    color: '#cccccc',
+                    align: 'center',
+                    wordWrap: { width: width - 80 }
+                }).setOrigin(0.5);
+
+                // Botão de próxima fase
+                this.nextButton = this.add.image(width / 2, 600, 'button').setInteractive({ useHandCursor: true })
+                    .setScale(1).setVisible(false);
+                this.nextButtonText = this.add.text(width / 2, 600, '', {
+                    fontSize: '16px',
+                    fontFamily: 'Georgia, serif',
+                    color: '#ffd700'
+                }).setOrigin(0.5).setVisible(false);
+
+                this.nextButton.on('pointerdown', () => {
+                    if (this.phase === 'result') {
+                        this.nextRound();
+                    }
+                });
+
+                // Iniciar fase do tribunal
+                this.startTribunalPhase();
+            }
+            updateHeader() {
+                const starsStr = '⭐'.repeat(this.playerStars) + '☆'.repeat(Math.max(0, 10 - this.playerStars));
+                this.headerText.setText(
+                    `Nível ${this.playerLevel}/12 | Estrelas: ${starsStr} | Vitórias: ${this.consecutiveWins}`
+                );
+            }
+            createPlayerArea(container, signo, isPlayer) {
+                container.removeAll(true);
+                const bg = this.add.image(0, 0, 'card_glow').setScale(0.9);
+                const emoji = this.add.text(0, -55, signo.emoji, { fontSize: '35px' }).setOrigin(0.5);
+                const nome = this.add.text(0, -15, signo.nome, {
+                    fontSize: '16px',
+                    fontFamily: 'Georgia, serif',
+                    color: '#ffd700',
+                    stroke: '#000',
+                    strokeThickness: 2
+                }).setOrigin(0.5);
+                const elemento = this.add.text(0, 10, `${this.getElementIcon(signo.elemento)} ${signo.elemento}`, {
+                    fontSize: '11px',
+                    color: '#aaaacc'
+                }).setOrigin(0.5);
+                const poderText = this.add.text(0, 35, `⚔️ Poder: ${signo.poder}`, {
+                    fontSize: '11px',
+                    color: '#ff8888'
+                }).setOrigin(0.5);
+                const resText = this.add.text(0, 52, `🛡️ Resist: ${signo.resistencia}`, {
+                    fontSize: '11px',
+                    color: '#8888ff'
+                }).setOrigin(0.5);
+                const infText = this.add.text(0, 69, `💫 Influ: ${signo.influencia}`, {
+                    fontSize: '11px',
+                    color: '#88ff88'
+                }).setOrigin(0.5);
+
+                const label = this.add.text(0, -85, isPlayer ? '👤 VOCÊ' : '🤖 ADVERSÁRIO', {
+                    fontSize: '11px',
+                    color: isPlayer ? '#88ff88' : '#ff6666',
+                    stroke: '#000',
+                    strokeThickness: 2
+                }).setOrigin(0.5);
+
+                container.add([bg, emoji, nome, elemento, poderText, resText, infText, label]);
+            }
+            getElementIcon(elemento) {
+                const icons = { 'Fogo': '🔥', 'Terra': '🌍', 'Ar': '💨', 'Água': '💧' };
+                return icons[elemento] || '⭐';
+            }
+            createTribunalArea() {
+                this.tribunalArea.removeAll(true);
+
+                const bg = this.add.rectangle(0, 0, 500, 100, 0x111133, 0.9)
+                    .setStrokeStyle(2, 0xc9a84c);
+                this.tribunalArea.add(bg);
+
+                const scaleIcon = this.add.image(0, -20, 'scale').setScale(1.5);
+                this.tribunalArea.add(scaleIcon);
+
+                this.tribunalTitle = this.add.text(0, 25, '⚖️ FASE DO TRIBUNAL ⚖️', {
+                    fontSize: '14px',
+                    fontFamily: 'Georgia, serif',
+                    color: '#c9a84c',
+                    stroke: '#000',
+                    strokeThickness: 2
+                }).setOrigin(0.5);
+                this.tribunalArea.add(this.tribunalTitle);
+
+                // Botões Cooperar e Acusar
+                this.cooperateBtn = this.add.image(-120, 40, 'button').setInteractive({ useHandCursor: true })
+                    .setScale(0.8).setVisible(false);
+                this.cooperateText = this.add.text(-120, 40, '🤝 COOPERAR', {
+                    fontSize: '13px',
+                    fontFamily: 'Georgia, serif',
+                    color: '#88ff88'
+                }).setOrigin(0.5).setVisible(false);
+
+                this.accuseBtn = this.add.image(120, 40, 'button').setInteractive({ useHandCursor: true })
+                    .setScale(0.8).setVisible(false);
+                this.accuseText = this.add.text(120, 40, '⚔️ ACUSAR', {
+                    fontSize: '13px',
+                    fontFamily: 'Georgia, serif',
+                    color: '#ff8888'
+                }).setOrigin(0.5).setVisible(false);
+
+                this.tribunalArea.add([this.cooperateBtn, this.cooperateText, this.accuseBtn, this.accuseText]);
+
+                this.cooperateBtn.on('pointerdown', () => this.makeTribunalChoice('cooperate'));
+                this.accuseBtn.on('pointerdown', () => this.makeTribunalChoice('accuse'));
+            }
+            startTribunalPhase() {
+                this.phase = 'tribunal';
+                this.playerChoice = null;
+                this.iaChoice = null;
+                this.tribunalBonus = 0;
+                this.iaTribunalBonus = 0;
+                this.battleLog = [];
+
+                this.tribunalTitle.setText('⚖️ FASE DO TRIBUNAL ⚖️');
+                this.cooperateBtn.setVisible(true);
+                this.cooperateText.setVisible(true);
+                this.accuseBtn.setVisible(true);
+                this.accuseText.setVisible(true);
+                this.nextButton.setVisible(false);
+                this.nextButtonText.setVisible(false);
+                this.logText.setText('Escolha sua estratégia no Tribunal Cósmico...');
+                this.vsText.setText('⚡VS⚡');
+            }
+            makeTribunalChoice(choice) {
+                if (this.phase !== 'tribunal') return;
+                this.playerChoice = choice;
+
+                // IA decide baseado em teoria dos jogos e personalidade do signo
+                this.iaChoice = this.calculateIAChoice();
+
+                // Esconder botões
+                this.cooperateBtn.setVisible(false);
+                this.cooperateText.setVisible(false);
+                this.accuseBtn.setVisible(false);
+                this.accuseText.setVisible(false);
+
+                // Calcular resultado do tribunal
+                this.resolveTribunal();
+            }
+            calculateIAChoice() {
+                // IA usa estratégia mista baseada na influência do signo
+                const iaInfluencia = this.iaSigno.influencia;
+                const playerInfluencia = this.playerSigno.influencia;
+
+                // Probabilidade de cooperar baseada na influência
+                let coopChance = 0.5;
+
+                // Signos de Água e Ar tendem a cooperar mais
+                if (this.iaSigno.elemento === 'Água' || this.iaSigno.elemento === 'Ar') {
+                    coopChance += 0.15;
+                }
+                // Signos de Fogo tendem a acusar mais
+                if (this.iaSigno.elemento === 'Fogo') {
+                    coopChance -= 0.15;
+                }
+
+                // Se IA tem mais influência, tende a cooperar (diplomacia)
+                if (iaInfluencia > playerInfluencia + 2) coopChance += 0.2;
+                // Se está perdendo (nível do jogador alto), fica mais agressiva
+                if (this.playerLevel >= 8) coopChance -= 0.25;
+
+                coopChance = Phaser.Math.Clamp(coopChance, 0.15, 0.85);
+
+                return Math.random() < coopChance ? 'cooperate' : 'accuse';
+            }
+            resolveTribunal() {
+                const pChoice = this.playerChoice;
+                const iaChoice = this.iaChoice;
+
+                let logMsg = '';
+                // Matriz de payoff (Teoria dos Jogos - Dilema do Prisioneiro)
+                if (pChoice === 'cooperate' && iaChoice === 'cooperate') {
+                    this.tribunalBonus = 3;
+                    this.iaTribunalBonus = 3;
+                    logMsg = '🤝 Ambos cooperaram! Bônus equilibrado (+3 para cada).';
+                    this.vsText.setText('🤝🤝');
+                } else if (pChoice === 'cooperate' && iaChoice === 'accuse') {
+                    this.tribunalBonus = -2;
+                    this.iaTribunalBonus = 7;
+                    logMsg = '😈 Adversário ACUSOU enquanto você cooperou! Ele ganha +7, você perde -2.';
+                    this.vsText.setText('😇😈');
+                } else if (pChoice === 'accuse' && iaChoice === 'cooperate') {
+                    this.tribunalBonus = 7;
+                    this.iaTribunalBonus = -2;
+                    logMsg = '⚔️ Você ACUSOU! Adversário cooperou. Você ganha +7, ele perde -2.';
+                    this.vsText.setText('😈😇');
+                } else {
+                    this.tribunalBonus = -4;
+                    this.iaTribunalBonus = -4;
+                    logMsg = '💥 Ambos ACUSARAM! Conflito total (-4 para ambos).';
+                    this.vsText.setText('💥💥');
+                }
+
+                this.battleLog.push(logMsg);
+                this.logText.setText(logMsg);
+
+                // Após tribunal, iniciar batalha de cartas
+                this.time.delayedCall(1200, () => {
+                    this.startBattlePhase();
+                });
+            }
+            startBattlePhase() {
+                this.phase = 'battle';
+                this.tribunalTitle.setText('⚔️ FASE DE BATALHA ⚔️');
+                this.vsText.setText('⚔️VS⚔️');
+
+                // Calcular poder total de cada lado
+                let playerPower = this.playerSigno.poder + this.tribunalBonus;
+                let iaPower = this.iaSigno.poder + this.iaTribunalBonus;
+
+                // Bônus de elemento (vantagem circular)
+                const playerElemento = this.playerSigno.elemento;
+                const iaElemento = this.iaSigno.elemento;
+                let elementoBonusPlayer = 0;
+                let elementoBonusIA = 0;
+
+                if (VANTAGEM_ELEMENTAL[playerElemento] === iaElemento) {
+                    elementoBonusPlayer = 3;
+                    this.battleLog.push(`🔥 Vantagem Elemental: ${playerElemento} domina ${iaElemento}! (+3)`);
+                } else if (VANTAGEM_ELEMENTAL[iaElemento] === playerElemento) {
+                    elementoBonusIA = 3;
+                    this.battleLog.push(`💧 Desvantagem Elemental: ${iaElemento} domina ${playerElemento}! (+3 para IA)`);
+                }
+
+                playerPower += elementoBonusPlayer;
+                iaPower += elementoBonusIA;
+
+                // Bônus por nível (experiência)
+                playerPower += Math.floor(this.playerLevel / 2);
+                // Bônus por estrelas
+                playerPower += Math.floor(this.playerStars / 3);
+
+                // Resistência reduz dano
+                const playerDef = this.playerSigno.resistencia;
+                const iaDef = this.iaSigno.resistencia;
+
+                // Dados (estilo War) - rolagem para adicionar aleatoriedade
+                const playerDice = Phaser.Math.Between(1, 6);
+                const iaDice = Phaser.Math.Between(1, 6);
+                playerPower += playerDice;
+                iaPower += iaDice;
+                this.battleLog.push(`🎲 Dados: Você ${playerDice} vs IA ${iaDice}`);
+
+                // Poder efetivo após defesa
+                const playerEffective = Math.max(0, playerPower - iaDef / 2);
+                const iaEffective = Math.max(0, iaPower - playerDef / 2);
+
+                this.battleLog.push(`⚡ Poder Efetivo: Você ${playerEffective.toFixed(1)} vs IA ${iaEffective.toFixed(1)}`);
+
+                // Determinar vencedor
+                let resultText = '';
+                if (playerEffective > iaEffective) {
+                    resultText = '🏆 VITÓRIA! Seu signo prevaleceu!';
+                    this.vsText.setText('🏆👤');
+                    this.resolveBattleResult('win');
+                } else if (iaEffective > playerEffective) {
+                    resultText = '💔 DERROTA! O adversário foi mais forte...';
+                    this.vsText.setText('🤖💔');
+                    this.resolveBattleResult('lose');
+                } else {
+                    // Empate - decide por influência
+                    if (this.playerSigno.influencia >= this.iaSigno.influencia) {
+                        resultText = '🤝 EMPATE! Sua influência prevalece (vitória por pouco)!';
+                        this.vsText.setText('🤝👤');
+                        this.resolveBattleResult('win');
+                    } else {
+                        resultText = '🤝 EMPATE! Influência do adversário prevalece (derrota por pouco)...';
+                        this.vsText.setText('🤝🤖');
+                        this.resolveBattleResult('lose');
+                    }
+                }
+                this.battleLog.push(resultText);
+                this.logText.setText(this.battleLog.join('\n'));
+            }
+            resolveBattleResult(result) {
+                this.phase = 'result';
+                if (result === 'win') {
+                    this.consecutiveWins++;
+                    this.playerLevel = Math.min(12, this.playerLevel + 1);
+                    // Ganha estrelas baseado no nível
+                    const starsEarned = Math.min(3, Math.floor(this.playerLevel / 3) + 1);
+                    this.playerStars = Math.min(10, this.playerStars + starsEarned);
+                    this.battleLog.push(`⭐ Ganhou ${starsEarned} estrela(s)! Nível ${this.playerLevel}/12`);
+                } else {
+                    this.consecutiveWins = 0;
+                    // Retrocesso parcial (1-2 níveis)
+                    const levelLoss = Phaser.Math.Between(1, Math.min(2, this.playerLevel - 1));
+                    this.playerLevel = Math.max(1, this.playerLevel - levelLoss);
+                    // Perde algumas estrelas
+                    const starsLost = Math.min(3, this.playerStars);
+                    this.playerStars = Math.max(0, this.playerStars - starsLost);
+                    this.battleLog.push(
+                        `💔 Retrocesso: -${levelLoss} nível(is) e -${starsLost} estrela(s). Nível ${this.playerLevel}/12`
+                    );
+                }
+
+                this.tribunalTitle.setText(result === 'win' ? '🏆 RESULTADO: VITÓRIA 🏆' : '💔 RESULTADO: DERROTA 💔');
+                this.updateHeader();
+
+                // Mostrar botão de continuar
+                this.nextButton.setVisible(true);
+                this.nextButtonText.setVisible(true);
+                if (this.playerLevel >= 12) {
+                    this.nextButtonText.setText('👑 CONQUISTA MÁXIMA! Continuar');
+                } else {
+                    this.nextButtonText.setText('➡️ PRÓXIMO JULGAMENTO');
+                }
+
+                // Efeito de partículas na vitória
+                if (result === 'win') {
+                    this.spawnVictoryParticles();
+                }
+            }
+            spawnVictoryParticles() {
+                const { width } = this.scale;
+                for (let i = 0; i < 30; i++) {
+                    const particle = this.add.image(width / 2, 300, 'particle')
+                        .setTint(0xffd700)
+                        .setScale(Phaser.Math.FloatBetween(0.5, 2));
+                    this.tweens.add({
+                        targets: particle,
+                        x: width / 2 + Phaser.Math.Between(-200, 200),
+                        y: Phaser.Math.Between(50, 500),
+                        alpha: 0,
+                        scale: 0,
+                        duration: Phaser.Math.Between(800, 1500),
+                        ease: 'Power2',
+                        onComplete: () => particle.destroy()
+                    });
+                }
+            }
+            nextRound() {
+                // Mudar adversário periodicamente
+                if (this.consecutiveWins > 0 && this.consecutiveWins % 3 === 0) {
+                    this.iaSignIndex = Phaser.Math.Between(0, 11);
+                    this.iaSigno = SIGNOS[this.iaSignIndex];
+                }
+
+                // Reconstruir cena
+                this.scene.restart({
+                    playerSignIndex: this.playerSignIndex,
+                    iaSignIndex: this.iaSignIndex,
+                    playerLevel: this.playerLevel,
+                    playerStars: this.playerStars,
+                    consecutiveWins: this.consecutiveWins
+                });
+            }
+        }
+
+        // ==================== CONFIGURAÇÃO DO JOGO PHASER ====================
+        const config = {
+            type: Phaser.AUTO,
+            width: 950,
+            height: 650,
+            parent: 'game-container',
+            backgroundColor: '#0a0a1a',
+            scale: {
+                mode: Phaser.Scale.FIT,
+                autoCenter: Phaser.Scale.CENTER_BOTH
+            },
+            scene: [BootScene, MenuScene, SelectSignScene, GameScene]
+        };
+
+        const game = new Phaser.Game(config);
+    </script>
+</body>
+</html>
