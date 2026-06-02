@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>SIGRAH - Rastreabilidade e Acreditações Hospitalares</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.5;
+            margin: 40px auto;
+            max-width: 1100px;
+            padding: 20px;
+            color: #1a1a1a;
+        }
+        h1 {
+            color: #004d99;
+            border-bottom: 3px solid #004d99;
+            padding-bottom: 8px;
+        }
+        h2 {
+            color: #0066cc;
+            margin-top: 30px;
+            border-left: 5px solid #0066cc;
+            padding-left: 15px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 14px;
+        }
+        th {
+            background-color: #004d99;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+        td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            vertical-align: top;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .highlight {
+            background-color: #e6f2ff;
+        }
+        footer {
+            margin-top: 50px;
+            font-size: 12px;
+            text-align: center;
+            color: #666;
+            border-top: 1px solid #ccc;
+            padding-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>SIGRAH – Solução Integrada de Gestão Hospitalar</h1>
+<p align="center"><strong>Rastreabilidade e Conformidade com Acreditações Hospitalares (JCI, ONA, Qmentum, ANVISA)</strong><br>
+Baseado no Manual Operacional do Almoxarifado – Subprojeto Hospitalar – Versão 01</p>
+
+<h2>1. Rastreabilidade Lote a Lote e Serialização</h2>
+<table>
+    <tr><th>Exigência da Acreditação</th><th>Descrição Técnica no Manual (SIGRAH)</th><th>Comparativo</th></tr>
+    <tr><td><strong>JCI (MMU.3, PCI.12)</strong> e <strong>Qmentum</strong> – Rastrear o medicamento por lote e número de série desde o recebimento até a administração.</td>
+    <td><strong>Seção 7.1 – Consulta Produto (Aba “Estoque”)</strong><br>“Se sim, será obrigatório informar o lote do produto no momento da sua entrada... e em todas as movimentações envolvendo esse produto” (produção de kits, transferência, baixa, entrada/saída, devolução e inventário).</td>
+    <td>O SIGRAH implementa o controle de lote/validade/série como atributo global, forçando seu registro em todas as transações, criando cadeia de custódia completa.</td></tr>
+</table>
+
+<h2>2. Leitura e Registro de Código Datamatrix (ANVISA)</h2>
+<table>
+    <tr><th>Exigência da Acreditação</th><th>Descrição Técnica no Manual (SIGRAH)</th><th>Comparativo</th></tr>
+    <tr><td><strong>ANVISA (RDC 54/2013, Lei 13.410/2016)</strong> – Obrigatoriedade de leitura e armazenamento do código Datamatrix.</td>
+    <td><strong>Seção 4.1 – Entrada de produtos</strong><br>“Se for digitado o código de barras Datamatrix, automaticamente os campos de ‘Produto’, ‘Lote’, ‘Validade’ e ‘Unidade’ são preenchidos.”<br><br><strong>Seção 7.1 – Produto (campo “Etiqueta”)</strong> – Inclui opção “Forn Com Lote/Validade”.</td>
+    <td>Captura e registro automático do Datamatrix na entrada, eliminando erros e garantindo conformidade regulatória.</td></tr>
+</table>
+
+<h2>3. Rastreabilidade do Uso Final (Vinculação ao Paciente)</h2>
+<table>
+    <tr><th>Exigência da Acreditação</th><th>Descrição Técnica no Manual (SIGRAH)</th><th>Comparativo</th></tr>
+    <tr><td><strong>JCI (AOP.1, MMU.7)</strong> e <strong>ONA</strong> – Rastrear o insumo desde a aquisição até a administração no paciente.</td>
+    <td><strong>Seção 4.6 – Saídas de Produtos de Pacientes</strong><br>“Registrar a saída de um produto do estoque para um paciente (atendimento)”.<br><br><strong>Seção 4.10 – Devoluções de Pacientes</strong><br><strong>Seção 4.20 – Confirmação do Consumo do OPME</strong> – Atrela o consumo a um aviso de cirurgia.</td>
+    <td>Ciclo completo: saída obrigatoriamente associada a atendimento, devoluções documentadas, e OPMEs vinculadas a procedimento cirúrgico.</td></tr>
+</table>
+
+<h2>4. Controle de Medicamentos Controlados e de Alta Vigilância</h2>
+<table>
+    <tr><th>Exigência da Acreditação</th><th>Descrição Técnica no Manual (SIGRAH)</th><th>Comparativo</th></tr>
+    <tr><td><strong>JCI (MMU.4)</strong> e <strong>ONA</strong> – Exigem livro de registro específico para substâncias controladas.</td>
+    <td><strong>Seção 4.21 – Termo de Abertura</strong><br>“Cadastrar o livro no qual serão registradas as movimentações dos medicamentos que possuem controle especial.”<br><br><strong>Seção 5.6 – Bloqueio – Liberação de Medicamentos</strong> – Justificativa obrigatória para bloqueio.</td>
+    <td>Módulo dedicado à portaria 344/98, gerando “Livro de Registro Específico” com assinatura do farmacêutico.</td></tr>
+</table>
+
+<h2>5. Rastreabilidade de Órteses, Próteses e Materiais Especiais (OPMEs)</h2>
+<table>
+    <tr><th>Exigência da Acreditação</th><th>Descrição Técnica no Manual (SIGRAH)</th><th>Comparativo</th></tr>
+    <tr><td><strong>JCI (AOP.3, ASC.6)</strong> e <strong>Qmentum</strong> – Rastreabilidade completa de OPME consignado.</td>
+    <td><strong>Seção 4.3 – Entrada de Consignado</strong> – Permite entrada consignada (transitório/permanente) vinculada a atendimento.<br><br><strong>Seção 4.20 – Confirmação do Consumo do OPME</strong> – Geração automática de pedidos de compra (Fatura e Reposição).</td>
+    <td>Fluxo específico integrando entrada consignada, aplicação direta no paciente, confirmação pós‑procedimento e reposição.</td></tr>
+</table>
+
+<h2>6. Prontidão para Recall e Rastreabilidade Retroativa</h2>
+<table>
+    <tr><th>Exigência da Acreditação</th><th>Descrição Técnica no Manual (SIGRAH)</th><th>Comparativo</th></tr>
+    <tr><td><strong>JCI (MMU.3)</strong> e <strong>ONA</strong> – Capacidade de identificar pacientes que receberam lote defeituoso.</td>
+    <td><strong>Seção 7.6 – Consulta Lotes do Estoque</strong> – Exibe todos os lotes, quantidades, localização e bloqueio.<br><br><strong>Seção 9.5 – Relatório Ficha de Estoque</strong> – “Apresentar todas as movimentações ocorridas para um produto em um determinado estoque”.</td>
+    <td>Ferramentas para localizar rapidamente distribuição de lote (estoques, setores, pacientes), atendendo prontidão para recall.</td></tr>
+</table>
+
+<h2>7. Trilha de Auditoria e Registro de Justificativas</h2>
+<table>
+    <tr><th>Exigência da Acreditação</th><th>Descrição Técnica no Manual (SIGRAH)</th><th>Comparativo</th></tr>
+    <tr><td><strong>JCI (GLD.7)</strong> e <strong>ONA</strong> – Registros críticos devem ter data, hora, usuário e justificativa para alterações.</td>
+    <td><strong>Seção 5.5 – Cancelamento de Solicitação</strong> – Exige motivo e justificativa.<br><strong>Seção 5.6 – Bloqueio</strong> – Justificativa obrigatória.<br><strong>Seção 7.1 – Aba “Históricos”</strong> – Registra usuário, data, hora, atividade e descrição.</td>
+    <td>Trilha de auditoria robusta: usuário logado, data/hora automáticos, justificativas textuais e histórico de alterações.</td></tr>
+</table>
+
+<h2>8. Rastreabilidade entre Empresas do Mesmo Grupo (Multiempresa)</h2>
+<table>
+    <tr><th>Exigência da Acreditação</th><th>Descrição Técnica no Manual (SIGRAH)</th><th>Comparativo</th></tr>
+    <tr><td><strong>Qmentum</strong> e <strong>JCI</strong> – Rastreabilidade mantida em transferências entre unidades/empresas.</td>
+    <td><strong>Seção 4.13 – Transferência entre Empresas</strong> – CFOP, documento, tipo “Nota Fiscal de Transferência”.<br><strong>Seção 4.14 – Recebimento de Transferência entre Empresas</strong> – Confirmação com vínculo a aplicação direta.<br><strong>Seção 7.7 – Consulta Dados Consolidados por Empresa</strong> – Dados agrupados por empresa.</td>
+    <td>Movimentação entre empresas com documentação fiscal e confirmação de recebimento, mantendo rastreabilidade em redes hospitalares.</td></tr>
+</table>
+
+<h2>9. Melhoria Contínua e Gestão de Estoques (Curva ABC e Demanda)</h2>
+<table>
+    <tr><th>Exigência da Acreditação</th><th>Descrição Técnica no Manual (SIGRAH)</th><th>Comparativo</th></tr>
+    <tr><td><strong>ONA (Planejamento e Controle de Insumos)</strong> e <strong>Qmentum</strong> – Classificação de materiais e otimização de estoques.</td>
+    <td><strong>Seção 8.3 – Estoque Através da Demanda – Curva ABC</strong> – Calcula quantidades por demanda, estabelece pontos de reposição, estoques máximo/mínimo com classificação ABC e XYZ.<br><strong>Seção 9.13 – Relatório Curva ABC de Estoque</strong> – Classificação com percentuais.</td>
+    <td>Módulo de cálculo de estoque por demanda e ABC integrado, permitindo gestão baseada em evidências e melhoria contínua.</td></tr>
+</table>
+
+<footer>
+    Documento elaborado com base no <strong>Manual SIGRAH – Almoxarifado Operacional Sub Hospitalar – Versão 01</strong>.<br>
+    Correlaciona as funcionalidades do sistema com os padrões JCI, ONA, Qmentum e ANVISA.
+</footer>
+
+</body>
+</html>
