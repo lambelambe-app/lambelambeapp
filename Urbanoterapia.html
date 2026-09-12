@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Urbanoterapia</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{width:100%;height:100%;overflow:hidden;background:#080c1a;
+    font-family:'Segoe UI',system-ui,sans-serif;color:#e0e8ff}
+  #game{display:block;width:100%;height:100%}
+  #hud{position:fixed;inset:0;pointer-events:none}
+  .panel{position:absolute;background:rgba(10,14,30,.78);
+    border:1px solid rgba(120,180,255,.25);border-radius:10px;
+    padding:10px 14px;backdrop-filter:blur(6px)}
+  #top-left{top:12px;left:12px;max-width:320px}
+  #top-right{top:12px;right:12px;text-align:right;min-width:180px}
+  #bottom{bottom:12px;left:50%;transform:translateX(-50%);
+    display:flex;gap:8px;pointer-events:auto;flex-wrap:wrap;justify-content:center}
+  .btn{background:rgba(40,60,110,.8);border:1px solid rgba(120,180,255,.4);
+    color:#d0e0ff;padding:8px 14px;border-radius:8px;cursor:pointer;
+    font-size:13px;transition:.15s;font-family:inherit}
+  .btn:hover{background:rgba(70,110,190,.9);border-color:#88bbff}
+  .btn.active{background:rgba(120,180,255,.9);color:#06122a;border-color:#cce4ff}
+  .stat{font-size:13px;line-height:1.7}
+  .stat b{color:#88bbff;font-weight:600}
+  .title{font-size:16px;font-weight:600;color:#aaccff;margin-bottom:2px;letter-spacing:.5px}
+  .hint{font-size:12px;color:#8899bb;margin-top:4px;font-style:italic}
+  #overlay{position:fixed;inset:0;display:none;align-items:center;
+    justify-content:center;background:rgba(5,8,20,.85);z-index:10}
+  #overlay.show{display:flex}
+  #overlay .card{background:rgba(15,22,45,.96);
+    border:1px solid rgba(120,180,255,.4);border-radius:16px;
+    padding:32px 40px;max-width:460px;text-align:center}
+  #overlay h2{color:#aaccff;margin-bottom:12px;font-size:22px}
+  #overlay p{color:#b0c0e0;margin-bottom:18px;line-height:1.6;font-size:14px}
+  #overlay button{background:linear-gradient(135deg,#4a7fdd,#6a9fff);
+    border:none;color:#fff;padding:12px 28px;border-radius:10px;
+    font-size:15px;font-weight:600;cursor:pointer;font-family:inherit}
+  #toast{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+    background:rgba(200,60,80,.92);color:#fff;padding:12px 24px;
+    border-radius:10px;font-size:15px;opacity:0;transition:opacity .4s;
+    pointer-events:none;z-index:20}
+  #toast.show{opacity:1}
+</style>
+</head>
+<body>
+<canvas id="game"></canvas>
+<div id="hud">
+  <div class="panel" id="top-left">
+    <div class="title" id="lvl-name">Laje</div>
+    <div class="hint" id="lvl-hint"></div>
+  </div>
+  <div class="panel" id="top-right">
+    <div class="stat"><b>Seda:</b> <span id="seda">0</span></div>
+    <div class="stat"><b>Dívida:</b> <span id="debt">0</span></div>
+    <div class="stat"><b>Pontos:</b> <span id="score">0</span></div>
+    <div class="stat"><b>Fluxo:</b> <span id="flow">0/0</span></div>
+  </div>
+  <div id="bottom">
+    <button class="btn" id="btn-radial">Teia Radial</button>
+    <button class="btn" id="btn-ponte">Ponte Longa</button>
+    <button class="btn" id="btn-undo">Desfazer</button>
+    <button class="btn" id="btn-reset">Reiniciar</button>
+  </div>
+</div>
+<div id="overlay"><div class="card">
+  <h2 id="ov-title"></h2>
+  <p id="ov-text"></p>
+  <button id="ov-btn">Continuar</button>
+</div></div>
+<div id="toast"></div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+/* ======================= CENA ======================= */
+const canvas = document.getElementById('game');
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x080c1a);
+scene.fog = new THREE.FogExp2(0x080c1a, 0.017);
+
+const camera = new THREE.PerspectiveCamera(50, innerWidth/innerHeight, 0.1, 300);
+camera.position.set(16, 18, 20);
+
+const renderer = new THREE.WebGLRenderer({canvas, antialias:true});
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.target.set(0, 1.5, 0);
+controls.maxPolarAngle = Math.PI / 2.15;
+controls.minDistance = 10;
+controls.maxDistance = 55;
+controls.enableDamping = true;
+controls.dampingFactor = 0.08;
+
+// Luzes
+scene.add(new THREE.HemisphereLight(0x8899ff, 0x151a2a, 0.55));
+const sun = new THREE.DirectionalLight(0xffeedd, 1.15);
+sun.position.set(20, 30, 15);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+Object.assign(sun.shadow.camera, {left:-25,right:25,top:25,bottom:-25});
+scene.add(sun);
+const rim = new THREE.DirectionalLight(0x6688ff, 0.5);
+rim.position.set(-15, 10, -15);
+scene.add(rim);
+
+// Chão
+const ground = new THREE.Mesh(
+  new THREE.PlaneGeometry(90, 90),
+  new THREE.MeshStandardMaterial({color:0x161c2c, roughness:.97, metalness:.05})
+);
+ground.rotation.x = -Math.PI/2;
+ground.receiveShadow = true;
+scene.add(ground);
+
+const grid = new THREE.GridHelper(70, 35, 0x2a3a5a, 0x18202e);
+grid.position.y = 0.02;
+grid.material.opacity = 0.5;
+grid.material.transparent = true;
+scene.add(grid);
+
+/* ======================= DADOS ======================= */
+const TILE = 2;
+const MAX_DIST = 14;
+const COST_PER_UNIT = 1.2;
+const REVISITA_INTERVAL = 14;
+
+class Node {
+  constructor(gx, gz, h, type) {
+    this.gx = gx; this.gz = gz; this.h = h; this.type = type;
+    this.x = gx * TILE; this.z = gz * TILE;
+    this.satisfied = false;
+    this.mesh = null;
+  }
+  get top() { return new THREE.Vector3(this.x, this.h, this.z); }
+}
+
+const LEVELS = [
+  { name:"Laje", hint:"Clique na fonte azul, depois na casa laranja. Traçe a teia.",
+    seda:30,
+    nodes:[
+      {gx:-2, gz:0, h:2.0, type:'fonte'},
+      {gx: 2, gz:0, h:2.5, type:'casa'},
+    ]},
+  { name:"Beco", hint:"Duas casas, uma fonte. Redundância evita colapso.",
+    seda:45,
+    nodes:[
+      {gx:-3, gz:-1, h:2.0, type:'fonte'},
+      {gx: 3, gz:-2, h:2.5, type:'casa'},
+      {gx: 3, gz: 2, h:3.0, type:'casa'},
+      {gx: 0, gz: 0, h:1.5, type:'torre'},
+    ]},
+  { name:"Escadaria", hint:"Torres cinzas são relés. Distribua a carga.",
+    seda:55,
+    nodes:[
+      {gx:-4, gz:-3, h:2.0, type:'fonte'},
+      {gx: 4, gz:-3, h:2.0, type:'casa'},
+      {gx: 4, gz: 3, h:3.0, type:'casa'},
+      {gx:-4, gz: 3, h:2.5, type:'casa'},
+      {gx: 0, gz: 0, h:2.0, type:'torre'},
+    ]},
+  { name:"Morro", hint:"A dívida cobra. Cada atalho volta como tempestade.",
+    seda:60,
+    nodes:[
+      {gx:-5, gz: 0, h:2.5, type:'fonte'},
+      {gx: 5, gz:-4, h:2.0, type:'casa'},
+      {gx: 5, gz: 4, h:3.0, type:'casa'},
+      {gx:-2, gz: 5, h:2.5, type:'casa'},
+      {gx:-2, gz:-5, h:2.0, type:'casa'},
+      {gx: 0, gz: 0, h:2.5, type:'torre'},
+      {gx: 2, gz: 2, h:1.5, type:'torre'},
+      {gx:-2, gz:-2, h:1.5, type:'torre'},
+    ]},
+  { name:"Mutirão", hint:"Duas fontes, muitas casas. Tecer é resistir.",
+    seda:70,
+    nodes:[
+      {gx:-6, gz:-4, h:2.5, type:'fonte'},
+      {gx: 6, gz: 4, h:2.5, type:'fonte'},
+      {gx: 0, gz: 0, h:2.0, type:'torre'},
+      {gx:-3, gz: 0, h:2.0, type:'casa'},
+      {gx: 3, gz: 0, h:2.0, type:'casa'},
+      {gx: 0, gz:-5, h:2.5, type:'casa'},
+      {gx: 0, gz: 5, h:2.5, type:'casa'},
+      {gx: 5, gz:-5, h:2.0, type:'casa'},
+      {gx:-5, gz: 5, h:2.0, type:'casa'},
+    ]}
+];
+
+/* ======================= ESTADO ======================= */
+const game = {
+  levelIdx: 0,
+  nodes: [], threads: [],
+  seda: 0, debt: 0, score: 0,
+  selected: null,
+  levelComplete: false,
+  threadsBuilt: 0,
+  revisitaTimer: 0,
+};
+let ponteMode = false;
+
+/* ======================= MESHES ======================= */
+function createNodeMesh(node) {
+  const g = new THREE.Group();
+  const w = 1.2, d = 1.2, h = node.h;
+
+  let color, emissive, ei;
+  if (node.type === 'fonte') { color=0x1e4fa0; emissive=0x3b82f6; ei=0.6; }
+  else if (node.type === 'casa') { color=0x8a4a1c; emissive=0xff8a3a; ei=0.35; }
+  else { color=0x2e3a4c; emissive=0x223344; ei=0.1; }
+
+  const body = new THREE.Mesh(
+    new THREE.BoxGeometry(w, h, d),
+    new THREE.MeshStandardMaterial({color, roughness:.72, metalness:.15,
+      emissive, emissiveIntensity:ei})
+  );
+  body.position.y = h/2;
+  body.castShadow = true;
+  body.receiveShadow = true;
+  body.userData.node = node;
+  g.add(body);
+
+  const topColor = node.type==='fonte'?0x66aaff:node.type==='casa'?0xffbb66:0x8899aa;
+  const topEm = node.type==='fonte'?0x3b82f6:node.type==='casa'?0xff7733:0x445566;
+  const topMat = new THREE.MeshStandardMaterial({color:topColor, emissive:topEm,
+    emissiveIntensity:1.3});
+  const top = new THREE.Mesh(new THREE.BoxGeometry(w*0.6, 0.15, d*0.6), topMat);
+  top.position.y = h + 0.1;
+  top.castShadow = true;
+  g.add(top);
+
+  if (node.type === 'fonte') {
+    const antenna = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.05, 0.05, 1.1, 6),
+      new THREE.MeshStandardMaterial({color:0x9cc4ff, emissive:0x3b82f6,
+        emissiveIntensity:1.6})
+    );
+    antenna.position.y = h + 0.65;
+    g.add(antenna);
+  }
+
+  g.position.set(node.x, 0, node.z);
+  node.group = g;
+  node.body = body;
+  node.topMat = topMat;
+  node.baseEI = ei;
+  scene.add(g);
+}
+
+function createThreadMesh(a, b, cost) {
+  const pA = a.top.clone();
+  const pB = b.top.clone();
+  const mid = pA.clone().add(pB).multiplyScalar(0.5);
+  mid.y -= pA.distanceTo(pB) * 0.12;
+  const curve = new THREE.CatmullRomCurve3([pA, mid, pB]);
+  const geo = new THREE.TubeGeometry(curve, 24, 0.065, 6, false);
+  const mat = new THREE.MeshStandardMaterial({
+    color:0x88aacc, emissive:0x223344, emissiveIntensity:0.6,
+    transparent:true, opacity:0.92, roughness:0.4, metalness:0.1
+  });
+  const mesh = new THREE.Mesh(geo, mat);
+  scene.add(mesh);
+
+  const dot = new THREE.Mesh(
+    new THREE.SphereGeometry(0.14, 8, 8),
+    new THREE.MeshBasicMaterial({color:0xaaeeff})
+  );
+  dot.visible = false;
+  scene.add(dot);
+
+  return {a, b, curve, mesh, mat, dot, dotT: Math.random(),
+    capacity:2, flow:0, broken:false, cost, shake:0};
+}
+
+/* ======================= FLUXO ======================= */
+function simulateFlow() {
+  const sources = game.nodes.filter(n => n.type === 'fonte');
+  const sinks = game.nodes.filter(n => n.type === 'casa');
+
+  const adj = new Map();
+  game.nodes.forEach(n => adj.set(n, []));
+  game.threads.forEach(t => {
+    if (t.broken) return;
+    adj.get(t.a).push({node:t.b, thread:t});
+    adj.get(t.b).push({node:t.a, thread:t});
+  });
+
+  const threadLoad = new Map();
+  let satisfied = 0;
+
+  sinks.forEach(sink => {
+    const visited = new Set([sink]);
+    const parent = new Map();
+    const queue = [sink];
+    let found = null;
+    while (queue.length) {
+      const cur = queue.shift();
+      if (cur.type === 'fonte') { found = cur; break; }
+      for (const edge of adj.get(cur)) {
+        if (!visited.has(edge.node)) {
+          visited.add(edge.node);
+          parent.set(edge.node, {from:cur, thread:edge.thread});
+          queue.push(edge.node);
+        }
+      }
+    }
+    if (found) {
+      sink.satisfied = true;
+      satisfied++;
+      let cur = found;
+      while (cur !== sink) {
+        const p = parent.get(cur);
+        if (!p) break;
+        threadLoad.set(p.thread, (threadLoad.get(p.thread)||0) + 1);
+        cur = p.from;
+      }
+    } else sink.satisfied = false;
+  });
+
+  // Aplicar carga e romper sobrecarregadas
+  game.threads.forEach(t => {
+    t.flow = threadLoad.get(t) || 0;
+    if (!t.broken && t.flow > t.capacity) {
+      breakThread(t, "Sobrecarga");
+    }
+  });
+
+  // Cores
+  game.threads.forEach(t => {
+    if (t.broken) {
+      t.mat.color.setHex(0xff3344);
+      t.mat.emissive.setHex(0x881122);
+      t.mat.emissiveIntensity = 1.4;
+    } else if (t.flow === 0) {
+      t.mat.color.setHex(0x8899bb);
+      t.mat.emissive.setHex(0x1a2233);
+      t.mat.emissiveIntensity = 0.5;
+    } else if (t.flow >= t.capacity) {
+      t.mat.color.setHex(0xffcc44);
+      t.mat.emissive.setHex(0xaa6611);
+      t.mat.emissiveIntensity = 1.6;
+    } else {
+      t.mat.color.setHex(0x55ffaa);
+      t.mat.emissive.setHex(0x228866);
+      t.mat.emissiveIntensity = 0.9 + t.flow * 0.25;
+    }
+  });
+
+  // Casas
+  game.nodes.forEach(n => {
+    if (n.type !== 'casa') return;
+    if (n.satisfied) {
+      n.topMat.color.setHex(0x88ffaa);
+      n.topMat.emissive.setHex(0x33ff77);
+      n.topMat.emissiveIntensity = 1.7;
+    } else {
+      n.topMat.color.setHex(0xffbb66);
+      n.topMat.emissive.setHex(0xff7733);
+      n.topMat.emissiveIntensity = 1.3;
+    }
+  });
+
+  return {satisfied, total: sinks.length};
+}
+
+function breakThread(t, reason) {
+  if (t.broken) return;
+  t.broken = true;
+  t.shake = 1;
+  toast(`Teia rompida — ${reason}`);
+}
+
+/* ======================= INTERAÇÃO ======================= */
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+
+function getClickedNode(e) {
+  mouse.x = (e.clientX / innerWidth) * 2 - 1;
+  mouse.y = -(e.clientY / innerHeight) * 2 + 1;
+  raycaster.setFromCamera(mouse, camera);
+  const meshes = game.nodes.map(n => n.body);
+  const hits = raycaster.intersectObjects(meshes, false);
+  return hits.length ? hits[0].object.userData.node : null;
+}
+
+function highlightNode(n, on) {
+  if (on) {
+    n.body.material.emissiveIntensity = 1.8;
+    n.body.scale.setScalar(1.08);
+  } else {
+    n.body.material.emissiveIntensity = n.baseEI;
+    n.body.scale.setScalar(1);
+  }
+}
+
+function tryCreateThread(a, b) {
+  if (a === b) return false;
+  if (game.threads.some(t => (t.a===a&&t.b===b)||(t.a===b&&t.b===a))) {
+    toast("Essas âncoras já estão tecidas."); return false;
+  }
+  const dist = a.top.distanceTo(b.top);
+  const ignore = ponteMode;
+  if (dist > MAX_DIST && !ignore) { toast("Longe demais. Use Ponte Longa."); return false; }
+
+  let cost = Math.ceil(dist * COST_PER_UNIT);
+  if (ponteMode) cost = Math.ceil(cost * 0.5);
+  if (game.seda < cost) { toast("Seda insuficiente."); return false; }
+
+  const thread = createThreadMesh(a, b, cost);
+  game.threads.push(thread);
+  game.seda -= cost;
+  game.threadsBuilt++;
+
+  if (ponteMode) {
+    ponteMode = false;
+    game.debt++;
+    document.getElementById('btn-ponte').classList.remove('active');
+    toast("Ponte Longa usada — dívida +1");
+  }
+
+  simulateFlow();
+  updateHUD();
+  checkLevelComplete();
+  return true;
+}
+
+renderer.domElement.addEventListener('pointerdown', e => {
+  if (e.button !== 0) return;
+  if (game.levelComplete) return;
+  const node = getClickedNode(e);
+  if (node) {
+    if (!game.selected) {
+      game.selected = node; highlightNode(node, true);
+    } else if (game.selected === node) {
+      highlightNode(node, false); game.selected = null;
+    } else {
+      if (tryCreateThread(game.selected, node)) {
+        highlightNode(game.selected, false);
+        game.selected = null;
+      }
+    }
+  } else {
+    if (game.selected) { highlightNode(game.selected, false); game.selected = null; }
+  }
+});
+
+/* ======================= MOTIFS ======================= */
+document.getElementById('btn-radial').onclick = () => {
+  if (game.levelComplete) return;
+  if (!game.selected) { toast("Selecione um nó primeiro."); return; }
+  const sel = game.selected;
+  const cands = game.nodes
+    .filter(n => n !== sel)
+    .filter(n => !game.threads.some(t =>
+      (t.a===sel&&t.b===n)||(t.a===n&&t.b===sel)))
+    .map(n => ({n, d: sel.top.distanceTo(n.top)}))
+    .filter(o => o.d <= MAX_DIST)
+    .sort((a,b) => a.d - b.d)
+    .slice(0, 3);
+  if (!cands.length) { toast("Nada ao alcance."); return; }
+  game.debt++;
+  cands.forEach(o => {
+    if (game.seda < 1) return;
+    const dist = sel.top.distanceTo(o.n.top);
+    const thread = createThreadMesh(sel, o.n, 0);
+    game.threads.push(thread);
+  });
+  simulateFlow();
+  updateHUD();
+  checkLevelComplete();
+  toast("Teia Radial — dívida +1");
+};
+
+document.getElementById('btn-ponte').onclick = () => {
+  if (game.levelComplete) return;
+  ponteMode = !ponteMode;
+  document.getElementById('btn-ponte').classList.toggle('active', ponteMode);
+  if (ponteMode) toast("Ponte Longa: próxima conexão ignora distância.");
+};
+
+document.getElementById('btn-undo').onclick = () => {
+  if (game.levelComplete) return;
+  if (!game.threads.length) return;
+  const t = game.threads.pop();
+  scene.remove(t.mesh); scene.remove(t.dot);
+  game.seda += t.cost;
+  simulateFlow(); updateHUD();
+};
+
+document.getElementById('btn-reset').onclick = () => {
+  if (game.levelComplete) return;
+  loadLevel(game.levelIdx);
+};
+
+/* ======================= HUD ======================= */
+function updateHUD() {
+  document.getElementById('seda').textContent = game.seda;
+  document.getElementById('debt').textContent = game.debt;
+  document.getElementById('score').textContent = game.score;
+  const sinks = game.nodes.filter(n => n.type === 'casa');
+  const sat = sinks.filter(n => n.satisfied).length;
+  document.getElementById('flow').textContent = `${sat}/${sinks.length}`;
+}
+
+let toastTimer = null;
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 1700);
+}
+
+/* ======================= FLUXO DE FASES ======================= */
+function loadLevel(idx) {
+  game.nodes.forEach(n => scene.remove(n.group));
+  game.threads.forEach(t => { scene.remove(t.mesh); scene.remove(t.dot); });
+  game.nodes = []; game.threads = [];
+  game.selected = null; game.levelComplete = false;
+  game.threadsBuilt = 0; game.revisitaTimer = 0;
+  ponteMode = false;
+  document.getElementById('btn-ponte').classList.remove('active');
+
+  const lvl = LEVELS[idx];
+  if (!lvl) { showVictory(); return; }
+
+  game.seda = lvl.seda;
+  lvl.nodes.forEach(def => {
+    const node = new Node(def.gx, def.gz, def.h, def.type);
+    createNodeMesh(node);
+    game.nodes.push(node);
+  });
+
+  document.getElementById('lvl-name').textContent = lvl.name;
+  document.getElementById('lvl-hint').textContent = lvl.hint;
+
+  updateHUD();
+  simulateFlow();
+}
+
+function checkLevelComplete() {
+  const {satisfied, total} = simulateFlow();
+  if (total > 0 && satisfied === total && !game.levelComplete) {
+    game.levelComplete = true;
+    const bonus = 100 + Math.max(0, game.seda) * 2 - game.debt * 15;
+    game.score += Math.max(0, bonus);
+    updateHUD();
+    setTimeout(() => showLevelComplete(Math.max(0, bonus)), 700);
+  }
+}
+
+function showLevelComplete(bonus) {
+  const ov = document.getElementById('overlay');
+  document.getElementById('ov-title').textContent = "Fase Completa";
+  document.getElementById('ov-text').innerHTML =
+    `Rede tecida. Bônus: <b>+${bonus}</b><br>` +
+    `Dívida acumulada: <b>${game.debt}</b><br>` +
+    `<span style="color:#8899bb;font-size:12px">A dívida volta como tempestade nas próximas fases.</span>`;
+  document.getElementById('ov-btn').textContent = "Próxima Fase";
+  ov.classList.add('show');
+  document.getElementById('ov-btn').onclick = () => {
+    ov.classList.remove('show');
+    game.levelIdx++;
+    loadLevel(game.levelIdx);
+  };
+}
+
+function showVictory() {
+  const ov = document.getElementById('overlay');
+  document.getElementById('ov-title').textContent = "Mutirão Completo";
+  document.getElementById('ov-text').innerHTML =
+    `Você teceu o morro inteiro.<br><b>Pontos finais: ${game.score}</b><br>` +
+    `<span style="color:#8899bb;font-size:12px">A cidade respira. A teia resiste.</span>`;
+  document.getElementById('ov-btn').textContent = "Recomeçar";
+  ov.classList.add('show');
+  document.getElementById('ov-btn').onclick = () => {
+    ov.classList.remove('show');
+    game.levelIdx = 0; game.score = 0; game.debt = 0;
+    loadLevel(0);
+  };
+}
+
+/* ======================= REVISITA ======================= */
+function updateRevisita(dt) {
+  if (game.debt <= 0 || game.levelComplete) return;
+  game.revisitaTimer += dt;
+  if (game.revisitaTimer >= REVISITA_INTERVAL) {
+    game.revisitaTimer = 0;
+    const active = game.threads.filter(t => !t.broken);
+    if (active.length) {
+      const t = active[Math.floor(Math.random()*active.length)];
+      breakThread(t, "Tempestade");
+      game.debt--;
+      simulateFlow();
+      updateHUD();
+    }
+  }
+}
+
+/* ======================= LOOP ======================= */
+let lastTime = performance.now();
+function animate() {
+  requestAnimationFrame(animate);
+  const now = performance.now();
+  const dt = Math.min((now - lastTime) / 1000, 0.1);
+  lastTime = now;
+
+  controls.update();
+  updateRevisita(dt);
+
+  // Tremor das teias rompidas
+  game.threads.forEach(th => {
+    if (th.shake > 0) {
+      th.shake = Math.max(0, th.shake - dt * 1.6);
+      const s = th.shake;
+      th.mesh.position.x = Math.sin(now * 0.05) * s * 0.15;
+      th.mesh.position.z = Math.cos(now * 0.06) * s * 0.15;
+    }
+    // Partícula de fluxo
+    if (!th.broken && th.flow > 0) {
+      th.dot.visible = true;
+      th.dotT = (th.dotT + dt * 0.4) % 1;
+      th.dot.position.copy(th.curve.getPoint(th.dotT));
+    } else {
+      th.dot.visible = false;
+    }
+  });
+
+  renderer.render(scene, camera);
+}
+
+addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+/* ======================= START ======================= */
+loadLevel(0);
+animate();
+</script>
+</body>
+</html>
