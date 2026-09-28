@@ -3,157 +3,187 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-<meta name="theme-color" content="#0b0b12" />
+<meta name="theme-color" content="#fffbeb" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="mobile-web-app-capable" content="yes" />
 <title>Compras 5.0</title>
 
-<!-- pdf.js: cacheado pelo WebView após o primeiro load -->
+<!-- pdf.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<!-- Tesseract OCR (opcional, para imagens) -->
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
 <style>
   :root {
-    --bg: #0b0b12;
-    --card: rgba(255,255,255,0.04);
-    --card-2: rgba(255,255,255,0.07);
-    --border: rgba(255,255,255,0.09);
-    --text: #f5f5f7;
-    --muted: #9a9aae;
-    --accent: #ffd93d;
-    --accent-2: #f5b800;
-    --accent-soft: rgba(255,217,61,0.14);
-    --good: #35d07f;
-    --warn: #ff9f43;
-    --bad: #ff5c5c;
-    --radius: 22px;
-    --radius-sm: 14px;
-    --shadow: 0 10px 30px rgba(0,0,0,0.35);
-    --safe-top: env(safe-area-inset-top, 0px);
+    --bg:        #fffbeb;
+    --bg-2:      #fef9e7;
+    --card:      #ffffff;
+    --card-2:    #fefdf8;
+    --border:    #f0e6c8;
+    --border-2:  #e8dcb8;
+    --text:      #2b2416;
+    --text-2:    #57503e;
+    --muted:     #8c8474;
+    --accent:    #f5b800;
+    --accent-2:  #e0a800;
+    --accent-3:  #ffd93d;
+    --accent-soft: rgba(245,184,0,0.12);
+    --accent-soft-2: rgba(245,184,0,0.20);
+    --good:      #16a34a;
+    --good-soft: rgba(22,163,74,0.12);
+    --warn:      #ea8c00;
+    --warn-soft: rgba(234,140,0,0.12);
+    --bad:       #dc2626;
+    --bad-soft:  rgba(220,38,38,0.10);
+    --info:      #0284c7;
+    --info-soft: rgba(2,132,199,0.10);
+    --radius:    20px;
+    --radius-sm: 12px;
+    --shadow-sm: 0 1px 3px rgba(120,90,20,0.06);
+    --shadow:    0 4px 16px rgba(120,90,20,0.08);
+    --shadow-lg: 0 12px 32px rgba(120,90,20,0.14);
+    --safe-top:    env(safe-area-inset-top, 0px);
     --safe-bottom: env(safe-area-inset-bottom, 0px);
   }
+
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 15px;
+    -webkit-font-smoothing: antialiased;
+  }
   body {
     min-height: 100vh;
     background:
-      radial-gradient(900px 500px at 80% -10%, rgba(255,217,61,0.10), transparent 60%),
-      radial-gradient(700px 500px at -10% 20%, rgba(120,90,255,0.08), transparent 60%),
+      radial-gradient(800px 400px at 90% -10%, rgba(255,217,61,0.22), transparent 65%),
+      radial-gradient(600px 400px at -10% 30%, rgba(245,184,0,0.10), transparent 60%),
       var(--bg);
-    padding-bottom: calc(84px + var(--safe-bottom));
+    padding-bottom: calc(88px + var(--safe-bottom));
     overflow-x: hidden;
   }
 
-  /* HEADER */
+  /* ========== HEADER ========== */
   header.app-header {
     position: sticky; top: 0; z-index: 40;
     padding: calc(14px + var(--safe-top)) 18px 14px;
-    background: rgba(11,11,18,0.72);
-    backdrop-filter: blur(18px) saturate(140%);
-    -webkit-backdrop-filter: blur(18px) saturate(140%);
+    background: rgba(255,251,235,0.85);
+    backdrop-filter: blur(16px) saturate(160%);
+    -webkit-backdrop-filter: blur(16px) saturate(160%);
     border-bottom: 1px solid var(--border);
     display: flex; align-items: center; gap: 12px;
   }
   .logo {
-    width: 40px; height: 40px; border-radius: 14px;
-    background: linear-gradient(140deg, var(--accent), var(--accent-2));
+    width: 42px; height: 42px; border-radius: 14px;
+    background: linear-gradient(140deg, var(--accent-3), var(--accent));
     display: grid; place-items: center;
-    font-size: 22px; box-shadow: 0 6px 18px rgba(255,217,61,0.35);
+    font-size: 22px;
+    box-shadow: 0 6px 16px rgba(245,184,0,0.30);
     flex-shrink: 0;
   }
-  .brand h1 { margin: 0; font-size: 17px; letter-spacing: 0.2px; font-weight: 700; }
-  .brand p { margin: 2px 0 0; font-size: 11.5px; color: var(--muted); letter-spacing: .3px; }
+  .brand h1 { margin: 0; font-size: 17px; letter-spacing: -0.2px; font-weight: 800; color: var(--text); }
+  .brand p { margin: 2px 0 0; font-size: 11.5px; color: var(--muted); letter-spacing: .2px; font-weight: 500; }
 
-  main { padding: 18px 16px 8px; max-width: 640px; margin: 0 auto; }
-  section.tab { display: none; animation: fade .28s ease; }
+  /* ========== LAYOUT ========== */
+  main { padding: 18px 16px 8px; max-width: 680px; margin: 0 auto; }
+  section.tab { display: none; animation: fade .25s ease; }
   section.tab.active { display: block; }
   @keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 
   h2.section-title {
-    font-size: 13px; text-transform: uppercase; letter-spacing: 1.4px;
-    color: var(--muted); margin: 4px 0 12px; font-weight: 600;
+    font-size: 12px; text-transform: uppercase; letter-spacing: 1.4px;
+    color: var(--muted); margin: 18px 0 10px; font-weight: 700;
+    display: flex; align-items: center; gap: 8px;
   }
+  h2.section-title::before {
+    content: ""; width: 4px; height: 14px; border-radius: 2px;
+    background: linear-gradient(180deg, var(--accent-3), var(--accent));
+  }
+  h2.section-title:first-child { margin-top: 0; }
 
+  /* ========== CARD ========== */
   .card {
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: var(--radius);
     padding: 16px;
     margin-bottom: 14px;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    box-shadow: var(--shadow-sm);
   }
-  .card.strong { background: var(--card-2); box-shadow: var(--shadow); }
+  .card.strong { box-shadow: var(--shadow); }
 
-  /* UPLOAD ZONE */
+  /* ========== UPLOAD ZONE ========== */
   .upload-zone {
-    border: 2px dashed rgba(255,217,61,0.45);
-    background: linear-gradient(140deg, rgba(255,217,61,0.08), rgba(255,217,61,0.02));
+    display: block;
+    border: 2px dashed var(--accent);
+    background: linear-gradient(140deg, rgba(255,217,61,0.14), rgba(255,217,61,0.05));
     border-radius: var(--radius);
-    padding: 26px 18px;
+    padding: 28px 20px;
     text-align: center;
-    transition: all .22s ease;
     cursor: pointer;
+    transition: all .22s ease;
     position: relative;
     overflow: hidden;
   }
   .upload-zone:active, .upload-zone.dragover {
-    background: linear-gradient(140deg, rgba(255,217,61,0.18), rgba(255,217,61,0.05));
-    border-color: var(--accent);
+    background: linear-gradient(140deg, rgba(255,217,61,0.28), rgba(255,217,61,0.12));
+    border-color: var(--accent-2);
     transform: scale(0.995);
   }
   .upload-zone .big-ico {
-    font-size: 46px; margin-bottom: 6px; display: block;
-    filter: drop-shadow(0 6px 14px rgba(255,217,61,0.35));
+    font-size: 48px; margin-bottom: 8px; display: block;
+    filter: drop-shadow(0 6px 12px rgba(245,184,0,0.35));
   }
-  .upload-zone .utitle { font-size: 15px; font-weight: 700; margin: 4px 0 4px; }
-  .upload-zone .usub { font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+  .upload-zone .utitle { font-size: 16px; font-weight: 800; margin: 4px 0; color: var(--text); }
+  .upload-zone .usub { font-size: 12.5px; color: var(--text-2); line-height: 1.5; }
   .upload-zone input[type="file"] { display: none; }
   .upload-badges {
-    display: flex; justify-content: center; gap: 8px; margin-top: 12px; flex-wrap: wrap;
+    display: flex; justify-content: center; gap: 6px; margin-top: 14px; flex-wrap: wrap;
   }
   .badge {
     font-size: 10.5px; padding: 4px 10px; border-radius: 20px;
-    background: rgba(0,0,0,0.35); border: 1px solid var(--border);
-    color: var(--muted); font-weight: 700; letter-spacing: .3px;
+    background: #fff; border: 1px solid var(--border-2);
+    color: var(--text-2); font-weight: 700; letter-spacing: .3px;
   }
-  .badge.on { color: var(--accent); border-color: rgba(255,217,61,0.35); background: var(--accent-soft); }
+  .badge.on { color: var(--accent-2); border-color: var(--accent); background: #fff8e1; }
 
-  /* PREVIEW */
+  /* ========== PREVIEW ========== */
   .preview {
     margin-top: 12px; padding: 12px 14px;
-    background: rgba(0,0,0,0.35);
+    background: #fdfbf3;
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     font-size: 11.5px; line-height: 1.55;
-    color: #cfcfdb;
-    max-height: 170px; overflow: auto;
+    color: var(--text-2);
+    max-height: 180px; overflow: auto;
     white-space: pre-wrap; word-break: break-word;
   }
-  .found {
-    display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px;
-  }
+  .found { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
   .found .chip {
-    font-size: 11px; padding: 4px 9px; border-radius: 20px;
-    background: rgba(53,208,127,0.12); border: 1px solid rgba(53,208,127,0.35);
+    font-size: 11px; padding: 4px 10px; border-radius: 20px;
+    background: var(--good-soft); border: 1px solid rgba(22,163,74,0.35);
     color: var(--good); font-weight: 700;
   }
-  .found .chip.empty { background: rgba(255,159,67,0.1); border-color: rgba(255,159,67,0.3); color: var(--warn); }
+  .found .chip.empty {
+    background: var(--warn-soft); border-color: rgba(234,140,0,0.30); color: var(--warn);
+  }
 
-  /* FORM */
+  /* ========== FORM ========== */
   .field { margin-bottom: 12px; }
   .field label {
-    display: block; font-size: 12px; color: var(--muted);
-    margin: 0 0 6px 4px; font-weight: 600; letter-spacing: .3px;
+    display: block; font-size: 12px; color: var(--text-2);
+    margin: 0 0 6px 4px; font-weight: 700; letter-spacing: .2px;
   }
   .field input, .field select, .field textarea {
-    width: 100%; padding: 13px 14px;
-    background: rgba(0,0,0,0.35);
-    border: 1px solid var(--border);
+    width: 100%; padding: 12px 14px;
+    background: #fff;
+    border: 1.5px solid var(--border-2);
     border-radius: var(--radius-sm);
-    color: var(--text); font-size: 15px;
-    outline: none; transition: border-color .2s, box-shadow .2s;
+    color: var(--text); font-size: 15px; font-weight: 500;
+    outline: none; transition: border-color .2s, box-shadow .2s, background .2s;
     font-family: inherit;
   }
   .field textarea { min-height: 70px; resize: vertical; }
@@ -162,178 +192,253 @@
     box-shadow: 0 0 0 3px var(--accent-soft);
   }
   .field input.autofilled {
-    border-color: rgba(53,208,127,0.55);
-    background: rgba(53,208,127,0.06);
+    border-color: var(--good);
+    background: var(--good-soft);
+    animation: pulseGreen .8s ease;
+  }
+  @keyframes pulseGreen {
+    0% { box-shadow: 0 0 0 0 rgba(22,163,74,0.4); }
+    100% { box-shadow: 0 0 0 8px rgba(22,163,74,0); }
   }
   .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .row.three { grid-template-columns: 1fr 1fr 1fr; }
 
   .check {
     display: flex; align-items: center; gap: 10px;
-    background: rgba(0,0,0,0.25);
-    border: 1px solid var(--border);
+    background: #fdfbf3;
+    border: 1.5px solid var(--border);
     padding: 12px 14px; border-radius: var(--radius-sm);
-    font-size: 14px; color: var(--text); cursor: pointer;
+    font-size: 13.5px; color: var(--text); cursor: pointer; font-weight: 500;
   }
-  .check input { width: 20px; height: 20px; accent-color: var(--accent); }
+  .check input { width: 20px; height: 20px; accent-color: var(--accent); flex-shrink: 0; }
 
+  /* ========== BUTTONS ========== */
   .btn {
     display: inline-flex; align-items: center; justify-content: center; gap: 8px;
     width: 100%; padding: 15px 16px;
     border: none; border-radius: var(--radius-sm);
-    font-size: 15px; font-weight: 700; letter-spacing: .3px;
-    cursor: pointer; transition: transform .08s ease, filter .2s;
+    font-size: 15px; font-weight: 800; letter-spacing: .2px;
+    cursor: pointer; transition: transform .08s ease, filter .2s, box-shadow .2s;
     font-family: inherit;
   }
   .btn:active { transform: scale(0.98); }
   .btn.primary {
-    background: linear-gradient(140deg, var(--accent), var(--accent-2));
-    color: #1a1400;
-    box-shadow: 0 8px 22px rgba(255,217,61,0.28);
+    background: linear-gradient(140deg, var(--accent-3), var(--accent));
+    color: #3d2f00;
+    box-shadow: 0 6px 18px rgba(245,184,0,0.35);
   }
   .btn.ghost {
-    background: rgba(255,255,255,0.06);
+    background: #fff;
     color: var(--text);
-    border: 1px solid var(--border);
+    border: 1.5px solid var(--border-2);
+    box-shadow: var(--shadow-sm);
   }
-  .btn.danger { background: rgba(255,92,92,0.14); color: #ff9b9b; border: 1px solid rgba(255,92,92,0.3); }
+  .btn.danger {
+    background: #fff;
+    color: var(--bad);
+    border: 1.5px solid rgba(220,38,38,0.30);
+  }
   .btn + .btn { margin-top: 8px; }
   .btn:disabled { opacity: .55; cursor: not-allowed; }
 
+  /* ========== BOTTOM NAV ========== */
   nav.bottom {
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
     padding: 8px 12px calc(8px + var(--safe-bottom));
-    background: rgba(11,11,18,0.85);
-    backdrop-filter: blur(20px) saturate(140%);
-    -webkit-backdrop-filter: blur(20px) saturate(140%);
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
     border-top: 1px solid var(--border);
     display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px;
-    max-width: 640px; margin: 0 auto;
+    max-width: 680px; margin: 0 auto;
+    box-shadow: 0 -4px 16px rgba(120,90,20,0.06);
   }
   nav.bottom button {
     background: transparent; border: none; color: var(--muted);
     padding: 8px 4px; border-radius: 14px;
     display: flex; flex-direction: column; align-items: center; gap: 3px;
-    font-size: 10.5px; font-weight: 600; letter-spacing: .3px;
+    font-size: 10.5px; font-weight: 700; letter-spacing: .2px;
     cursor: pointer; transition: color .2s, background .2s;
     font-family: inherit;
   }
-  nav.bottom button .ico { font-size: 20px; line-height: 1; }
-  nav.bottom button.active { color: var(--accent); background: var(--accent-soft); }
+  nav.bottom button .ico { font-size: 21px; line-height: 1; }
+  nav.bottom button.active { color: var(--accent-2); background: var(--accent-soft); }
 
+  /* ========== RANK ITEMS ========== */
   .rank-item {
     display: flex; gap: 12px; align-items: flex-start;
     padding: 14px; border-radius: var(--radius-sm);
-    background: rgba(0,0,0,0.25);
-    border: 1px solid var(--border);
+    background: #fff;
+    border: 1.5px solid var(--border);
     margin-bottom: 10px;
+    box-shadow: var(--shadow-sm);
   }
   .rank-item.best {
-    background: linear-gradient(140deg, rgba(255,217,61,0.14), rgba(255,217,61,0.04));
-    border: 1px solid rgba(255,217,61,0.4);
+    background: linear-gradient(140deg, #fff9e0, #fffdf6);
+    border-color: var(--accent);
+    box-shadow: 0 6px 20px rgba(245,184,0,0.18);
   }
   .rank-item.best.international {
-    background: linear-gradient(140deg, rgba(255,92,92,0.12), rgba(255,92,92,0.03));
-    border: 1px solid rgba(255,92,92,0.35);
+    background: linear-gradient(140deg, #fff0f0, #fffafa);
+    border-color: rgba(220,38,38,0.35);
   }
   .rank-badge {
-    flex-shrink: 0; width: 40px; height: 40px; border-radius: 12px;
+    flex-shrink: 0; width: 42px; height: 42px; border-radius: 12px;
     display: grid; place-items: center; font-size: 20px;
-    background: var(--card-2);
+    background: #fdfbf3;
+    border: 1px solid var(--border);
   }
-  .rank-item.best .rank-badge { background: rgba(255,217,61,0.22); }
+  .rank-item.best .rank-badge {
+    background: linear-gradient(140deg, var(--accent-3), var(--accent));
+    border-color: transparent;
+  }
   .rank-body { flex: 1; min-width: 0; }
-  .rank-body .name { font-weight: 700; font-size: 15px; margin-bottom: 3px; word-break: break-word; }
-  .rank-body .meta { font-size: 12px; color: var(--muted); margin-bottom: 6px; line-height: 1.5; }
+  .rank-body .name { font-weight: 800; font-size: 15px; margin-bottom: 3px; word-break: break-word; color: var(--text); }
+  .rank-body .meta { font-size: 12px; color: var(--text-2); margin-bottom: 6px; line-height: 1.55; }
   .rank-body .price {
-    font-size: 20px; font-weight: 800; color: var(--accent); letter-spacing: .3px;
+    font-size: 21px; font-weight: 800; color: var(--accent-2); letter-spacing: -.3px;
   }
-  .rank-item.best.international .price { color: #ff9b9b; }
+  .rank-item.best.international .price { color: var(--bad); }
   .rank-body .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
   .tag {
-    font-size: 10.5px; padding: 3px 8px; border-radius: 20px;
-    background: rgba(255,255,255,0.07);
-    border: 1px solid var(--border);
-    color: var(--muted); font-weight: 600; letter-spacing: .3px;
+    font-size: 10.5px; padding: 3px 9px; border-radius: 20px;
+    background: #fdfbf3;
+    border: 1px solid var(--border-2);
+    color: var(--text-2); font-weight: 700; letter-spacing: .2px;
   }
-  .tag.good { color: var(--good); border-color: rgba(53,208,127,0.35); background: rgba(53,208,127,0.1); }
-  .tag.warn { color: var(--warn); border-color: rgba(255,159,67,0.35); background: rgba(255,159,67,0.1); }
-  .tag.bad  { color: var(--bad);  border-color: rgba(255,92,92,0.35);  background: rgba(255,92,92,0.1); }
+  .tag.good { color: var(--good); border-color: rgba(22,163,74,0.35); background: var(--good-soft); }
+  .tag.warn { color: var(--warn); border-color: rgba(234,140,0,0.35); background: var(--warn-soft); }
+  .tag.bad  { color: var(--bad);  border-color: rgba(220,38,38,0.30); background: var(--bad-soft); }
+  .tag.info { color: var(--info); border-color: rgba(2,132,199,0.30); background: var(--info-soft); }
 
   .tier-title {
     font-size: 11px; text-transform: uppercase; letter-spacing: 1.4px;
-    color: var(--muted); font-weight: 700;
-    margin: 16px 4px 8px;
+    color: var(--text-2); font-weight: 800;
+    margin: 18px 4px 8px;
     display: flex; align-items: center; gap: 8px;
   }
   .tier-title::after { content: ""; flex: 1; height: 1px; background: var(--border); }
 
-  .empty { text-align: center; padding: 34px 16px; color: var(--muted); }
-  .empty .big { font-size: 46px; margin-bottom: 10px; }
-  .empty p { margin: 6px 0; font-size: 14px; line-height: 1.5; }
-
-  #toast {
-    position: fixed; left: 50%; bottom: calc(96px + var(--safe-bottom));
-    transform: translateX(-50%) translateY(20px);
-    background: rgba(30,30,40,0.96);
-    color: var(--text);
-    padding: 12px 18px; border-radius: 14px;
+  /* ========== REVISÃO ========== */
+  .rev-box {
+    border: 1.5px solid rgba(234,140,0,0.4);
+    background: linear-gradient(140deg, #fff9ec, #fffdf6);
+    border-radius: var(--radius);
+    padding: 14px;
+    margin-bottom: 14px;
+  }
+  .rev-box-title {
+    font-size: 13px; font-weight: 800; color: var(--text);
+    margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
+  }
+  .rev-item {
+    background: #fff;
     border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    margin-bottom: 10px;
+    box-shadow: var(--shadow-sm);
+  }
+  .rev-txt {
+    font-size: 12.5px; color: var(--text-2);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    padding: 6px 8px; background: #fdfbf3; border-radius: 8px;
+    margin-bottom: 8px; word-break: break-word;
+    line-height: 1.5;
+  }
+  .rev-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+  .rev-btn {
+    font-size: 11.5px; padding: 6px 10px; border-radius: 20px;
+    background: #fdfbf3; border: 1px solid var(--border-2);
+    color: var(--text-2); font-weight: 700; cursor: pointer;
+    font-family: inherit; transition: all .15s;
+  }
+  .rev-btn:active { transform: scale(0.95); background: var(--accent-soft); border-color: var(--accent); }
+  .rev-btn.skip { color: var(--muted); }
+
+  /* ========== EMPTY ========== */
+  .empty { text-align: center; padding: 34px 16px; color: var(--muted); }
+  .empty .big { font-size: 52px; margin-bottom: 12px; }
+  .empty p { margin: 6px 0; font-size: 14px; line-height: 1.55; }
+  .empty b { color: var(--text-2); }
+
+  /* ========== TOAST ========== */
+  #toast {
+    position: fixed; left: 50%; bottom: calc(100px + var(--safe-bottom));
+    transform: translateX(-50%) translateY(20px);
+    background: #2b2416;
+    color: #fff;
+    padding: 12px 20px; border-radius: 14px;
     font-size: 14px; font-weight: 600;
     opacity: 0; pointer-events: none; transition: all .25s ease;
     z-index: 100; max-width: 90vw; text-align: center;
-    box-shadow: var(--shadow);
+    box-shadow: var(--shadow-lg);
   }
   #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-  #toast.good { border-color: rgba(53,208,127,0.5); }
-  #toast.bad  { border-color: rgba(255,92,92,0.5); }
+  #toast.good { background: var(--good); }
+  #toast.bad  { background: var(--bad); }
 
+  /* ========== SEARCH ========== */
   .search-wrap { position: relative; margin-bottom: 12px; }
   .search-wrap input {
-    width: 100%; padding: 13px 14px 13px 42px;
-    background: rgba(0,0,0,0.35);
-    border: 1px solid var(--border);
+    width: 100%; padding: 14px 14px 14px 44px;
+    background: #fff;
+    border: 1.5px solid var(--border-2);
     border-radius: var(--radius-sm);
     color: var(--text); font-size: 15px; outline: none; font-family: inherit;
+    box-shadow: var(--shadow-sm);
   }
+  .search-wrap input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
   .search-wrap::before {
-    content: "🔎"; position: absolute; left: 14px; top: 50%;
-    transform: translateY(-50%); font-size: 15px; opacity: .7;
+    content: "🔎"; position: absolute; left: 15px; top: 50%;
+    transform: translateY(-50%); font-size: 15px; opacity: .65;
   }
 
-  .help p { font-size: 14px; line-height: 1.65; color: #d3d3de; margin: 8px 0; }
-  .help h3 { font-size: 14px; margin: 16px 0 6px; color: var(--accent); letter-spacing: .3px; }
+  /* ========== HELP ========== */
+  .help p { font-size: 14px; line-height: 1.65; color: var(--text-2); margin: 8px 0; }
+  .help h3 { font-size: 14px; margin: 18px 0 8px; color: var(--accent-2); letter-spacing: -.1px; font-weight: 800; }
   .help ul { padding-left: 18px; margin: 6px 0; }
-  .help li { font-size: 13.5px; line-height: 1.6; color: #d3d3de; margin-bottom: 4px; }
-  .help code { background: rgba(255,255,255,0.08); padding: 1px 6px; border-radius: 6px; font-size: 12.5px; }
+  .help li { font-size: 13.5px; line-height: 1.6; color: var(--text-2); margin-bottom: 5px; }
+  .help code {
+    background: var(--accent-soft); padding: 2px 7px; border-radius: 6px;
+    font-size: 12.5px; color: var(--accent-2); font-weight: 700;
+  }
 
+  /* ========== STATS ========== */
   .stat-row { display: flex; gap: 10px; margin-bottom: 12px; }
   .stat {
-    flex: 1; padding: 12px; border-radius: var(--radius-sm);
-    background: var(--card); border: 1px solid var(--border);
-    text-align: center;
+    flex: 1; padding: 14px 8px; border-radius: var(--radius-sm);
+    background: #fff; border: 1px solid var(--border);
+    text-align: center; box-shadow: var(--shadow-sm);
   }
-  .stat .n { font-size: 22px; font-weight: 800; color: var(--accent); }
-  .stat .l { font-size: 10.5px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
+  .stat .n { font-size: 22px; font-weight: 800; color: var(--accent-2); }
+  .stat .l { font-size: 10.5px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 3px; font-weight: 700; }
 
   .divider { height: 1px; background: var(--border); margin: 14px 0; }
   .muted { color: var(--muted); font-size: 12.5px; line-height: 1.55; }
 
-  /* loading overlay */
+  /* ========== LOADING ========== */
   #loading {
     position: fixed; inset: 0; z-index: 200;
-    background: rgba(0,0,0,0.72);
+    background: rgba(255,251,235,0.85);
     display: none; align-items: center; justify-content: center;
-    backdrop-filter: blur(6px);
+    backdrop-filter: blur(8px);
+    flex-direction: column; gap: 16px;
   }
   #loading.show { display: flex; }
   .spinner {
-    width: 42px; height: 42px; border-radius: 50%;
-    border: 4px solid rgba(255,217,61,0.18);
+    width: 46px; height: 46px; border-radius: 50%;
+    border: 4px solid var(--accent-soft);
     border-top-color: var(--accent);
     animation: spin 0.8s linear infinite;
   }
+  #loading .load-txt { font-size: 13px; font-weight: 700; color: var(--text-2); }
   @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ========== SCROLLBAR (desktop) ========== */
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 4px; }
 </style>
 </head>
 <body>
@@ -342,7 +447,7 @@
   <div class="logo">🍌</div>
   <div class="brand">
     <h1>Compras 5.0</h1>
-    <p>Upload de cotação · Ranking por região</p>
+    <p>Upload inteligente · Ranking por região</p>
   </div>
 </header>
 
@@ -351,31 +456,38 @@
   <!-- ================= TAB: ENVIAR ================= -->
   <section id="tab-enviar" class="tab active">
 
-    <h2 class="section-title">1 · Envie o arquivo da cotação</h2>
+    <h2 class="section-title">1 · Envie a cotação</h2>
 
     <label class="upload-zone" id="uploadZone">
-      <input type="file" id="fileInput" accept=".pdf,.txt,.csv,.md,.json,text/plain,application/pdf" />
+      <input type="file" id="fileInput"
+             accept=".pdf,.txt,.csv,.md,.json,.png,.jpg,.jpeg,text/plain,application/pdf,image/*" />
       <span class="big-ico">📄</span>
       <div class="utitle" id="upTitle">Toque para enviar a cotação</div>
-      <div class="usub" id="upSub">PDF ou texto (.txt, .csv) · extração automática dos dados</div>
+      <div class="usub" id="upSub">PDF, TXT, CSV ou imagem · extração automática</div>
       <div class="upload-badges">
         <span class="badge on">PDF</span>
         <span class="badge on">TXT</span>
         <span class="badge on">CSV</span>
+        <span class="badge on">IMG</span>
       </div>
     </label>
 
-    <div id="previewBox" style="display:none;">
+    <div id="previewBox" style="display:none; margin-top:12px;">
       <div class="preview" id="previewText"></div>
       <div class="found" id="foundChips"></div>
     </div>
 
-    <h2 class="section-title" style="margin-top:18px;">2 · Confira e ajuste os dados</h2>
+    <div id="revisaoBox" class="rev-box" style="display:none;">
+      <div class="rev-box-title">⚠️ <span id="revTitle">Preciso da sua ajuda para classificar</span></div>
+      <div id="revisaoLista"></div>
+    </div>
+
+    <h2 class="section-title">2 · Confira e ajuste</h2>
 
     <div class="card strong">
       <div class="field">
         <label>Produto / Descrição *</label>
-        <input id="f-desc" type="text" placeholder="Ex.: Parafuso sextavado 8mm aço inox" />
+        <input id="f-desc" type="text" placeholder="Ex.: Parafuso sextavado 8mm inox" />
       </div>
       <div class="row">
         <div class="field">
@@ -388,7 +500,7 @@
         </div>
       </div>
       <div class="field">
-        <label>GTIN / EAN (chave canônica)</label>
+        <label>GTIN / EAN</label>
         <input id="f-gtin" type="text" inputmode="numeric" placeholder="Deixe vazio se não houver" />
       </div>
     </div>
@@ -480,7 +592,7 @@
       </div>
       <label class="check">
         <input id="f-evidencia" type="checkbox" checked />
-        <span>Tenho evidência da cotação (o arquivo enviado)</span>
+        <span>Tenho o arquivo da cotação (evidência)</span>
       </label>
       <div class="field" style="margin-top:12px;">
         <label>Observações</label>
@@ -489,7 +601,7 @@
     </div>
 
     <button class="btn primary" onclick="salvarCotacao()">💾 Salvar cotação</button>
-    <button class="btn ghost" onclick="limparTudo(false)">🧹 Limpar formulário</button>
+    <button class="btn ghost" onclick="limparForm()">🧹 Limpar formulário</button>
   </section>
 
   <!-- ================= TAB: COMPARAR ================= -->
@@ -511,38 +623,39 @@
     </div>
     <div class="muted" id="st-info" style="text-align:center; margin-bottom:12px;"></div>
     <div id="historico"></div>
-    <button class="btn danger" onclick="limparTudo(true)">🗑️ Apagar todos os dados</button>
+    <button class="btn danger" onclick="apagarTudo()">🗑️ Apagar todos os dados</button>
   </section>
 
   <!-- ================= TAB: AJUDA ================= -->
   <section id="tab-ajuda" class="tab help">
     <h2 class="section-title">Como funciona</h2>
     <div class="card strong">
-      <p>O app implementa <b>Compras 5.0</b>: o usuário envia a cotação (PDF ou texto), o sistema extrai os dados automaticamente, você revisa e salva. Depois, o ranking prioriza <b>Local → Regional → Nacional → Internacional</b>.</p>
+      <p>O app aceita cotações em <b>qualquer formato</b> — PDF de ERP, print, e-mail colado, planilha, até foto. O parser tenta reconhecer os campos automaticamente. O que ele não entender, você classifica em um toque.</p>
 
-      <h3>📥 Upload suportado</h3>
+      <h3>📥 O que aceita</h3>
       <ul>
-        <li><b>PDF</b> — extração via <code>pdf.js</code> (precisa de 1 conexão na primeira vez).</li>
-        <li><b>TXT / CSV / MD</b> — leitura direta.</li>
-        <li>Após o envio, os campos reconhecidos ficam <b style="color:#35d07f;">destacados em verde</b>.</li>
+        <li><b>PDF</b> com texto (via pdf.js)</li>
+        <li><b>TXT / CSV / MD</b> — leitura direta</li>
+        <li><b>Imagem (JPG/PNG)</b> — OCR via Tesseract.js (online na 1ª vez)</li>
       </ul>
 
-      <h3>🤖 O que o parser reconhece</h3>
+      <h3>🧠 Parser de 5 camadas</h3>
       <ul>
-        <li>Preço unitário / valor total (formatos <code>R$ 1.234,56</code> e <code>1234.56</code>)</li>
-        <li>CNPJ, CEP, telefone, e-mail</li>
-        <li>Cidade/UF (padrão <code>Cidade/UF</code>)</li>
-        <li>Data do documento e <b>validade</b></li>
-        <li>Prazo de entrega em dias</li>
-        <li>Frete, impostos, desconto (quando rotulados)</li>
-        <li>Fornecedor (linhas com <code>LTDA</code>, <code>S.A.</code>, <code>ME</code>, <code>EIRELI</code>)</li>
+        <li><b>Normalização</b>: corrige OCR, símbolos, espaços</li>
+        <li><b>Rótulos</b>: procura sinônimos (preço, vl., valor, unitário...)</li>
+        <li><b>Posição</b>: número perto de R$ e unidade</li>
+        <li><b>Contexto</b>: CNPJ, CEP, UF, endereço, e-mail</li>
+        <li><b>Revisão interativa</b>: você classifica o que sobrar</li>
       </ul>
+
+      <h3>🎓 Aprendizado</h3>
+      <p class="muted">Cada linha que você classificar manualmente é memorizada. A partir da 2ª vez, o app reconhece o padrão sozinho. Ele fica mais inteligente com o uso.</p>
 
       <h3>♾️ Alimentação contínua</h3>
-      <p class="muted">Cada envio é salvo como um registro datado. Não há limite de quantidade nem prazo de validade do app. O histórico cresce indefinidamente e o ranking sempre usa as cotações válidas mais recentes.</p>
+      <p class="muted">Cada envio é um registro datado. Não há limite de quantidade nem prazo. O histórico cresce indefinidamente.</p>
 
       <h3>🔒 Privacidade</h3>
-      <p class="muted">Tudo fica no seu dispositivo (<code>localStorage</code>). Nada é enviado a servidores.</p>
+      <p class="muted">Tudo fica no seu dispositivo. Nada é enviado a servidores (exceto libs de PDF/OCR na 1ª vez).</p>
     </div>
   </section>
 
@@ -556,22 +669,24 @@
 </nav>
 
 <div id="toast"></div>
-<div id="loading"><div class="spinner"></div></div>
+<div id="loading"><div class="spinner"></div><div class="load-txt" id="loadTxt">Processando...</div></div>
 
 <script>
 /* ============================================================
-   COMPRAS 5.0 — v2 (upload-first)
+   COMPRAS 5.0 — v3 (parser inteligente + aprendizado)
    ============================================================ */
 
-const DB_KEY = 'compras5_db_v1';
+const DB_KEY       = 'compras5_db_v1';
+const PADROES_KEY  = 'compras5_padroes_v1';
 
-/* ---------- pdf.js worker ---------- */
 if (window.pdfjsLib) {
   pdfjsLib.GlobalWorkerOptions.workerSrc =
     'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 }
 
-/* ---------- Persistência ---------- */
+/* ============================================================
+   PERSISTÊNCIA
+   ============================================================ */
 const DB = {
   read() {
     try { return JSON.parse(localStorage.getItem(DB_KEY)) || { cotacoes: [] }; }
@@ -580,7 +695,23 @@ const DB = {
   write(d) { localStorage.setItem(DB_KEY, JSON.stringify(d)); }
 };
 
-/* ---------- Utils ---------- */
+const PADROES = {
+  read() {
+    try { return JSON.parse(localStorage.getItem(PADROES_KEY)) || {}; }
+    catch(e) { return {}; }
+  },
+  write(d) { localStorage.setItem(PADROES_KEY, JSON.stringify(d)); },
+  registrar(moldura, campo) {
+    const db = PADROES.read();
+    if (!db[moldura]) db[moldura] = { campo, usos: 0 };
+    db[moldura].usos++;
+    PADROES.write(db);
+  }
+};
+
+/* ============================================================
+   UTILS
+   ============================================================ */
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
 const num = v => { const n = parseFloat(String(v).replace(/\./g,'').replace(',', '.')); return isNaN(n) ? 0 : n; };
 const fmt = (v, moeda='BRL') => {
@@ -593,222 +724,333 @@ const norm = s => (s||'').toString().trim().toLowerCase()
 const escapeHtml = s => String(s||'').replace(/[&<>"']/g, m =>
   ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 
-/* ---------- Loading ---------- */
-function setLoading(on) {
-  document.getElementById('loading').classList.toggle('show', !!on);
+function setLoading(on, txt) {
+  const el = document.getElementById('loading');
+  el.classList.toggle('show', !!on);
+  if (txt) document.getElementById('loadTxt').textContent = txt;
 }
 
-/* ---------- Leitura do arquivo ---------- */
-async function lerArquivo(file) {
-  const name = (file.name || '').toLowerCase();
-  const isPDF = file.type === 'application/pdf' || name.endsWith('.pdf');
-
-  if (isPDF) {
-    if (!window.pdfjsLib) throw new Error('pdf.js não carregado. Conecte-se à internet uma vez.');
-    const buf = await file.arrayBuffer();
-    const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
-    let txt = '';
-    for (let i = 1; i <= pdf.numPages; i++) {
-      const page = await pdf.getPage(i);
-      const content = await page.getTextContent();
-      const lineParts = [];
-      let lastY = null;
-      content.items.forEach(it => {
-        if (lastY !== null && Math.abs(it.transform[5] - lastY) > 3) {
-          lineParts.push('\n');
-        }
-        lineParts.push(it.str);
-        lastY = it.transform[5];
-      });
-      txt += lineParts.join(' ') + '\n';
-    }
-    return txt.replace(/[ \t]+/g, ' ').replace(/\n{3,}/g, '\n\n').trim();
-  }
-  // texto simples
-  return (await file.text()).trim();
+function toast(msg, type='') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'show ' + type;
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => el.className = '', 3000);
 }
 
 /* ============================================================
-   PARSER DE COTAÇÃO
+   PARSER INTELIGENTE
    ============================================================ */
-function parseCotacao(txt) {
-  const out = {};
-  const raw = txt.replace(/\r/g, '');
 
-  // ---- Preço unitário / valor ----
-  const precoPatterns = [
-    /(?:pre[çc]o\s*(?:unit[áa]rio|unit\.?|por\s*unidade)?|valor\s*unit[áa]rio|vl\.?\s*unit)\s*[:\-]?\s*(?:R\$)?\s*([\d]{1,3}(?:\.\d{3})*,\d{2}|\d+[.,]\d{2})/i,
-    /(?:total|valor\s*total)\s*[:\-]?\s*(?:R\$)?\s*([\d]{1,3}(?:\.\d{3})*,\d{2}|\d+[.,]\d{2})/i,
-    /R\$\s*([\d]{1,3}(?:\.\d{3})*,\d{2})/i
-  ];
-  for (const p of precoPatterns) {
-    const m = raw.match(p);
-    if (m) { out.preco = normalizarNumero(m[1]); break; }
-  }
+const SINONIMOS = {
+  preco:    ['preço','preco','valor unitário','valor unitario','valor','vl unit','vl. unit','vlr','vl','unitário','unitario','unit price','price','a vista','à vista','custo'],
+  frete:    ['frete','transporte','entrega','carreto','fob','cif','sedex','pac'],
+  impostos: ['imposto','tributo','icms','ipi','pis','cofins','iss','taxa'],
+  desconto: ['desconto','desc','abatimento','bonificação','bonificacao'],
+  prazo:    ['prazo','entrega em','lead time','delivery'],
+  validade: ['validade','válido','valido','válida','valida','expira','expiração'],
+  descricao:['produto','descrição','descricao','item','material','mercadoria','serviço','servico'],
+  fornecedor:['fornecedor','empresa','razão social','razao social','vendedor','de'],
+  cnpj:     ['cnpj'],
+  gtin:     ['ean','gtin','código','codigo','cód','cod','sku','ref']
+};
 
-  // ---- Frete ----
-  const freteM = raw.match(/frete\s*[:\-]?\s*(?:R\$)?\s*([\d]{1,3}(?:\.\d{3})*,\d{2}|\d+[.,]\d{2})/i);
-  if (freteM) out.frete = normalizarNumero(freteM[1]);
+const RX = {
+  cnpj:    /\b\d{2}\.?\d{3}\.?\d{3}\/?\d{4}-?\d{2}\b/,
+  cep:     /\b\d{5}-?\d{3}\b/,
+  fone:    /\b(?:\(?\d{2}\)?\s?)?(?:9?\d{4})[-\s]?\d{4}\b/,
+  email:   /[\w.+-]+@[\w-]+\.[\w.]+/,
+  uf:      /\b(AC|AL|AP|AM|BA|CE|DF|ES|GO|MA|MT|MS|MG|PA|PB|PR|PE|PI|RJ|RN|RS|RO|RR|SC|SP|SE|TO)\b/,
+  moedaBR: /R\$\s*([\d]{1,3}(?:\.\d{3})*,\d{2}|\d+,\d{2}|\d+)/,
+  numero:  /\b([\d]{1,3}(?:\.\d{3})*,\d{2}|\d+[.,]\d{2}|\d{3,})\b/,
+  data:    /\b(\d{2})[\/\-](\d{2})[\/\-](\d{4})\b/,
+  dias:    /\b(\d{1,3})\s*(?:dias?\s*(?:úteis|uteis)?|d\.?u\.?)\b/i,
+  unidade: /\b(un|und|unid|pç|pc|peça|peca|cx|caixa|kg|g|m|m²|m³|lt|l|ml|rolo|pct|pacote)\b/i,
+  gtin:    /\b(\d{8}|\d{12,13,14})\b/,
+  endereco:/^\s*(?:av\.?|avenida|rua|r\.?|rod\.?|rodovia|al\.?|alameda|trav\.?|praça|praca)\b/i
+};
 
-  // ---- Impostos ----
-  const impM = raw.match(/(?:impostos?|tributos?|icms|ipi)\s*[:\-]?\s*(?:R\$)?\s*([\d]{1,3}(?:\.\d{3})*,\d{2}|\d+[.,]\d{2})/i);
-  if (impM) out.impostos = normalizarNumero(impM[1]);
-
-  // ---- Desconto ----
-  const descM = raw.match(/desconto\s*[:\-]?\s*(?:R\$)?\s*([\d]{1,3}(?:\.\d{3})*,\d{2}|\d+[.,]\d{2})/i);
-  if (descM) out.desconto = normalizarNumero(descM[1]);
-
-  // ---- CNPJ ----
-  const cnpjM = raw.match(/\b\d{2}\.?\d{3}\.?\d{3}\/?\d{4}-?\d{2}\b/);
-  if (cnpjM) out.cnpj = cnpjM[0];
-
-  // ---- Cidade / UF ----
-  const cidadeUfM = raw.match(/([A-ZÁÀÂÃÉÊÍÓÔÕÚÇ][A-Za-zÀ-ÿ]+(?:\s+(?:d[aeo]s?\s+)?[A-ZÁÀÂÃÉÊÍÓÔÕÚÇ]?[a-zÀ-ÿ]+){0,3})\s*[\/\-–]\s*(AC|AL|AP|AM|BA|CE|DF|ES|GO|MA|MT|MS|MG|PA|PB|PR|PE|PI|RJ|RN|RS|RO|RR|SC|SP|SE|TO)\b/);
-  if (cidadeUfM) {
-    out.cidade = cidadeUfM[1].trim();
-    out.uf = cidadeUfM[2];
-  } else {
-    // tenta apenas UF "São Paulo - SP"
-    const ufM = raw.match(/\b(AC|AL|AP|AM|BA|CE|DF|ES|GO|MA|MT|MS|MG|PA|PB|PR|PE|PI|RJ|RN|RS|RO|RR|SC|SP|SE|TO)\b/);
-    if (ufM) out.uf = ufM[1];
-  }
-
-  // ---- Prazo ----
-  const prazoM = raw.match(/prazo\s*(?:de\s*entrega)?\s*[:\-]?\s*(\d{1,3})\s*dias?/i);
-  if (prazoM) out.prazo = parseInt(prazoM[1]);
-
-  // ---- Datas (dd/mm/aaaa ou aaaa-mm-dd) ----
-  const datas = [...raw.matchAll(/\b(\d{2})\/(\d{2})\/(\d{4})\b/g)].map(m => `${m[3]}-${m[2]}-${m[1]}`);
-  const validadeM = raw.match(/v[áa]lid[oa](?:\s*at[ée])?\s*[:\-]?\s*(\d{2}\/\d{2}\/\d{4})/i);
-  if (validadeM) {
-    const [d,m,y] = validadeM[1].split('/');
-    out.validade = `${y}-${m}-${d}`;
-  }
-  if (datas.length) out.data = datas[0];
-
-  // ---- Fornecedor ----
-  const fornM = raw.match(/^\s*([A-ZÁÀÂÃÉÊÍÓÔÕÚÇ][^\n]{4,70}?(?:\s+(?:LTDA|Ltda|S\.?\s*A\.?|ME|EIRELI|EPP)\b[^\n]*))/m);
-  if (fornM) out.fornecedor = fornM[1].trim();
-  if (!out.fornecedor) {
-    // fallback: primeira linha não vazia com 6+ caracteres
-    const linhas = raw.split('\n').map(l => l.trim()).filter(l => l.length >= 6);
-    if (linhas[0]) out.fornecedor = linhas[0].slice(0, 80);
-  }
-
-  // ---- Descrição do produto ----
-  const prodM = raw.match(/(?:produto|descri[çc][ãa]o|item)\s*[:\-]\s*([^\n]{3,120})/i);
-  if (prodM) out.descricao = prodM[1].trim();
-
-  // ---- GTIN / EAN ----
-  const gtinM = raw.match(/\b(\d{8}|\d{12,14})\b/);
-  if (gtinM) out.gtin = gtinM[1];
-
-  return out;
+function normalizarTexto(txt) {
+  return txt
+    .replace(/\r/g, '')
+    .replace(/(\d)[Oo](\d)/g, '$10$2')
+    .replace(/[´`¨]/g, '')
+    .replace(/[ \t]{3,}/g, '  ')
+    .split('\n').map(l => l.trim()).filter(l => l.length > 1).join('\n');
 }
 
 function normalizarNumero(str) {
   if (!str) return 0;
   const s = String(str).trim();
-  // 1.234,56 → 1234.56  |  1234.56 → 1234.56  |  1234,56 → 1234.56
   if (s.includes(',') && s.includes('.')) {
     if (s.lastIndexOf(',') > s.lastIndexOf('.')) return parseFloat(s.replace(/\./g,'').replace(',','.'));
     return parseFloat(s.replace(/,/g,''));
   }
-  return parseFloat(s.replace(',', '.'));
+  if (s.includes(',')) return parseFloat(s.replace(',', '.'));
+  return parseFloat(s);
 }
 
-/* ---------- Aplicar parsed no formulário ---------- */
-function aplicarParsed(p) {
-  const map = {
-    descricao: 'f-desc',
-    marca: 'f-marca',
-    modelo: 'f-modelo',
-    gtin: 'f-gtin',
-    fornecedor: 'f-forn',
-    cnpj: 'f-cnpj',
-    cidade: 'f-cidade',
-    uf: 'f-uf',
-    preco: 'f-preco',
-    frete: 'f-frete',
-    impostos: 'f-impostos',
-    desconto: 'f-desconto',
-    prazo: 'f-prazo',
-    validade: 'f-validade',
-    data: 'f-data'
+function aplicarPadroesAprendidos(txt) {
+  const db = PADROES.read();
+  const extraidos = {};
+  Object.entries(db).forEach(([moldura, meta]) => {
+    if (meta.usos < 2) return;
+    try {
+      const partes = moldura.split('<N>').map(s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+      const rx = new RegExp(partes.join('(\\d+)'), 'i');
+      const m = txt.match(rx);
+      if (m && m[1]) extraidos[meta.campo] = m[1];
+    } catch(e) {}
+  });
+  return extraidos;
+}
+
+function parseCotacaoInteligente(txtBruto) {
+  const txt = normalizarTexto(txtBruto);
+  const linhas = txt.split('\n');
+  const resultado = {};
+  const naoReconhecidas = [];
+  const aprendidos = aplicarPadroesAprendidos(txt);
+
+  const registrar = (campo, valor, conf, origem) => {
+    if (valor === undefined || valor === null || valor === '') return;
+    if (!resultado[campo] || resultado[campo].confianca < conf) {
+      resultado[campo] = { valor, confianca: conf, origem };
+    }
   };
+
+  // aplica padrões aprendidos primeiro (confiança alta)
+  Object.entries(aprendidos).forEach(([campo, val]) => {
+    if (['preco','frete','impostos','desconto','prazo'].includes(campo)) {
+      const n = normalizarNumero(val);
+      if (n > 0) registrar(campo, n, 95, 'padrão aprendido');
+    } else {
+      registrar(campo, val, 95, 'padrão aprendido');
+    }
+  });
+
+  linhas.forEach((linha, idx) => {
+    const lNorm = linha.toLowerCase();
+
+    // CNPJ
+    const cnpjM = linha.match(RX.cnpj);
+    if (cnpjM) registrar('cnpj', cnpjM[0], 98, `L${idx+1}`);
+
+    const isCep = RX.cep.test(linha);
+    if (!isCep) {
+      const gtinM = linha.match(RX.gtin);
+      if (gtinM) registrar('gtin', gtinM[1], 70, `L${idx+1}`);
+    }
+
+    const emailM = linha.match(RX.email);
+    if (emailM) registrar('email', emailM[0], 95, `L${idx+1}`);
+
+    // Cidade / UF
+    if (!resultado.cidade || resultado.cidade.confianca < 90) {
+      const cidUf = linha.match(/([A-ZÁÀÂÃÉÊÍÓÔÕÚÇ][\wÀ-ÿ\s.]{2,40}?)\s*[\/\-–,]\s*(AC|AL|AP|AM|BA|CE|DF|ES|GO|MA|MT|MS|MG|PA|PB|PR|PE|PI|RJ|RN|RS|RO|RR|SC|SP|SE|TO)\b/);
+      if (cidUf) {
+        registrar('cidade', cidUf[1].trim(), 90, `L${idx+1}`);
+        registrar('uf', cidUf[2], 95, `L${idx+1}`);
+      }
+    }
+    if (!resultado.uf || resultado.uf.confianca < 95) {
+      if (/\b(?:rua|av|avenida|rod|alameda|trav|praça|praca)\b/i.test(linha)) {
+        const ufM = linha.match(RX.uf);
+        if (ufM) registrar('uf', ufM[1], 85, `L${idx+1}`);
+      }
+    }
+
+    // Prazo
+    if (/(prazo|entrega|lead|dias)/i.test(linha)) {
+      const dM = linha.match(RX.dias);
+      if (dM) registrar('prazo', parseInt(dM[1]), 85, `L${idx+1}`);
+    }
+
+    // Validade
+    if (/(válid|valid|expira)/i.test(linha)) {
+      const dM = linha.match(RX.data);
+      if (dM) registrar('validade', `${dM[3]}-${dM[2]}-${dM[1]}`, 90, `L${idx+1}`);
+    }
+
+    // Preço por rótulo
+    for (const sin of SINONIMOS.preco) {
+      const esc = sin.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const rx = new RegExp('\\b' + esc + '\\b\\s*[:\\-]?\\s*(?:R\\$)?\\s*([\\d.,]+)', 'i');
+      const m = linha.match(rx);
+      if (m) {
+        const val = normalizarNumero(m[1]);
+        if (val > 0) registrar('preco', val, 90, `L${idx+1} (${sin})`);
+      }
+    }
+
+    // Preço por posição (R$ + unidade)
+    if (!resultado.preco || resultado.preco.confianca < 90) {
+      const m = linha.match(RX.moedaBR);
+      if (m && RX.unidade.test(linha)) {
+        registrar('preco', normalizarNumero(m[1]), 75, `L${idx+1} (R$+un)`);
+      }
+    }
+
+    // Frete / Imposto / Desconto
+    ['frete','impostos','desconto'].forEach(campo => {
+      for (const sin of SINONIMOS[campo]) {
+        const esc = sin.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const rx = new RegExp('\\b' + esc + '\\b\\s*[:\\-]?\\s*(?:R\\$)?\\s*([\\d.,]+)', 'i');
+        const m = linha.match(rx);
+        if (m) registrar(campo, normalizarNumero(m[1]), 85, `L${idx+1}`);
+      }
+    });
+
+    // Descrição por rótulo
+    for (const sin of SINONIMOS.descricao) {
+      const esc = sin.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const rx = new RegExp('\\b' + esc + '\\b\\s*[:\\-]\\s*(.+)', 'i');
+      const m = linha.match(rx);
+      if (m && m[1].length >= 4) {
+        registrar('descricao', m[1].trim().slice(0,120), 85, `L${idx+1}`);
+      }
+    }
+
+    // Fornecedor por rótulo
+    for (const sin of SINONIMOS.fornecedor) {
+      const esc = sin.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const rx = new RegExp('\\b' + esc + '\\b\\s*[:\\-]\\s*(.+)', 'i');
+      const m = linha.match(rx);
+      if (m && m[1].length >= 4 && m[1].length < 90) {
+        registrar('fornecedor', m[1].trim(), 85, `L${idx+1} (rótulo)`);
+      }
+    }
+    // Fornecedor por sufixo empresarial
+    if (!resultado.fornecedor || resultado.fornecedor.confianca < 85) {
+      const m = linha.match(/([A-ZÁÀÂÃÉÊÍÓÔÕÚÇ][\wÀ-ÿ&.\s]{3,60}?(?:LTDA|Ltda|S\.?A\.?|ME\b|EIRELI|EPP)\b[^\n]*)/);
+      if (m) registrar('fornecedor', m[1].trim(), 80, `L${idx+1} (sufixo)`);
+    }
+
+    // Data do documento
+    if (!resultado.data) {
+      const dM = linha.match(RX.data);
+      if (dM) registrar('data', `${dM[3]}-${dM[2]}-${dM[1]}`, 70, `L${idx+1}`);
+    }
+
+    // Linha não reconhecida?
+    const temAlgoUtil =
+      RX.cnpj.test(linha) || RX.email.test(linha) || RX.cep.test(linha) ||
+      RX.moedaBR.test(linha) || RX.numero.test(linha) || RX.data.test(linha) ||
+      Object.values(SINONIMOS).flat().some(s => lNorm.includes(s));
+    if (!temAlgoUtil && linha.length > 12 && !RX.endereco.test(linha)) {
+      naoReconhecidas.push({ linha: idx+1, texto: linha });
+    }
+  });
+
+  // limpa e decide
+  const limpos = {};
+  Object.keys(resultado).forEach(k => {
+    if (resultado[k].confianca >= 60) limpos[k] = resultado[k].valor;
+  });
+
+  // região inferida
+  if (limpos.uf) {
+    const ufs = ['AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG','PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO'];
+    limpos.regiao = ufs.includes(limpos.uf) ? 'nacional' : 'internacional';
+  }
+
+  return {
+    campos: limpos,
+    detalhes: resultado,
+    naoReconhecidas,
+    textoOriginal: txt
+  };
+}
+
+/* ============================================================
+   LEITURA DE ARQUIVO (PDF / TXT / IMG-OCR)
+   ============================================================ */
+async function lerArquivo(file, onProgress) {
+  const name = (file.name || '').toLowerCase();
+  const type = file.type || '';
+  const isPDF = type === 'application/pdf' || name.endsWith('.pdf');
+  const isIMG = type.startsWith('image/') || /\.(png|jpe?g|webp|bmp)$/.test(name);
+
+  if (isPDF) {
+    if (!window.pdfjsLib) throw new Error('pdf.js não disponível (offline no 1º uso).');
+    const buf = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+    let txt = '';
+    for (let i = 1; i <= pdf.numPages; i++) {
+      onProgress && onProgress(`Lendo página ${i}/${pdf.numPages}...`);
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+      const parts = [];
+      let lastY = null;
+      content.items.forEach(it => {
+        if (lastY !== null && Math.abs(it.transform[5] - lastY) > 3) parts.push('\n');
+        parts.push(it.str);
+        lastY = it.transform[5];
+      });
+      txt += parts.join(' ') + '\n';
+    }
+    return txt.replace(/[ \t]+/g, ' ').replace(/\n{3,}/g, '\n\n').trim();
+  }
+
+  if (isIMG) {
+    if (!window.Tesseract) throw new Error('OCR indisponível (offline no 1º uso).');
+    onProgress && onProgress('Reconhecendo imagem (OCR)...');
+    const { data } = await Tesseract.recognize(file, 'por+eng', {
+      logger: m => { if (m.status === 'recognizing text') onProgress && onProgress(`OCR: ${Math.round(m.progress*100)}%`); }
+    });
+    return (data.text || '').trim();
+  }
+
+  return (await file.text()).trim();
+}
+
+/* ============================================================
+   APLICAR PARSED
+   ============================================================ */
+const FIELD_MAP = {
+  descricao: 'f-desc', marca:'f-marca', modelo:'f-modelo', gtin:'f-gtin',
+  fornecedor:'f-forn', cnpj:'f-cnpj', cidade:'f-cidade', uf:'f-uf',
+  preco:'f-preco', frete:'f-frete', impostos:'f-impostos', desconto:'f-desconto',
+  prazo:'f-prazo', validade:'f-validade', data:'f-data', regiao:'f-regiao'
+};
+
+function aplicarParsed(p) {
   const found = [];
-  Object.keys(map).forEach(k => {
-    if (p[k] === undefined || p[k] === '' || p[k] === null) return;
-    const el = document.getElementById(map[k]);
+  Object.entries(FIELD_MAP).forEach(([k, id]) => {
+    if (p[k] === undefined || p[k] === null || p[k] === '') return;
+    const el = document.getElementById(id);
     if (!el) return;
     el.value = p[k];
     el.classList.add('autofilled');
     found.push(k);
-    // remove destaque após 6s
     setTimeout(() => el.classList.remove('autofilled'), 6000);
   });
-  // região automática por UF
-  if (p.uf) {
-    const sel = document.getElementById('f-regiao');
-    sel.value = 'nacional';
-  }
   return found;
 }
 
 /* ============================================================
-   REGRAS DE NEGÓCIO (iguais à v1)
-   ============================================================ */
-function chaveProduto(p) {
-  const gtin = (p.gtin||'').replace(/\D/g,'');
-  if (gtin.length >= 8) return 'gtin:' + gtin;
-  return 'nm:' + norm(p.descricao) + '|' + norm(p.marca) + '|' + norm(p.modelo);
-}
-function custoEfetivo(c) {
-  return num(c.preco) + num(c.frete) + num(c.impostos) - num(c.desconto);
-}
-function expirada(c) {
-  if (!c.validade) return false;
-  const hoje = new Date(); hoje.setHours(0,0,0,0);
-  return new Date(c.validade + 'T00:00:00') < hoje;
-}
-function scoreConfianca(c) {
-  let s = 50;
-  if (c.evidencia) s += 25;
-  if (c.cnpj && c.cnpj.replace(/\D/g,'').length >= 14) s += 12;
-  if (c.data) {
-    const dias = (Date.now() - new Date(c.data + 'T00:00:00').getTime()) / 86400000;
-    if (dias <= 7) s += 15;
-    else if (dias <= 30) s += 8;
-    else if (dias > 90) s -= 15;
-  } else s -= 5;
-  return Math.max(0, Math.min(100, Math.round(s)));
-}
-
-/* ============================================================
-   UPLOAD
+   HANDLE FILE
    ============================================================ */
 async function handleFile(file) {
   if (!file) return;
-  setLoading(true);
+  setLoading(true, 'Lendo arquivo...');
   try {
-    const txt = await lerArquivo(file);
+    const txt = await lerArquivo(file, t => setLoading(true, t));
     if (!txt || txt.length < 10) {
       toast('Arquivo sem texto reconhecível.', 'bad');
-      setLoading(false);
       return;
     }
+
     // preview
-    const previewBox = document.getElementById('previewBox');
-    const previewText = document.getElementById('previewText');
-    const foundChips = document.getElementById('foundChips');
-    previewBox.style.display = 'block';
-    previewText.textContent = txt.slice(0, 2000) + (txt.length > 2000 ? '\n...' : '');
+    document.getElementById('previewBox').style.display = 'block';
+    document.getElementById('previewText').textContent =
+      txt.slice(0, 2000) + (txt.length > 2000 ? '\n...' : '');
 
     // parse
-    const parsed = parseCotacao(txt);
-    const found = aplicarParsed(parsed);
+    const parsed = parseCotacaoInteligente(txt);
+    const found = aplicarParsed(parsed.campos);
 
-    // fallback: usa nome do arquivo como descrição
+    // fallback descrição pelo nome do arquivo
     const descEl = document.getElementById('f-desc');
     if (!descEl.value) {
       const base = file.name.replace(/\.[^.]+$/, '').replace(/[_-]+/g,' ').trim();
@@ -820,24 +1062,99 @@ async function handleFile(file) {
       descricao:'Descrição', marca:'Marca', modelo:'Modelo', gtin:'GTIN',
       fornecedor:'Fornecedor', cnpj:'CNPJ', cidade:'Cidade', uf:'UF',
       preco:'Preço', frete:'Frete', impostos:'Impostos', desconto:'Desconto',
-      prazo:'Prazo', validade:'Validade', data:'Data'
+      prazo:'Prazo', validade:'Validade', data:'Data', regiao:'Região'
     };
     const todos = Object.keys(labels);
-    foundChips.innerHTML = todos.map(k => {
+    document.getElementById('foundChips').innerHTML = todos.map(k => {
       const ok = found.includes(k);
       return `<span class="chip ${ok?'':'empty'}">${ok?'✓':'—'} ${labels[k]}</span>`;
     }).join('');
 
-    document.getElementById('upTitle').textContent = '✅ Arquivo lido com sucesso';
+    // revisão
+    renderRevisao(parsed.naoReconhecidas, parsed.textoOriginal);
+
+    // header
+    document.getElementById('upTitle').textContent = '✅ Arquivo processado';
     document.getElementById('upSub').textContent = file.name + ' · ' + Math.round(file.size/1024) + ' KB';
 
     toast(`Reconhecidos ${found.length} campos. Revise abaixo.`, 'good');
   } catch (err) {
     console.error(err);
-    toast('Erro ao ler arquivo: ' + (err.message || err), 'bad');
+    toast('Erro: ' + (err.message || err), 'bad');
   } finally {
     setLoading(false);
   }
+}
+
+/* ============================================================
+   REVISÃO INTERATIVA
+   ============================================================ */
+let _naoRecAtual = [];
+
+function renderRevisao(lista, textoOriginal) {
+  _naoRecAtual = lista || [];
+  const box = document.getElementById('revisaoBox');
+  const container = document.getElementById('revisaoLista');
+  const title = document.getElementById('revTitle');
+
+  if (!lista || !lista.length) { box.style.display = 'none'; return; }
+  box.style.display = 'block';
+  title.textContent = `Preciso da sua ajuda para classificar ${lista.length} linha(s)`;
+
+  container.innerHTML = lista.map((n, i) => `
+    <div class="rev-item" data-i="${i}">
+      <div class="rev-txt">${escapeHtml(n.texto)}</div>
+      <div class="rev-actions">
+        <button class="rev-btn" data-campo="preco">💰 Preço</button>
+        <button class="rev-btn" data-campo="frete">🚚 Frete</button>
+        <button class="rev-btn" data-campo="impostos">📋 Imposto</button>
+        <button class="rev-btn" data-campo="desconto">🏷️ Desconto</button>
+        <button class="rev-btn" data-campo="descricao">📦 Produto</button>
+        <button class="rev-btn" data-campo="fornecedor">🏢 Fornecedor</button>
+        <button class="rev-btn" data-campo="prazo">⏱️ Prazo</button>
+        <button class="rev-btn skip">❌ Ignorar</button>
+      </div>
+    </div>
+  `).join('');
+
+  container.querySelectorAll('.rev-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const item = btn.closest('.rev-item');
+      const idx = parseInt(item.dataset.i);
+      const campo = btn.dataset.campo;
+      const texto = _naoRecAtual[idx].texto;
+
+      if (campo) {
+        const valor = extrairValorDeLinha(texto, campo);
+        if (valor !== null && valor !== undefined) {
+          const el = document.getElementById(FIELD_MAP[campo]);
+          if (el) {
+            el.value = valor;
+            el.classList.add('autofilled');
+            setTimeout(() => el.classList.remove('autofilled'), 6000);
+          }
+          // aprende o padrão
+          const moldura = texto.replace(/[\d.,]+/g, '<N>').slice(0, 120);
+          PADROES.registrar(moldura, campo);
+          toast(`"${campo}" preenchido e aprendido`, 'good');
+        }
+      }
+      item.remove();
+      if (!container.children.length) box.style.display = 'none';
+    });
+  });
+}
+
+function extrairValorDeLinha(linha, campo) {
+  if (['preco','frete','impostos','desconto'].includes(campo)) {
+    const m = linha.match(RX.moedaBR) || linha.match(RX.numero);
+    return m ? normalizarNumero(m[1]) : null;
+  }
+  if (campo === 'prazo') {
+    const m = linha.match(RX.dias);
+    return m ? parseInt(m[1]) : null;
+  }
+  return linha.replace(/^[\s\-–•*]+/, '').trim().slice(0, 120);
 }
 
 /* ============================================================
@@ -906,23 +1223,53 @@ function limparForm() {
   document.getElementById('f-moeda').value = 'BRL';
   document.getElementById('f-data').value = new Date().toISOString().slice(0,10);
 
-  // reset upload UI
   document.getElementById('previewBox').style.display = 'none';
   document.getElementById('previewText').textContent = '';
   document.getElementById('foundChips').innerHTML = '';
+  document.getElementById('revisaoBox').style.display = 'none';
+  document.getElementById('revisaoLista').innerHTML = '';
   document.getElementById('upTitle').textContent = 'Toque para enviar a cotação';
-  document.getElementById('upSub').textContent = 'PDF ou texto (.txt, .csv) · extração automática dos dados';
+  document.getElementById('upSub').textContent = 'PDF, TXT, CSV ou imagem · extração automática';
   document.getElementById('fileInput').value = '';
 }
 
-function limparTudo(apagar) {
-  if (!apagar) return limparForm();
-  if (!confirm('Apagar TODAS as cotações? Esta ação não pode ser desfeita.')) return;
+function apagarTudo() {
+  if (!confirm('Apagar TODAS as cotações e padrões aprendidos?')) return;
   DB.write({ cotacoes: [] });
+  PADROES.write({});
   toast('Dados apagados.', 'good');
   atualizarStats();
   renderComparacao();
   renderHistorico();
+}
+
+/* ============================================================
+   REGRAS DE NEGÓCIO
+   ============================================================ */
+function chaveProduto(p) {
+  const gtin = (p.gtin||'').replace(/\D/g,'');
+  if (gtin.length >= 8) return 'gtin:' + gtin;
+  return 'nm:' + norm(p.descricao) + '|' + norm(p.marca) + '|' + norm(p.modelo);
+}
+function custoEfetivo(c) {
+  return num(c.preco) + num(c.frete) + num(c.impostos) - num(c.desconto);
+}
+function expirada(c) {
+  if (!c.validade) return false;
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  return new Date(c.validade + 'T00:00:00') < hoje;
+}
+function scoreConfianca(c) {
+  let s = 50;
+  if (c.evidencia) s += 25;
+  if (c.cnpj && c.cnpj.replace(/\D/g,'').length >= 14) s += 12;
+  if (c.data) {
+    const dias = (Date.now() - new Date(c.data + 'T00:00:00').getTime()) / 86400000;
+    if (dias <= 7) s += 15;
+    else if (dias <= 30) s += 8;
+    else if (dias > 90) s -= 15;
+  } else s -= 5;
+  return Math.max(0, Math.min(100, Math.round(s)));
 }
 
 /* ============================================================
@@ -955,8 +1302,7 @@ function comparar(cotacoes) {
   const melhores = {};
   for (const k in grupos) melhores[k] = ordenar(grupos[k])[0] || null;
 
-  const todasOrdenadas = ordenar(validas);
-  const absoluto = todasOrdenadas[0] || null;
+  const absoluto = ordenar(validas)[0] || null;
 
   return { grupos, melhores, absoluto, validas, expiradas: cotacoes.length - validas.length };
 }
@@ -969,7 +1315,7 @@ function renderComparacao() {
     resBox.innerHTML = `
       <div class="empty">
         <div class="big">🍌</div>
-        <p>Digite o nome de um produto para ver o ranking de preços.</p>
+        <p>Digite o nome de um produto para ver o ranking.</p>
         <p class="muted">Ex.: “parafuso”, “cabo HDMI”, “resma A4”.</p>
       </div>`;
     return;
@@ -980,7 +1326,7 @@ function renderComparacao() {
     resBox.innerHTML = `
       <div class="empty">
         <div class="big">🔍</div>
-        <p>Nenhuma cotação encontrada para "<b>${escapeHtml(termo)}</b>".</p>
+        <p>Nenhuma cotação para "<b>${escapeHtml(termo)}</b>".</p>
         <p class="muted">Envie um arquivo na aba <b>Enviar</b>.</p>
       </div>`;
     return;
@@ -1013,10 +1359,9 @@ function renderComparacao() {
   }
 
   if (r.absoluto && r.absoluto.regiao === 'internacional') {
-    html += `<div class="card" style="border-color:rgba(255,92,92,0.35); background:rgba(255,92,92,0.06);">
-      <div style="font-size:13px; line-height:1.6;">
-        ⚠️ <b>Atenção:</b> o menor preço absoluto vem de fornecedor <b>internacional</b>.
-        Considere frete internacional, impostos de importação, prazo e risco cambial.
+    html += `<div class="card" style="border-color:rgba(220,38,38,0.30); background:#fff5f5;">
+      <div style="font-size:13px; line-height:1.6; color:var(--text-2);">
+        ⚠️ <b>O menor preço absoluto é internacional.</b> Considere frete, impostos de importação, prazo e risco cambial.
       </div>
     </div>`;
   }
@@ -1026,12 +1371,12 @@ function renderComparacao() {
     const lista = r.grupos[tier];
     if (!lista.length) return;
     lista.sort((a,b) => custoEfetivo(a) - custoEfetivo(b));
-    html += `<div class="muted" style="margin:10px 4px 6px; text-transform:uppercase; letter-spacing:1.2px; font-size:10.5px;">${rotuloTier(tier)} · ${lista.length} cotação(ões)</div>`;
+    html += `<div class="muted" style="margin:10px 4px 6px; text-transform:uppercase; letter-spacing:1.2px; font-size:10.5px; font-weight:700;">${rotuloTier(tier)} · ${lista.length} cotação(ões)</div>`;
     lista.forEach(c => html += cardCotacao(c, false, r.melhores[tier] && r.melhores[tier].id === c.id));
   });
 
   if (r.expiradas > 0) {
-    html += `<div class="muted" style="margin-top:12px; text-align:center;">⏳ ${r.expiradas} cotação(ões) expirada(s) foram ignoradas.</div>`;
+    html += `<div class="muted" style="margin-top:12px; text-align:center;">⏳ ${r.expiradas} cotação(ões) expirada(s) ignorada(s).</div>`;
   }
 
   resBox.innerHTML = html;
@@ -1096,7 +1441,7 @@ function renderHistorico() {
       <div class="rank-body">
         <div class="name">${escapeHtml(c.fornecedor)}</div>
         <div class="meta">${escapeHtml(c.descricao)} · ${new Date(c.data + 'T00:00:00').toLocaleDateString('pt-BR')}</div>
-        <div class="price" style="font-size:16px;">${fmt(c.custoEfetivo, c.moeda)}</div>
+        <div class="price" style="font-size:17px;">${fmt(c.custoEfetivo, c.moeda)}</div>
         <div class="tags">
           <span class="tag">${rotuloTier(c.regiao)}</span>
           ${expirada(c) ? '<span class="tag bad">Expirada</span>' : '<span class="tag good">Válida</span>'}
@@ -1120,12 +1465,12 @@ function atualizarStats() {
   else {
     const primeira = db.cotacoes[0].data || '—';
     const ultima = db.cotacoes[db.cotacoes.length-1].data || '—';
-    info.textContent = `Histórico desde ${primeira.split('-').reverse().join('/')} · última entrada em ${ultima.split('-').reverse().join('/')}`;
+    info.textContent = `Desde ${primeira.split('-').reverse().join('/')} · última entrada em ${ultima.split('-').reverse().join('/')}`;
   }
 }
 
 /* ============================================================
-   NAVEGAÇÃO / TOAST
+   NAVEGAÇÃO
    ============================================================ */
 function switchTab(tab) {
   document.querySelectorAll('section.tab').forEach(s => s.classList.remove('active'));
@@ -1137,31 +1482,23 @@ function switchTab(tab) {
   if (tab === 'comparar') renderComparacao();
 }
 
-let toastTimer;
-function toast(msg, type='') {
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.className = 'show ' + type;
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.className = '', 2800);
-}
-
 /* ============================================================
    INIT
    ============================================================ */
 (function init() {
-  // nav
   document.querySelectorAll('nav.bottom button').forEach(btn => {
     btn.addEventListener('click', () => switchTab(btn.dataset.tab));
   });
 
-  // upload zone
-  const zone = document.getElementById('uploadZone');
+  const zone  = document.getElementById('uploadZone');
   const input = document.getElementById('fileInput');
-  zone.addEventListener('click', () => input.click());
-  input.addEventListener('change', e => handleFile(e.target.files[0]));
 
-  // drag & drop (web)
+  // o <label> já dispara o clique no input — não duplicar
+  input.addEventListener('change', e => {
+    const f = e.target.files && e.target.files[0];
+    if (f) handleFile(f);
+  });
+
   ['dragenter','dragover'].forEach(ev => zone.addEventListener(ev, e => {
     e.preventDefault(); zone.classList.add('dragover');
   }));
@@ -1173,7 +1510,6 @@ function toast(msg, type='') {
     if (f) handleFile(f);
   });
 
-  // defaults
   document.getElementById('f-data').value = new Date().toISOString().slice(0,10);
   atualizarStats();
   renderComparacao();
