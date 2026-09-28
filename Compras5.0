@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#0b0b12" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<title>Compras 5.0</title>
+<style>
+  :root {
+    --bg: #0b0b12;
+    --bg-2: #12121c;
+    --card: rgba(255,255,255,0.04);
+    --card-2: rgba(255,255,255,0.07);
+    --border: rgba(255,255,255,0.09);
+    --text: #f5f5f7;
+    --muted: #9a9aae;
+    --accent: #ffd93d;
+    --accent-2: #f5b800;
+    --accent-soft: rgba(255,217,61,0.14);
+    --good: #35d07f;
+    --warn: #ff9f43;
+    --bad: #ff5c5c;
+    --radius: 22px;
+    --radius-sm: 14px;
+    --shadow: 0 10px 30px rgba(0,0,0,0.35);
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+  body {
+    min-height: 100vh;
+    background:
+      radial-gradient(900px 500px at 80% -10%, rgba(255,217,61,0.10), transparent 60%),
+      radial-gradient(700px 500px at -10% 20%, rgba(120,90,255,0.08), transparent 60%),
+      var(--bg);
+    padding-bottom: calc(84px + var(--safe-bottom));
+    overflow-x: hidden;
+  }
+  /* HEADER */
+  header.app-header {
+    position: sticky; top: 0; z-index: 40;
+    padding: calc(14px + var(--safe-top)) 18px 14px;
+    background: rgba(11,11,18,0.72);
+    backdrop-filter: blur(18px) saturate(140%);
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 12px;
+  }
+  .logo {
+    width: 40px; height: 40px; border-radius: 14px;
+    background: linear-gradient(140deg, var(--accent), var(--accent-2));
+    display: grid; place-items: center;
+    font-size: 22px; box-shadow: 0 6px 18px rgba(255,217,61,0.35);
+    flex-shrink: 0;
+  }
+  .brand h1 { margin: 0; font-size: 17px; letter-spacing: 0.2px; font-weight: 700; }
+  .brand p { margin: 2px 0 0; font-size: 11.5px; color: var(--muted); letter-spacing: .3px; }
+  /* CONTENT */
+  main { padding: 18px 16px 8px; max-width: 640px; margin: 0 auto; }
+  section.tab { display: none; animation: fade .28s ease; }
+  section.tab.active { display: block; }
+  @keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  h2.section-title {
+    font-size: 13px; text-transform: uppercase; letter-spacing: 1.4px;
+    color: var(--muted); margin: 4px 0 12px; font-weight: 600;
+  }
+
+  /* CARD */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 14px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+  .card.strong { background: var(--card-2); box-shadow: var(--shadow); }
+
+  /* FORM */
+  .field { margin-bottom: 12px; }
+  .field label {
+    display: block; font-size: 12px; color: var(--muted);
+    margin: 0 0 6px 4px; font-weight: 600; letter-spacing: .3px;
+  }
+  .field input, .field select, .field textarea {
+    width: 100%; padding: 13px 14px;
+    background: rgba(0,0,0,0.35);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text); font-size: 15px;
+    outline: none; transition: border-color .2s, box-shadow .2s;
+    font-family: inherit;
+  }
+  .field textarea { min-height: 70px; resize: vertical; }
+  .field input:focus, .field select:focus, .field textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .row.three { grid-template-columns: 1fr 1fr 1fr; }
+
+  .check {
+    display: flex; align-items: center; gap: 10px;
+    background: rgba(0,0,0,0.25);
+    border: 1px solid var(--border);
+    padding: 12px 14px; border-radius: var(--radius-sm);
+    font-size: 14px; color: var(--text); cursor: pointer;
+  }
+  .check input { width: 20px; height: 20px; accent-color: var(--accent); }
+
+  /* BUTTONS */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    width: 100%; padding: 15px 16px;
+    border: none; border-radius: var(--radius-sm);
+    font-size: 15px; font-weight: 700; letter-spacing: .3px;
+    cursor: pointer; transition: transform .08s ease, filter .2s;
+    font-family: inherit;
+  }
+  .btn:active { transform: scale(0.98); }
+  .btn.primary {
+    background: linear-gradient(140deg, var(--accent), var(--accent-2));
+    color: #1a1400;
+    box-shadow: 0 8px 22px rgba(255,217,61,0.28);
+  }
+  .btn.ghost {
+    background: rgba(255,255,255,0.06);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .btn.danger { background: rgba(255,92,92,0.14); color: #ff9b9b; border: 1px solid rgba(255,92,92,0.3); }
+  .btn + .btn { margin-top: 8px; }
+
+  /* BOTTOM NAV */
+  nav.bottom {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
+    padding: 8px 12px calc(8px + var(--safe-bottom));
+    background: rgba(11,11,18,0.85);
+    backdrop-filter: blur(20px) saturate(140%);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+    border-top: 1px solid var(--border);
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px;
+    max-width: 640px; margin: 0 auto;
+  }
+  nav.bottom button {
+    background: transparent; border: none; color: var(--muted);
+    padding: 8px 4px; border-radius: 14px;
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    font-size: 10.5px; font-weight: 600; letter-spacing: .3px;
+    cursor: pointer; transition: color .2s, background .2s;
+    font-family: inherit;
+  }
+  nav.bottom button .ico { font-size: 20px; line-height: 1; }
+  nav.bottom button.active { color: var(--accent); background: var(--accent-soft); }
+
+  /* RESULT CARDS */
+  .rank-item {
+    display: flex; gap: 12px; align-items: flex-start;
+    padding: 14px; border-radius: var(--radius-sm);
+    background: rgba(0,0,0,0.25);
+    border: 1px solid var(--border);
+    margin-bottom: 10px;
+  }
+  .rank-item.best {
+    background: linear-gradient(140deg, rgba(255,217,61,0.14), rgba(255,217,61,0.04));
+    border: 1px solid rgba(255,217,61,0.4);
+  }
+  .rank-item.best.international {
+    background: linear-gradient(140deg, rgba(255,92,92,0.12), rgba(255,92,92,0.03));
+    border: 1px solid rgba(255,92,92,0.35);
+  }
+  .rank-badge {
+    flex-shrink: 0; width: 40px; height: 40px; border-radius: 12px;
+    display: grid; place-items: center; font-size: 20px;
+    background: var(--card-2);
+  }
+  .rank-item.best .rank-badge { background: rgba(255,217,61,0.22); }
+  .rank-body { flex: 1; min-width: 0; }
+  .rank-body .name { font-weight: 700; font-size: 15px; margin-bottom: 3px; word-break: break-word; }
+  .rank-body .meta { font-size: 12px; color: var(--muted); margin-bottom: 6px; line-height: 1.5; }
+  .rank-body .price {
+    font-size: 20px; font-weight: 800; color: var(--accent); letter-spacing: .3px;
+  }
+  .rank-item.best.international .price { color: #ff9b9b; }
+  .rank-body .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .tag {
+    font-size: 10.5px; padding: 3px 8px; border-radius: 20px;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid var(--border);
+    color: var(--muted); font-weight: 600; letter-spacing: .3px;
+  }
+  .tag.good { color: var(--good); border-color: rgba(53,208,127,0.35); background: rgba(53,208,127,0.1); }
+  .tag.warn { color: var(--warn); border-color: rgba(255,159,67,0.35); background: rgba(255,159,67,0.1); }
+  .tag.bad  { color: var(--bad);  border-color: rgba(255,92,92,0.35);  background: rgba(255,92,92,0.1); }
+
+  .tier-title {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 1.4px;
+    color: var(--muted); font-weight: 700;
+    margin: 16px 4px 8px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .tier-title::after {
+    content: ""; flex: 1; height: 1px; background: var(--border);
+  }
+
+  /* EMPTY */
+  .empty {
+    text-align: center; padding: 34px 16px; color: var(--muted);
+  }
+  .empty .big { font-size: 46px; margin-bottom: 10px; }
+  .empty p { margin: 6px 0; font-size: 14px; line-height: 1.5; }
+
+  /* TOAST */
+  #toast {
+    position: fixed; left: 50%; bottom: calc(96px + var(--safe-bottom));
+    transform: translateX(-50%) translateY(20px);
+    background: rgba(30,30,40,0.96);
+    color: var(--text);
+    padding: 12px 18px; border-radius: 14px;
+    border: 1px solid var(--border);
+    font-size: 14px; font-weight: 600;
+    opacity: 0; pointer-events: none; transition: all .25s ease;
+    z-index: 100; max-width: 90vw; text-align: center;
+    box-shadow: var(--shadow);
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  #toast.good { border-color: rgba(53,208,127,0.5); }
+  #toast.bad  { border-color: rgba(255,92,92,0.5); }
+
+  /* SEARCH */
+  .search-wrap { position: relative; margin-bottom: 12px; }
+  .search-wrap input { padding-left: 42px; }
+  .search-wrap::before {
+    content: "🔎"; position: absolute; left: 14px; top: 50%;
+    transform: translateY(-50%); font-size: 15px; opacity: .7;
+  }
+
+  /* HELP */
+  .help p { font-size: 14px; line-height: 1.65; color: #d3d3de; margin: 8px 0; }
+  .help h3 { font-size: 14px; margin: 16px 0 6px; color: var(--accent); letter-spacing: .3px; }
+  .help ul { padding-left: 18px; margin: 6px 0; }
+  .help li { font-size: 13.5px; line-height: 1.6; color: #d3d3de; margin-bottom: 4px; }
+  .help code { background: rgba(255,255,255,0.08); padding: 1px 6px; border-radius: 6px; font-size: 12.5px; }
+
+  .stat-row { display: flex; gap: 10px; margin-bottom: 12px; }
+  .stat {
+    flex: 1; padding: 12px; border-radius: var(--radius-sm);
+    background: var(--card); border: 1px solid var(--border);
+    text-align: center;
+  }
+  .stat .n { font-size: 22px; font-weight: 800; color: var(--accent); }
+  .stat .l { font-size: 10.5px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
+
+  .divider { height: 1px; background: var(--border); margin: 14px 0; }
+  .muted { color: var(--muted); font-size: 12.5px; line-height: 1.55; }
+  .pill { display: inline-block; font-size: 11px; padding: 3px 9px; border-radius: 20px; background: var(--accent-soft); color: var(--accent); font-weight: 700; margin-left: 6px; vertical-align: middle; }
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="logo">🍌</div>
+  <div class="brand">
+    <h1>Compras 5.0</h1>
+    <p>Cotação colaborativa · Prioridade regional</p>
+  </div>
+</header>
+
+<main>
+
+  <!-- ================= TAB: COTAR ================= -->
+  <section id="tab-cotar" class="tab active">
+    <h2 class="section-title">Nova cotação</h2>
+    <div class="card strong">
+      <div class="field">
+        <label>Produto / Descrição *</label>
+        <input id="f-desc" type="text" placeholder="Ex.: Parafuso sextavado 8mm aço inox" />
+      </div>
+      <div class="row">
+        <div class="field">
+          <label>Marca</label>
+          <input id="f-marca" type="text" placeholder="Ex.: Genérico" />
+        </div>
+        <div class="field">
+          <label>Modelo</label>
+          <input id="f-modelo" type="text" placeholder="Ex.: M8-304" />
+        </div>
+      </div>
+      <div class="field">
+        <label>GTIN / EAN (chave canônica)</label>
+        <input id="f-gtin" type="text" inputmode="numeric" placeholder="Deixe vazio se não houver" />
+      </div>
+    </div>
+
+    <h2 class="section-title">Fornecedor & Região</h2>
+    <div class="card">
+      <div class="field">
+        <label>Nome do fornecedor *</label>
+        <input id="f-forn" type="text" placeholder="Ex.: Distribuidora Alfa Ltda" />
+      </div>
+      <div class="row">
+        <div class="field">
+          <label>CNPJ (opcional)</label>
+          <input id="f-cnpj" type="text" inputmode="numeric" placeholder="00.000.000/0000-00" />
+        </div>
+        <div class="field">
+          <label>Região *</label>
+          <select id="f-regiao">
+            <option value="local">Local</option>
+            <option value="regional">Regional</option>
+            <option value="nacional" selected>Nacional</option>
+            <option value="internacional">Internacional</option>
+          </select>
+        </div>
+      </div>
+      <div class="row three">
+        <div class="field">
+          <label>Cidade</label>
+          <input id="f-cidade" type="text" placeholder="São Paulo" />
+        </div>
+        <div class="field">
+          <label>UF</label>
+          <input id="f-uf" type="text" maxlength="2" placeholder="SP" />
+        </div>
+        <div class="field">
+          <label>País</label>
+          <input id="f-pais" type="text" value="Brasil" />
+        </div>
+      </div>
+    </div>
+
+    <h2 class="section-title">Preços</h2>
+    <div class="card">
+      <div class="row three">
+        <div class="field">
+          <label>Preço unit. *</label>
+          <input id="f-preco" type="number" inputmode="decimal" step="0.01" placeholder="0,00" />
+        </div>
+        <div class="field">
+          <label>Frete</label>
+          <input id="f-frete" type="number" inputmode="decimal" step="0.01" placeholder="0,00" />
+        </div>
+        <div class="field">
+          <label>Impostos</label>
+          <input id="f-impostos" type="number" inputmode="decimal" step="0.01" placeholder="0,00" />
+        </div>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label>Desconto</label>
+          <input id="f-desconto" type="number" inputmode="decimal" step="0.01" placeholder="0,00" />
+        </div>
+        <div class="field">
+          <label>Moeda</label>
+          <select id="f-moeda">
+            <option value="BRL" selected>BRL (R$)</option>
+            <option value="USD">USD ($)</option>
+            <option value="EUR">EUR (€)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <h2 class="section-title">Condições</h2>
+    <div class="card">
+      <div class="row three">
+        <div class="field">
+          <label>Data</label>
+          <input id="f-data" type="date" />
+        </div>
+        <div class="field">
+          <label>Validade</label>
+          <input id="f-validade" type="date" />
+        </div>
+        <div class="field">
+          <label>Prazo (dias)</label>
+          <input id="f-prazo" type="number" inputmode="numeric" placeholder="0" />
+        </div>
+      </div>
+      <label class="check">
+        <input id="f-evidencia" type="checkbox" />
+        <span>Tenho evidência da cotação (orçamento, print, e-mail)</span>
+      </label>
+      <div class="field" style="margin-top:12px;">
+        <label>Observações</label>
+        <textarea id="f-obs" placeholder="Condições de pagamento, garantia, mínimo de pedido..."></textarea>
+      </div>
+    </div>
+
+    <button class="btn primary" onclick="salvarCotacao()">💾 Salvar cotação</button>
+    <button class="btn ghost" onclick="limparForm()">Limpar formulário</button>
+  </section>
+
+  <!-- ================= TAB: COMPARAR ================= -->
+  <section id="tab-comparar" class="tab">
+    <h2 class="section-title">Comparar preços</h2>
+    <div class="search-wrap">
+      <input id="q" type="text" placeholder="Digite o produto para comparar..." oninput="renderComparacao()" />
+    </div>
+    <div id="sugestoes"></div>
+    <div id="resultado"></div>
+  </section>
+
+  <!-- ================= TAB: HISTÓRICO ================= -->
+  <section id="tab-historico" class="tab">
+    <h2 class="section-title">Histórico de cotações</h2>
+    <div class="stat-row">
+      <div class="stat"><div class="n" id="st-total">0</div><div class="l">Cotações</div></div>
+      <div class="stat"><div class="n" id="st-forn">0</div><div class="l">Fornecedores</div></div>
+      <div class="stat"><div class="n" id="st-prod">0</div><div class="l">Produtos</div></div>
+    </div>
+    <div id="historico"></div>
+    <button class="btn danger" onclick="limparTudo()">🗑️ Apagar todos os dados</button>
+  </section>
+
+  <!-- ================= TAB: AJUDA ================= -->
+  <section id="tab-ajuda" class="tab help">
+    <h2 class="section-title">Como funciona</h2>
+    <div class="card strong">
+      <p>Este app implementa a regra de <b>Compras 5.0</b>: o usuário informa uma cotação obtida, o sistema aprende o preço daquele fornecedor e devolve uma comparação priorizando <b>Local → Regional → Nacional → Internacional</b>.</p>
+      <h3>📌 Regras aplicadas</h3>
+      <ul>
+        <li><b>Custo efetivo</b> = preço + frete + impostos − desconto.</li>
+        <li><b>Prioridade por região</b> antes de comparar preço absoluto.</li>
+        <li><b>Confiança da cotação</b> por evidência, recência e CNPJ.</li>
+        <li><b>Validade</b>: cotações expiradas não concorrem.</li>
+        <li><b>Histórico preservado</b>: nada é sobrescrito, só o preço de referência é atualizado.</li>
+      </ul>
+      <h3>🍌 Dicas de uso</h3>
+      <ul>
+        <li>Preencha o <b>GTIN/EAN</b> quando existir — é a chave canônica do produto.</li>
+        <li>Marque <b>“Tenho evidência”</b> para aumentar o score de confiança.</li>
+        <li>Após salvar, vá em <b>Comparar</b> e veja o ranking por região.</li>
+      </ul>
+      <h3>🔒 Privacidade</h3>
+      <p class="muted">Todos os dados ficam armazenados apenas no seu dispositivo (localStorage). Nada é enviado a servidores.</p>
+    </div>
+  </section>
+
+</main>
+
+<nav class="bottom">
+  <button data-tab="cotar" class="active"><span class="ico">➕</span>Cotar</button>
+  <button data-tab="comparar"><span class="ico">⚖️</span>Comparar</button>
+  <button data-tab="historico"><span class="ico">🗂️</span>Histórico</button>
+  <button data-tab="ajuda"><span class="ico">💡</span>Ajuda</button>
+</nav>
+
+<div id="toast"></div>
+
+<script>
+/* ============================================================
+   COMPRAS 5.0 — Núcleo da aplicação
+   ============================================================ */
+
+const DB_KEY = 'compras5_db_v1';
+
+/* ---------- Persistência ---------- */
+const DB = {
+  read() {
+    try { return JSON.parse(localStorage.getItem(DB_KEY)) || { cotacoes: [] }; }
+    catch(e) { return { cotacoes: [] }; }
+  },
+  write(d) { localStorage.setItem(DB_KEY, JSON.stringify(d)); }
+};
+
+/* ---------- Utilitários ---------- */
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+const num = v => { const n = parseFloat(String(v).replace(',', '.')); return isNaN(n) ? 0 : n; };
+const fmt = (v, moeda='BRL') => {
+  const cur = { BRL:'R$', USD:'US$', EUR:'€' }[moeda] || '';
+  return cur + ' ' + (Number(v)||0).toFixed(2).replace('.', ',');
+};
+const norm = s => (s||'').toString().trim().toLowerCase()
+  .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+  .replace(/\s+/g,' ');
+
+/* ---------- Regras de negócio ---------- */
+function chaveProduto(p) {
+  const gtin = (p.gtin||'').replace(/\D/g,'');
+  if (gtin.length >= 8) return 'gtin:' + gtin;
+  return 'nm:' + norm(p.descricao) + '|' + norm(p.marca) + '|' + norm(p.modelo);
+}
+
+function custoEfetivo(c) {
+  return num(c.preco) + num(c.frete) + num(c.impostos) - num(c.desconto);
+}
+
+function expirada(c) {
+  if (!c.validade) return false;
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  return new Date(c.validade + 'T00:00:00') < hoje;
+}
+
+function scoreConfianca(c) {
+  let s = 50;
+  if (c.evidencia) s += 25;
+  if (c.cnpj && c.cnpj.replace(/\D/g,'').length >= 14) s += 12;
+  if (c.data) {
+    const dias = (Date.now() - new Date(c.data + 'T00:00:00').getTime()) / 86400000;
+    if (dias <= 7) s += 15;
+    else if (dias <= 30) s += 8;
+    else if (dias <= 90) s += 0;
+    else s -= 15;
+  } else s -= 5;
+  return Math.max(0, Math.min(100, Math.round(s)));
+}
+
+/* ---------- CRUD ---------- */
+function salvarCotacao() {
+  const desc = document.getElementById('f-desc').value.trim();
+  const forn = document.getElementById('f-forn').value.trim();
+  const precoRaw = document.getElementById('f-preco').value;
+  if (!desc) return toast('Informe o produto.', 'bad');
+  if (!forn) return toast('Informe o fornecedor.', 'bad');
+  if (!precoRaw || num(precoRaw) <= 0) return toast('Informe um preço válido.', 'bad');
+
+  const hoje = new Date().toISOString().slice(0,10);
+
+  const cot = {
+    id: uid(),
+    descricao: desc,
+    marca: document.getElementById('f-marca').value.trim(),
+    modelo: document.getElementById('f-modelo').value.trim(),
+    gtin: document.getElementById('f-gtin').value.trim(),
+    fornecedor: forn,
+    cnpj: document.getElementById('f-cnpj').value.trim(),
+    regiao: document.getElementById('f-regiao').value,
+    cidade: document.getElementById('f-cidade').value.trim(),
+    uf: document.getElementById('f-uf').value.trim().toUpperCase(),
+    pais: document.getElementById('f-pais').value.trim() || 'Brasil',
+    preco: num(precoRaw),
+    frete: num(document.getElementById('f-frete').value),
+    impostos: num(document.getElementById('f-impostos').value),
+    desconto: num(document.getElementById('f-desconto').value),
+    moeda: document.getElementById('f-moeda').value,
+    data: document.getElementById('f-data').value || hoje,
+    validade: document.getElementById('f-validade').value,
+    prazo: parseInt(document.getElementById('f-prazo').value) || 0,
+    evidencia: document.getElementById('f-evidencia').checked,
+    obs: document.getElementById('f-obs').value.trim(),
+    criadoEm: Date.now()
+  };
+  cot.chaveProduto = chaveProduto(cot);
+  cot.custoEfetivo = custoEfetivo(cot);
+  cot.confianca = scoreConfianca(cot);
+
+  const db = DB.read();
+  db.cotacoes.push(cot);
+  DB.write(db);
+
+  toast('✅ Cotação salva!', 'good');
+  limparForm();
+  atualizarStats();
+  document.getElementById('q').value = desc;
+  switchTab('comparar');
+  renderComparacao();
+}
+
+function limparForm() {
+  ['f-desc','f-marca','f-modelo','f-gtin','f-forn','f-cnpj','f-cidade','f-uf',
+   'f-preco','f-frete','f-impostos','f-desconto','f-prazo','f-validade','f-obs']
+    .forEach(id => document.getElementById(id).value = '');
+  document.getElementById('f-evidencia').checked = false;
+  document.getElementById('f-pais').value = 'Brasil';
+  document.getElementById('f-regiao').value = 'nacional';
+  document.getElementById('f-moeda').value = 'BRL';
+  const hoje = new Date().toISOString().slice(0,10);
+  document.getElementById('f-data').value = hoje;
+}
+
+function limparTudo() {
+  if (!confirm('Apagar todas as cotações? Esta ação não pode ser desfeita.')) return;
+  DB.write({ cotacoes: [] });
+  toast('Dados apagados.', 'good');
+  atualizarStats();
+  renderComparacao();
+  renderHistorico();
+}
+
+/* ---------- Comparação (regra principal) ---------- */
+function listarProdutosUnicos() {
+  const db = DB.read();
+  const map = new Map();
+  db.cotacoes.forEach(c => {
+    if (!map.has(c.chaveProduto)) map.set(c.chaveProduto, c);
+  });
+  return [...map.values()];
+}
+
+function buscarCotacoes(termo) {
+  const db = DB.read();
+  const t = norm(termo);
+  if (!t) return [];
+  // Agrupa por chave de produto que casa com o termo
+  const matchKeys = new Set();
+  db.cotacoes.forEach(c => {
+    const busca = norm(c.descricao + ' ' + c.marca + ' ' + c.modelo + ' ' + c.gtin);
+    if (busca.includes(t)) matchKeys.add(c.chaveProduto);
+  });
+  return db.cotacoes.filter(c => matchKeys.has(c.chaveProduto));
+}
+
+function comparar(cotacoes) {
+  const validas = cotacoes.filter(c => !expirada(c));
+  const grupos = { local: [], regional: [], nacional: [], internacional: [] };
+  validas.forEach(c => (grupos[c.regiao] || grupos.nacional).push(c));
+
+  const ordenar = lista => lista.slice().sort((a,b) => {
+    const d = custoEfetivo(a) - custoEfetivo(b);
+    if (Math.abs(d) > 0.001) return d;
+    if (b.confianca !== a.confianca) return b.confianca - a.confianca;
+    return new Date(b.data) - new Date(a.data);
+  });
+
+  const melhores = {};
+  for (const k in grupos) melhores[k] = ordenar(grupos[k])[0] || null;
+
+  const todasOrdenadas = ordenar(validas);
+  const absoluto = todasOrdenadas[0] || null;
+
+  return { grupos, melhores, absoluto, validas, expiradas: cotacoes.length - validas.length };
+}
+
+/* ---------- Render ---------- */
+function renderComparacao() {
+  const termo = document.getElementById('q').value;
+  const sugBox = document.getElementById('sugestoes');
+  const resBox = document.getElementById('resultado');
+
+  if (!termo.trim()) {
+    sugBox.innerHTML = '';
+    resBox.innerHTML = `
+      <div class="empty">
+        <div class="big">🍌</div>
+        <p>Digite o nome de um produto para ver o ranking de preços.</p>
+        <p class="muted">Ex.: “parafuso”, “cabo HDMI”, “resma A4”.</p>
+      </div>`;
+    return;
+  }
+
+  const cots = buscarCotacoes(termo);
+  if (cots.length === 0) {
+    sugBox.innerHTML = '';
+    resBox.innerHTML = `
+      <div class="empty">
+        <div class="big">🔍</div>
+        <p>Nenhuma cotação encontrada para "<b>${escapeHtml(termo)}</b>".</p>
+        <p class="muted">Cadastre uma nova cotação na aba <b>Cotar</b>.</p>
+      </div>`;
+    return;
+  }
+
+  const r = comparar(cots);
+
+  // Sugestões de produtos únicos encontrados
+  const chaves = new Set(cots.map(c => c.chaveProduto));
+  sugBox.innerHTML = chaves.size > 1
+    ? `<div class="muted" style="margin:-4px 4px 10px;">${chaves.size} produtos encontrados. Mostrando comparação consolidada.</div>`
+    : '';
+
+  let html = '';
+
+  // Melhor local
+  if (r.melhores.local) html += blocoTier('🏠 Melhor LOCAL', r.melhores.local, 'local');
+  // Melhor regional
+  if (r.melhores.regional) html += blocoTier('🗺️ Melhor REGIONAL', r.melhores.regional, 'regional');
+  // Melhor nacional
+  if (r.melhores.nacional) html += blocoTier('🇧🇷 Melhor NACIONAL', r.melhores.nacional, 'nacional');
+  // Melhor internacional
+  if (r.melhores.internacional) html += blocoTier('🌎 Melhor INTERNACIONAL', r.melhores.internacional, 'internacional', true);
+
+  // Menor preço absoluto (se diferente dos melhores por tier)
+  if (r.absoluto) {
+    const jaListado = [r.melhores.local, r.melhores.regional, r.melhores.nacional, r.melhores.internacional]
+      .filter(Boolean).some(m => m.id === r.absoluto.id);
+    if (!jaListado) {
+      html += `<div class="tier-title">💰 Menor preço absoluto</div>`;
+      html += cardCotacao(r.absoluto, true);
+    }
+  }
+
+  // Alerta internacional
+  if (r.absoluto && r.absoluto.regiao === 'internacional') {
+    html += `<div class="card" style="border-color:rgba(255,92,92,0.35); background:rgba(255,92,92,0.06);">
+      <div style="font-size:13px; line-height:1.6;">
+        ⚠️ <b>Atenção:</b> o menor preço absoluto vem de fornecedor <b>internacional</b>.
+        Considere frete internacional, impostos de importação, prazo e risco cambial antes de decidir.
+      </div>
+    </div>`;
+  }
+
+  // Comparação completa por tier
+  html += `<div class="tier-title">📊 Comparação completa</div>`;
+  const ordem = ['local','regional','nacional','internacional'];
+  ordem.forEach(tier => {
+    const lista = r.grupos[tier];
+    if (!lista.length) return;
+    lista.sort((a,b) => custoEfetivo(a) - custoEfetivo(b));
+    html += `<div class="muted" style="margin:10px 4px 6px; text-transform:uppercase; letter-spacing:1.2px; font-size:10.5px;">${rotuloTier(tier)} · ${lista.length} cotação(ões)</div>`;
+    lista.forEach(c => html += cardCotacao(c, false, r.melhores[tier] && r.melhores[tier].id === c.id));
+  });
+
+  if (r.expiradas > 0) {
+    html += `<div class="muted" style="margin-top:12px; text-align:center;">⏳ ${r.expiradas} cotação(ões) expirada(s) foram ignoradas.</div>`;
+  }
+
+  resBox.innerHTML = html;
+}
+
+function rotuloTier(t) {
+  return { local:'Local', regional:'Regional', nacional:'Nacional', internacional:'Internacional' }[t] || t;
+}
+
+function blocoTier(titulo, cot, tier, alerta=false) {
+  return `<div class="tier-title">${titulo}</div>` + cardCotacao(cot, true, false, alerta);
+}
+
+function cardCotacao(c, destaque=false, isBestOfTier=false, alertaIntl=false) {
+  const conf = c.confianca;
+  const confTag = conf >= 80 ? 'good' : conf >= 60 ? 'warn' : 'bad';
+  const confLabel = conf >= 80 ? 'Alta' : conf >= 60 ? 'Média' : 'Baixa';
+
+  const local = [c.cidade, c.uf].filter(Boolean).join('/') || (c.pais || '—');
+  const validade = c.validade ? new Date(c.validade + 'T00:00:00').toLocaleDateString('pt-BR') : '—';
+  const data = c.data ? new Date(c.data + 'T00:00:00').toLocaleDateString('pt-BR') : '—';
+
+  const cls = 'rank-item' + (destaque ? ' best' : '') + (destaque && alertaIntl ? ' international' : '');
+
+  return `
+    <div class="${cls}">
+      <div class="rank-badge">${iconeTier(c.regiao)}</div>
+      <div class="rank-body">
+        <div class="name">${escapeHtml(c.fornecedor)}</div>
+        <div class="meta">
+          ${escapeHtml(c.descricao)}${c.marca ? ' · ' + escapeHtml(c.marca) : ''}${c.modelo ? ' · ' + escapeHtml(c.modelo) : ''}<br/>
+          📍 ${escapeHtml(local)} · ${rotuloTier(c.regiao)} · 🕒 ${data} · ⏳ ${validade}${c.prazo ? ' · 🚚 ' + c.prazo + ' dias' : ''}
+        </div>
+        <div class="price">${fmt(c.custoEfetivo, c.moeda)}</div>
+        <div class="muted" style="font-size:11.5px; margin-top:4px;">
+          Preço ${fmt(c.preco, c.moeda)} + frete ${fmt(c.frete, c.moeda)} + imp. ${fmt(c.impostos, c.moeda)} − desc. ${fmt(c.desconto, c.moeda)}
+        </div>
+        <div class="tags">
+          <span class="tag ${confTag}">Confiança ${confLabel} (${conf})</span>
+          ${c.evidencia ? '<span class="tag good">Com evidência</span>' : '<span class="tag warn">Sem evidência</span>'}
+          ${c.cnpj ? '<span class="tag good">CNPJ</span>' : ''}
+          ${isBestOfTier ? '<span class="tag good">🥇 Melhor da região</span>' : ''}
+        </div>
+        ${c.obs ? `<div class="muted" style="margin-top:8px; font-size:12px;">📝 ${escapeHtml(c.obs)}</div>` : ''}
+      </div>
+    </div>`;
+}
+
+function iconeTier(t) {
+  return { local:'🏠', regional:'🗺️', nacional:'🇧🇷', internacional:'🌎' }[t] || '📦';
+}
+
+/* ---------- Histórico ---------- */
+function renderHistorico() {
+  const db = DB.read();
+  const box = document.getElementById('historico');
+  const lista = db.cotacoes.slice().sort((a,b) => b.criadoEm - a.criadoEm);
+
+  if (lista.length === 0) {
+    box.innerHTML = `<div class="empty"><div class="big">🗂️</div><p>Nenhuma cotação cadastrada ainda.</p></div>`;
+    return;
+  }
+
+  box.innerHTML = lista.map(c => `
+    <div class="rank-item">
+      <div class="rank-badge">${iconeTier(c.regiao)}</div>
+      <div class="rank-body">
+        <div class="name">${escapeHtml(c.fornecedor)}</div>
+        <div class="meta">${escapeHtml(c.descricao)} · ${new Date(c.data + 'T00:00:00').toLocaleDateString('pt-BR')}</div>
+        <div class="price" style="font-size:16px;">${fmt(c.custoEfetivo, c.moeda)}</div>
+        <div class="tags">
+          <span class="tag">${rotuloTier(c.regiao)}</span>
+          ${expirada(c) ? '<span class="tag bad">Expirada</span>' : '<span class="tag good">Válida</span>'}
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+/* ---------- Stats ---------- */
+function atualizarStats() {
+  const db = DB.read();
+  document.getElementById('st-total').textContent = db.cotacoes.length;
+  document.getElementById('st-forn').textContent = new Set(db.cotacoes.map(c => norm(c.fornecedor))).size;
+  document.getElementById('st-prod').textContent = new Set(db.cotacoes.map(c => c.chaveProduto)).size;
+}
+
+/* ---------- Navegação ---------- */
+function switchTab(tab) {
+  document.querySelectorAll('section.tab').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('nav.bottom button').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  document.querySelector(`nav.bottom button[data-tab="${tab}"]`).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (tab === 'historico') { renderHistorico(); atualizarStats(); }
+  if (tab === 'comparar') renderComparacao();
+}
+
+/* ---------- Toast ---------- */
+let toastTimer;
+function toast(msg, type='') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'show ' + type;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.className = '', 2600);
+}
+
+/* ---------- Escape ---------- */
+function escapeHtml(s) {
+  return String(s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+/* ---------- Init ---------- */
+(function init() {
+  document.querySelectorAll('nav.bottom button').forEach(btn => {
+    btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+  });
+  const hoje = new Date().toISOString().slice(0,10);
+  document.getElementById('f-data').value = hoje;
+  atualizarStats();
+  renderComparacao();
+})();
+</script>
+
+</body>
+</html>
