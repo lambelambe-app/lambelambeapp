@@ -7,10 +7,13 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="mobile-web-app-capable" content="yes" />
 <title>Compras 5.0</title>
+
+<!-- pdf.js: cacheado pelo WebView após o primeiro load -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
 <style>
   :root {
     --bg: #0b0b12;
-    --bg-2: #12121c;
     --card: rgba(255,255,255,0.04);
     --card-2: rgba(255,255,255,0.07);
     --border: rgba(255,255,255,0.09);
@@ -29,7 +32,8 @@
     --safe-bottom: env(safe-area-inset-bottom, 0px);
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
   body {
     min-height: 100vh;
     background:
@@ -39,6 +43,7 @@
     padding-bottom: calc(84px + var(--safe-bottom));
     overflow-x: hidden;
   }
+
   /* HEADER */
   header.app-header {
     position: sticky; top: 0; z-index: 40;
@@ -58,7 +63,7 @@
   }
   .brand h1 { margin: 0; font-size: 17px; letter-spacing: 0.2px; font-weight: 700; }
   .brand p { margin: 2px 0 0; font-size: 11.5px; color: var(--muted); letter-spacing: .3px; }
-  /* CONTENT */
+
   main { padding: 18px 16px 8px; max-width: 640px; margin: 0 auto; }
   section.tab { display: none; animation: fade .28s ease; }
   section.tab.active { display: block; }
@@ -69,7 +74,6 @@
     color: var(--muted); margin: 4px 0 12px; font-weight: 600;
   }
 
-  /* CARD */
   .card {
     background: var(--card);
     border: 1px solid var(--border);
@@ -80,6 +84,62 @@
     -webkit-backdrop-filter: blur(10px);
   }
   .card.strong { background: var(--card-2); box-shadow: var(--shadow); }
+
+  /* UPLOAD ZONE */
+  .upload-zone {
+    border: 2px dashed rgba(255,217,61,0.45);
+    background: linear-gradient(140deg, rgba(255,217,61,0.08), rgba(255,217,61,0.02));
+    border-radius: var(--radius);
+    padding: 26px 18px;
+    text-align: center;
+    transition: all .22s ease;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+  .upload-zone:active, .upload-zone.dragover {
+    background: linear-gradient(140deg, rgba(255,217,61,0.18), rgba(255,217,61,0.05));
+    border-color: var(--accent);
+    transform: scale(0.995);
+  }
+  .upload-zone .big-ico {
+    font-size: 46px; margin-bottom: 6px; display: block;
+    filter: drop-shadow(0 6px 14px rgba(255,217,61,0.35));
+  }
+  .upload-zone .utitle { font-size: 15px; font-weight: 700; margin: 4px 0 4px; }
+  .upload-zone .usub { font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+  .upload-zone input[type="file"] { display: none; }
+  .upload-badges {
+    display: flex; justify-content: center; gap: 8px; margin-top: 12px; flex-wrap: wrap;
+  }
+  .badge {
+    font-size: 10.5px; padding: 4px 10px; border-radius: 20px;
+    background: rgba(0,0,0,0.35); border: 1px solid var(--border);
+    color: var(--muted); font-weight: 700; letter-spacing: .3px;
+  }
+  .badge.on { color: var(--accent); border-color: rgba(255,217,61,0.35); background: var(--accent-soft); }
+
+  /* PREVIEW */
+  .preview {
+    margin-top: 12px; padding: 12px 14px;
+    background: rgba(0,0,0,0.35);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 11.5px; line-height: 1.55;
+    color: #cfcfdb;
+    max-height: 170px; overflow: auto;
+    white-space: pre-wrap; word-break: break-word;
+  }
+  .found {
+    display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px;
+  }
+  .found .chip {
+    font-size: 11px; padding: 4px 9px; border-radius: 20px;
+    background: rgba(53,208,127,0.12); border: 1px solid rgba(53,208,127,0.35);
+    color: var(--good); font-weight: 700;
+  }
+  .found .chip.empty { background: rgba(255,159,67,0.1); border-color: rgba(255,159,67,0.3); color: var(--warn); }
 
   /* FORM */
   .field { margin-bottom: 12px; }
@@ -101,6 +161,10 @@
     border-color: var(--accent);
     box-shadow: 0 0 0 3px var(--accent-soft);
   }
+  .field input.autofilled {
+    border-color: rgba(53,208,127,0.55);
+    background: rgba(53,208,127,0.06);
+  }
   .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .row.three { grid-template-columns: 1fr 1fr 1fr; }
 
@@ -113,7 +177,6 @@
   }
   .check input { width: 20px; height: 20px; accent-color: var(--accent); }
 
-  /* BUTTONS */
   .btn {
     display: inline-flex; align-items: center; justify-content: center; gap: 8px;
     width: 100%; padding: 15px 16px;
@@ -135,8 +198,8 @@
   }
   .btn.danger { background: rgba(255,92,92,0.14); color: #ff9b9b; border: 1px solid rgba(255,92,92,0.3); }
   .btn + .btn { margin-top: 8px; }
+  .btn:disabled { opacity: .55; cursor: not-allowed; }
 
-  /* BOTTOM NAV */
   nav.bottom {
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
     padding: 8px 12px calc(8px + var(--safe-bottom));
@@ -158,7 +221,6 @@
   nav.bottom button .ico { font-size: 20px; line-height: 1; }
   nav.bottom button.active { color: var(--accent); background: var(--accent-soft); }
 
-  /* RESULT CARDS */
   .rank-item {
     display: flex; gap: 12px; align-items: flex-start;
     padding: 14px; border-radius: var(--radius-sm);
@@ -204,18 +266,12 @@
     margin: 16px 4px 8px;
     display: flex; align-items: center; gap: 8px;
   }
-  .tier-title::after {
-    content: ""; flex: 1; height: 1px; background: var(--border);
-  }
+  .tier-title::after { content: ""; flex: 1; height: 1px; background: var(--border); }
 
-  /* EMPTY */
-  .empty {
-    text-align: center; padding: 34px 16px; color: var(--muted);
-  }
+  .empty { text-align: center; padding: 34px 16px; color: var(--muted); }
   .empty .big { font-size: 46px; margin-bottom: 10px; }
   .empty p { margin: 6px 0; font-size: 14px; line-height: 1.5; }
 
-  /* TOAST */
   #toast {
     position: fixed; left: 50%; bottom: calc(96px + var(--safe-bottom));
     transform: translateX(-50%) translateY(20px);
@@ -232,15 +288,19 @@
   #toast.good { border-color: rgba(53,208,127,0.5); }
   #toast.bad  { border-color: rgba(255,92,92,0.5); }
 
-  /* SEARCH */
   .search-wrap { position: relative; margin-bottom: 12px; }
-  .search-wrap input { padding-left: 42px; }
+  .search-wrap input {
+    width: 100%; padding: 13px 14px 13px 42px;
+    background: rgba(0,0,0,0.35);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text); font-size: 15px; outline: none; font-family: inherit;
+  }
   .search-wrap::before {
     content: "🔎"; position: absolute; left: 14px; top: 50%;
     transform: translateY(-50%); font-size: 15px; opacity: .7;
   }
 
-  /* HELP */
   .help p { font-size: 14px; line-height: 1.65; color: #d3d3de; margin: 8px 0; }
   .help h3 { font-size: 14px; margin: 16px 0 6px; color: var(--accent); letter-spacing: .3px; }
   .help ul { padding-left: 18px; margin: 6px 0; }
@@ -258,7 +318,22 @@
 
   .divider { height: 1px; background: var(--border); margin: 14px 0; }
   .muted { color: var(--muted); font-size: 12.5px; line-height: 1.55; }
-  .pill { display: inline-block; font-size: 11px; padding: 3px 9px; border-radius: 20px; background: var(--accent-soft); color: var(--accent); font-weight: 700; margin-left: 6px; vertical-align: middle; }
+
+  /* loading overlay */
+  #loading {
+    position: fixed; inset: 0; z-index: 200;
+    background: rgba(0,0,0,0.72);
+    display: none; align-items: center; justify-content: center;
+    backdrop-filter: blur(6px);
+  }
+  #loading.show { display: flex; }
+  .spinner {
+    width: 42px; height: 42px; border-radius: 50%;
+    border: 4px solid rgba(255,217,61,0.18);
+    border-top-color: var(--accent);
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
 </style>
 </head>
 <body>
@@ -267,15 +342,36 @@
   <div class="logo">🍌</div>
   <div class="brand">
     <h1>Compras 5.0</h1>
-    <p>Cotação colaborativa · Prioridade regional</p>
+    <p>Upload de cotação · Ranking por região</p>
   </div>
 </header>
 
 <main>
 
-  <!-- ================= TAB: COTAR ================= -->
-  <section id="tab-cotar" class="tab active">
-    <h2 class="section-title">Nova cotação</h2>
+  <!-- ================= TAB: ENVIAR ================= -->
+  <section id="tab-enviar" class="tab active">
+
+    <h2 class="section-title">1 · Envie o arquivo da cotação</h2>
+
+    <label class="upload-zone" id="uploadZone">
+      <input type="file" id="fileInput" accept=".pdf,.txt,.csv,.md,.json,text/plain,application/pdf" />
+      <span class="big-ico">📄</span>
+      <div class="utitle" id="upTitle">Toque para enviar a cotação</div>
+      <div class="usub" id="upSub">PDF ou texto (.txt, .csv) · extração automática dos dados</div>
+      <div class="upload-badges">
+        <span class="badge on">PDF</span>
+        <span class="badge on">TXT</span>
+        <span class="badge on">CSV</span>
+      </div>
+    </label>
+
+    <div id="previewBox" style="display:none;">
+      <div class="preview" id="previewText"></div>
+      <div class="found" id="foundChips"></div>
+    </div>
+
+    <h2 class="section-title" style="margin-top:18px;">2 · Confira e ajuste os dados</h2>
+
     <div class="card strong">
       <div class="field">
         <label>Produto / Descrição *</label>
@@ -305,7 +401,7 @@
       </div>
       <div class="row">
         <div class="field">
-          <label>CNPJ (opcional)</label>
+          <label>CNPJ</label>
           <input id="f-cnpj" type="text" inputmode="numeric" placeholder="00.000.000/0000-00" />
         </div>
         <div class="field">
@@ -383,8 +479,8 @@
         </div>
       </div>
       <label class="check">
-        <input id="f-evidencia" type="checkbox" />
-        <span>Tenho evidência da cotação (orçamento, print, e-mail)</span>
+        <input id="f-evidencia" type="checkbox" checked />
+        <span>Tenho evidência da cotação (o arquivo enviado)</span>
       </label>
       <div class="field" style="margin-top:12px;">
         <label>Observações</label>
@@ -393,7 +489,7 @@
     </div>
 
     <button class="btn primary" onclick="salvarCotacao()">💾 Salvar cotação</button>
-    <button class="btn ghost" onclick="limparForm()">Limpar formulário</button>
+    <button class="btn ghost" onclick="limparTudo(false)">🧹 Limpar formulário</button>
   </section>
 
   <!-- ================= TAB: COMPARAR ================= -->
@@ -402,7 +498,6 @@
     <div class="search-wrap">
       <input id="q" type="text" placeholder="Digite o produto para comparar..." oninput="renderComparacao()" />
     </div>
-    <div id="sugestoes"></div>
     <div id="resultado"></div>
   </section>
 
@@ -414,51 +509,67 @@
       <div class="stat"><div class="n" id="st-forn">0</div><div class="l">Fornecedores</div></div>
       <div class="stat"><div class="n" id="st-prod">0</div><div class="l">Produtos</div></div>
     </div>
+    <div class="muted" id="st-info" style="text-align:center; margin-bottom:12px;"></div>
     <div id="historico"></div>
-    <button class="btn danger" onclick="limparTudo()">🗑️ Apagar todos os dados</button>
+    <button class="btn danger" onclick="limparTudo(true)">🗑️ Apagar todos os dados</button>
   </section>
 
   <!-- ================= TAB: AJUDA ================= -->
   <section id="tab-ajuda" class="tab help">
     <h2 class="section-title">Como funciona</h2>
     <div class="card strong">
-      <p>Este app implementa a regra de <b>Compras 5.0</b>: o usuário informa uma cotação obtida, o sistema aprende o preço daquele fornecedor e devolve uma comparação priorizando <b>Local → Regional → Nacional → Internacional</b>.</p>
-      <h3>📌 Regras aplicadas</h3>
+      <p>O app implementa <b>Compras 5.0</b>: o usuário envia a cotação (PDF ou texto), o sistema extrai os dados automaticamente, você revisa e salva. Depois, o ranking prioriza <b>Local → Regional → Nacional → Internacional</b>.</p>
+
+      <h3>📥 Upload suportado</h3>
       <ul>
-        <li><b>Custo efetivo</b> = preço + frete + impostos − desconto.</li>
-        <li><b>Prioridade por região</b> antes de comparar preço absoluto.</li>
-        <li><b>Confiança da cotação</b> por evidência, recência e CNPJ.</li>
-        <li><b>Validade</b>: cotações expiradas não concorrem.</li>
-        <li><b>Histórico preservado</b>: nada é sobrescrito, só o preço de referência é atualizado.</li>
+        <li><b>PDF</b> — extração via <code>pdf.js</code> (precisa de 1 conexão na primeira vez).</li>
+        <li><b>TXT / CSV / MD</b> — leitura direta.</li>
+        <li>Após o envio, os campos reconhecidos ficam <b style="color:#35d07f;">destacados em verde</b>.</li>
       </ul>
-      <h3>🍌 Dicas de uso</h3>
+
+      <h3>🤖 O que o parser reconhece</h3>
       <ul>
-        <li>Preencha o <b>GTIN/EAN</b> quando existir — é a chave canônica do produto.</li>
-        <li>Marque <b>“Tenho evidência”</b> para aumentar o score de confiança.</li>
-        <li>Após salvar, vá em <b>Comparar</b> e veja o ranking por região.</li>
+        <li>Preço unitário / valor total (formatos <code>R$ 1.234,56</code> e <code>1234.56</code>)</li>
+        <li>CNPJ, CEP, telefone, e-mail</li>
+        <li>Cidade/UF (padrão <code>Cidade/UF</code>)</li>
+        <li>Data do documento e <b>validade</b></li>
+        <li>Prazo de entrega em dias</li>
+        <li>Frete, impostos, desconto (quando rotulados)</li>
+        <li>Fornecedor (linhas com <code>LTDA</code>, <code>S.A.</code>, <code>ME</code>, <code>EIRELI</code>)</li>
       </ul>
+
+      <h3>♾️ Alimentação contínua</h3>
+      <p class="muted">Cada envio é salvo como um registro datado. Não há limite de quantidade nem prazo de validade do app. O histórico cresce indefinidamente e o ranking sempre usa as cotações válidas mais recentes.</p>
+
       <h3>🔒 Privacidade</h3>
-      <p class="muted">Todos os dados ficam armazenados apenas no seu dispositivo (localStorage). Nada é enviado a servidores.</p>
+      <p class="muted">Tudo fica no seu dispositivo (<code>localStorage</code>). Nada é enviado a servidores.</p>
     </div>
   </section>
 
 </main>
 
 <nav class="bottom">
-  <button data-tab="cotar" class="active"><span class="ico">➕</span>Cotar</button>
+  <button data-tab="enviar" class="active"><span class="ico">📥</span>Enviar</button>
   <button data-tab="comparar"><span class="ico">⚖️</span>Comparar</button>
   <button data-tab="historico"><span class="ico">🗂️</span>Histórico</button>
   <button data-tab="ajuda"><span class="ico">💡</span>Ajuda</button>
 </nav>
 
 <div id="toast"></div>
+<div id="loading"><div class="spinner"></div></div>
 
 <script>
 /* ============================================================
-   COMPRAS 5.0 — Núcleo da aplicação
+   COMPRAS 5.0 — v2 (upload-first)
    ============================================================ */
 
 const DB_KEY = 'compras5_db_v1';
+
+/* ---------- pdf.js worker ---------- */
+if (window.pdfjsLib) {
+  pdfjsLib.GlobalWorkerOptions.workerSrc =
+    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+}
 
 /* ---------- Persistência ---------- */
 const DB = {
@@ -469,9 +580,9 @@ const DB = {
   write(d) { localStorage.setItem(DB_KEY, JSON.stringify(d)); }
 };
 
-/* ---------- Utilitários ---------- */
+/* ---------- Utils ---------- */
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
-const num = v => { const n = parseFloat(String(v).replace(',', '.')); return isNaN(n) ? 0 : n; };
+const num = v => { const n = parseFloat(String(v).replace(/\./g,'').replace(',', '.')); return isNaN(n) ? 0 : n; };
 const fmt = (v, moeda='BRL') => {
   const cur = { BRL:'R$', USD:'US$', EUR:'€' }[moeda] || '';
   return cur + ' ' + (Number(v)||0).toFixed(2).replace('.', ',');
@@ -479,24 +590,187 @@ const fmt = (v, moeda='BRL') => {
 const norm = s => (s||'').toString().trim().toLowerCase()
   .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
   .replace(/\s+/g,' ');
+const escapeHtml = s => String(s||'').replace(/[&<>"']/g, m =>
+  ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 
-/* ---------- Regras de negócio ---------- */
+/* ---------- Loading ---------- */
+function setLoading(on) {
+  document.getElementById('loading').classList.toggle('show', !!on);
+}
+
+/* ---------- Leitura do arquivo ---------- */
+async function lerArquivo(file) {
+  const name = (file.name || '').toLowerCase();
+  const isPDF = file.type === 'application/pdf' || name.endsWith('.pdf');
+
+  if (isPDF) {
+    if (!window.pdfjsLib) throw new Error('pdf.js não carregado. Conecte-se à internet uma vez.');
+    const buf = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+    let txt = '';
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+      const lineParts = [];
+      let lastY = null;
+      content.items.forEach(it => {
+        if (lastY !== null && Math.abs(it.transform[5] - lastY) > 3) {
+          lineParts.push('\n');
+        }
+        lineParts.push(it.str);
+        lastY = it.transform[5];
+      });
+      txt += lineParts.join(' ') + '\n';
+    }
+    return txt.replace(/[ \t]+/g, ' ').replace(/\n{3,}/g, '\n\n').trim();
+  }
+  // texto simples
+  return (await file.text()).trim();
+}
+
+/* ============================================================
+   PARSER DE COTAÇÃO
+   ============================================================ */
+function parseCotacao(txt) {
+  const out = {};
+  const raw = txt.replace(/\r/g, '');
+
+  // ---- Preço unitário / valor ----
+  const precoPatterns = [
+    /(?:pre[çc]o\s*(?:unit[áa]rio|unit\.?|por\s*unidade)?|valor\s*unit[áa]rio|vl\.?\s*unit)\s*[:\-]?\s*(?:R\$)?\s*([\d]{1,3}(?:\.\d{3})*,\d{2}|\d+[.,]\d{2})/i,
+    /(?:total|valor\s*total)\s*[:\-]?\s*(?:R\$)?\s*([\d]{1,3}(?:\.\d{3})*,\d{2}|\d+[.,]\d{2})/i,
+    /R\$\s*([\d]{1,3}(?:\.\d{3})*,\d{2})/i
+  ];
+  for (const p of precoPatterns) {
+    const m = raw.match(p);
+    if (m) { out.preco = normalizarNumero(m[1]); break; }
+  }
+
+  // ---- Frete ----
+  const freteM = raw.match(/frete\s*[:\-]?\s*(?:R\$)?\s*([\d]{1,3}(?:\.\d{3})*,\d{2}|\d+[.,]\d{2})/i);
+  if (freteM) out.frete = normalizarNumero(freteM[1]);
+
+  // ---- Impostos ----
+  const impM = raw.match(/(?:impostos?|tributos?|icms|ipi)\s*[:\-]?\s*(?:R\$)?\s*([\d]{1,3}(?:\.\d{3})*,\d{2}|\d+[.,]\d{2})/i);
+  if (impM) out.impostos = normalizarNumero(impM[1]);
+
+  // ---- Desconto ----
+  const descM = raw.match(/desconto\s*[:\-]?\s*(?:R\$)?\s*([\d]{1,3}(?:\.\d{3})*,\d{2}|\d+[.,]\d{2})/i);
+  if (descM) out.desconto = normalizarNumero(descM[1]);
+
+  // ---- CNPJ ----
+  const cnpjM = raw.match(/\b\d{2}\.?\d{3}\.?\d{3}\/?\d{4}-?\d{2}\b/);
+  if (cnpjM) out.cnpj = cnpjM[0];
+
+  // ---- Cidade / UF ----
+  const cidadeUfM = raw.match(/([A-ZÁÀÂÃÉÊÍÓÔÕÚÇ][A-Za-zÀ-ÿ]+(?:\s+(?:d[aeo]s?\s+)?[A-ZÁÀÂÃÉÊÍÓÔÕÚÇ]?[a-zÀ-ÿ]+){0,3})\s*[\/\-–]\s*(AC|AL|AP|AM|BA|CE|DF|ES|GO|MA|MT|MS|MG|PA|PB|PR|PE|PI|RJ|RN|RS|RO|RR|SC|SP|SE|TO)\b/);
+  if (cidadeUfM) {
+    out.cidade = cidadeUfM[1].trim();
+    out.uf = cidadeUfM[2];
+  } else {
+    // tenta apenas UF "São Paulo - SP"
+    const ufM = raw.match(/\b(AC|AL|AP|AM|BA|CE|DF|ES|GO|MA|MT|MS|MG|PA|PB|PR|PE|PI|RJ|RN|RS|RO|RR|SC|SP|SE|TO)\b/);
+    if (ufM) out.uf = ufM[1];
+  }
+
+  // ---- Prazo ----
+  const prazoM = raw.match(/prazo\s*(?:de\s*entrega)?\s*[:\-]?\s*(\d{1,3})\s*dias?/i);
+  if (prazoM) out.prazo = parseInt(prazoM[1]);
+
+  // ---- Datas (dd/mm/aaaa ou aaaa-mm-dd) ----
+  const datas = [...raw.matchAll(/\b(\d{2})\/(\d{2})\/(\d{4})\b/g)].map(m => `${m[3]}-${m[2]}-${m[1]}`);
+  const validadeM = raw.match(/v[áa]lid[oa](?:\s*at[ée])?\s*[:\-]?\s*(\d{2}\/\d{2}\/\d{4})/i);
+  if (validadeM) {
+    const [d,m,y] = validadeM[1].split('/');
+    out.validade = `${y}-${m}-${d}`;
+  }
+  if (datas.length) out.data = datas[0];
+
+  // ---- Fornecedor ----
+  const fornM = raw.match(/^\s*([A-ZÁÀÂÃÉÊÍÓÔÕÚÇ][^\n]{4,70}?(?:\s+(?:LTDA|Ltda|S\.?\s*A\.?|ME|EIRELI|EPP)\b[^\n]*))/m);
+  if (fornM) out.fornecedor = fornM[1].trim();
+  if (!out.fornecedor) {
+    // fallback: primeira linha não vazia com 6+ caracteres
+    const linhas = raw.split('\n').map(l => l.trim()).filter(l => l.length >= 6);
+    if (linhas[0]) out.fornecedor = linhas[0].slice(0, 80);
+  }
+
+  // ---- Descrição do produto ----
+  const prodM = raw.match(/(?:produto|descri[çc][ãa]o|item)\s*[:\-]\s*([^\n]{3,120})/i);
+  if (prodM) out.descricao = prodM[1].trim();
+
+  // ---- GTIN / EAN ----
+  const gtinM = raw.match(/\b(\d{8}|\d{12,14})\b/);
+  if (gtinM) out.gtin = gtinM[1];
+
+  return out;
+}
+
+function normalizarNumero(str) {
+  if (!str) return 0;
+  const s = String(str).trim();
+  // 1.234,56 → 1234.56  |  1234.56 → 1234.56  |  1234,56 → 1234.56
+  if (s.includes(',') && s.includes('.')) {
+    if (s.lastIndexOf(',') > s.lastIndexOf('.')) return parseFloat(s.replace(/\./g,'').replace(',','.'));
+    return parseFloat(s.replace(/,/g,''));
+  }
+  return parseFloat(s.replace(',', '.'));
+}
+
+/* ---------- Aplicar parsed no formulário ---------- */
+function aplicarParsed(p) {
+  const map = {
+    descricao: 'f-desc',
+    marca: 'f-marca',
+    modelo: 'f-modelo',
+    gtin: 'f-gtin',
+    fornecedor: 'f-forn',
+    cnpj: 'f-cnpj',
+    cidade: 'f-cidade',
+    uf: 'f-uf',
+    preco: 'f-preco',
+    frete: 'f-frete',
+    impostos: 'f-impostos',
+    desconto: 'f-desconto',
+    prazo: 'f-prazo',
+    validade: 'f-validade',
+    data: 'f-data'
+  };
+  const found = [];
+  Object.keys(map).forEach(k => {
+    if (p[k] === undefined || p[k] === '' || p[k] === null) return;
+    const el = document.getElementById(map[k]);
+    if (!el) return;
+    el.value = p[k];
+    el.classList.add('autofilled');
+    found.push(k);
+    // remove destaque após 6s
+    setTimeout(() => el.classList.remove('autofilled'), 6000);
+  });
+  // região automática por UF
+  if (p.uf) {
+    const sel = document.getElementById('f-regiao');
+    sel.value = 'nacional';
+  }
+  return found;
+}
+
+/* ============================================================
+   REGRAS DE NEGÓCIO (iguais à v1)
+   ============================================================ */
 function chaveProduto(p) {
   const gtin = (p.gtin||'').replace(/\D/g,'');
   if (gtin.length >= 8) return 'gtin:' + gtin;
   return 'nm:' + norm(p.descricao) + '|' + norm(p.marca) + '|' + norm(p.modelo);
 }
-
 function custoEfetivo(c) {
   return num(c.preco) + num(c.frete) + num(c.impostos) - num(c.desconto);
 }
-
 function expirada(c) {
   if (!c.validade) return false;
   const hoje = new Date(); hoje.setHours(0,0,0,0);
   return new Date(c.validade + 'T00:00:00') < hoje;
 }
-
 function scoreConfianca(c) {
   let s = 50;
   if (c.evidencia) s += 25;
@@ -505,13 +779,70 @@ function scoreConfianca(c) {
     const dias = (Date.now() - new Date(c.data + 'T00:00:00').getTime()) / 86400000;
     if (dias <= 7) s += 15;
     else if (dias <= 30) s += 8;
-    else if (dias <= 90) s += 0;
-    else s -= 15;
+    else if (dias > 90) s -= 15;
   } else s -= 5;
   return Math.max(0, Math.min(100, Math.round(s)));
 }
 
-/* ---------- CRUD ---------- */
+/* ============================================================
+   UPLOAD
+   ============================================================ */
+async function handleFile(file) {
+  if (!file) return;
+  setLoading(true);
+  try {
+    const txt = await lerArquivo(file);
+    if (!txt || txt.length < 10) {
+      toast('Arquivo sem texto reconhecível.', 'bad');
+      setLoading(false);
+      return;
+    }
+    // preview
+    const previewBox = document.getElementById('previewBox');
+    const previewText = document.getElementById('previewText');
+    const foundChips = document.getElementById('foundChips');
+    previewBox.style.display = 'block';
+    previewText.textContent = txt.slice(0, 2000) + (txt.length > 2000 ? '\n...' : '');
+
+    // parse
+    const parsed = parseCotacao(txt);
+    const found = aplicarParsed(parsed);
+
+    // fallback: usa nome do arquivo como descrição
+    const descEl = document.getElementById('f-desc');
+    if (!descEl.value) {
+      const base = file.name.replace(/\.[^.]+$/, '').replace(/[_-]+/g,' ').trim();
+      if (base) { descEl.value = base; descEl.classList.add('autofilled'); found.push('descricao'); }
+    }
+
+    // chips
+    const labels = {
+      descricao:'Descrição', marca:'Marca', modelo:'Modelo', gtin:'GTIN',
+      fornecedor:'Fornecedor', cnpj:'CNPJ', cidade:'Cidade', uf:'UF',
+      preco:'Preço', frete:'Frete', impostos:'Impostos', desconto:'Desconto',
+      prazo:'Prazo', validade:'Validade', data:'Data'
+    };
+    const todos = Object.keys(labels);
+    foundChips.innerHTML = todos.map(k => {
+      const ok = found.includes(k);
+      return `<span class="chip ${ok?'':'empty'}">${ok?'✓':'—'} ${labels[k]}</span>`;
+    }).join('');
+
+    document.getElementById('upTitle').textContent = '✅ Arquivo lido com sucesso';
+    document.getElementById('upSub').textContent = file.name + ' · ' + Math.round(file.size/1024) + ' KB';
+
+    toast(`Reconhecidos ${found.length} campos. Revise abaixo.`, 'good');
+  } catch (err) {
+    console.error(err);
+    toast('Erro ao ler arquivo: ' + (err.message || err), 'bad');
+  } finally {
+    setLoading(false);
+  }
+}
+
+/* ============================================================
+   SALVAR / LIMPAR
+   ============================================================ */
 function salvarCotacao() {
   const desc = document.getElementById('f-desc').value.trim();
   const forn = document.getElementById('f-forn').value.trim();
@@ -521,7 +852,6 @@ function salvarCotacao() {
   if (!precoRaw || num(precoRaw) <= 0) return toast('Informe um preço válido.', 'bad');
 
   const hoje = new Date().toISOString().slice(0,10);
-
   const cot = {
     id: uid(),
     descricao: desc,
@@ -534,7 +864,7 @@ function salvarCotacao() {
     cidade: document.getElementById('f-cidade').value.trim(),
     uf: document.getElementById('f-uf').value.trim().toUpperCase(),
     pais: document.getElementById('f-pais').value.trim() || 'Brasil',
-    preco: num(precoRaw),
+    preco: num(document.getElementById('f-preco').value),
     frete: num(document.getElementById('f-frete').value),
     impostos: num(document.getElementById('f-impostos').value),
     desconto: num(document.getElementById('f-desconto').value),
@@ -565,17 +895,29 @@ function salvarCotacao() {
 function limparForm() {
   ['f-desc','f-marca','f-modelo','f-gtin','f-forn','f-cnpj','f-cidade','f-uf',
    'f-preco','f-frete','f-impostos','f-desconto','f-prazo','f-validade','f-obs']
-    .forEach(id => document.getElementById(id).value = '');
-  document.getElementById('f-evidencia').checked = false;
+    .forEach(id => {
+      const el = document.getElementById(id);
+      el.value = '';
+      el.classList.remove('autofilled');
+    });
+  document.getElementById('f-evidencia').checked = true;
   document.getElementById('f-pais').value = 'Brasil';
   document.getElementById('f-regiao').value = 'nacional';
   document.getElementById('f-moeda').value = 'BRL';
-  const hoje = new Date().toISOString().slice(0,10);
-  document.getElementById('f-data').value = hoje;
+  document.getElementById('f-data').value = new Date().toISOString().slice(0,10);
+
+  // reset upload UI
+  document.getElementById('previewBox').style.display = 'none';
+  document.getElementById('previewText').textContent = '';
+  document.getElementById('foundChips').innerHTML = '';
+  document.getElementById('upTitle').textContent = 'Toque para enviar a cotação';
+  document.getElementById('upSub').textContent = 'PDF ou texto (.txt, .csv) · extração automática dos dados';
+  document.getElementById('fileInput').value = '';
 }
 
-function limparTudo() {
-  if (!confirm('Apagar todas as cotações? Esta ação não pode ser desfeita.')) return;
+function limparTudo(apagar) {
+  if (!apagar) return limparForm();
+  if (!confirm('Apagar TODAS as cotações? Esta ação não pode ser desfeita.')) return;
   DB.write({ cotacoes: [] });
   toast('Dados apagados.', 'good');
   atualizarStats();
@@ -583,21 +925,13 @@ function limparTudo() {
   renderHistorico();
 }
 
-/* ---------- Comparação (regra principal) ---------- */
-function listarProdutosUnicos() {
-  const db = DB.read();
-  const map = new Map();
-  db.cotacoes.forEach(c => {
-    if (!map.has(c.chaveProduto)) map.set(c.chaveProduto, c);
-  });
-  return [...map.values()];
-}
-
+/* ============================================================
+   COMPARAÇÃO
+   ============================================================ */
 function buscarCotacoes(termo) {
   const db = DB.read();
   const t = norm(termo);
   if (!t) return [];
-  // Agrupa por chave de produto que casa com o termo
   const matchKeys = new Set();
   db.cotacoes.forEach(c => {
     const busca = norm(c.descricao + ' ' + c.marca + ' ' + c.modelo + ' ' + c.gtin);
@@ -627,14 +961,11 @@ function comparar(cotacoes) {
   return { grupos, melhores, absoluto, validas, expiradas: cotacoes.length - validas.length };
 }
 
-/* ---------- Render ---------- */
 function renderComparacao() {
   const termo = document.getElementById('q').value;
-  const sugBox = document.getElementById('sugestoes');
   const resBox = document.getElementById('resultado');
 
   if (!termo.trim()) {
-    sugBox.innerHTML = '';
     resBox.innerHTML = `
       <div class="empty">
         <div class="big">🍌</div>
@@ -646,59 +977,52 @@ function renderComparacao() {
 
   const cots = buscarCotacoes(termo);
   if (cots.length === 0) {
-    sugBox.innerHTML = '';
     resBox.innerHTML = `
       <div class="empty">
         <div class="big">🔍</div>
         <p>Nenhuma cotação encontrada para "<b>${escapeHtml(termo)}</b>".</p>
-        <p class="muted">Cadastre uma nova cotação na aba <b>Cotar</b>.</p>
+        <p class="muted">Envie um arquivo na aba <b>Enviar</b>.</p>
       </div>`;
     return;
   }
 
   const r = comparar(cots);
-
-  // Sugestões de produtos únicos encontrados
-  const chaves = new Set(cots.map(c => c.chaveProduto));
-  sugBox.innerHTML = chaves.size > 1
-    ? `<div class="muted" style="margin:-4px 4px 10px;">${chaves.size} produtos encontrados. Mostrando comparação consolidada.</div>`
-    : '';
-
   let html = '';
 
-  // Melhor local
-  if (r.melhores.local) html += blocoTier('🏠 Melhor LOCAL', r.melhores.local, 'local');
-  // Melhor regional
-  if (r.melhores.regional) html += blocoTier('🗺️ Melhor REGIONAL', r.melhores.regional, 'regional');
-  // Melhor nacional
-  if (r.melhores.nacional) html += blocoTier('🇧🇷 Melhor NACIONAL', r.melhores.nacional, 'nacional');
-  // Melhor internacional
-  if (r.melhores.internacional) html += blocoTier('🌎 Melhor INTERNACIONAL', r.melhores.internacional, 'internacional', true);
+  const tiers = [
+    ['🏠 Melhor LOCAL', 'local'],
+    ['🗺️ Melhor REGIONAL', 'regional'],
+    ['🇧🇷 Melhor NACIONAL', 'nacional'],
+    ['🌎 Melhor INTERNACIONAL', 'internacional']
+  ];
+  tiers.forEach(([label, key]) => {
+    if (r.melhores[key]) {
+      html += `<div class="tier-title">${label}</div>`;
+      html += cardCotacao(r.melhores[key], true, false, key === 'internacional');
+    }
+  });
 
-  // Menor preço absoluto (se diferente dos melhores por tier)
   if (r.absoluto) {
-    const jaListado = [r.melhores.local, r.melhores.regional, r.melhores.nacional, r.melhores.internacional]
-      .filter(Boolean).some(m => m.id === r.absoluto.id);
+    const jaListado = ['local','regional','nacional','internacional']
+      .map(k => r.melhores[k]).filter(Boolean)
+      .some(m => m.id === r.absoluto.id);
     if (!jaListado) {
       html += `<div class="tier-title">💰 Menor preço absoluto</div>`;
       html += cardCotacao(r.absoluto, true);
     }
   }
 
-  // Alerta internacional
   if (r.absoluto && r.absoluto.regiao === 'internacional') {
     html += `<div class="card" style="border-color:rgba(255,92,92,0.35); background:rgba(255,92,92,0.06);">
       <div style="font-size:13px; line-height:1.6;">
         ⚠️ <b>Atenção:</b> o menor preço absoluto vem de fornecedor <b>internacional</b>.
-        Considere frete internacional, impostos de importação, prazo e risco cambial antes de decidir.
+        Considere frete internacional, impostos de importação, prazo e risco cambial.
       </div>
     </div>`;
   }
 
-  // Comparação completa por tier
   html += `<div class="tier-title">📊 Comparação completa</div>`;
-  const ordem = ['local','regional','nacional','internacional'];
-  ordem.forEach(tier => {
+  ['local','regional','nacional','internacional'].forEach(tier => {
     const lista = r.grupos[tier];
     if (!lista.length) return;
     lista.sort((a,b) => custoEfetivo(a) - custoEfetivo(b));
@@ -716,20 +1040,17 @@ function renderComparacao() {
 function rotuloTier(t) {
   return { local:'Local', regional:'Regional', nacional:'Nacional', internacional:'Internacional' }[t] || t;
 }
-
-function blocoTier(titulo, cot, tier, alerta=false) {
-  return `<div class="tier-title">${titulo}</div>` + cardCotacao(cot, true, false, alerta);
+function iconeTier(t) {
+  return { local:'🏠', regional:'🗺️', nacional:'🇧🇷', internacional:'🌎' }[t] || '📦';
 }
 
 function cardCotacao(c, destaque=false, isBestOfTier=false, alertaIntl=false) {
   const conf = c.confianca;
   const confTag = conf >= 80 ? 'good' : conf >= 60 ? 'warn' : 'bad';
   const confLabel = conf >= 80 ? 'Alta' : conf >= 60 ? 'Média' : 'Baixa';
-
   const local = [c.cidade, c.uf].filter(Boolean).join('/') || (c.pais || '—');
   const validade = c.validade ? new Date(c.validade + 'T00:00:00').toLocaleDateString('pt-BR') : '—';
   const data = c.data ? new Date(c.data + 'T00:00:00').toLocaleDateString('pt-BR') : '—';
-
   const cls = 'rank-item' + (destaque ? ' best' : '') + (destaque && alertaIntl ? ' international' : '');
 
   return `
@@ -756,11 +1077,9 @@ function cardCotacao(c, destaque=false, isBestOfTier=false, alertaIntl=false) {
     </div>`;
 }
 
-function iconeTier(t) {
-  return { local:'🏠', regional:'🗺️', nacional:'🇧🇷', internacional:'🌎' }[t] || '📦';
-}
-
-/* ---------- Histórico ---------- */
+/* ============================================================
+   HISTÓRICO
+   ============================================================ */
 function renderHistorico() {
   const db = DB.read();
   const box = document.getElementById('historico');
@@ -787,15 +1106,27 @@ function renderHistorico() {
   `).join('');
 }
 
-/* ---------- Stats ---------- */
+/* ============================================================
+   STATS
+   ============================================================ */
 function atualizarStats() {
   const db = DB.read();
   document.getElementById('st-total').textContent = db.cotacoes.length;
   document.getElementById('st-forn').textContent = new Set(db.cotacoes.map(c => norm(c.fornecedor))).size;
   document.getElementById('st-prod').textContent = new Set(db.cotacoes.map(c => c.chaveProduto)).size;
+
+  const info = document.getElementById('st-info');
+  if (db.cotacoes.length === 0) info.textContent = '';
+  else {
+    const primeira = db.cotacoes[0].data || '—';
+    const ultima = db.cotacoes[db.cotacoes.length-1].data || '—';
+    info.textContent = `Histórico desde ${primeira.split('-').reverse().join('/')} · última entrada em ${ultima.split('-').reverse().join('/')}`;
+  }
 }
 
-/* ---------- Navegação ---------- */
+/* ============================================================
+   NAVEGAÇÃO / TOAST
+   ============================================================ */
 function switchTab(tab) {
   document.querySelectorAll('section.tab').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('nav.bottom button').forEach(b => b.classList.remove('active'));
@@ -806,28 +1137,44 @@ function switchTab(tab) {
   if (tab === 'comparar') renderComparacao();
 }
 
-/* ---------- Toast ---------- */
 let toastTimer;
 function toast(msg, type='') {
   const el = document.getElementById('toast');
   el.textContent = msg;
   el.className = 'show ' + type;
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.className = '', 2600);
+  toastTimer = setTimeout(() => el.className = '', 2800);
 }
 
-/* ---------- Escape ---------- */
-function escapeHtml(s) {
-  return String(s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-}
-
-/* ---------- Init ---------- */
+/* ============================================================
+   INIT
+   ============================================================ */
 (function init() {
+  // nav
   document.querySelectorAll('nav.bottom button').forEach(btn => {
     btn.addEventListener('click', () => switchTab(btn.dataset.tab));
   });
-  const hoje = new Date().toISOString().slice(0,10);
-  document.getElementById('f-data').value = hoje;
+
+  // upload zone
+  const zone = document.getElementById('uploadZone');
+  const input = document.getElementById('fileInput');
+  zone.addEventListener('click', () => input.click());
+  input.addEventListener('change', e => handleFile(e.target.files[0]));
+
+  // drag & drop (web)
+  ['dragenter','dragover'].forEach(ev => zone.addEventListener(ev, e => {
+    e.preventDefault(); zone.classList.add('dragover');
+  }));
+  ['dragleave','drop'].forEach(ev => zone.addEventListener(ev, e => {
+    e.preventDefault(); zone.classList.remove('dragover');
+  }));
+  zone.addEventListener('drop', e => {
+    const f = e.dataTransfer?.files?.[0];
+    if (f) handleFile(f);
+  });
+
+  // defaults
+  document.getElementById('f-data').value = new Date().toISOString().slice(0,10);
   atualizarStats();
   renderComparacao();
 })();
