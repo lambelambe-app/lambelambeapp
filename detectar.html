@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Transforme seu Roteador em Outro Recurso</title>
+<style>
+  :root{
+    --bg:#0f1117; --card:#1a1d27; --card2:#232735; --accent:#4f8cff;
+    --accent2:#22c55e; --warn:#f59e0b; --danger:#ef4444;
+    --text:#e6e8ee; --muted:#9aa3b2; --border:#2c3142;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+    background:linear-gradient(160deg,#0f1117,#151925 60%,#0f1117);
+    color:var(--text); min-height:100vh; padding:24px;
+  }
+  .wrap{max-width:1100px;margin:0 auto}
+  header{text-align:center;margin-bottom:32px}
+  header h1{
+    font-size:2.2rem;font-weight:700;letter-spacing:-.5px;
+    background:linear-gradient(90deg,#4f8cff,#22c55e);
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+    background-clip:text;
+  }
+  header p{color:var(--muted);margin-top:8px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+  .card{
+    background:var(--card);border:1px solid var(--border);border-radius:14px;
+    padding:20px;transition:.2s;cursor:pointer;position:relative;overflow:hidden;
+  }
+  .card:hover{transform:translateY(-4px);border-color:var(--accent);box-shadow:0 8px 30px rgba(79,140,255,.15)}
+  .card.sel{border-color:var(--accent2);box-shadow:0 0 0 2px rgba(34,197,94,.3) inset}
+  .card h3{font-size:1.1rem;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+  .card .ico{font-size:1.3rem}
+  .card p{color:var(--muted);font-size:.9rem;line-height:1.5}
+  .badge{
+    display:inline-block;font-size:.7rem;padding:2px 8px;border-radius:999px;
+    margin-top:10px;font-weight:600;letter-spacing:.3px;
+  }
+  .b-easy{background:rgba(34,197,94,.15);color:#4ade80}
+  .b-mid{background:rgba(245,158,11,.15);color:#fbbf24}
+  .b-hard{background:rgba(239,68,68,.15);color:#f87171}
+
+  .panel{
+    background:var(--card2);border:1px solid var(--border);border-radius:14px;
+    padding:24px;margin-top:24px;
+  }
+  .panel h2{font-size:1.3rem;margin-bottom:16px;display:flex;align-items:center;gap:10px}
+  .panel h4{margin:16px 0 8px;color:var(--accent);font-size:.95rem}
+  .panel ul{margin-left:20px;color:var(--muted);line-height:1.7;font-size:.92rem}
+  .panel li strong{color:var(--text)}
+  .row{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}
+  button{
+    background:var(--accent);color:#fff;border:none;border-radius:10px;
+    padding:10px 18px;font-size:.9rem;font-weight:600;cursor:pointer;transition:.2s;
+  }
+  button:hover{filter:brightness(1.15);transform:translateY(-1px)}
+  button.ghost{background:transparent;border:1px solid var(--border);color:var(--text)}
+  button.ghost:hover{border-color:var(--accent)}
+  .empty{text-align:center;color:var(--muted);padding:40px 20px;font-size:.95rem}
+  .note{
+    background:rgba(245,158,11,.08);border-left:3px solid var(--warn);
+    padding:12px 16px;border-radius:8px;margin-top:16px;font-size:.85rem;color:#fcd34d;
+  }
+  .checklist{list-style:none;margin-left:0}
+  .checklist li{
+    display:flex;align-items:flex-start;gap:10px;padding:6px 0;
+  }
+  .checklist input{margin-top:4px;accent-color:var(--accent2);cursor:pointer}
+  .checklist label{cursor:pointer;color:var(--muted)}
+  .checklist input:checked + label{color:var(--text);text-decoration:line-through;opacity:.6}
+  footer{text-align:center;color:var(--muted);font-size:.8rem;margin-top:40px;padding-top:20px;border-top:1px solid var(--border)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>♻️ Transforme seu Roteador</h1>
+    <p>Selecione um ou mais recursos que você quer criar. Depois, veja o passo a passo.</p>
+  </header>
+
+  <div class="grid" id="grid"></div>
+
+  <div class="panel" id="panel">
+    <div class="empty">👆 Clique em um recurso acima para ver o passo a passo</div>
+  </div>
+
+  <div class="panel">
+    <h2>✅ Checklist antes de começar</h2>
+    <ul class="checklist" id="checklist">
+      <li><input type="checkbox" id="c1"><label for="c1">Anotei <strong>marca, modelo e versão de hardware</strong> do roteador</label></li>
+      <li><input type="checkbox" id="c2"><label for="c2">Verifiquei suporte no <strong>OpenWrt Table of Hardware</strong></label></li>
+      <li><input type="checkbox" id="c3"><label for="c3">Fiz <strong>backup da configuração</strong> original</label></li>
+      <li><input type="checkbox" id="c4"><label for="c4">Tenho acesso ao <strong>cabo de rede</strong> e ao painel do roteador (192.168.0.1 / 192.168.1.1)</label></li>
+      <li><input type="checkbox" id="c5"><label for="c5">Confirmei se o roteador tem <strong>porta USB</strong> (se for usar NAS/impressora)</label></li>
+      <li><input type="checkbox" id="c6"><label for="c6">Li sobre riscos de <strong>brick</strong> e aceito</label></li>
+    </ul>
+    <div class="note">⚠️ Flashing de firmware pode inutilizar o aparelho. Sempre leia a wiki específica do seu modelo antes.</div>
+  </div>
+
+  <footer>
+    Feito para uso pessoal • Verifique a wiki do OpenWrt para instruções específicas do seu modelo.
+  </footer>
+</div>
+
+<script>
+  const recursos = [
+    {
+      id: "ap",
+      ico: "📶",
+      titulo: "Access Point / Repetidor",
+      nivel: "Fácil",
+      nivelClass: "b-easy",
+      desc: "Estende o Wi-Fi para outro cômodo usando o roteador como ponto de acesso.",
+      passos: [
+        "Conecte um cabo de rede da porta <strong>LAN</strong> do roteador principal na porta <strong>LAN</strong> do roteador secundário.",
+        "Acesse o painel do roteador secundário.",
+        "Configure IP fixo fora do DHCP (ex: 192.168.0.2).",
+        "Desative o <strong>DHCP</strong> do secundário.",
+        "Ajuste o Wi-Fi (SSID e senha iguais ou diferentes, à sua escolha).",
+        "Canal do Wi-Fi: use canais diferentes do principal para evitar interferência."
+      ]
+    },
+    {
+      id: "vlan",
+      ico: "🔀",
+      titulo: "Switch com VLANs",
+      nivel: "Médio",
+      nivelClass: "b-mid",
+      desc: "Separe redes (convidados, IoT, trabalho) usando OpenWrt ou firmware com VLAN.",
+      passos: [
+        "Instale OpenWrt (se compatível) ou firmware que suporte VLAN.",
+        "Acesse <strong>Network → Interfaces → Devices</strong>.",
+        "Crie bridges/VLANs e associe às portas físicas.",
+        "Crie interfaces para cada VLAN com sub-redes distintas.",
+        "Configure firewall e regras de roteamento entre VLANs.",
+        "Teste com um dispositivo em cada porta."
+      ]
+    },
+    {
+      id: "pihole",
+      ico: "🛡️",
+      titulo: "Pi-hole / AdGuard Home",
+      nivel: "Médio",
+      nivelClass: "b-mid",
+      desc: "Bloqueio de anúncios e rastreamento para toda a rede.",
+      passos: [
+        "Instale OpenWrt (ou firmware compatível).",
+        "Opção 1: rode <strong>AdGuard Home</strong> direto no roteador (via pacote).",
+        "Opção 2: aponte o DNS do roteador para um Raspberry Pi com Pi-hole.",
+        "Configure o DHCP do roteador para entregar o IP do Pi-hole como DNS.",
+        "Ajuste listas de bloqueio no painel do AdGuard/Pi-hole.",
+        "Teste em <a href='https://adblock-tester.com' target='_blank' style='color:#4f8cff'>adblock-tester.com</a>."
+      ]
+    },
+    {
+      id: "vpn",
+      ico: "🔐",
+      titulo: "Servidor VPN (WireGuard)",
+      nivel: "Médio",
+      nivelClass: "b-mid",
+      desc: "Acesse sua casa de fora ou navegue por uma VPN.",
+      passos: [
+        "Instale OpenWrt no roteador.",
+        "Instale o pacote <strong>luci-app-wireguard</strong>.",
+        "Gere chaves pública/privada do servidor e do cliente.",
+        "Crie a interface WG com porta (ex: 51820/UDP).",
+        "Libere a porta no firewall e no roteador da operadora (se houver).",
+        "Use <strong>DDNS</strong> se seu IP for dinâmico.",
+        "Importe o QR code/config no app WireGuard do celular."
+      ]
+    },
+    {
+      id: "nas",
+      ico: "💾",
+      titulo: "NAS simples (USB)",
+      nivel: "Médio",
+      nivelClass: "b-mid",
+      desc: "Compartilhe HD/pendrive na rede via Samba ou DLNA.",
+      passos: [
+        "Requisito: roteador com <strong>porta USB</strong>.",
+        "Formate o HD em ext4 ou NTFS.",
+        "Instale OpenWrt com pacotes <strong>kmod-usb-storage</strong>, <strong>samba4</strong> ou <strong>minidlna</strong>.",
+        "Monte o disco e configure ponto de montagem.",
+        "Crie compartilhamento SMB com usuário e senha.",
+        "Acesse via <code>\\\\IP-DO-ROTEADOR</code> no Windows ou <code>smb://IP</code> no Linux/Mac."
+      ]
+    },
+    {
+      id: "printer",
+      ico: "🖨️",
+      titulo: "Servidor de Impressão",
+      nivel: "Fácil",
+      nivelClass: "b-easy",
+      desc: "Transforme impressora USB em impressora de rede.",
+      passos: [
+        "Conecte a impressora USB ao roteador.",
+        "Se o firmware original suportar, ative o compartilhamento em <em>USB Application</em>.",
+        "Caso contrário, instale OpenWrt + <strong>luci-app-p910nd</strong> ou <strong>cups</strong>.",
+        "Anote o IP do roteador.",
+        "No PC, adicione impressora via IP (porta 9100).",
+        "Teste imprimindo uma página."
+      ]
+    },
+    {
+      id: "dl",
+      ico: "⬇️",
+      titulo: "Servidor de Downloads",
+      nivel: "Médio",
+      nivelClass: "b-mid",
+      desc: "Baixe torrents/arquivos direto no roteador 24/7.",
+      passos: [
+        "Requisito: USB + OpenWrt.",
+        "Instale <strong>transmission-daemon</strong> ou <strong>aria2</strong>.",
+        "Monte HD externo em <code>/mnt/sda1</code>.",
+        "Configure pasta de download e limites.",
+        "Acesse o painel web (ex: <code>http://IP:9091</code>).",
+        "Adicione torrents e aguarde — o roteador baixa sozinho."
+      ]
+    },
+    {
+      id: "iot",
+      ico: "🏠",
+      titulo: "Hub de Automação (MQTT/Node-RED)",
+      nivel: "Difícil",
+      nivelClass: "b-hard",
+      desc: "Rode MQTT broker e Node-RED para casa inteligente.",
+      passos: [
+        "Requisito: OpenWrt com RAM suficiente (≥128MB).",
+        "Instale <strong>mosquitto</strong> (broker MQTT).",
+        "Instale <strong>node-red</strong> (pode ser pesado; teste).",
+        "Configure tópicos MQTT para seus dispositivos.",
+        "Crie fluxos no Node-RED para automações.",
+        "Atenção: monitore uso de CPU/RAM."
+      ]
+    },
+    {
+      id: "netmon",
+      ico: "📊",
+      titulo: "Monitoramento de Rede",
+      nivel: "Médio",
+      nivelClass: "b-mid",
+      desc: "Veja estatísticas, tráfego e dispositivos conectados.",
+      passos: [
+        "Instale OpenWrt.",
+        "Pacotes: <strong>luci-app-statistics</strong> (collectd) ou <strong>ntopng</strong> (pesado).",
+        "Ative coleta de tráfego por interface.",
+        "Configure gráficos no LuCI.",
+        "Para Wake-on-LAN: instale <strong>luci-app-wol</strong>."
+      ]
+    },
+    {
+      id: "lab",
+      ico: "🧪",
+      titulo: "Laboratório de Redes",
+      nivel: "Difícil",
+      nivelClass: "b-hard",
+      desc: "Use para estudar roteamento, firewall, VLANs e protocolos.",
+      passos: [
+        "Instale OpenWrt (firmware mais flexível).",
+        "Crie VLANs, sub-redes e regras de firewall.",
+        "Pratique: NAT, port forwarding, QoS, DNS, DHCP.",
+        "Teste VPN, proxy, captive portal.",
+        "Cuidado para não quebrar a rede principal — use uma rede isolada."
+      ]
+    }
+  ];
+
+  const grid = document.getElementById('grid');
+  const panel = document.getElementById('panel');
+  const selecionados = new Set();
+
+  recursos.forEach(r => {
+    const el = document.createElement('div');
+    el.className = 'card';
+    el.dataset.id = r.id;
+    el.innerHTML = `
+      <h3><span class="ico">${r.ico}</span>${r.titulo}</h3>
+      <p>${r.desc}</p>
+      <span class="badge ${r.nivelClass}">${r.nivel}</span>
+    `;
+    el.addEventListener('click', () => {
+      if(selecionados.has(r.id)){
+        selecionados.delete(r.id);
+        el.classList.remove('sel');
+      } else {
+        selecionados.add(r.id);
+        el.classList.add('sel');
+      }
+      renderPanel();
+    });
+    grid.appendChild(el);
+  });
+
+  function renderPanel(){
+    if(selecionados.size === 0){
+      panel.innerHTML = `<div class="empty">👆 Clique em um recurso acima para ver o passo a passo</div>`;
+      return;
+    }
+    let html = '';
+    recursos.filter(r => selecionados.has(r.id)).forEach(r => {
+      html += `
+        <h2><span class="ico">${r.ico}</span> ${r.titulo} <span class="badge ${r.nivelClass}" style="margin-left:auto">${r.nivel}</span></h2>
+        <p style="color:var(--muted);margin-bottom:8px">${r.desc}</p>
+        <h4>Passo a passo</h4>
+        <ul>
+          ${r.passos.map(p => `<li>${p}</li>`).join('')}
+        </ul>
+        <hr style="border:none;border-top:1px solid var(--border);margin:20px 0">
+      `;
+    });
+    html += `
+      <div class="row">
+        <button onclick="window.print()">🖨️ Imprimir / Salvar PDF</button>
+        <button class="ghost" onclick="copiar()">📋 Copiar instruções</button>
+      </div>
+    `;
+    panel.innerHTML = html;
+  }
+
+  function copiar(){
+    const texto = recursos
+      .filter(r => selecionados.has(r.id))
+      .map(r => {
+        const passos = r.passos.map((p,i) => `${i+1}. ${p.replace(/<[^>]+>/g,'')}`).join('\n');
+        return `=== ${r.titulo} (${r.nivel}) ===\n${r.desc}\n${passos}`;
+      }).join('\n\n');
+    navigator.clipboard.writeText(texto).then(() => {
+      alert('Instruções copiadas para a área de transferência!');
+    }).catch(() => {
+      alert('Não foi possível copiar automaticamente. Use Ctrl+C.');
+    });
+  }
+</script>
+</body>
+</html>
